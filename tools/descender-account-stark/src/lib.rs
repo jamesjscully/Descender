@@ -55,6 +55,8 @@ mod air;
 mod config;
 mod counting_serializer;
 pub mod reduce_gadget;
+pub mod sponge_compression;
+pub mod pad_seed_registry; // F2 — global reorg-safe pad-seed admission registry (mask-PRF single-use, persistent across reorgs)
 
 use p3_field::PrimeCharacteristicRing;
 use p3_uni_stark::{prove as p3_prove, verify as p3_verify};
@@ -80,12 +82,12 @@ pub use air::{
     RELATION_ID_ELEMS, ROLE_ROOT_ELEMS, SYNDROME_LANES,
 };
 pub use config::{
-    Challenge, Challenger, Perm, Val, DIGEST_ELEMS, NUM_RANDOM_CODEWORDS, PROD_LOG_BLOWUP,
-    PROD_NUM_QUERIES, PROD_QUERY_POW_BITS, PROD_SOUNDNESS_BITS, SALT_ELEMS, WIDTH,
+    Challenge, Challenger, MyCompress, MyHash, Perm, Val, DIGEST_ELEMS, NUM_RANDOM_CODEWORDS,
+    PROD_LOG_BLOWUP, PROD_NUM_QUERIES, PROD_QUERY_POW_BITS, PROD_SOUNDNESS_BITS, SALT_ELEMS, WIDTH,
 };
 
 use config::{
-    Dft, HidingChallengeMmcs, HidingValMmcs, LinLayers, MyCompress, MyHash, ZkConfig, ZkPcs,
+    Dft, HidingChallengeMmcs, HidingValMmcs, LinLayers, ZkConfig, ZkPcs,
     HALF_FULL_ROUNDS, PARTIAL_ROUNDS, PROD_COMMIT_POW_BITS, SBOX_DEGREE, SBOX_REGISTERS,
 };
 
@@ -386,7 +388,7 @@ pub fn prove_account_creation_with_seed(
     let full = to_full_secrets(secrets)?;
     let perm: Perm = default_koalabear_poseidon2_16();
     let hash = MyHash::new(perm.clone());
-    let compress = MyCompress::new(perm.clone());
+    let compress = MyCompress::new(MyHash::new(perm.clone()));
     let air = build_air(false);
 
     // Single-instance trace: 2 identical honest rows (power-of-two minimum).
@@ -452,7 +454,7 @@ pub fn verify_account_creation(
     check_relation_id(public)?;
     let perm: Perm = default_koalabear_poseidon2_16();
     let hash = MyHash::new(perm.clone());
-    let compress = MyCompress::new(perm.clone());
+    let compress = MyCompress::new(MyHash::new(perm.clone()));
     let air = build_air(false);
     let cfg = build_config(&perm, &hash, &compress, /*verify mask seed irrelevant*/ 0);
     let pv = public_values_vec(public);
@@ -562,7 +564,7 @@ pub fn prove_account_creation_batch_with_seed(
 
     let perm: Perm = default_koalabear_poseidon2_16();
     let hash = MyHash::new(perm.clone());
-    let compress = MyCompress::new(perm.clone());
+    let compress = MyCompress::new(MyHash::new(perm.clone()));
     let air = build_air(true);
 
     let (trace, insts, digest, n) = generate_batch_trace::<
@@ -613,7 +615,7 @@ pub fn verify_account_creation_batch(
     }
     let perm: Perm = default_koalabear_poseidon2_16();
     let hash = MyHash::new(perm.clone());
-    let compress = MyCompress::new(perm.clone());
+    let compress = MyCompress::new(MyHash::new(perm.clone()));
     let air = build_air(true);
     let cfg = build_config(&perm, &hash, &compress, 0);
 
@@ -702,6 +704,36 @@ mod small_config_classc_tests {
         }
     }
 
+    /// FROZEN q128 KAT: a deterministic PRODUCTION-config (digest-13 sponge, rate-7, 120 queries,
+    /// query-PoW 16) account-creation proof has a stable SHA-256 digest. Proving runs single-threaded
+    /// so the FRI query-PoW grind is deterministic (the parallel grind returns a witness-order-
+    /// dependent nonce). This pins the q128 proof BYTE FORMAT against drift — a frozen-byte-format KAT
+    /// (DIR-STARK-001). Slow (full production prove, twice); run explicitly.
+    #[test]
+    #[ignore = "slow: production-config prove ×2 single-threaded; run explicitly for the frozen q128 KAT"]
+    fn frozen_q128_leaf_proof_kat() {
+        use sha2::{Digest, Sha256};
+        let s = small_secrets();
+        let digest_once = || -> [u8; 32] {
+            let pool = rayon::ThreadPoolBuilder::new().num_threads(1).build().unwrap();
+            let (_public, proof) = pool
+                .install(|| prove_account_creation_with_seed(&s, 0xF20D_2026_u64))
+                .expect("prove");
+            let bytes = bincode::serialize(&proof).expect("serialize proof");
+            let mut h = Sha256::new();
+            h.update(&bytes);
+            h.finalize().into()
+        };
+        let d1 = digest_once();
+        let d2 = digest_once();
+        assert_eq!(d1, d2, "q128 leaf proof is not deterministic under single-thread PoW");
+        let hex: String = d1.iter().map(|b| format!("{b:02x}")).collect();
+        eprintln!("FROZEN-KAT q128 leaf proof sha256 = {hex}");
+        // PINNED frozen q128 KAT digest (single-thread, seed 0xF20D_2026, `small_secrets`).
+        const PINNED: &str = "6bc93269a557ea9ea0f48bed0e0c546f0017cc2e35dd78ef7ea3295fa09c16c0";
+        assert_eq!(hex, PINNED, "q128 leaf proof bytes drifted from the frozen KAT");
+    }
+
     /// Build a DELIBERATELY SMALL ZK config: log_blowup=2 (the ZK minimum) and only
     /// 2 FRI queries, query-PoW off. NOT production sound — for completeness/RAM
     /// only.
@@ -735,7 +767,7 @@ mod small_config_classc_tests {
         let full = to_full_secrets(&s).expect("valid witness");
         let perm: Perm = default_koalabear_poseidon2_16();
         let hash = MyHash::new(perm.clone());
-        let compress = MyCompress::new(perm.clone());
+        let compress = MyCompress::new(MyHash::new(perm.clone()));
         let air = build_air(false);
 
         // Smallest power-of-two trace (2 identical honest rows).

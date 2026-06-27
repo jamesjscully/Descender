@@ -31,6 +31,12 @@ rand = "0.10"
 # `Mmcs` trait `commit`/`open_batch`/`verify_batch` come from `descender-account-stark` /
 # `p3-commit`, already deps; this adds the tree builder.)
 p3-merkle-tree = "0.6.1"
+# Test-only: outer-STARK DFT for the recursive verifier-AIR prove/verify keystone test.
+p3-dft = "0.6.1"
+# Test-only: serialize the aggregate O(1) proof to MEASURE its byte size (economic-viability
+# amortization evidence — per-account on-chain footprint vs the 4.75 MB per-account creation proof).
+serde = { version = "1", features = ["derive"] }
+bincode = "1"
 
 [profile.release]
 opt-level = 3

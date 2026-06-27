@@ -237,6 +237,9 @@ use crate::fri_fold_air::{limbs, D, W};
 use crate::index_bus::{assert_canonical_pub, FIELD_BITS};
 use crate::challenger::RATE;
 use crate::inlined_perm::{self, eval_perm, ConstantsExpr, PermCells, C_OUTPUT, PERM_COLS};
+use crate::merkle_air::{eval_node, node_blocks, ABSORB_LEN, N_PERM};
+use crate::leaf_hash::LEAF_HASH_RATE; // leaf-row hash (MyHash) rate = 7 at q128 (vs challenger RATE = 8)
+use crate::fs_observe::fs_squeeze_betas_digest; // q128 FS β squeeze over DIGEST_ELEMS-wide commitments
 use crate::leaf_constraint_air as lc;
 use descender_account_stark::{Challenge, Val, DIGEST_ELEMS, SALT_ELEMS, WIDTH};
 use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
@@ -788,12 +791,18 @@ fn merkle_base(cfg: &RecursiveConfig) -> usize {
     draw_block_base(cfg) + draw_challenge_count(cfg) * D
 }
 
-/// Per-level Merkle sub-block size.
-pub const MERKLE_LEVEL: usize = 2 * DIGEST_ELEMS + PERM_COLS;
+/// Per-level Merkle sub-block size. At q128 each node is the digest-13 sponge-mode 2-to-1
+/// compression — `N_PERM` inlined perm blocks, not one truncated permutation.
+pub const MERKLE_LEVEL: usize = 2 * DIGEST_ELEMS + N_PERM * PERM_COLS;
 /// Sub-offsets within a Merkle level block.
 const ML_RUNNING: usize = 0;
 const ML_SIBLING: usize = DIGEST_ELEMS;
 const ML_PERM: usize = 2 * DIGEST_ELEMS;
+
+/// Absolute offset of a main-trace Merkle node's reconstructed digest (last sponge block output).
+const fn ml_node_digest(lbase: usize) -> usize {
+    lbase + ML_PERM + (N_PERM - 1) * PERM_COLS + C_OUTPUT
+}
 
 fn merkle_level_base(cfg: &RecursiveConfig, level: usize) -> usize {
     merkle_base(cfg) + level * MERKLE_LEVEL
@@ -1052,10 +1061,36 @@ fn bca_size(cfg: &RecursiveConfig) -> usize {
 // where state_0 is the post-BATCH-COMBO-ALPHA state (when `fs_batch_combo_alpha`) or the post-zeta
 // state (otherwise) and state_{r+1} is round r's perm output; beta_r is the LIFO squeeze of round r's
 // perm output rate. Each beta_r is bound to the (c) descent round_beta(r) cell.
-const FB_BLOCK: usize = 0;
-const FB_PERM: usize = FB_BLOCK + RATE;
-const FB_BETA: usize = FB_PERM + PERM_COLS;
+// q128: a FRI commit-phase commitment is a DIGEST_ELEMS-wide Merkle root observed over the rate-8
+// challenger as a FULL rate block + a trailing PARTIAL block (FB_NPERM = ceil(13/8) = 2 permutes per
+// round), mirroring `fs_observe::fs_squeeze_betas_digest`. beta_r is the LIFO squeeze of the LAST
+// permute's rate. (Deployed digest-8 used ONE rate block / one permute per round.)
+const FB_COMMIT: usize = 0;
+const FB_PERM0: usize = FB_COMMIT + DIGEST_ELEMS;
+/// Number of absorb-permutes per round = full RATE blocks + a trailing partial (if any).
+const FB_NPERM: usize = DIGEST_ELEMS.div_ceil(RATE);
+/// Number of full RATE blocks; the remaining `FB_REM` elements are the trailing partial absorb.
+const FB_FULL: usize = DIGEST_ELEMS / RATE;
+const FB_REM: usize = DIGEST_ELEMS % RATE;
+const FB_BETA: usize = FB_PERM0 + FB_NPERM * PERM_COLS;
 const FB_ROUND: usize = FB_BETA + D;
+
+/// Absolute sub-offset of round-`r` permute block `k` (relative to the round base).
+const fn fb_perm(k: usize) -> usize {
+    FB_PERM0 + k * PERM_COLS
+}
+/// Sub-offset of the round's post-state (last permute output) relative to the round base.
+const fn fb_post_perm_output() -> usize {
+    FB_PERM0 + (FB_NPERM - 1) * PERM_COLS + C_OUTPUT
+}
+/// Absorb length of round-block `k`: full `RATE`, except the trailing partial block (`FB_REM`).
+const fn fb_absorb_n(k: usize) -> usize {
+    if k < FB_FULL {
+        RATE
+    } else {
+        FB_REM
+    }
+}
 
 /// Base of the (FS-β) block (after the FS-αζ and FS-bca blocks).
 fn fb_base(cfg: &RecursiveConfig) -> usize {
@@ -1193,7 +1228,7 @@ const LO_LEAF_INPUT_LEN: usize = 2 * D + SALT_ELEMS;
 /// (mirrors [`lh_perms`] / `leaf_hash_pre_states`).
 const fn lo_leaf_perms() -> usize {
     let m = LO_LEAF_INPUT_LEN;
-    let c = m.div_ceil(RATE);
+    let c = m.div_ceil(LEAF_HASH_RATE);
     if c == 0 { 1 } else { c }
 }
 
@@ -1207,12 +1242,18 @@ const fn lo_merkle_base() -> usize {
     lo_leaf_perm_base(lo_leaf_perms())
 }
 
-/// Per-level Merkle sub-block within a layer open: `running[8] ‖ sibling[8] ‖ perm`. (No per-level
-/// bit column — the selector is read from the bus index bits, not stored.)
+/// Per-level Merkle sub-block within a layer open:
+/// `running[13] ‖ sibling[13] ‖ node_sponge[N_PERM·PERM_COLS]`. (No per-level bit column — the
+/// selector is read from the bus index bits, not stored.) q128: sponge-mode node.
 const LO_ML_RUNNING: usize = 0;
 const LO_ML_SIBLING: usize = DIGEST_ELEMS;
 const LO_ML_PERM: usize = 2 * DIGEST_ELEMS;
-const LO_MERKLE_LEVEL: usize = LO_ML_PERM + PERM_COLS;
+const LO_MERKLE_LEVEL: usize = LO_ML_PERM + N_PERM * PERM_COLS;
+
+/// Absolute offset of a layer-open Merkle node's reconstructed digest (last sponge block output).
+const fn lo_node_digest(lbase: usize) -> usize {
+    lbase + LO_ML_PERM + (N_PERM - 1) * PERM_COLS + C_OUTPUT
+}
 
 /// Size of ONE per-round layer-open sub-block for `levels` path levels.
 fn lo_round_size(levels: usize) -> usize {
@@ -1525,7 +1566,7 @@ fn lh_input_len(cfg: &RecursiveConfig) -> usize {
 /// `p3-symmetric` `PaddingFreeSponge::hash_iter` (sponge.rs:172-204) exactly.
 fn lh_perms(cfg: &RecursiveConfig) -> usize {
     let m = lh_input_len(cfg);
-    m.div_ceil(RATE).max(1)
+    m.div_ceil(LEAF_HASH_RATE).max(1)
 }
 
 /// ABSOLUTE column of the opened-row cells (start of the (b-hash) block).
@@ -1740,7 +1781,7 @@ fn qo_leaf_input_len(cfg: &RecursiveConfig) -> usize {
 }
 /// Number of `PaddingFreeSponge` absorb-permutes over the salted quotient-leaf input.
 fn qo_leaf_perms(cfg: &RecursiveConfig) -> usize {
-    qo_leaf_input_len(cfg).div_ceil(RATE).max(1)
+    qo_leaf_input_len(cfg).div_ceil(LEAF_HASH_RATE).max(1)
 }
 fn qo_leaf_perm_base(cfg: &RecursiveConfig, k: usize) -> usize {
     qo_leaf_perms_base(cfg) + k * PERM_COLS
@@ -1748,11 +1789,17 @@ fn qo_leaf_perm_base(cfg: &RecursiveConfig, k: usize) -> usize {
 fn qo_merkle_base(cfg: &RecursiveConfig) -> usize {
     qo_leaf_perm_base(cfg, qo_leaf_perms(cfg))
 }
-/// Per-level quotient Merkle sub-block: `running[8] ‖ sibling[8] ‖ perm`. Selector read from the bus.
+/// Per-level quotient Merkle sub-block: `running[13] ‖ sibling[13] ‖ node_sponge[N_PERM·PERM_COLS]`.
+/// Selector read from the bus. q128: sponge-mode node (N_PERM perm blocks).
 const QO_ML_RUNNING: usize = 0;
 const QO_ML_SIBLING: usize = DIGEST_ELEMS;
 const QO_ML_PERM: usize = 2 * DIGEST_ELEMS;
-const QO_MERKLE_LEVEL: usize = QO_ML_PERM + PERM_COLS;
+const QO_MERKLE_LEVEL: usize = QO_ML_PERM + N_PERM * PERM_COLS;
+
+/// Absolute offset of a quotient Merkle node's reconstructed digest (last sponge block output).
+const fn qo_node_digest(lbase: usize) -> usize {
+    lbase + QO_ML_PERM + (N_PERM - 1) * PERM_COLS + C_OUTPUT
+}
 
 fn qo_level_base(cfg: &RecursiveConfig, level: usize) -> usize {
     qo_base(cfg) + qo_merkle_base(cfg) + level * QO_MERKLE_LEVEL
@@ -1994,7 +2041,7 @@ pub struct WindowInputs<'a> {
     /// honest builder DERIVES each `beta_r` (overriding the descent's supplied `beta`/`descent` betas
     /// for rounds `0..fs_beta_rounds`) from these by continuing the post-zeta sponge state. Unused
     /// otherwise.
-    pub fs_beta_blocks: &'a [[Val; RATE]],
+    pub fs_beta_blocks: &'a [[Val; DIGEST_ELEMS]],
     /// (FS-ood) the OOD opened-values OBSERVE stream (trace OOD openings at zeta (+ g·zeta), quotient-
     /// chunk OOD openings, ZK random-codeword openings) chunked into FULL-rate (RATE-element) observe
     /// blocks. Length must equal `fs_ood_observe_len`. The honest builder absorbs these between the
@@ -2213,8 +2260,8 @@ pub fn leaf_hash_pre_states(input: &[Val]) -> Vec<[Val; WIDTH]> {
     let n = input.len();
     let mut pos = 0usize;
     loop {
-        // Absorb up to RATE elements into the rate lanes (overwrite; no padding).
-        let fill = core::cmp::min(RATE, n - pos);
+        // Absorb up to LEAF_HASH_RATE elements into the rate lanes (overwrite; no padding).
+        let fill = core::cmp::min(LEAF_HASH_RATE, n - pos);
         for i in 0..fill {
             state[i] = input[pos + i];
         }
@@ -2304,7 +2351,7 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
         } else {
             post_zeta
         };
-        fs_squeeze_betas(beta_start, inp.fs_beta_blocks)
+        fs_squeeze_betas_digest(beta_start, inp.fs_beta_blocks)
     } else {
         (Vec::new(), [Val::ZERO; WIDTH])
     };
@@ -2538,18 +2585,17 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
         for level in 0..cfg.merkle_levels {
             let bit = (idx & 1) == 1;
             let sib = inp.merkle_siblings[level];
-            // placement exactly like merkle_air::pack_level / fold_step.
-            let mut input = [Val::ZERO; WIDTH];
+            // q128 sponge-mode node compression over combined = a ‖ b (ordered by bit).
             let (a, b) = if bit { (sib, running) } else { (running, sib) };
-            input[..DIGEST_ELEMS].copy_from_slice(&a);
-            input[DIGEST_ELEMS..].copy_from_slice(&b);
-            let perm_cols = inlined_perm::generate_perm_cols(input, &consts);
+            let mut combined = [Val::ZERO; ABSORB_LEN];
+            combined[..DIGEST_ELEMS].copy_from_slice(&a);
+            combined[DIGEST_ELEMS..].copy_from_slice(&b);
+            let (blocks, digest) = node_blocks(&combined, &consts);
             let lbase = merkle_level_base(cfg, level);
             row[lbase + ML_RUNNING..lbase + ML_RUNNING + DIGEST_ELEMS].copy_from_slice(&running);
             row[lbase + ML_SIBLING..lbase + ML_SIBLING + DIGEST_ELEMS].copy_from_slice(&sib);
-            row[lbase + ML_PERM..lbase + ML_PERM + PERM_COLS].copy_from_slice(&perm_cols);
-            // next running = perm output[..8].
-            running.copy_from_slice(&perm_cols[C_OUTPUT..C_OUTPUT + DIGEST_ELEMS]);
+            row[lbase + ML_PERM..lbase + ML_PERM + N_PERM * PERM_COLS].copy_from_slice(&blocks);
+            running = digest; // next running = node digest
             idx >>= 1;
         }
     }
@@ -2712,13 +2758,19 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
         let consts = inlined_perm::Constants::pinned();
         let mut state = beta_start_state;
         for r in 0..cfg.fs_beta_rounds {
-            let block = inp.fs_beta_blocks[r];
-            let pre_in = absorb_state(state, block, RATE);
-            let perm_cols = inlined_perm::generate_perm_cols(pre_in, &consts);
+            let digest = inp.fs_beta_blocks[r]; // commitment digest [DIGEST_ELEMS]
             let rb = fb_round_base(cfg, r);
-            row[rb + FB_BLOCK..rb + FB_BLOCK + RATE].copy_from_slice(&block);
-            row[rb + FB_PERM..rb + FB_PERM + PERM_COLS].copy_from_slice(&perm_cols);
-            state = inlined_perm::perm_output(&perm_cols);
+            row[rb + FB_COMMIT..rb + FB_COMMIT + DIGEST_ELEMS].copy_from_slice(&digest);
+            // observe(commit_r): FB_FULL full RATE absorb-permutes + a trailing partial of FB_REM.
+            for k in 0..FB_NPERM {
+                let n = fb_absorb_n(k);
+                let mut block = [Val::ZERO; RATE];
+                block[..n].copy_from_slice(&digest[k * RATE..k * RATE + n]);
+                let pre_in = absorb_state(state, block, n);
+                let perm_cols = inlined_perm::generate_perm_cols(pre_in, &consts);
+                row[rb + fb_perm(k)..rb + fb_perm(k) + PERM_COLS].copy_from_slice(&perm_cols);
+                state = inlined_perm::perm_output(&perm_cols);
+            }
             let beta_r = Challenge::from_basis_coefficients_fn(|i| state[RATE - 1 - i]);
             row[rb + FB_BETA..rb + FB_BETA + D].copy_from_slice(&limbs(beta_r));
             debug_assert_eq!(beta_r, fs_betas[r], "FS-β block beta_r != fs_squeeze_betas reference");
@@ -2831,12 +2883,12 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
                 row[lbase + LO_ML_SIBLING..lbase + LO_ML_SIBLING + DIGEST_ELEMS]
                     .copy_from_slice(&sib);
                 let (a, b) = if bit { (sib, running) } else { (running, sib) };
-                let mut input16 = [Val::ZERO; WIDTH];
-                input16[..DIGEST_ELEMS].copy_from_slice(&a);
-                input16[DIGEST_ELEMS..].copy_from_slice(&b);
-                let cols = inlined_perm::generate_perm_cols(input16, &consts);
-                row[lbase + LO_ML_PERM..lbase + LO_ML_PERM + PERM_COLS].copy_from_slice(&cols);
-                running = core::array::from_fn(|i| cols[C_OUTPUT + i]);
+                let mut combined = [Val::ZERO; ABSORB_LEN];
+                combined[..DIGEST_ELEMS].copy_from_slice(&a);
+                combined[DIGEST_ELEMS..].copy_from_slice(&b);
+                let (blocks, digest) = node_blocks(&combined, &consts);
+                row[lbase + LO_ML_PERM..lbase + LO_ML_PERM + N_PERM * PERM_COLS].copy_from_slice(&blocks);
+                running = digest;
                 node_idx >>= 1;
             }
             debug_assert_eq!(
@@ -3041,12 +3093,12 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
             row[lbase + QO_ML_RUNNING..lbase + QO_ML_RUNNING + DIGEST_ELEMS].copy_from_slice(&running);
             row[lbase + QO_ML_SIBLING..lbase + QO_ML_SIBLING + DIGEST_ELEMS].copy_from_slice(&sib);
             let (a, b) = if bit { (sib, running) } else { (running, sib) };
-            let mut input16 = [Val::ZERO; WIDTH];
-            input16[..DIGEST_ELEMS].copy_from_slice(&a);
-            input16[DIGEST_ELEMS..].copy_from_slice(&b);
-            let cols = inlined_perm::generate_perm_cols(input16, &consts);
-            row[lbase + QO_ML_PERM..lbase + QO_ML_PERM + PERM_COLS].copy_from_slice(&cols);
-            running = core::array::from_fn(|i| cols[C_OUTPUT + i]);
+            let mut combined = [Val::ZERO; ABSORB_LEN];
+            combined[..DIGEST_ELEMS].copy_from_slice(&a);
+            combined[DIGEST_ELEMS..].copy_from_slice(&b);
+            let (blocks, digest) = node_blocks(&combined, &consts);
+            row[lbase + QO_ML_PERM..lbase + QO_ML_PERM + N_PERM * PERM_COLS].copy_from_slice(&blocks);
+            running = digest;
             node_idx >>= 1;
         }
         debug_assert_eq!(
@@ -3123,10 +3175,17 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
 /// The reconstructed Merkle root of a packed window (last level's perm output[..8]).
 pub fn window_merkle_root(cfg: &RecursiveConfig, row: &[Val]) -> [Val; DIGEST_ELEMS] {
     assert!(cfg.merkle_levels > 0);
-    let lbase = merkle_level_base(cfg, cfg.merkle_levels - 1);
+    let off = window_root_col(cfg);
     let mut out = [Val::ZERO; DIGEST_ELEMS];
-    out.copy_from_slice(&row[lbase + ML_PERM + C_OUTPUT..lbase + ML_PERM + C_OUTPUT + DIGEST_ELEMS]);
+    out.copy_from_slice(&row[off..off + DIGEST_ELEMS]);
     out
+}
+
+/// Absolute column offset of a window's reconstructed Merkle root (the last Merkle level's node
+/// digest). Exposed so a block-aggregation AIR can fold the IN-CIRCUIT-VERIFIED root into a chain.
+pub fn window_root_col(cfg: &RecursiveConfig) -> usize {
+    assert!(cfg.merkle_levels > 0);
+    ml_node_digest(merkle_level_base(cfg, cfg.merkle_levels - 1))
 }
 
 /// Decode the bus index value of a packed window.
@@ -3227,6 +3286,26 @@ impl RecursiveAir {
 impl<F: Sync> BaseAir<F> for RecursiveAir {
     fn width(&self) -> usize {
         n_cols(&self.cfg)
+    }
+    /// Public-value count declared to `p3-uni-stark` (used by BOTH the symbolic constraint-count
+    /// pass and the prover folder — `prover.rs:77` / `symbolic.rs:117`). It MUST equal the length of
+    /// the public-values vector the prover is driven with, or the AIR's `pubs.len()`-gated boundary
+    /// block is counted differently in the two passes (the `folder.rs:99` uniformity assert). The
+    /// boundary public binding (leaf/root, `N_PUBLIC_MERKLE`) is the layout used for proving; the
+    /// other optional `pubs.len()`-gated bindings (`fs_betas_public`, public-IO) are
+    /// `check_all_constraints`-only test modes (that path ignores `num_public_values`).
+    fn num_public_values(&self) -> usize {
+        public_value_count(&self.cfg)
+    }
+}
+
+/// The public-value count the proving path expects for `cfg` — the leaf/root boundary binding
+/// (`N_PUBLIC_MERKLE`) when a Merkle block is present, else none. See [`RecursiveAir::num_public_values`].
+pub fn public_value_count(cfg: &RecursiveConfig) -> usize {
+    if cfg.merkle_levels > 0 {
+        N_PUBLIC_MERKLE
+    } else {
+        0
     }
 }
 
@@ -3422,30 +3501,26 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 let lbase = merkle_level_base(&cfg, level);
                 // index bit at this level IS bit_level of the bus decomposition (the binding).
                 let bit = bits[level].clone();
-                // placement: perm.inputs[..8]/[8..] = running/sibling per the BUS bit.
-                for i in 0..DIGEST_ELEMS {
-                    let running_i = l(lbase + ML_RUNNING + i);
-                    let sibling_i = l(lbase + ML_SIBLING + i);
-                    let in_a = l(lbase + ML_PERM + inlined_perm::C_INPUTS + i);
-                    let in_b = l(lbase + ML_PERM + inlined_perm::C_INPUTS + DIGEST_ELEMS + i);
-                    builder.assert_zero(
-                        in_a - ((one.clone() - bit.clone()) * running_i.clone()
-                            + bit.clone() * sibling_i.clone()),
-                    );
-                    builder.assert_zero(
-                        in_b - ((one.clone() - bit.clone()) * sibling_i
-                            + bit.clone() * running_i),
-                    );
-                }
-                // inlined Poseidon2 round constraints over this level's perm block.
-                eval_perm::<AB, _>(builder, &cells, lbase + ML_PERM, &consts);
-                // chain: next level's running == this level's output (within the same row).
+                // q128 sponge-mode node: combined = a ‖ b ordered by the BUS bit; eval_node mirrors
+                // node_blocks (absorb/carry wiring + inlined perms over all N_PERM blocks).
+                let run_e: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(lbase + ML_RUNNING + i)).collect();
+                let sib_e: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(lbase + ML_SIBLING + i)).collect();
+                let bit_c = bit.clone();
+                let combined = |g: usize| -> AB::Expr {
+                    if g < DIGEST_ELEMS {
+                        (one.clone() - bit_c.clone()) * run_e[g].clone() + bit_c.clone() * sib_e[g].clone()
+                    } else {
+                        let k = g - DIGEST_ELEMS;
+                        (one.clone() - bit_c.clone()) * sib_e[k].clone() + bit_c.clone() * run_e[k].clone()
+                    }
+                };
+                eval_node::<AB, _, _>(builder, &cells, lbase + ML_PERM, combined, &consts);
+                // chain: next level's running == this level's reconstructed node digest.
                 if level + 1 < cfg.merkle_levels {
                     let nbase = merkle_level_base(&cfg, level + 1);
+                    let this_out = ml_node_digest(lbase);
                     for i in 0..DIGEST_ELEMS {
-                        let this_out = l(lbase + ML_PERM + C_OUTPUT + i);
-                        let next_running = l(nbase + ML_RUNNING + i);
-                        builder.assert_zero(next_running - this_out);
+                        builder.assert_zero(l(nbase + ML_RUNNING + i) - l(this_out + i));
                     }
                 }
             }
@@ -3457,11 +3532,9 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 for i in 0..DIGEST_ELEMS {
                     builder.assert_zero(l(l0 + ML_RUNNING + i) - pubs[PV_LEAF + i].clone());
                 }
-                let llast = merkle_level_base(&cfg, cfg.merkle_levels - 1);
+                let llast = ml_node_digest(merkle_level_base(&cfg, cfg.merkle_levels - 1));
                 for i in 0..DIGEST_ELEMS {
-                    builder.assert_zero(
-                        l(llast + ML_PERM + C_OUTPUT + i) - pubs[PV_ROOT + i].clone(),
-                    );
+                    builder.assert_zero(l(llast + i) - pubs[PV_ROOT + i].clone());
                 }
             }
 
@@ -3474,11 +3547,9 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
             // A path that folds to a DIFFERENT root than the committed inner root rejects.
             if cfg.bind_root_to_main_commit {
                 let mb = mc_base(&cfg);
-                let llast = merkle_level_base(&cfg, cfg.merkle_levels - 1);
+                let llast = ml_node_digest(merkle_level_base(&cfg, cfg.merkle_levels - 1));
                 for i in 0..DIGEST_ELEMS {
-                    builder.assert_zero(
-                        l(llast + ML_PERM + C_OUTPUT + i) - l(mb + MC_MAIN_COMMIT + i),
-                    );
+                    builder.assert_zero(l(llast + i) - l(mb + MC_MAIN_COMMIT + i));
                 }
             }
         }
@@ -3532,8 +3603,8 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                     let pb = rb + lo_leaf_perm_base(k);
                     for i in 0..WIDTH {
                         let in_i = l(pb + inlined_perm::C_INPUTS + i);
-                        let g = k * RATE + i;
-                        if i < RATE && g < m {
+                        let g = k * LEAF_HASH_RATE + i;
+                        if i < LEAF_HASH_RATE && g < m {
                             builder.assert_zero(in_i - input_cell(g));
                         } else if k == 0 {
                             builder.assert_zero(in_i);
@@ -3557,34 +3628,31 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                     // FS_index >> (r+1); its bit `level` is FS bit r+1+level). NON-VACUOUS index
                     // binding: the path is authenticated at the node the FS index SELECTS for round r.
                     let bit = bits[r + 1 + level].clone();
-                    for i in 0..DIGEST_ELEMS {
-                        let running_i = l(lbase + LO_ML_RUNNING + i);
-                        let sibling_i = l(lbase + LO_ML_SIBLING + i);
-                        let in_a = l(lbase + LO_ML_PERM + inlined_perm::C_INPUTS + i);
-                        let in_b = l(lbase + LO_ML_PERM + inlined_perm::C_INPUTS + DIGEST_ELEMS + i);
-                        builder.assert_zero(
-                            in_a - ((one.clone() - bit.clone()) * running_i.clone()
-                                + bit.clone() * sibling_i.clone()),
-                        );
-                        builder.assert_zero(
-                            in_b - ((one.clone() - bit.clone()) * sibling_i
-                                + bit.clone() * running_i),
-                        );
-                    }
-                    eval_perm::<AB, _>(builder, &cells, lbase + LO_ML_PERM, &consts);
+                    // q128 sponge-mode node: combined = a ‖ b ordered by the FS-shifted node bit.
+                    let run_e: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(lbase + LO_ML_RUNNING + i)).collect();
+                    let sib_e: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(lbase + LO_ML_SIBLING + i)).collect();
+                    let bit_c = bit.clone();
+                    let combined = |g: usize| -> AB::Expr {
+                        if g < DIGEST_ELEMS {
+                            (one.clone() - bit_c.clone()) * run_e[g].clone() + bit_c.clone() * sib_e[g].clone()
+                        } else {
+                            let k = g - DIGEST_ELEMS;
+                            (one.clone() - bit_c.clone()) * sib_e[k].clone() + bit_c.clone() * run_e[k].clone()
+                        }
+                    };
+                    eval_node::<AB, _, _>(builder, &cells, lbase + LO_ML_PERM, combined, &consts);
                     if level + 1 < levels {
                         let nbase = lo_level_base(&cfg, r, level + 1);
+                        let this_out = lo_node_digest(lbase);
                         for i in 0..DIGEST_ELEMS {
-                            builder.assert_zero(
-                                l(nbase + LO_ML_RUNNING + i) - l(lbase + LO_ML_PERM + C_OUTPUT + i),
-                            );
+                            builder.assert_zero(l(nbase + LO_ML_RUNNING + i) - l(this_out + i));
                         }
                     }
                 }
                 // ----- root binding: reconstructed root == round-r layer commitment -----
-                let llast = lo_level_base(&cfg, r, levels - 1);
+                let llast = lo_node_digest(lo_level_base(&cfg, r, levels - 1));
                 for i in 0..DIGEST_ELEMS {
-                    builder.assert_zero(l(llast + LO_ML_PERM + C_OUTPUT + i) - l(rb + i));
+                    builder.assert_zero(l(llast + i) - l(rb + i));
                 }
                 // ----- (LO≡FS-β) UNIFY the authentication root with the FS-OBSERVED commitment -----
                 // In real p3-fri (p3-fri-0.6.1 verifier.rs:300-310 vs :374-377/:535) there is ONE
@@ -3603,7 +3671,7 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 if r < cfg.fs_beta_rounds {
                     let fbr = fb_round_base(&cfg, r);
                     for k in 0..DIGEST_ELEMS {
-                        builder.assert_zero(l(rb + k) - l(fbr + FB_BLOCK + k));
+                        builder.assert_zero(l(rb + k) - l(fbr + FB_COMMIT + k));
                     }
                 }
             }
@@ -3631,12 +3699,14 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
             }
         }
 
-        // ===== (b-leaf) Merkle-opened leaf digest ↔ FRI round-0 e0 =====
-        // The leaf the Merkle path authenticates (level-0 running, 8 lanes) IS the value folded by
-        // the round-0 FRI fold (e0's 8 limbs). DIGEST_ELEMS == D == 8, so limb-for-limb. A mismatch
-        // (an opened value different from what is folded) rejects.
-        if cfg.bind_merkle_leaf_to_e0 && cfg.merkle_levels > 0 {
-            debug_assert_eq!(DIGEST_ELEMS, D, "leaf↔e0 binding assumes DIGEST_ELEMS == D");
+        // ===== (b-leaf) Merkle-opened leaf digest ↔ FRI round-0 e0 (LEGACY digest==degree model) =====
+        // In the simplified digest-8 model the Merkle leaf (level-0 running, 8 lanes) WAS itself the
+        // round-0 FRI value e0 (8 limbs), bound limb-for-limb — valid ONLY when DIGEST_ELEMS == D.
+        // At the quantum-128 profile the digest (13) and the extension degree (8) DIFFER: the Merkle
+        // leaf is `MyHash(opened_row)` (the (b-hash) block below) and e0 is the DEEP combination of the
+        // opened row (the (DR) block), so this DIRECT digest==e0 binding does not apply — the
+        // leaf↔e0 link is carried by (b-hash) ∘ (DR) instead. Guarded to the legacy regime.
+        if cfg.bind_merkle_leaf_to_e0 && cfg.merkle_levels > 0 && DIGEST_ELEMS == D {
             let l0 = merkle_level_base(&cfg, 0);
             for i in 0..D {
                 builder.assert_zero(l(l0 + ML_RUNNING + i) - l(C_E0 + i));
@@ -3669,8 +3739,8 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 // Constrain perm k's INPUT lanes = the absorbed sponge state for block k.
                 for i in 0..WIDTH {
                     let in_i = l(pb + inlined_perm::C_INPUTS + i);
-                    let g = k * RATE + i;
-                    if i < RATE && g < m {
+                    let g = k * LEAF_HASH_RATE + i;
+                    if i < LEAF_HASH_RATE && g < m {
                         // rate lane with an absorbed element: overwrite with the input cell.
                         builder.assert_zero(in_i - input_cell(g));
                     } else if k == 0 {
@@ -3933,8 +4003,8 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 let pb = qb + qo_leaf_perm_base(&cfg, k);
                 for i in 0..WIDTH {
                     let in_i = l(pb + inlined_perm::C_INPUTS + i);
-                    let g = k * RATE + i;
-                    if i < RATE && g < m {
+                    let g = k * LEAF_HASH_RATE + i;
+                    if i < LEAF_HASH_RATE && g < m {
                         builder.assert_zero(in_i - input_cell(g));
                     } else if k == 0 {
                         builder.assert_zero(in_i);
@@ -3958,37 +4028,32 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 let lbase = qo_level_base(&cfg, level);
                 // selector = bus index bit `level` (the SAME FS index the main-trace path uses).
                 let bit = bits[level].clone();
-                for i in 0..DIGEST_ELEMS {
-                    let running_i = l(lbase + QO_ML_RUNNING + i);
-                    let sibling_i = l(lbase + QO_ML_SIBLING + i);
-                    let in_a = l(lbase + QO_ML_PERM + inlined_perm::C_INPUTS + i);
-                    let in_b = l(lbase + QO_ML_PERM + inlined_perm::C_INPUTS + DIGEST_ELEMS + i);
-                    builder.assert_zero(
-                        in_a - ((one.clone() - bit.clone()) * running_i.clone()
-                            + bit.clone() * sibling_i.clone()),
-                    );
-                    builder.assert_zero(
-                        in_b - ((one.clone() - bit.clone()) * sibling_i
-                            + bit.clone() * running_i),
-                    );
-                }
-                eval_perm::<AB, _>(builder, &cells, lbase + QO_ML_PERM, &consts);
+                // q128 sponge-mode node: combined = a ‖ b ordered by the bus index bit.
+                let run_e: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(lbase + QO_ML_RUNNING + i)).collect();
+                let sib_e: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(lbase + QO_ML_SIBLING + i)).collect();
+                let bit_c = bit.clone();
+                let combined = |g: usize| -> AB::Expr {
+                    if g < DIGEST_ELEMS {
+                        (one.clone() - bit_c.clone()) * run_e[g].clone() + bit_c.clone() * sib_e[g].clone()
+                    } else {
+                        let k = g - DIGEST_ELEMS;
+                        (one.clone() - bit_c.clone()) * sib_e[k].clone() + bit_c.clone() * run_e[k].clone()
+                    }
+                };
+                eval_node::<AB, _, _>(builder, &cells, lbase + QO_ML_PERM, combined, &consts);
                 if level + 1 < cfg.quot_merkle_levels {
                     let nbase = qo_level_base(&cfg, level + 1);
+                    let this_out = qo_node_digest(lbase);
                     for i in 0..DIGEST_ELEMS {
-                        let this_out = l(lbase + QO_ML_PERM + C_OUTPUT + i);
-                        let next_running = l(nbase + QO_ML_RUNNING + i);
-                        builder.assert_zero(next_running - this_out);
+                        builder.assert_zero(l(nbase + QO_ML_RUNNING + i) - l(this_out + i));
                     }
                 }
             }
             // reconstructed quotient root == bound inner quotient commitment, limb-for-limb.
             if cfg.quot_merkle_levels > 0 {
-                let llast = qo_level_base(&cfg, cfg.quot_merkle_levels - 1);
+                let llast = qo_node_digest(qo_level_base(&cfg, cfg.quot_merkle_levels - 1));
                 for i in 0..DIGEST_ELEMS {
-                    builder.assert_zero(
-                        l(llast + QO_ML_PERM + C_OUTPUT + i) - l(qb + QO_COMMIT + i),
-                    );
+                    builder.assert_zero(l(llast + i) - l(qb + QO_COMMIT + i));
                 }
             }
 
@@ -4282,7 +4347,6 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
         if cfg.fs_beta_rounds > 0 {
             let consts = ConstantsExpr::<AB>::pinned();
             let cells = WindowCells::<AB> { row: local.clone() };
-            let rate_expr = AB::Expr::from(AB::F::from_u8(RATE as u8));
             let qb = fs_quot_round_base(&cfg);
 
             // ===== (FS-bca) FRI batch-combination alpha (verifier.rs:195) =====
@@ -4321,29 +4385,45 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                     }
                 } else {
                     let pp = fb_round_base(&cfg, r - 1);
-                    l(pp + FB_PERM + C_OUTPUT + i)
+                    l(pp + fb_post_perm_output() + i)
                 }
             };
             for r in 0..cfg.fs_beta_rounds {
                 let rb = fb_round_base(&cfg, r);
-                let inb = rb + FB_PERM + inlined_perm::C_INPUTS;
-                // observe(commit_phase_commit_r): FULL-rate absorb — rate lanes [0..RATE] == block_r.
-                for i in 0..RATE {
-                    builder.assert_zero(l(inb + i) - l(rb + FB_BLOCK + i));
+                // observe(commit_phase_commit_r): a DIGEST_ELEMS-wide commitment over rate-RATE ⇒
+                // FB_NPERM duplexings (FB_FULL full blocks + a trailing partial of FB_REM). The carried
+                // state for block 0 is state_{r}; for block k>0 it is block (k-1)'s perm output.
+                for k in 0..FB_NPERM {
+                    let n = fb_absorb_n(k);
+                    let n_expr = AB::Expr::from(AB::F::from_u8(n as u8));
+                    let inb = rb + fb_perm(k) + inlined_perm::C_INPUTS;
+                    let carried = |i: usize| -> AB::Expr {
+                        if k == 0 {
+                            fb_state_prev(r, i)
+                        } else {
+                            l(rb + fb_perm(k - 1) + C_OUTPUT + i)
+                        }
+                    };
+                    // rate lanes [0..n) == this block's absorbed commitment elements; [n..RATE) zeroed.
+                    for i in 0..RATE {
+                        if i < n {
+                            builder.assert_zero(l(inb + i) - l(rb + FB_COMMIT + k * RATE + i));
+                        } else {
+                            builder.assert_zero(l(inb + i));
+                        }
+                    }
+                    // capacity slot RATE == carried[RATE] + n (length tag).
+                    builder.assert_zero(l(inb + RATE) - carried(RATE) - n_expr);
+                    // remaining capacity slots [RATE+1..WIDTH] carried.
+                    for i in (RATE + 1)..WIDTH {
+                        builder.assert_zero(l(inb + i) - carried(i));
+                    }
+                    eval_perm::<AB, _>(builder, &cells, rb + fb_perm(k), &consts);
                 }
-                // capacity slot RATE == state_{r}[RATE] + RATE (length tag, n == RATE).
-                builder.assert_zero(l(inb + RATE) - fb_state_prev(r, RATE) - rate_expr.clone());
-                // remaining capacity slots [RATE+1..WIDTH] carried from state_{r}.
-                for i in (RATE + 1)..WIDTH {
-                    builder.assert_zero(l(inb + i) - fb_state_prev(r, i));
-                }
-                // full Poseidon2 permutation over this round's perm block.
-                eval_perm::<AB, _>(builder, &cells, rb + FB_PERM, &consts);
-                // beta_r == LIFO squeeze of this round's perm output rate: beta_r[i] == out[RATE-1-i].
+                // beta_r == LIFO squeeze of the LAST permute's output rate: beta_r[i] == out[RATE-1-i].
+                let post = rb + fb_post_perm_output();
                 for i in 0..D {
-                    builder.assert_zero(
-                        l(rb + FB_BETA + i) - l(rb + FB_PERM + C_OUTPUT + (RATE - 1 - i)),
-                    );
+                    builder.assert_zero(l(rb + FB_BETA + i) - l(post + (RATE - 1 - i)));
                 }
                 // BIND beta_r to the (c) descent round_beta(r) cell — the FRI fold uses THIS challenge.
                 let consumer = round_beta(r);
@@ -4357,11 +4437,11 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
             if cfg.fs_betas_public {
                 let pubs: Vec<AB::Expr> =
                     builder.public_values().iter().map(|p| (*p).into()).collect();
-                if pubs.len() == cfg.fs_beta_rounds * RATE {
+                if pubs.len() == cfg.fs_beta_rounds * DIGEST_ELEMS {
                     for r in 0..cfg.fs_beta_rounds {
                         let rb = fb_round_base(&cfg, r);
-                        for i in 0..RATE {
-                            builder.assert_zero(l(rb + FB_BLOCK + i) - pubs[r * RATE + i].clone());
+                        for i in 0..DIGEST_ELEMS {
+                            builder.assert_zero(l(rb + FB_COMMIT + i) - pubs[r * DIGEST_ELEMS + i].clone());
                         }
                     }
                 }
@@ -4383,7 +4463,7 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 let last_beta = fb_round_base(&cfg, cfg.fs_beta_rounds - 1);
                 let fq_state_prev = |r: usize, i: usize| -> AB::Expr {
                     if r == 0 {
-                        l(last_beta + FB_PERM + C_OUTPUT + i)
+                        l(last_beta + fb_post_perm_output() + i)
                     } else {
                         let pp = fq_round_base(&cfg, r - 1);
                         l(pp + FQ_PERM + C_OUTPUT + i)
@@ -4658,6 +4738,193 @@ mod tests {
     fn air(cfg: RecursiveConfig) -> RecursiveAir {
         RecursiveAir { cfg }
     }
+
+    /// KEYSTONE: the recursive verifier-AIR is not merely constraint-satisfiable — it can be PROVED
+    /// into a real STARK proof and VERIFIED, on the q128 (digest-13 sponge / rate-7 leaf-hash /
+    /// deg-8 challenge) Poseidon2 stack. This is the O(1) artifact a Phase-3 block aggregator folds
+    /// and an on-chain verifier checks; proving the verifier-AIR (not just `check_all_constraints`)
+    /// is the prerequisite for the economic aggregation layer. Small (non-production) FRI knobs.
+    ///
+    /// This PASSES: the verifier-AIR is uniform once [`RecursiveAir::num_public_values`] declares the
+    /// boundary public-value count (`N_PUBLIC_MERKLE`) that p3-uni-stark's symbolic constraint-count
+    /// pass and prover folder both consume — so the `pubs.len()`-gated boundary block is counted
+    /// identically in both passes (the `folder.rs:99` uniformity assert). The recursion therefore
+    /// produces a REAL STARK proof, not just a satisfiable constraint system — the O(1) artifact a
+    /// Phase-3 block aggregator folds and an on-chain verifier checks.
+    #[test]
+    fn recursive_air_proves_and_verifies_q128() {
+        use descender_account_stark::{Challenge, MyCompress, MyHash, Perm, Val, DIGEST_ELEMS};
+        use p3_challenger::DuplexChallenger;
+        use p3_commit::ExtensionMmcs;
+        use p3_dft::Radix2DitParallel;
+        use p3_field::Field;
+        use p3_fri::{FriParameters, TwoAdicFriPcs};
+        use p3_koala_bear::default_koalabear_poseidon2_16;
+        use p3_merkle_tree::MerkleTreeMmcs;
+        use p3_uni_stark::{prove, verify, StarkConfig};
+
+        type ValMmcs = MerkleTreeMmcs<
+            <Val as Field>::Packing,
+            <Val as Field>::Packing,
+            MyHash,
+            MyCompress,
+            2,
+            DIGEST_ELEMS,
+        >;
+        type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
+        type DftT = Radix2DitParallel<Val>;
+        type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
+
+        let perm: Perm = default_koalabear_poseidon2_16();
+        let val_mmcs = ValMmcs::new(
+            MyHash::new(perm.clone()),
+            MyCompress::new(MyHash::new(perm.clone())),
+            0,
+        );
+        let challenge_mmcs = ChallengeMmcs::new(val_mmcs.clone());
+        // PRODUCTION quantum-128 FRI soundness knobs (q128 config / ADR-0008): the recursive
+        // verifier-AIR proof is sound at deployment parameters, not just toy knobs.
+        let fri_params = FriParameters {
+            log_blowup: descender_account_stark::PROD_LOG_BLOWUP,
+            log_final_poly_len: 0,
+            max_log_arity: 1,
+            num_queries: descender_account_stark::PROD_NUM_QUERIES,
+            commit_proof_of_work_bits: 0,
+            query_proof_of_work_bits: descender_account_stark::PROD_QUERY_POW_BITS,
+            mmcs: challenge_mmcs,
+        };
+        let pcs = Pcs::new(DftT::default(), val_mmcs, fri_params);
+        let config = OuterConfig::new(pcs, MyChallenger::new(perm.clone()));
+
+        // Minimal honest window: a single-level Merkle opening at index 0.
+        let levels = 1usize;
+        let cfg = cfg_merkle(levels);
+        let n = 1usize << levels;
+        let leaves: Vec<Digest> = (0..n as u32).map(digest).collect();
+        let tree = RefTree::new(leaves.clone());
+        let index = 0usize;
+        let draw = Val::from_u32(index as u32);
+        let root = tree.root();
+        let win = merkle_window(&cfg, draw, &tree, leaves[index], index);
+
+        // Power-of-two trace height (2 identical honest windows — no cross-row transitions are
+        // active for this fan-out-off config; per-row leaf/root bind to the same public values).
+        let ncols = n_cols(&cfg);
+        let mut flat = win.clone();
+        flat.extend_from_slice(&win);
+        let trace = RowMajorMatrix::new(flat, ncols);
+        let pv = pubs(leaves[index], root);
+
+        let proof = prove(&config, &air(cfg.clone()), trace, &pv);
+        verify(&config, &air(cfg), &proof, &pv).expect("recursive verifier-AIR proof must verify");
+    }
+
+    /// PHASE-3 PIPELINE (soundness data-flow for the block aggregator): for a block of N members,
+    /// PROVE+VERIFY each member's recursive verifier-AIR (so each member's account admission is
+    /// in-circuit verified), take its VERIFIED reconstructed root as the member commitment `D_i`,
+    /// then PROVE+VERIFY the block accumulator over exactly those verified roots. This demonstrates
+    /// and tests the binding the full aggregator depends on: the block's `chain_state_root` commits
+    /// the VERIFIED-admission roots, not free inputs.
+    ///
+    /// NOTE (honest scope): this is the two-proof pipeline (N member proofs + 1 accumulator proof).
+    /// True O(1)-on-chain aggregation additionally requires the accumulator to VERIFY each member
+    /// proof IN-CIRCUIT (PCD/IVC: compose `recursive_air` under the accumulator) so only the single
+    /// accumulator proof is checked on-chain — the remaining composition step. Here the verified
+    /// roots are carried between the two proof layers explicitly.
+    #[test]
+    fn block_pipeline_verifies_members_then_accumulates_q128() {
+        use descender_account_stark::{Challenge, MyCompress, MyHash, Perm, Val, DIGEST_ELEMS};
+        use p3_challenger::DuplexChallenger;
+        use p3_commit::ExtensionMmcs;
+        use p3_dft::Radix2DitParallel;
+        use p3_field::Field;
+        use p3_fri::{FriParameters, TwoAdicFriPcs};
+        use p3_koala_bear::default_koalabear_poseidon2_16;
+        use p3_merkle_tree::MerkleTreeMmcs;
+        use p3_uni_stark::{prove, verify, StarkConfig};
+
+        type ValMmcs = MerkleTreeMmcs<
+            <Val as Field>::Packing,
+            <Val as Field>::Packing,
+            MyHash,
+            MyCompress,
+            2,
+            DIGEST_ELEMS,
+        >;
+        type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
+        type DftT = Radix2DitParallel<Val>;
+        type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
+
+        let perm: Perm = default_koalabear_poseidon2_16();
+        let mk_config = || -> OuterConfig {
+            let val_mmcs = ValMmcs::new(
+                MyHash::new(perm.clone()),
+                MyCompress::new(MyHash::new(perm.clone())),
+                0,
+            );
+            let challenge_mmcs = ChallengeMmcs::new(val_mmcs.clone());
+            let fri_params = FriParameters {
+                log_blowup: 2,
+                log_final_poly_len: 0,
+                max_log_arity: 1,
+                num_queries: 2,
+                commit_proof_of_work_bits: 0,
+                query_proof_of_work_bits: 0,
+                mmcs: challenge_mmcs,
+            };
+            let pcs = Pcs::new(DftT::default(), val_mmcs, fri_params);
+            OuterConfig::new(pcs, MyChallenger::new(perm.clone()))
+        };
+
+        let levels = 1usize;
+        let block_size = 4usize; // power-of-two block height (FRI trace requirement; real blocks pad)
+        let mut verified_roots: Vec<[Val; DIGEST_ELEMS]> = Vec::new();
+        for member in 0..block_size as u32 {
+            // distinct member: a small Merkle tree opened at index 0.
+            let cfg = cfg_merkle(levels);
+            let n = 1usize << levels;
+            let leaves: Vec<Digest> = (0..n as u32).map(|x| digest(x + member * 1000 + 1)).collect();
+            let tree = RefTree::new(leaves.clone());
+            let index = 0usize;
+            let root = tree.root();
+            let win = merkle_window(&cfg, Val::from_u32(index as u32), &tree, leaves[index], index);
+            let ncols = n_cols(&cfg);
+            let mut flat = win.clone();
+            flat.extend_from_slice(&win);
+            let trace = RowMajorMatrix::new(flat, ncols);
+            let pv = pubs(leaves[index], root);
+            // PROVE + VERIFY this member's recursive verifier-AIR (in-circuit admission check).
+            let config = mk_config();
+            let proof = prove(&config, &air(cfg.clone()), trace, &pv);
+            verify(&config, &air(cfg), &proof, &pv).expect("member recursive proof must verify");
+            verified_roots.push(root); // the in-circuit-verified member root D_i
+        }
+
+        // Accumulate exactly the VERIFIED roots into one block proof.
+        let flat = crate::block_accumulator::build_trace(&verified_roots);
+        let acc_root = crate::block_accumulator::trace_root(verified_roots.len(), &flat);
+        let acc_trace = RowMajorMatrix::new(flat, crate::block_accumulator::BC_N_COLS);
+        let acc_pv = acc_root.to_vec();
+        let config = mk_config();
+        let acc_proof = prove(
+            &config,
+            &crate::block_accumulator::BlockAccumulatorAir,
+            acc_trace,
+            &acc_pv,
+        );
+        verify(
+            &config,
+            &crate::block_accumulator::BlockAccumulatorAir,
+            &acc_proof,
+            &acc_pv,
+        )
+        .expect("block accumulator over verified member roots must verify");
+    }
+
     /// Single-fold matrix (legacy shape) from (draw, e0, e1, beta) tuples.
     fn matrix_single(
         queries: &[(Val, Challenge, Challenge, Challenge)],
@@ -5278,17 +5545,17 @@ mod tests {
         use p3_koala_bear::default_koalabear_poseidon2_16;
         use p3_matrix::Dimensions;
         use p3_merkle_tree::MerkleTreeMmcs;
-        use p3_symmetric::{CryptographicHasher, PaddingFreeSponge, TruncatedPermutation};
+        use p3_symmetric::{CryptographicHasher, PaddingFreeSponge};
 
         // The DEPLOYED node layer, reconstructed from the re-exported `Perm` (the SAME
         // `default_koalabear_poseidon2_16` the inlined perm + `merkle::compressor()` are pinned to).
         // These const params (`16,8,8` / `2,8,16`) are byte-identical to `config::MyHash`/`MyCompress`
         // (cross-checked: account-stark `config.rs` declares the same aliases over the same `Perm`).
-        type LeafHash = PaddingFreeSponge<Perm, 16, 8, DIGEST_ELEMS>;
-        type NodeCompress = TruncatedPermutation<Perm, 2, DIGEST_ELEMS, 16>;
+        type LeafHash = PaddingFreeSponge<Perm, 16, 7, DIGEST_ELEMS>;
+        type NodeCompress = descender_account_stark::sponge_compression::SpongeCompression<LeafHash>;
         let perm: Perm = default_koalabear_poseidon2_16();
         let hash = LeafHash::new(perm.clone());
-        let compress = NodeCompress::new(perm.clone());
+        let compress = NodeCompress::new(LeafHash::new(perm.clone()));
         type RealMmcs = MerkleTreeMmcs<Val, Val, LeafHash, NodeCompress, 2, DIGEST_ELEMS>;
         let mmcs: RealMmcs = MerkleTreeMmcs::new(hash.clone(), compress, /*cap_height=*/ 0);
 
@@ -6533,7 +6800,7 @@ mod tests {
     /// builder for the (b-leaf) binding).
     fn leaf_e0_window(cfg: &RecursiveConfig, draw: Val, tree: &RefTree, leaf: Digest, index: usize) -> Vec<Val> {
         // e0 = the leaf digest as a Challenge (limb i = leaf[i]); DIGEST_ELEMS == D == 8.
-        let e0 = Challenge::from_basis_coefficients_slice(&leaf).unwrap();
+        let e0 = Challenge::from_basis_coefficients_slice(&leaf[..D]).unwrap();
         let sibs = tree.auth_path(index);
         let inp = WindowInputs {
             draw_out: draw,
@@ -6579,6 +6846,12 @@ mod tests {
     /// isolating (b-leaf) as the sole rejector.
     #[test]
     fn air_rejects_merkle_leaf_e0_mismatch() {
+        // The direct (b-leaf) `leaf digest == e0` binding only exists in the legacy digest==degree
+        // regime; at q128 (DIGEST_ELEMS=13 != D=8) it is guarded off and the leaf↔e0 link is carried
+        // by (b-hash) ∘ (DR) instead — exercised by `air_rejects_tampered_leaf_row` / the DR tests.
+        if DIGEST_ELEMS != D {
+            return;
+        }
         let levels = 4usize;
         let n = 1usize << levels;
         let leaves: Vec<Digest> = (0..n as u32).map(digest).collect();
@@ -6652,7 +6925,7 @@ mod tests {
         use descender_account_stark::Perm;
         use p3_koala_bear::default_koalabear_poseidon2_16;
         use p3_symmetric::{CryptographicHasher, PaddingFreeSponge};
-        type MyHash = PaddingFreeSponge<Perm, 16, 8, DIGEST_ELEMS>;
+        type MyHash = PaddingFreeSponge<Perm, 16, 7, DIGEST_ELEMS>;
         let hash = MyHash::new(default_koalabear_poseidon2_16());
         // row lengths chosen so row+SALT_ELEMS(4) hits: < RATE (4), == RATE (4? -> 4+4=8 exact),
         // partial trailing (e.g. 5+4=9), multi-block (e.g. 20+4=24 exact, 21+4=25 partial).
@@ -6680,13 +6953,13 @@ mod tests {
         use p3_commit::Mmcs;
         use p3_koala_bear::default_koalabear_poseidon2_16;
         use p3_merkle_tree::MerkleTreeMmcs;
-        use p3_symmetric::{PaddingFreeSponge, TruncatedPermutation};
+        use p3_symmetric::{PaddingFreeSponge};
 
-        type LeafHash = PaddingFreeSponge<Perm, 16, 8, DIGEST_ELEMS>;
-        type NodeCompress = TruncatedPermutation<Perm, 2, DIGEST_ELEMS, 16>;
+        type LeafHash = PaddingFreeSponge<Perm, 16, 7, DIGEST_ELEMS>;
+        type NodeCompress = descender_account_stark::sponge_compression::SpongeCompression<LeafHash>;
         let perm: Perm = default_koalabear_poseidon2_16();
         let hash = LeafHash::new(perm.clone());
-        let compress = NodeCompress::new(perm.clone());
+        let compress = NodeCompress::new(LeafHash::new(perm.clone()));
         type RealMmcs = MerkleTreeMmcs<Val, Val, LeafHash, NodeCompress, 2, DIGEST_ELEMS>;
         let mmcs: RealMmcs = MerkleTreeMmcs::new(hash.clone(), compress, 0);
 
@@ -6736,7 +7009,7 @@ mod tests {
             let root = tree.root();
 
             let draw = Val::from_u32(index as u32);
-            let e0 = Challenge::from_basis_coefficients_slice(&leaf_digest).unwrap();
+            let e0 = Challenge::from_basis_coefficients_slice(&leaf_digest[..D]).unwrap();
             let inp = WindowInputs {
                 draw_out: draw,
                 e0,
@@ -6798,7 +7071,7 @@ mod tests {
         let leaf = leaf_hash_digest(&input);
         let sibs = tree.auth_path(index);
         let root = tree.root();
-        let e0 = Challenge::from_basis_coefficients_slice(&leaf).unwrap();
+        let e0 = Challenge::from_basis_coefficients_slice(&leaf[..D]).unwrap();
         let inp = WindowInputs {
             draw_out: draw,
             e0,
@@ -6934,7 +7207,7 @@ mod tests {
 
         // The window's hashed-row perms are HONEST (over rows[index]) ⇒ MyHash(row) = honest_leaf,
         // but merkle_leaf / level-0 running is the FREE digest. e0 bound to the free leaf.
-        let e0 = Challenge::from_basis_coefficients_slice(&free_leaf).unwrap();
+        let e0 = Challenge::from_basis_coefficients_slice(&free_leaf[..D]).unwrap();
         let build = |cfg: &RecursiveConfig| -> Vec<Val> {
             let inp = WindowInputs {
                 draw_out: draw,
@@ -6977,12 +7250,29 @@ mod tests {
             "control (b-hash off) should accept the free supplied leaf — test would prove nothing otherwise"
         );
 
-        // ON: the level-0 running must equal MyHash(row) = honest_leaf != free_leaf ⇒ rejects.
+        // ON: build an HONEST hashed window (running == MyHash(row) = honest_leaf), then overwrite the
+        // level-0 running cell with the FREE digest. (b-hash) constrains running == MyHash(row), so the
+        // free digest != honest_leaf rejects. (Built honestly + tampered post-build because the honest
+        // builder debug-asserts running == MyHash(row); the forgery is the tamper, exactly like
+        // `air_rejects_tampered_leaf_row`.)
         let cfg_on = RecursiveConfig { bind_merkle_leaf_to_e0: true, ..cfg_leaf_hash(levels, width) };
-        let row_on = build(&cfg_on);
+        let honest_leaves: Vec<Digest> = (0..n)
+            .map(|r| {
+                let mut s = rows[r].clone();
+                s.extend_from_slice(&salt);
+                leaf_hash_digest(&s)
+            })
+            .collect();
+        let honest_tree = RefTree::new(honest_leaves);
+        let (mut row_on, hleaf, hroot) =
+            leaf_hash_window(&cfg_on, draw, index, &rows[index], salt, &honest_tree);
+        let l0r = merkle_level_base(&cfg_on, 0) + ML_RUNNING;
+        for i in 0..DIGEST_ELEMS {
+            row_on[l0r + i] = free_leaf[i]; // forge: running := free digest != MyHash(row)
+        }
         let m = RowMajorMatrix::new(row_on, n_cols(&cfg_on));
         assert!(
-            !check_all_constraints(&air(cfg_on), &m, &pubs(free_leaf, root), None).is_ok(),
+            !check_all_constraints(&air(cfg_on), &m, &pubs(hleaf, hroot), None).is_ok(),
             "a free leaf digest != MyHash(row) was accepted — (b-hash) not load-bearing"
         );
     }
@@ -7122,7 +7412,7 @@ mod tests {
         let draw = squeeze_draw(sin);
         let index = (draw.as_canonical_u32() as usize) & (n - 1);
         let leaf = leaves[index];
-        let e0 = Challenge::from_basis_coefficients_slice(&leaf).unwrap(); // leaf↔e0
+        let e0 = Challenge::from_basis_coefficients_slice(&leaf[..D]).unwrap(); // leaf↔e0
         let sibs = tree.auth_path(index);
         let stmt: Vec<(Val, Val, Val)> =
             (0..pio_len as u32).map(|i| { let v = Val::from_u32(7000 + i); (v, v, v) }).collect();
@@ -7465,7 +7755,7 @@ mod tests {
     // ---------------------------------------------------------------------------------
 
     /// A representative FRI commit-phase commitment block (RATE elements).
-    fn fb_block(seed: u32) -> [Val; RATE] {
+    fn fb_block(seed: u32) -> [Val; DIGEST_ELEMS] {
         core::array::from_fn(|i| {
             Val::from_u32(seed.wrapping_mul(2246822519).wrapping_add(i as u32 * 97 + 3))
         })
@@ -7488,7 +7778,7 @@ mod tests {
     fn fb_window(
         cfg: &RecursiveConfig,
         fs_blocks: &[[Val; RATE]],
-        beta_blocks: &[[Val; RATE]],
+        beta_blocks: &[[Val; DIGEST_ELEMS]],
         q: Challenge,
     ) -> Vec<Val> {
         fb_window_full(cfg, fs_blocks, beta_blocks, &[], q)
@@ -7499,7 +7789,7 @@ mod tests {
     fn fb_window_full(
         cfg: &RecursiveConfig,
         fs_blocks: &[[Val; RATE]],
-        beta_blocks: &[[Val; RATE]],
+        beta_blocks: &[[Val; DIGEST_ELEMS]],
         final_blocks: &[[Val; RATE]],
         q: Challenge,
     ) -> Vec<Val> {
@@ -7542,7 +7832,7 @@ mod tests {
             for beta_rounds in [1usize, 2, 3] {
                 let pre: Vec<[Val; RATE]> = (0..pre_rounds as u32).map(|r| fs_block(10 + r)).collect();
                 let quot = fs_block(900);
-                let comms: Vec<[Val; RATE]> =
+                let comms: Vec<[Val; DIGEST_ELEMS]> =
                     (0..beta_rounds as u32).map(|r| fb_block(200 + r)).collect();
 
                 // native: observe pre-alpha prefix, sample alpha, observe quotient, sample zeta,
@@ -7564,7 +7854,7 @@ mod tests {
 
                 // ours: continue from the post-zeta state.
                 let start = fs_post_zeta_state(&pre, quot);
-                let (betas, _) = fs_squeeze_betas(start, &comms);
+                let (betas, _) = fs_squeeze_betas_digest(start, &comms);
                 assert_eq!(betas.len(), beta_rounds);
                 for (r, (b, bn)) in betas.iter().zip(betas_native.iter()).enumerate() {
                     assert_eq!(
@@ -7586,13 +7876,13 @@ mod tests {
                 let cfg = cfg_fb(12, 8, pre_rounds, beta_rounds);
                 let fs_blocks: Vec<[Val; RATE]> =
                     (0..(pre_rounds + 1) as u32).map(|r| fs_block(20 + r)).collect();
-                let comms: Vec<[Val; RATE]> =
+                let comms: Vec<[Val; DIGEST_ELEMS]> =
                     (0..beta_rounds as u32).map(|r| fb_block(300 + r)).collect();
                 let row = fb_window(&cfg, &fs_blocks, &comms, ext_multi(66));
                 // each FS-β round's beta cell == the squeezed beta_r, and the descent consumer cell
                 // equals it.
                 let start = fs_post_zeta_state(&fs_blocks[..pre_rounds], fs_blocks[pre_rounds]);
-                let (betas, _) = fs_squeeze_betas(start, &comms);
+                let (betas, _) = fs_squeeze_betas_digest(start, &comms);
                 for r in 0..beta_rounds {
                     let rb = fb_round_base(&cfg, r);
                     assert_eq!(
@@ -7618,7 +7908,7 @@ mod tests {
     fn air_rejects_fold_beta_not_squeezed() {
         let cfg = cfg_fb(12, 8, 2, 2);
         let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(30 + r)).collect();
-        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(400 + r)).collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(400 + r)).collect();
         let mut row = fb_window(&cfg, &fs_blocks, &comms, ext_multi(7));
         // corrupt round-0's consumer beta cell (C_BETA) so the fold uses beta != squeezed beta_0.
         row[C_BETA + 1] += Val::ONE;
@@ -7635,7 +7925,7 @@ mod tests {
     fn air_rejects_tampered_beta_cell() {
         let cfg = cfg_fb(12, 8, 1, 2);
         let fs_blocks: Vec<[Val; RATE]> = (0..2u32).map(|r| fs_block(45 + r)).collect();
-        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(420 + r)).collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(420 + r)).collect();
         let mut row = fb_window(&cfg, &fs_blocks, &comms, ext_multi(8));
         let rb = fb_round_base(&cfg, 1);
         row[rb + FB_BETA + 2] += Val::ONE; // beta_1 cell != squeeze pop
@@ -7654,7 +7944,7 @@ mod tests {
     fn air_rejects_changed_fold_commitment_keeping_stale_betas() {
         let cfg = cfg_fb(12, 8, 2, 3);
         let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(50 + r)).collect();
-        let comms: Vec<[Val; RATE]> = (0..3u32).map(|r| fb_block(440 + r)).collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..3u32).map(|r| fb_block(440 + r)).collect();
         // honest window accepts.
         let honest = fb_window(&cfg, &fs_blocks, &comms, ext_multi(11));
         assert!(check_all_constraints(&air(cfg), &RowMajorMatrix::new(honest, n_cols(&cfg)), &[], None).is_ok());
@@ -7663,8 +7953,8 @@ mod tests {
         let mut tampered = comms.clone();
         tampered[0][4] += Val::ONE;
         let start = fs_post_zeta_state(&fs_blocks[..2], fs_blocks[2]);
-        let (old_betas, _) = fs_squeeze_betas(start, &comms);
-        let (new_betas, _) = fs_squeeze_betas(start, &tampered);
+        let (old_betas, _) = fs_squeeze_betas_digest(start, &comms);
+        let (new_betas, _) = fs_squeeze_betas_digest(start, &tampered);
         for r in 0..3 {
             assert_ne!(old_betas[r], new_betas[r], "comm_0 change did not move beta_{r} (subsequent-round binding)");
         }
@@ -7708,9 +7998,9 @@ mod tests {
     fn air_rejects_wrong_round_beta() {
         let cfg = cfg_fb(12, 8, 2, 2);
         let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(60 + r)).collect();
-        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(460 + r)).collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(460 + r)).collect();
         let start = fs_post_zeta_state(&fs_blocks[..2], fs_blocks[2]);
-        let (betas, _) = fs_squeeze_betas(start, &comms);
+        let (betas, _) = fs_squeeze_betas_digest(start, &comms);
         assert_ne!(betas[0], betas[1], "beta_0 == beta_1 (carried-state threading broke)");
 
         let mut row = fb_window(&cfg, &fs_blocks, &comms, ext_multi(13));
@@ -7733,10 +8023,10 @@ mod tests {
     fn air_rejects_fs_beta_tampered_perm() {
         let cfg = cfg_fb(12, 8, 1, 2);
         let fs_blocks: Vec<[Val; RATE]> = (0..2u32).map(|r| fs_block(70 + r)).collect();
-        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(480 + r)).collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(480 + r)).collect();
         let mut row = fb_window(&cfg, &fs_blocks, &comms, ext_multi(15));
         let rb = fb_round_base(&cfg, 0);
-        row[rb + FB_PERM + inlined_perm::C_BEGIN_POST] += Val::ONE;
+        row[rb + FB_PERM0 + inlined_perm::C_BEGIN_POST] += Val::ONE;
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         assert!(!check_all_constraints(&air(cfg), &m, &[], None).is_ok());
     }
@@ -7748,10 +8038,10 @@ mod tests {
     fn air_rejects_fs_beta_broken_interround_carry() {
         let cfg = cfg_fb(12, 8, 2, 2);
         let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(80 + r)).collect();
-        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(500 + r)).collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(500 + r)).collect();
         let mut row = fb_window(&cfg, &fs_blocks, &comms, ext_multi(17));
         let rb1 = fb_round_base(&cfg, 1);
-        row[rb1 + FB_PERM + inlined_perm::C_INPUTS + (RATE + 1)] += Val::ONE;
+        row[rb1 + FB_PERM0 + inlined_perm::C_INPUTS + (RATE + 1)] += Val::ONE;
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         assert!(!check_all_constraints(&air(cfg), &m, &[], None).is_ok());
     }
@@ -7763,11 +8053,11 @@ mod tests {
     fn air_rejects_fs_beta_broken_postzeta_continuation() {
         let cfg = cfg_fb(12, 8, 1, 1);
         let fs_blocks: Vec<[Val; RATE]> = (0..2u32).map(|r| fs_block(90 + r)).collect();
-        let comms: Vec<[Val; RATE]> = vec![fb_block(520)];
+        let comms: Vec<[Val; DIGEST_ELEMS]> = vec![fb_block(520)];
         let mut row = fb_window(&cfg, &fs_blocks, &comms, ext_multi(19));
         let rb0 = fb_round_base(&cfg, 0);
         // round 0's perm input capacity slot RATE+1 must == post-zeta state slot RATE+1; corrupt it.
-        row[rb0 + FB_PERM + inlined_perm::C_INPUTS + (RATE + 1)] += Val::ONE;
+        row[rb0 + FB_PERM0 + inlined_perm::C_INPUTS + (RATE + 1)] += Val::ONE;
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         assert!(
             !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
@@ -7791,10 +8081,10 @@ mod tests {
             ..RecursiveConfig::single_window(12)
         };
         let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(130 + r)).collect();
-        let comms: Vec<[Val; RATE]> = (0..beta_rounds as u32).map(|r| fb_block(540 + r)).collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..beta_rounds as u32).map(|r| fb_block(540 + r)).collect();
         let row = fb_window(&cfg, &fs_blocks, &comms, ext_multi(23));
         let pubs: Vec<Val> = comms.iter().flatten().copied().collect();
-        assert_eq!(pubs.len(), beta_rounds * RATE);
+        assert_eq!(pubs.len(), beta_rounds * DIGEST_ELEMS); // q128: each commitment is a 13-wide digest
         assert!(
             check_all_constraints(&air(cfg), &RowMajorMatrix::new(row.clone(), n_cols(&cfg)), &pubs, None).is_ok(),
             "honest FS-β public-transcript binding rejected"
@@ -7853,7 +8143,7 @@ mod tests {
     fn native_full_transcript(
         pre: &[[Val; RATE]],
         quot: [Val; RATE],
-        comms: &[[Val; RATE]],
+        comms: &[[Val; DIGEST_ELEMS]],
         final_blocks: &[[Val; RATE]],
         index_bits: usize,
     ) -> (Challenge, Challenge, Challenge, Vec<Challenge>, usize) {
@@ -7891,7 +8181,7 @@ mod tests {
             for beta_rounds in [1usize, 2, 3] {
                 let pre: Vec<[Val; RATE]> = (0..pre_rounds as u32).map(|r| fs_block(10 + r)).collect();
                 let quot = fs_block(900);
-                let comms: Vec<[Val; RATE]> =
+                let comms: Vec<[Val; DIGEST_ELEMS]> =
                     (0..beta_rounds as u32).map(|r| fb_block(200 + r)).collect();
                 let (_a, _z, bca_native, betas_native, _i) =
                     native_full_transcript(&pre, quot, &comms, &[fq_block(1)], 1);
@@ -7900,7 +8190,7 @@ mod tests {
                 let post_zeta = fs_post_zeta_state(&pre, quot);
                 let (bca, bca_state) = fs_squeeze_batch_combo_alpha(post_zeta);
                 assert_eq!(bca, bca_native, "batch-combo alpha diverges from native challenger");
-                let (betas, _) = fs_squeeze_betas(bca_state, &comms);
+                let (betas, _) = fs_squeeze_betas_digest(bca_state, &comms);
                 assert_eq!(betas.len(), beta_rounds);
                 for (r, (b, bn)) in betas.iter().zip(betas_native.iter()).enumerate() {
                     assert_eq!(
@@ -7925,7 +8215,7 @@ mod tests {
                     let pre: Vec<[Val; RATE]> =
                         (0..pre_rounds as u32).map(|r| fs_block(10 + r)).collect();
                     let quot = fs_block(900);
-                    let comms: Vec<[Val; RATE]> =
+                    let comms: Vec<[Val; DIGEST_ELEMS]> =
                         (0..beta_rounds as u32).map(|r| fb_block(200 + r)).collect();
                     let finals: Vec<[Val; RATE]> =
                         (0..final_n as u32).map(|r| fq_block(50 + r)).collect();
@@ -7935,7 +8225,7 @@ mod tests {
                     // ours: post-zeta → batch-combo → betas → query-index continuation.
                     let post_zeta = fs_post_zeta_state(&pre, quot);
                     let bca_state = fs_squeeze_batch_combo_alpha(post_zeta).1;
-                    let (_, post_beta) = fs_squeeze_betas(bca_state, &comms);
+                    let (_, post_beta) = fs_squeeze_betas_digest(bca_state, &comms);
                     let (draw_out, _) = fs_squeeze_query_index(post_beta, &finals);
                     let index = (draw_out.as_canonical_u32() & ((1u32 << h) - 1)) as usize;
                     assert_eq!(
@@ -7959,7 +8249,7 @@ mod tests {
                     let cfg = cfg_fbq(12, 8, pre_rounds, beta_rounds, true, final_n);
                     let fs_blocks: Vec<[Val; RATE]> =
                         (0..(pre_rounds + 1) as u32).map(|r| fs_block(20 + r)).collect();
-                    let comms: Vec<[Val; RATE]> =
+                    let comms: Vec<[Val; DIGEST_ELEMS]> =
                         (0..beta_rounds as u32).map(|r| fb_block(300 + r)).collect();
                     let finals: Vec<[Val; RATE]> =
                         (0..final_n as u32).map(|r| fq_block(70 + r)).collect();
@@ -8017,7 +8307,7 @@ mod tests {
     fn fb_window_partial(
         cfg: &RecursiveConfig,
         fs_blocks: &[[Val; RATE]],
-        beta_blocks: &[[Val; RATE]],
+        beta_blocks: &[[Val; DIGEST_ELEMS]],
         final_blocks: &[[Val; RATE]],
         partial_block: [Val; RATE],
         q: Challenge,
@@ -8057,7 +8347,7 @@ mod tests {
     fn native_index_flat_stream(
         pre: &[[Val; RATE]],
         quot: [Val; RATE],
-        comms: &[[Val; RATE]],
+        comms: &[[Val; DIGEST_ELEMS]],
         post_beta_stream: &[Val],
         index_bits: usize,
     ) -> usize {
@@ -8105,7 +8395,7 @@ mod tests {
         let h = 12usize;
         let pre: Vec<[Val; RATE]> = (0..2u32).map(|r| fs_block(10 + r)).collect();
         let quot = fs_block(900);
-        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(200 + r)).collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(200 + r)).collect();
         // sweep stream lengths that are NOT multiples of RATE (and one that is, as control).
         for stream_len in [1usize, 3, 7, 9, 13, 15, 16, 17, 23] {
             let stream: Vec<Val> =
@@ -8116,7 +8406,7 @@ mod tests {
             let (full, partial, n) = chunk_stream(&stream);
             let post_zeta = fs_post_zeta_state(&pre, quot);
             let bca_state = fs_squeeze_batch_combo_alpha(post_zeta).1;
-            let (_, post_beta) = fs_squeeze_betas(bca_state, &comms);
+            let (_, post_beta) = fs_squeeze_betas_digest(bca_state, &comms);
             let p0 = fs_squeeze_query_p0_state(post_beta, &full, partial, n);
             let draw = p0[RATE - 1];
             let index = (draw.as_canonical_u32() & ((1u32 << h) - 1)) as usize;
@@ -8134,7 +8424,7 @@ mod tests {
         for partial in 1..RATE {
             let cfg = cfg_fbq_ext(12, 2, 2, 2, partial, 0);
             let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(20 + r)).collect();
-            let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
+            let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
             let finals: Vec<[Val; RATE]> = (0..2u32).map(|r| fq_block(70 + r)).collect();
             let partial_block = fq_block(999);
             let row = fb_window_partial(&cfg, &fs_blocks, &comms, &finals, partial_block, ext_multi(66));
@@ -8152,7 +8442,7 @@ mod tests {
         let partial = 3usize;
         let cfg = cfg_fbq_ext(12, 2, 2, 2, partial, 0);
         let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(20 + r)).collect();
-        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
         let finals: Vec<[Val; RATE]> = (0..2u32).map(|r| fq_block(70 + r)).collect();
         let partial_block = fq_block(999);
         let mut row = fb_window_partial(&cfg, &fs_blocks, &comms, &finals, partial_block, ext_multi(66));
@@ -8175,7 +8465,7 @@ mod tests {
         let partial = 5usize;
         let cfg = cfg_fbq_ext(12, 2, 2, 2, partial, 0);
         let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(20 + r)).collect();
-        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
         let finals: Vec<[Val; RATE]> = (0..2u32).map(|r| fq_block(70 + r)).collect();
         let partial_block = fq_block(999);
         let mut row = fb_window_partial(&cfg, &fs_blocks, &comms, &finals, partial_block, ext_multi(66));
@@ -8199,7 +8489,7 @@ mod tests {
         let pow_bits = 8usize;
         let pre: Vec<[Val; RATE]> = (0..2u32).map(|r| fs_block(10 + r)).collect();
         let quot = fs_block(900);
-        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(200 + r)).collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(200 + r)).collect();
         // post-beta stream WITHOUT the witness: final_poly ‖ log_arities (length not RATE-aligned).
         let prefix: Vec<Val> = (0..10u32).map(|i| Val::from_u32(i.wrapping_mul(8161) + 3)).collect();
 
@@ -8226,7 +8516,7 @@ mod tests {
         let (full, partial, n) = chunk_stream(&stream);
         let post_zeta = fs_post_zeta_state(&pre, quot);
         let bca_state = fs_squeeze_batch_combo_alpha(post_zeta).1;
-        let (_, post_beta) = fs_squeeze_betas(bca_state, &comms);
+        let (_, post_beta) = fs_squeeze_betas_digest(bca_state, &comms);
         let p0 = fs_squeeze_query_p0_state(post_beta, &full, partial, n);
         // PoW sample = pop 0 = output[RATE-1]: its low pow_bits MUST be zero (grind condition).
         let pow_sample = p0[RATE - 1];
@@ -8250,7 +8540,7 @@ mod tests {
         let pow_bits = 8usize;
         let cfg = cfg_fbq_ext(h, 2, 2, 1, 3, pow_bits);
         let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(20 + r)).collect();
-        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
         let q = ext_multi(66);
         // build the post-beta stream: one full block (8) + partial (3 lanes), the LAST lane = ground
         // witness. Drive the betas reference to the PoW point, then grind.
@@ -8258,7 +8548,7 @@ mod tests {
         let quot = fs_blocks[2];
         let post_zeta = fs_post_zeta_state(pre, quot);
         let bca_state = fs_squeeze_batch_combo_alpha(post_zeta).1;
-        let (_, post_beta) = fs_squeeze_betas(bca_state, &comms);
+        let (_, post_beta) = fs_squeeze_betas_digest(bca_state, &comms);
         // the full block + first 2 partial lanes are arbitrary; the 3rd partial lane is the witness.
         let finals: Vec<[Val; RATE]> = vec![fq_block(70)];
         let mut partial_block = fq_block(999);
@@ -8295,7 +8585,7 @@ mod tests {
         let pow_bits = 8usize;
         let cfg = cfg_fbq_ext(h, 2, 2, 1, 3, pow_bits);
         let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(20 + r)).collect();
-        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
         let finals: Vec<[Val; RATE]> = vec![fq_block(70)];
         // a NON-ground witness: the partial block's lanes are arbitrary (PoW sample low bits != 0 whp).
         let partial_block = fq_block(12345);
@@ -8305,7 +8595,7 @@ mod tests {
         let quot = fs_blocks[2];
         let post_zeta = fs_post_zeta_state(pre, quot);
         let bca_state = fs_squeeze_batch_combo_alpha(post_zeta).1;
-        let (_, post_beta) = fs_squeeze_betas(bca_state, &comms);
+        let (_, post_beta) = fs_squeeze_betas_digest(bca_state, &comms);
         let p0 = fs_squeeze_query_p0_state(post_beta, &finals, partial_block, 3);
         assert_ne!(
             p0[RATE - 1].as_canonical_u32() & ((1u32 << pow_bits) - 1),
@@ -8328,7 +8618,7 @@ mod tests {
         let pow_bits = 8usize;
         let cfg = cfg_fbq_ext(h, 2, 2, 1, 3, pow_bits);
         let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(20 + r)).collect();
-        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
         let finals: Vec<[Val; RATE]> = vec![fq_block(70)];
         let partial_block = fq_block(12345); // a failing witness
         let mut row = fb_window_partial(&cfg, &fs_blocks, &comms, &finals, partial_block, ext_multi(66));
@@ -8359,7 +8649,7 @@ mod tests {
     fn fan_out_row(
         cfg: &RecursiveConfig,
         fs_blocks: &[[Val; RATE]],
-        comms: &[[Val; RATE]],
+        comms: &[[Val; DIGEST_ELEMS]],
         finals: &[[Val; RATE]],
         q: Challenge,
         r: usize,
@@ -8403,9 +8693,9 @@ mod tests {
     fn fan_out_matrix(
         cfg: &RecursiveConfig,
         n: usize,
-    ) -> (RowMajorMatrix<Val>, Vec<[Val; RATE]>, Vec<[Val; RATE]>, Vec<[Val; RATE]>, Challenge) {
+    ) -> (RowMajorMatrix<Val>, Vec<[Val; RATE]>, Vec<[Val; DIGEST_ELEMS]>, Vec<[Val; RATE]>, Challenge) {
         let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(20 + r)).collect();
-        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
         let finals: Vec<[Val; RATE]> = vec![fq_block(70)];
         let q = ext_multi(66);
         let mut flat = Vec::with_capacity(n * n_cols(cfg));
@@ -8419,7 +8709,7 @@ mod tests {
     /// transcript and take N successive `sample_bits` draws (p3-fri verifier.rs:351-353).
     fn native_fan_out_indices(
         fs_blocks: &[[Val; RATE]],
-        comms: &[[Val; RATE]],
+        comms: &[[Val; DIGEST_ELEMS]],
         finals: &[[Val; RATE]],
         h: usize,
         n: usize,
@@ -8456,7 +8746,7 @@ mod tests {
             ..cfg_fbq_ext(h, 2, 2, 1, partial, pow_bits)
         };
         let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(20 + r)).collect();
-        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
         let finals: Vec<[Val; RATE]> = vec![fq_block(70)];
         let q = ext_multi(66);
 
@@ -8837,7 +9127,7 @@ mod tests {
     fn air_rejects_batch_combo_broken_squeeze_input() {
         let cfg = cfg_fbq(12, 8, 2, 2, true, 1);
         let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(20 + r)).collect();
-        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
         let finals = vec![fq_block(70)];
         let mut row = fb_window_full(&cfg, &fs_blocks, &comms, &finals, ext_multi(66));
         let bb = bca_base(&cfg);
@@ -8862,13 +9152,13 @@ mod tests {
         let beta_rounds = 2usize;
         let fs_blocks: Vec<[Val; RATE]> =
             (0..(pre_rounds + 1) as u32).map(|r| fs_block(20 + r)).collect();
-        let comms: Vec<[Val; RATE]> = (0..beta_rounds as u32).map(|r| fb_block(300 + r)).collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..beta_rounds as u32).map(|r| fb_block(300 + r)).collect();
 
         // The betas WITH vs WITHOUT the batch-combo alpha differ (the shift moves every beta).
         let post_zeta = fs_post_zeta_state(&fs_blocks[..pre_rounds], fs_blocks[pre_rounds]);
-        let (betas_no_bca, _) = fs_squeeze_betas(post_zeta, &comms);
+        let (betas_no_bca, _) = fs_squeeze_betas_digest(post_zeta, &comms);
         let bca_state = fs_squeeze_batch_combo_alpha(post_zeta).1;
-        let (betas_bca, _) = fs_squeeze_betas(bca_state, &comms);
+        let (betas_bca, _) = fs_squeeze_betas_digest(bca_state, &comms);
         for r in 0..beta_rounds {
             assert_ne!(
                 betas_no_bca[r], betas_bca[r],
@@ -8909,7 +9199,7 @@ mod tests {
     fn air_rejects_changed_final_poly_keeping_stale_index() {
         let cfg = cfg_fbq(12, 8, 2, 2, true, 2);
         let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(20 + r)).collect();
-        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
         let finals: Vec<[Val; RATE]> = (0..2u32).map(|r| fq_block(70 + r)).collect();
 
         // honest accepts.
@@ -8921,7 +9211,7 @@ mod tests {
         tampered[0][3] += Val::ONE;
         let post_zeta = fs_post_zeta_state(&fs_blocks[..2], fs_blocks[2]);
         let bca_state = fs_squeeze_batch_combo_alpha(post_zeta).1;
-        let (_, post_beta) = fs_squeeze_betas(bca_state, &comms);
+        let (_, post_beta) = fs_squeeze_betas_digest(bca_state, &comms);
         let (old_draw, _) = fs_squeeze_query_index(post_beta, &finals);
         let (new_draw, _) = fs_squeeze_query_index(post_beta, &tampered);
         assert_ne!(old_draw, new_draw, "final-poly change did not move the query draw");
@@ -9004,7 +9294,7 @@ mod tests {
             ..RecursiveConfig::single_window(12)
         };
         let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(20 + r)).collect();
-        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
         let finals: Vec<[Val; RATE]> = (0..final_n as u32).map(|r| fq_block(70 + r)).collect();
         let row = fb_window_full(&cfg, &fs_blocks, &comms, &finals, ext_multi(66));
         let pubs: Vec<Val> = finals.iter().flatten().copied().collect();
@@ -9233,13 +9523,13 @@ mod tests {
         use p3_koala_bear::default_koalabear_poseidon2_16;
         use p3_matrix::Dimensions;
         use p3_merkle_tree::MerkleTreeMmcs;
-        use p3_symmetric::{PaddingFreeSponge, TruncatedPermutation};
+        use p3_symmetric::{PaddingFreeSponge};
 
-        type LeafHash = PaddingFreeSponge<Perm, 16, 8, DIGEST_ELEMS>;
-        type NodeCompress = TruncatedPermutation<Perm, 2, DIGEST_ELEMS, 16>;
+        type LeafHash = PaddingFreeSponge<Perm, 16, 7, DIGEST_ELEMS>;
+        type NodeCompress = descender_account_stark::sponge_compression::SpongeCompression<LeafHash>;
         let perm: Perm = default_koalabear_poseidon2_16();
         let mmcs: MerkleTreeMmcs<Val, Val, LeafHash, NodeCompress, 2, DIGEST_ELEMS> =
-            MerkleTreeMmcs::new(LeafHash::new(perm.clone()), NodeCompress::new(perm.clone()), 0);
+            MerkleTreeMmcs::new(LeafHash::new(perm.clone()), NodeCompress::new(LeafHash::new(perm.clone())), 0);
         let node_levels = 3usize;
         let n_nodes = 1usize << node_levels;
         let width = 2 * D;
@@ -9326,9 +9616,9 @@ mod tests {
         };
         let row = pack_window(&cfg, &inp);
         // zero-residual reconstructed root == reference root.
-        let llast = lo_level_base(&cfg, 0, node_levels - 1);
+        let llast = lo_node_digest(lo_level_base(&cfg, 0, node_levels - 1));
         let recon: [Val; DIGEST_ELEMS] =
-            core::array::from_fn(|i| row[llast + LO_ML_PERM + C_OUTPUT + i]);
+            core::array::from_fn(|i| row[llast + i]);
         assert_eq!(recon, tree.root(), "in-window round-0 layer root != real reference root");
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         let report = check_all_constraints(&air(cfg), &m, &[], None);
@@ -9560,7 +9850,7 @@ mod tests {
         let e_sibs: Vec<Challenge> = (1..rounds).map(|r| ext_multi(0x6000 + r as u32)).collect();
 
         // sequential fixed point: round-by-round build tree → root = comm → squeeze beta → next e_fold.
-        let mut comms: Vec<[Val; RATE]> = Vec::with_capacity(rounds);
+        let mut comms: Vec<[Val; DIGEST_ELEMS]> = Vec::with_capacity(rounds);
         let mut betas: Vec<Challenge> = Vec::with_capacity(rounds);
         let mut round_pairs: Vec<(Challenge, Challenge)> = Vec::with_capacity(rounds);
         let mut metas: Vec<([Val; DIGEST_ELEMS], Challenge, Challenge, usize)> = Vec::new();
@@ -9596,7 +9886,7 @@ mod tests {
             round_pairs.push((e_fold, e_sib));
             metas.push((root, e_fold, e_sib, start_index));
             // squeeze beta_r by observing comms[0..=r] from the post-zeta start (matches pack_window).
-            let (bs, _) = fs_squeeze_betas(beta_start, &comms);
+            let (bs, _) = fs_squeeze_betas_digest(beta_start, &comms);
             let beta_r = bs[r];
             betas.push(beta_r);
             // next round's e_fold = this round's fold output; s_r = s_{r-1}^2 (point-square).
@@ -9674,7 +9964,7 @@ mod tests {
                     for k in 0..DIGEST_ELEMS {
                         assert_eq!(
                             row[lo_rb + k],
-                            row[fb_rb + FB_BLOCK + k],
+                            row[fb_rb + FB_COMMIT + k],
                             "round {r} limb {k}: layer_commit != FS-observed commit (fixture inconsistent)"
                         );
                     }
@@ -9756,18 +10046,18 @@ mod tests {
             row[lbase + LO_ML_RUNNING..lbase + LO_ML_RUNNING + DIGEST_ELEMS].copy_from_slice(&running);
             row[lbase + LO_ML_SIBLING..lbase + LO_ML_SIBLING + DIGEST_ELEMS].copy_from_slice(&sib);
             let (a, b) = if bit { (sib, running) } else { (running, sib) };
-            let mut input16 = [Val::ZERO; WIDTH];
-            input16[..DIGEST_ELEMS].copy_from_slice(&a);
-            input16[DIGEST_ELEMS..].copy_from_slice(&b);
-            let cols = inlined_perm::generate_perm_cols(input16, &consts);
-            row[lbase + LO_ML_PERM..lbase + LO_ML_PERM + PERM_COLS].copy_from_slice(&cols);
-            running = core::array::from_fn(|i| cols[C_OUTPUT + i]);
+            let mut combined = [Val::ZERO; ABSORB_LEN];
+            combined[..DIGEST_ELEMS].copy_from_slice(&a);
+            combined[DIGEST_ELEMS..].copy_from_slice(&b);
+            let (blocks, digest) = node_blocks(&combined, &consts);
+            row[lbase + LO_ML_PERM..lbase + LO_ML_PERM + N_PERM * PERM_COLS].copy_from_slice(&blocks);
+            running = digest;
             node_idx >>= 1;
         }
         assert_eq!(running, alt_root, "alternate in-row fold must reconstruct the alternate root");
         // sanity: the authentication root now DIFFERS from the FS-observed commitment.
         let fb_rb = fb_round_base(&cfg, 1);
-        let differs = (0..DIGEST_ELEMS).any(|k| row[rb + k] != row[fb_rb + FB_BLOCK + k]);
+        let differs = (0..DIGEST_ELEMS).any(|k| row[rb + k] != row[fb_rb + FB_COMMIT + k]);
         assert!(differs, "alternate root must differ from the FS-observed commit");
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         assert!(
@@ -9793,7 +10083,7 @@ mod tests {
         let (mut row, _) = lo_fb_window(&cfg, &fs_prefix, Val::from_u32(0xABCDE));
         // tamper round-1's FS-observed commitment block (the digest observed to squeeze beta_1).
         let fb_rb = fb_round_base(&cfg, 1);
-        row[fb_rb + FB_BLOCK + 2] += Val::ONE;
+        row[fb_rb + FB_COMMIT + 2] += Val::ONE;
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         assert!(
             !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
@@ -9818,10 +10108,10 @@ mod tests {
         // tamper round-1's observed commitment digest, AND copy it into the LO layer_commit_1 block
         // (repair Effect 2: equality residual). Effect 1 (beta) is left to fire — but even if a forger
         // recomputed beta_1, the path can't reconstruct to a non-root digest. We assert rejection.
-        row[fb_rb + FB_BLOCK + 2] += Val::ONE;
+        row[fb_rb + FB_COMMIT + 2] += Val::ONE;
         let lo_rb = lo_round_base(&cfg, 1);
         for k in 0..DIGEST_ELEMS {
-            row[lo_rb + k] = row[fb_rb + FB_BLOCK + k];
+            row[lo_rb + k] = row[fb_rb + FB_COMMIT + k];
         }
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         assert!(
@@ -10823,12 +11113,12 @@ mod tests {
             row[lbase + QO_ML_RUNNING..lbase + QO_ML_RUNNING + DIGEST_ELEMS].copy_from_slice(&running);
             row[lbase + QO_ML_SIBLING..lbase + QO_ML_SIBLING + DIGEST_ELEMS].copy_from_slice(&sib);
             let (a, b) = if bit { (sib, running) } else { (running, sib) };
-            let mut input16 = [Val::ZERO; WIDTH];
-            input16[..DIGEST_ELEMS].copy_from_slice(&a);
-            input16[DIGEST_ELEMS..].copy_from_slice(&b);
-            let cols = inlined_perm::generate_perm_cols(input16, &consts);
-            row[lbase + QO_ML_PERM..lbase + QO_ML_PERM + PERM_COLS].copy_from_slice(&cols);
-            running = core::array::from_fn(|i| cols[C_OUTPUT + i]);
+            let mut combined = [Val::ZERO; ABSORB_LEN];
+            combined[..DIGEST_ELEMS].copy_from_slice(&a);
+            combined[DIGEST_ELEMS..].copy_from_slice(&b);
+            let (blocks, digest) = node_blocks(&combined, &consts);
+            row[lbase + QO_ML_PERM..lbase + QO_ML_PERM + N_PERM * PERM_COLS].copy_from_slice(&blocks);
+            running = digest;
             node_idx >>= 1;
         }
         // running now != quot_commit (other leaf's path folded at fs_index's bits) ⇒ reject.
@@ -10906,13 +11196,13 @@ mod tests {
         use p3_koala_bear::default_koalabear_poseidon2_16;
         use p3_matrix::Dimensions;
         use p3_merkle_tree::MerkleTreeMmcs;
-        use p3_symmetric::{PaddingFreeSponge, TruncatedPermutation};
+        use p3_symmetric::{PaddingFreeSponge};
 
-        type LeafHash = PaddingFreeSponge<Perm, 16, 8, DIGEST_ELEMS>;
-        type NodeCompress = TruncatedPermutation<Perm, 2, DIGEST_ELEMS, 16>;
+        type LeafHash = PaddingFreeSponge<Perm, 16, 7, DIGEST_ELEMS>;
+        type NodeCompress = descender_account_stark::sponge_compression::SpongeCompression<LeafHash>;
         let perm: Perm = default_koalabear_poseidon2_16();
         let hash = LeafHash::new(perm.clone());
-        let compress = NodeCompress::new(perm.clone());
+        let compress = NodeCompress::new(LeafHash::new(perm.clone()));
         type RealMmcs = MerkleTreeMmcs<Val, Val, LeafHash, NodeCompress, 2, DIGEST_ELEMS>;
         let mmcs: RealMmcs = MerkleTreeMmcs::new(hash.clone(), compress, 0);
 
@@ -11003,9 +11293,9 @@ mod tests {
             };
             let row = build(quot_commit);
             // ZERO-RESIDUAL: the in-AIR reconstructed quotient root == the REAL commitment.
-            let llast = qo_level_base(&cfg, cfg.quot_merkle_levels - 1);
+            let llast = qo_node_digest(qo_level_base(&cfg, cfg.quot_merkle_levels - 1));
             let mut recon = [Val::ZERO; DIGEST_ELEMS];
-            recon.copy_from_slice(&row[llast + QO_ML_PERM + C_OUTPUT..llast + QO_ML_PERM + C_OUTPUT + DIGEST_ELEMS]);
+            recon.copy_from_slice(&row[llast..llast + DIGEST_ELEMS]);
             assert_eq!(recon, quot_commit, "in-AIR quotient fold root != real MMCS commitment at index {index}");
             let m = RowMajorMatrix::new(row, n_cols(&cfg));
             let report = check_all_constraints(&air(cfg.clone()), &m, &pubs(trace_leaf, ttree.root()), None);
@@ -11014,10 +11304,11 @@ mod tests {
                 "real-MMCS quotient opening rejected in-AIR at index {index}: {} failures",
                 report.failures.len()
             );
-            // Tamper: a corrupted real commitment ⇒ the (QO) root binding rejects.
-            let mut bad = quot_commit;
-            bad[0] += Val::ONE;
-            let bad_row = build(bad);
+            // Tamper: corrupt the BOUND quotient-commitment cell post-build (the honest builder
+            // debug-asserts the fold root == quot_commit, so the forgery is the tamper) ⇒ the (QO)
+            // root binding (reconstructed root == QO_COMMIT cell) rejects.
+            let mut bad_row = build(quot_commit);
+            bad_row[qo_base(&cfg) + QO_COMMIT] += Val::ONE;
             let bm = RowMajorMatrix::new(bad_row, n_cols(&cfg));
             assert!(
                 !check_all_constraints(&air(cfg.clone()), &bm, &pubs(trace_leaf, ttree.root()), None).is_ok(),
@@ -11114,10 +11405,10 @@ mod tests {
             check_all_constraints(&air(cfg.clone()), &m, &pubs(trace_leaf, ttree.root()), None).is_ok(),
             "honest real-zps recombination window rejected"
         );
-        // tamper a zps selector (keep DEEP_Q at the honest recombination) ⇒ tie rejects.
-        let mut bad_zps = zps_real.clone();
-        bad_zps[2] += ext_multi(1);
-        let bad_row = build(&bad_zps, deep_q);
+        // tamper a zps selector CELL post-build (keep DEEP_Q at the honest recombination; the honest
+        // builder debug-asserts Σ zps·at_zeta == DEEP_Q, so the forgery is the tamper) ⇒ tie rejects.
+        let mut bad_row = build(&zps_real, deep_q);
+        bad_row[qo_base(&cfg) + qo_zps(&cfg) + 2 * D] += Val::ONE; // perturb zps[2] limb 0
         let bm = RowMajorMatrix::new(bad_row, n_cols(&cfg));
         assert!(
             !check_all_constraints(&air(cfg), &bm, &pubs(trace_leaf, ttree.root()), None).is_ok(),
@@ -11657,15 +11948,15 @@ mod real_proof_capstone {
         let post_bca_state = m.state; // == fs_squeeze_batch_combo_alpha's returned state
 
         // PUBLISHED helper: each comm stream is exactly RATE -> one RATE block.
-        let comm_blocks: Vec<[Val; RATE]> = real
+        let comm_blocks: Vec<[Val; DIGEST_ELEMS]> = real
             .comm_streams
             .iter()
             .map(|s| {
-                assert_eq!(s.len(), RATE, "commit-phase commitment must be one RATE block");
+                assert_eq!(s.len(), DIGEST_ELEMS, "commit-phase commitment is one DIGEST_ELEMS-wide digest");
                 core::array::from_fn(|i| s[i])
             })
             .collect();
-        let (betas, post_beta_state) = fs_squeeze_betas(post_bca_state, &comm_blocks);
+        let (betas, post_beta_state) = fs_squeeze_betas_digest(post_bca_state, &comm_blocks);
         assert_eq!(
             betas, real.betas,
             "published fs_squeeze_betas != real proof betas"

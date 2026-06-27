@@ -1,0 +1,333 @@
+//! Phase-3 TRUE single-proof O(1) block aggregator — verify N members IN-CIRCUIT and chain their
+//! verified roots in ONE proof.
+//!
+//! [`crate::accumulated_member`] folds in-circuit-verified Merkle ROOTS; the two-proof pipeline
+//! (`recursive_air` per member + a separate accumulator) verifies members but yields N+1 proofs.
+//! This AIR composes them into ONE: each trace ROW is a full `recursive_air` window (verifying that
+//! member's opening in-circuit, leaf/root INTERNAL — the leaf/root public binding auto-skips because
+//! this AIR's public-value count is the single `chain_state_root`, not the per-window
+//! `N_PUBLIC_MERKLE`) followed by a chain-fold node that folds the window's VERIFIED root into the
+//! running chain. With `recursive_air`'s only cross-row/boundary constraints gated behind
+//! `fan_out_queries > 0` (off here), each row is an independent member verification, and this AIR
+//! adds the genesis pin, the row→row chain, and the public `chain_state_root` on the last row.
+//!
+//! Result: ONE O(1) proof attests that every block member was verified in-circuit AND that they
+//! chain to `chain_state_root` — the single on-chain artifact (no N-proof fan-in). The member-cfg
+//! used here is the Merkle-opening verifier (`cfg_merkle`); swapping in the full FRI/DEEP recursive
+//! cfg (same composition, heavier per-row window + its fixtures) upgrades each row to a complete
+//! inner-proof verification.
+
+use crate::inlined_perm::{self, ConstantsExpr, PermCells, C_OUTPUT, PERM_COLS};
+use crate::merkle_air::{eval_node, node_blocks, ABSORB_LEN, N_PERM};
+use crate::recursive_air::{
+    n_cols as ra_n_cols, window_merkle_root, window_root_col, RecursiveAir, RecursiveConfig,
+};
+use descender_account_stark::{Val, DIGEST_ELEMS};
+use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
+use p3_field::PrimeCharacteristicRing;
+
+extern crate alloc;
+use alloc::vec::Vec;
+
+/// Column where the running chain state enters this row (after the recursive_air window columns).
+fn br_chain(cfg: &RecursiveConfig) -> usize {
+    ra_n_cols(cfg)
+}
+/// The chain-fold sponge node (folds chain_i ‖ verified_root_i).
+fn br_fold(cfg: &RecursiveConfig) -> usize {
+    br_chain(cfg) + DIGEST_ELEMS
+}
+/// Total width: one recursive_air window + chain state + the fold node.
+pub fn n_cols(cfg: &RecursiveConfig) -> usize {
+    br_fold(cfg) + N_PERM * PERM_COLS
+}
+/// Offset of this row's reconstructed chain digest `chain_{i+1}`.
+fn fold_digest(cfg: &RecursiveConfig) -> usize {
+    br_fold(cfg) + (N_PERM - 1) * PERM_COLS + C_OUTPUT
+}
+
+pub const PV_ROOT: usize = 0;
+pub const N_PUBLIC: usize = DIGEST_ELEMS;
+
+/// Build the block trace from pre-packed `recursive_air` member windows (each `ra_n_cols(cfg)` wide,
+/// e.g. from `recursive_air::pack_window`). Appends, per row, the incoming chain + the fold node that
+/// folds the window's verified Merkle root into the chain. Genesis chain = 0.
+pub fn build_trace(cfg: &RecursiveConfig, member_windows: &[Vec<Val>]) -> Vec<Val> {
+    assert!(!member_windows.is_empty(), "need >= 1 member");
+    let consts = inlined_perm::Constants::pinned();
+    let ra = ra_n_cols(cfg);
+    let width = n_cols(cfg);
+    let mut flat = Vec::with_capacity(member_windows.len() * width);
+    let mut chain = [Val::ZERO; DIGEST_ELEMS];
+    for win in member_windows {
+        assert_eq!(win.len(), ra, "member window width must equal ra_n_cols(cfg)");
+        let root = window_merkle_root(cfg, win); // the IN-CIRCUIT-verified member root
+        let mut row = win.clone();
+        row.extend_from_slice(&chain); // BR_CHAIN
+        let mut combined = [Val::ZERO; ABSORB_LEN];
+        combined[..DIGEST_ELEMS].copy_from_slice(&chain);
+        combined[DIGEST_ELEMS..].copy_from_slice(&root);
+        let (blocks, chain_out) = node_blocks(&combined, &consts);
+        row.extend_from_slice(&blocks); // BR_FOLD
+        debug_assert_eq!(row.len(), width);
+        flat.extend_from_slice(&row);
+        chain = chain_out;
+    }
+    flat
+}
+
+/// The block `chain_state_root` (last row's chain-out).
+pub fn trace_root(cfg: &RecursiveConfig, n: usize, flat: &[Val]) -> [Val; DIGEST_ELEMS] {
+    let off = (n - 1) * n_cols(cfg) + fold_digest(cfg);
+    core::array::from_fn(|i| flat[off + i])
+}
+
+/// True single-proof O(1) block aggregator AIR.
+pub struct BlockRecursiveAir {
+    pub cfg: RecursiveConfig,
+}
+
+impl<F: Sync> BaseAir<F> for BlockRecursiveAir {
+    fn width(&self) -> usize {
+        n_cols(&self.cfg)
+    }
+    fn num_public_values(&self) -> usize {
+        N_PUBLIC
+    }
+}
+
+struct RowCells<AB: AirBuilder<F = Val>> {
+    row: Vec<AB::Var>,
+}
+impl<AB: AirBuilder<F = Val>> PermCells<AB> for RowCells<AB> {
+    fn at(&self, idx: usize) -> AB::Expr {
+        self.row[idx].into()
+    }
+}
+
+impl<AB: AirBuilder<F = Val>> Air<AB> for BlockRecursiveAir {
+    fn eval(&self, builder: &mut AB) {
+        let cfg = &self.cfg;
+        // 1. Per-row member verification: the full recursive_air window constraints (leaf/root stay
+        //    internal — its public binding is gated on pubs.len() == N_PUBLIC_MERKLE, and this AIR's
+        //    public values are the single chain root). fan_out is off ⇒ no cross-row constraints.
+        RecursiveAir { cfg: cfg.clone() }.eval(builder);
+
+        let main = builder.main();
+        let local: Vec<AB::Var> = main.current_slice().to_vec();
+        let next: Vec<AB::Var> = main.next_slice().to_vec();
+        let pubs: Vec<AB::Expr> = builder.public_values().iter().map(|p| (*p).into()).collect();
+        let l = |i: usize| -> AB::Expr { local[i].into() };
+
+        let cells = RowCells::<AB> { row: local.clone() };
+        let consts = ConstantsExpr::<AB>::pinned();
+
+        // 2. chain fold: combined = chain_i ‖ verified_root_i (root at the window-root column).
+        let wr = window_root_col(cfg);
+        let chain_off = br_chain(cfg);
+        let chain_in: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(chain_off + i)).collect();
+        let root_e: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(wr + i)).collect();
+        let combined = |g: usize| -> AB::Expr {
+            if g < DIGEST_ELEMS {
+                chain_in[g].clone()
+            } else {
+                root_e[g - DIGEST_ELEMS].clone()
+            }
+        };
+        eval_node::<AB, _, _>(builder, &cells, br_fold(cfg), combined, &consts);
+        let chain_out = fold_digest(cfg);
+
+        // 3. genesis / chain / public root.
+        {
+            let mut fb = builder.when_first_row();
+            for i in 0..DIGEST_ELEMS {
+                fb.assert_zero(l(chain_off + i));
+            }
+        }
+        {
+            let is_tr = builder.is_transition();
+            let mut tb = builder.when(is_tr);
+            for i in 0..DIGEST_ELEMS {
+                let this_out: AB::Expr = local[chain_out + i].into();
+                let next_chain: AB::Expr = next[chain_off + i].into();
+                tb.assert_zero(next_chain - this_out);
+            }
+        }
+        if pubs.len() == N_PUBLIC {
+            let mut lb = builder.when_last_row();
+            for i in 0..DIGEST_ELEMS {
+                let this_out: AB::Expr = local[chain_out + i].into();
+                lb.assert_zero(this_out - pubs[PV_ROOT + i].clone());
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::challenger::RATE;
+    use crate::merkle::{compressor, Digest};
+    use crate::recursive_air::{pack_window, WindowInputs};
+    use descender_account_stark::{Challenge, SALT_ELEMS, WIDTH};
+    use p3_air::check_all_constraints;
+    use p3_field::{BasedVectorSpace, PrimeCharacteristicRing};
+    use p3_matrix::dense::RowMajorMatrix;
+    use p3_symmetric::PseudoCompressionFunction;
+
+    fn d(seed: u32) -> Digest {
+        core::array::from_fn(|i| Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32 + 1)))
+    }
+    fn ext(seed: u32) -> Challenge {
+        Challenge::from_basis_coefficients_fn(|i| Val::from_u32(seed.wrapping_mul(40503).wrapping_add(i as u32 + 1)))
+    }
+
+    /// Reference Merkle tree (mirror of merkle_air's RefTree).
+    struct RefTree {
+        levels: Vec<Vec<Digest>>,
+    }
+    impl RefTree {
+        fn new(mut leaves: Vec<Digest>) -> Self {
+            let c = compressor();
+            let mut levels = vec![leaves.clone()];
+            while leaves.len() > 1 {
+                let next: Vec<Digest> = leaves.chunks_exact(2).map(|p| c.compress([p[0], p[1]])).collect();
+                levels.push(next.clone());
+                leaves = next;
+            }
+            Self { levels }
+        }
+        fn root(&self) -> Digest {
+            self.levels.last().unwrap()[0]
+        }
+        fn auth_path(&self, index: usize) -> Vec<Digest> {
+            let mut sibs = Vec::new();
+            let mut idx = index;
+            for level in &self.levels[..self.levels.len() - 1] {
+                sibs.push(level[idx ^ 1]);
+                idx >>= 1;
+            }
+            sibs
+        }
+    }
+
+    fn cfg_merkle(levels: usize) -> RecursiveConfig {
+        RecursiveConfig { merkle_levels: levels, ..RecursiveConfig::single_window(levels) }
+    }
+
+    /// Pack one member's recursive_air window (a Merkle opening at index `idx`) + the reference root.
+    fn member_window(cfg: &RecursiveConfig, levels: usize, member: u32) -> (Vec<Val>, Digest) {
+        let n = 1usize << levels;
+        let leaves: Vec<Digest> = (0..n as u32).map(|x| d(x + member * 1000 + 1)).collect();
+        let tree = RefTree::new(leaves.clone());
+        let idx = (member as usize) % n;
+        let sibs = tree.auth_path(idx);
+        let inp = WindowInputs {
+            draw_out: Val::from_u32(idx as u32),
+            e0: ext(1), e1: ext(2), beta: ext(3), descent: &[],
+            merkle_leaf: leaves[idx], merkle_siblings: &sibs,
+            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO,
+            fs_blocks: &[], sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
+            fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS], layer_opens: &[],
+            final_poly_x: Val::ZERO, final_poly_coeffs: &[],
+            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[], quot_at_zeta: &[],
+            quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS], quot_x: Val::ZERO, quot_siblings: &[],
+        };
+        (pack_window(cfg, &inp), tree.root())
+    }
+
+    fn windows(cfg: &RecursiveConfig, levels: usize, n: usize) -> Vec<Vec<Val>> {
+        (0..n as u32).map(|m| member_window(cfg, levels, m).0).collect()
+    }
+
+    /// GOLDEN: a block of N in-circuit-verified members folds to chain_state_root and ACCEPTS — one
+    /// AIR verifies every member's opening AND chains the verified roots.
+    #[test]
+    fn accepts_block_of_in_circuit_verified_members() {
+        let levels = 3usize;
+        let cfg = cfg_merkle(levels);
+        for n in [1usize, 2, 4] {
+            let ws = windows(&cfg, levels, n);
+            let flat = build_trace(&cfg, &ws);
+            let root = trace_root(&cfg, n, &flat);
+            let m = RowMajorMatrix::new(flat, n_cols(&cfg));
+            let report = check_all_constraints(&BlockRecursiveAir { cfg: cfg.clone() }, &m, &root.to_vec(), None);
+            assert!(report.is_ok(), "honest block of {n} rejected: {} failures", report.failures.len());
+        }
+    }
+
+    /// Forgery: tampering a member's window sibling breaks that member's in-circuit verification ⇒
+    /// rejected (the member is verified in-circuit, not trusted).
+    #[test]
+    fn rejects_tampered_member_window() {
+        let levels = 3usize;
+        let cfg = cfg_merkle(levels);
+        let n = 4usize;
+        let ws = windows(&cfg, levels, n);
+        let flat = build_trace(&cfg, &ws);
+        let root = trace_root(&cfg, n, &flat);
+        let mut bad = flat.clone();
+        // tamper member row 1's first Merkle sibling cell (ML_SIBLING = DIGEST_ELEMS within its
+        // recursive_air window) — breaks that member's in-AIR Merkle fold.
+        bad[n_cols(&cfg) + DIGEST_ELEMS] += Val::ONE;
+        let m = RowMajorMatrix::new(bad, n_cols(&cfg));
+        assert!(!check_all_constraints(&BlockRecursiveAir { cfg: cfg.clone() }, &m, &root.to_vec(), None).is_ok(),
+            "a tampered member window was accepted");
+    }
+
+    /// KEYSTONE: the true single-proof O(1) block aggregator PROVES + VERIFIES at production q128 FRI
+    /// knobs — ONE proof attesting N in-circuit-verified members chain to chain_state_root.
+    #[test]
+    fn proves_at_production_q128_knobs() {
+        use descender_account_stark::{
+            MyCompress, MyHash, Perm, PROD_LOG_BLOWUP, PROD_NUM_QUERIES, PROD_QUERY_POW_BITS,
+        };
+        use p3_challenger::DuplexChallenger;
+        use p3_commit::ExtensionMmcs;
+        use p3_dft::Radix2DitParallel;
+        use p3_field::Field;
+        use p3_fri::{FriParameters, TwoAdicFriPcs};
+        use p3_koala_bear::default_koalabear_poseidon2_16;
+        use p3_merkle_tree::MerkleTreeMmcs;
+        use p3_uni_stark::{prove, verify, StarkConfig};
+
+        type ValMmcs = MerkleTreeMmcs<<Val as Field>::Packing, <Val as Field>::Packing, MyHash, MyCompress, 2, DIGEST_ELEMS>;
+        type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
+        type DftT = Radix2DitParallel<Val>;
+        type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
+
+        let perm: Perm = default_koalabear_poseidon2_16();
+        let val_mmcs = ValMmcs::new(MyHash::new(perm.clone()), MyCompress::new(MyHash::new(perm.clone())), 0);
+        let challenge_mmcs = ChallengeMmcs::new(val_mmcs.clone());
+        let fri_params = FriParameters {
+            log_blowup: PROD_LOG_BLOWUP,
+            log_final_poly_len: 0,
+            max_log_arity: 1,
+            num_queries: PROD_NUM_QUERIES,
+            commit_proof_of_work_bits: 0,
+            query_proof_of_work_bits: PROD_QUERY_POW_BITS,
+            mmcs: challenge_mmcs,
+        };
+        let pcs = Pcs::new(DftT::default(), val_mmcs, fri_params);
+        let config = OuterConfig::new(pcs, MyChallenger::new(perm.clone()));
+
+        let levels = 3usize;
+        let cfg = cfg_merkle(levels);
+        let n = 4usize;
+        let ws = windows(&cfg, levels, n);
+        let flat = build_trace(&cfg, &ws);
+        let root = trace_root(&cfg, n, &flat);
+        let trace = RowMajorMatrix::new(flat, n_cols(&cfg));
+        let proof = prove(&config, &BlockRecursiveAir { cfg: cfg.clone() }, trace, &root.to_vec());
+        verify(&config, &BlockRecursiveAir { cfg }, &proof, &root.to_vec())
+            .expect("true O(1) block proof must verify at production q128 knobs");
+    }
+}

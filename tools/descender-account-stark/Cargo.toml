@@ -31,6 +31,11 @@ serde = { version = "1", features = ["derive"] }
 # `tests/mask_prf_equivalence.rs` to prove the signer-side PRF and this proof's
 # in-circuit PRF derive byte-identical masks (drift prevention).
 descender-mask-prf = { path = "../descender-mask-prf" }
+# Test-only: frozen q128 KAT — serialize a deterministic production-config proof and pin its
+# SHA-256 digest (single-threaded for deterministic FRI query-PoW grinding).
+bincode = "1"
+sha2 = "0.10"
+rayon = "1"
 
 [features]
 default = ["parallel"]
