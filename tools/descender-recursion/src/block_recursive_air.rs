@@ -287,6 +287,107 @@ mod tests {
         pack_window(cfg, &inp)
     }
 
+    // ---- FS-transcript-driven FRI consumer per member: merkle + FS(alpha/zeta/beta) + descent ----
+    fn cfg_fs(levels: usize, k: usize, pre_rounds: usize, beta_rounds: usize) -> RecursiveConfig {
+        RecursiveConfig {
+            merkle_levels: levels,
+            num_rounds: beta_rounds,
+            deep_log_degree: Some(k),
+            fs_alpha_zeta: true,
+            fs_pre_alpha_rounds: pre_rounds,
+            fs_beta_rounds: beta_rounds,
+            ..RecursiveConfig::single_window(levels)
+        }
+    }
+
+    fn fs_block(seed: u32) -> [Val; RATE] {
+        core::array::from_fn(|i| Val::from_u32(seed.wrapping_mul(2246822519).wrapping_add(i as u32 + 3)))
+    }
+
+    /// Pack a member window verifying merkle + the FS-transcript-driven FRI descent: the FS sponge
+    /// squeezes alpha/zeta (prefix) and the per-round betas from the commitment blocks, and the
+    /// descent folds with THOSE squeezed betas (Fiat-Shamir-bound), plus the Merkle path. The fold
+    /// betas are not free — they come from the in-circuit FS squeeze.
+    fn member_window_fs(cfg: &RecursiveConfig, levels: usize, pre_rounds: usize, beta_rounds: usize, member: u32) -> Vec<Val> {
+        let n = 1usize << levels;
+        let idx = (member as usize) % n;
+        let leaves: Vec<Digest> = (0..n as u32).map(|r| d(r + member * 1000 + 3)).collect();
+        let tree = RefTree::new(leaves.clone());
+        let sibs = tree.auth_path(idx);
+        let fs_blocks: Vec<[Val; RATE]> = (0..(pre_rounds + 1) as u32).map(|r| fs_block(member * 50 + r)).collect();
+        let beta_blocks: Vec<Digest> = (0..beta_rounds as u32).map(|r| d(member * 60 + r + 1)).collect();
+        let descent: Vec<(Challenge, Challenge)> = (1..beta_rounds).map(|r| (ext(member * 70 + r as u32), Challenge::ZERO)).collect();
+        let inp = WindowInputs {
+            draw_out: Val::from_u32(idx as u32),
+            e0: ext(member + 1), e1: ext(member + 2), beta: Challenge::ZERO, descent: &descent,
+            merkle_leaf: leaves[idx], merkle_siblings: &sibs,
+            deep_zeta: Challenge::ZERO, deep_q: ext(member + 9), deep_alpha: Challenge::ZERO,
+            fs_blocks: &fs_blocks, sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
+            fs_beta_blocks: &beta_blocks, fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS], layer_opens: &[],
+            final_poly_x: Val::ZERO, final_poly_coeffs: &[],
+            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[], quot_at_zeta: &[],
+            quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS], quot_x: Val::ZERO, quot_siblings: &[],
+        };
+        pack_window(cfg, &inp)
+    }
+
+    /// DEPTH (FS-transcript): a block whose per-member verification is merkle + Fiat-Shamir
+    /// alpha/zeta/beta squeeze + FRI descent folded with the SQUEEZED betas, in ONE O(1) proof at
+    /// production q128 knobs — the FS-bound FRI consumer (betas not free).
+    #[test]
+    fn proves_block_with_fs_transcript_members_q128() {
+        use descender_account_stark::{MyCompress, MyHash, Perm, PROD_LOG_BLOWUP, PROD_NUM_QUERIES, PROD_QUERY_POW_BITS};
+        use p3_challenger::DuplexChallenger;
+        use p3_commit::ExtensionMmcs;
+        use p3_dft::Radix2DitParallel;
+        use p3_field::Field;
+        use p3_fri::{FriParameters, TwoAdicFriPcs};
+        use p3_koala_bear::default_koalabear_poseidon2_16;
+        use p3_merkle_tree::MerkleTreeMmcs;
+        use p3_uni_stark::{prove, verify, StarkConfig};
+
+        type ValMmcs = MerkleTreeMmcs<<Val as Field>::Packing, <Val as Field>::Packing, MyHash, MyCompress, 2, DIGEST_ELEMS>;
+        type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
+        type DftT = Radix2DitParallel<Val>;
+        type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
+
+        let levels = 3usize;
+        let k = 10usize;
+        let pre_rounds = 1usize;
+        let beta_rounds = 2usize;
+        let cfg = cfg_fs(levels, k, pre_rounds, beta_rounds);
+        let n = 4usize;
+        let ws: Vec<Vec<Val>> = (0..n as u32).map(|m| member_window_fs(&cfg, levels, pre_rounds, beta_rounds, m)).collect();
+        let flat = build_trace(&cfg, &ws);
+        let root = trace_root(&cfg, n, &flat);
+        let m = RowMajorMatrix::new(flat.clone(), n_cols(&cfg));
+        assert!(check_all_constraints(&BlockRecursiveAir { cfg: cfg.clone() }, &m, &root.to_vec(), None).is_ok(),
+            "honest FS-transcript block rejected");
+
+        let perm: Perm = default_koalabear_poseidon2_16();
+        let val_mmcs = ValMmcs::new(MyHash::new(perm.clone()), MyCompress::new(MyHash::new(perm.clone())), 0);
+        let challenge_mmcs = ChallengeMmcs::new(val_mmcs.clone());
+        let fri_params = FriParameters {
+            log_blowup: PROD_LOG_BLOWUP, log_final_poly_len: 0, max_log_arity: 1,
+            num_queries: PROD_NUM_QUERIES, commit_proof_of_work_bits: 0,
+            query_proof_of_work_bits: PROD_QUERY_POW_BITS, mmcs: challenge_mmcs,
+        };
+        let pcs = Pcs::new(DftT::default(), val_mmcs, fri_params);
+        let config = OuterConfig::new(pcs, MyChallenger::new(perm.clone()));
+        let trace = RowMajorMatrix::new(flat, n_cols(&cfg));
+        let proof = prove(&config, &BlockRecursiveAir { cfg: cfg.clone() }, trace, &root.to_vec());
+        verify(&config, &BlockRecursiveAir { cfg }, &proof, &root.to_vec())
+            .expect("FS-transcript-verified-member block proof must verify at production q128 knobs");
+    }
+
     // ---- FULL inner-proof consumer per member: DEEP + quotient + leaf-hash + Merkle ----
     fn cfg_full(levels: usize, width: usize, combine: usize, k: usize, q: usize) -> RecursiveConfig {
         RecursiveConfig {
