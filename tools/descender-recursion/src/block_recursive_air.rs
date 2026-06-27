@@ -288,7 +288,7 @@ mod tests {
     }
 
     // ---- FS-transcript-driven FRI consumer per member: merkle + FS(alpha/zeta/beta) + descent ----
-    fn cfg_fs(levels: usize, k: usize, pre_rounds: usize, beta_rounds: usize) -> RecursiveConfig {
+    fn cfg_fs(levels: usize, k: usize, pre_rounds: usize, beta_rounds: usize, final_n: usize) -> RecursiveConfig {
         RecursiveConfig {
             merkle_levels: levels,
             num_rounds: beta_rounds,
@@ -296,6 +296,8 @@ mod tests {
             fs_alpha_zeta: true,
             fs_pre_alpha_rounds: pre_rounds,
             fs_beta_rounds: beta_rounds,
+            fs_batch_combo_alpha: true,
+            fs_final_blocks: final_n,
             ..RecursiveConfig::single_window(levels)
         }
     }
@@ -303,12 +305,15 @@ mod tests {
     fn fs_block(seed: u32) -> [Val; RATE] {
         core::array::from_fn(|i| Val::from_u32(seed.wrapping_mul(2246822519).wrapping_add(i as u32 + 3)))
     }
+    fn fq_block(seed: u32) -> [Val; RATE] {
+        core::array::from_fn(|i| Val::from_u32(seed.wrapping_mul(40503).wrapping_add(i as u32 * 131 + 7)))
+    }
 
     /// Pack a member window verifying merkle + the FS-transcript-driven FRI descent: the FS sponge
     /// squeezes alpha/zeta (prefix) and the per-round betas from the commitment blocks, and the
     /// descent folds with THOSE squeezed betas (Fiat-Shamir-bound), plus the Merkle path. The fold
     /// betas are not free — they come from the in-circuit FS squeeze.
-    fn member_window_fs(cfg: &RecursiveConfig, levels: usize, pre_rounds: usize, beta_rounds: usize, member: u32) -> Vec<Val> {
+    fn member_window_fs(cfg: &RecursiveConfig, levels: usize, pre_rounds: usize, beta_rounds: usize, final_n: usize, member: u32) -> Vec<Val> {
         let n = 1usize << levels;
         let idx = (member as usize) % n;
         let leaves: Vec<Digest> = (0..n as u32).map(|r| d(r + member * 1000 + 3)).collect();
@@ -316,6 +321,7 @@ mod tests {
         let sibs = tree.auth_path(idx);
         let fs_blocks: Vec<[Val; RATE]> = (0..(pre_rounds + 1) as u32).map(|r| fs_block(member * 50 + r)).collect();
         let beta_blocks: Vec<Digest> = (0..beta_rounds as u32).map(|r| d(member * 60 + r + 1)).collect();
+        let finals: Vec<[Val; RATE]> = (0..final_n as u32).map(|r| fq_block(member * 80 + r)).collect();
         let descent: Vec<(Challenge, Challenge)> = (1..beta_rounds).map(|r| (ext(member * 70 + r as u32), Challenge::ZERO)).collect();
         let inp = WindowInputs {
             draw_out: Val::from_u32(idx as u32),
@@ -325,7 +331,7 @@ mod tests {
             fs_blocks: &fs_blocks, sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH],
             absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
             fs_beta_blocks: &beta_blocks, fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
-            fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &finals, fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS], layer_opens: &[],
             final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
@@ -363,9 +369,10 @@ mod tests {
         let k = 10usize;
         let pre_rounds = 1usize;
         let beta_rounds = 2usize;
-        let cfg = cfg_fs(levels, k, pre_rounds, beta_rounds);
+        let final_n = 2usize;
+        let cfg = cfg_fs(levels, k, pre_rounds, beta_rounds, final_n);
         let n = 4usize;
-        let ws: Vec<Vec<Val>> = (0..n as u32).map(|m| member_window_fs(&cfg, levels, pre_rounds, beta_rounds, m)).collect();
+        let ws: Vec<Vec<Val>> = (0..n as u32).map(|m| member_window_fs(&cfg, levels, pre_rounds, beta_rounds, final_n, m)).collect();
         let flat = build_trace(&cfg, &ws);
         let root = trace_root(&cfg, n, &flat);
         let m = RowMajorMatrix::new(flat.clone(), n_cols(&cfg));
