@@ -57,6 +57,7 @@ mod counting_serializer;
 pub mod reduce_gadget;
 pub mod sponge_compression;
 pub mod pad_seed_registry; // F2 — global reorg-safe pad-seed admission registry (mask-PRF single-use, persistent across reorgs)
+pub mod poseidon2_sponge; // shared in-AIR Poseidon2 sponge primitives (free-function form; spend/recursion reuse)
 pub mod spend_air; // Phase-2 — SPEND leaf AIR (core): packed-witness consumption + canonical residues + statement
 
 use p3_field::PrimeCharacteristicRing;
@@ -817,14 +818,23 @@ mod small_config_classc_tests {
     #[test]
     fn small_config_spend_prove_verify() {
         use crate::spend_air::{generate_spend_trace, pack_spend_witness, SpendAir, SpendWitness};
+        use p3_koala_bear::{
+            KOALABEAR_POSEIDON2_RC_16_EXTERNAL_FINAL, KOALABEAR_POSEIDON2_RC_16_EXTERNAL_INITIAL,
+            KOALABEAR_POSEIDON2_RC_16_INTERNAL,
+        };
 
         let perm: Perm = default_koalabear_poseidon2_16();
         let hash = MyHash::new(perm.clone());
         let compress = MyCompress::new(MyHash::new(perm.clone()));
+        let air = SpendAir::from_arrays(
+            KOALABEAR_POSEIDON2_RC_16_EXTERNAL_INITIAL,
+            KOALABEAR_POSEIDON2_RC_16_INTERNAL,
+            KOALABEAR_POSEIDON2_RC_16_EXTERNAL_FINAL,
+        );
 
-        // Residues consumed by the spend = the SAME frame the creation leaf packs: syndrome[12] from
-        // `small_secrets` ‖ masked_projection[6]. Here we use a self-consistent canonical frame and
-        // confirm the spend AIR's in-circuit packing reproduces the reference packer byte-for-byte.
+        // Residues consumed by the spend = a canonical reviewed-fq12 frame; the AIR's in-circuit
+        // packing reproduces the reference packer, and the in-AIR Poseidon2 frame-digest matches the
+        // native recompute (run_sponge), all checked by prove/verify.
         let residues: [u16; 18] = core::array::from_fn(|i| ((i as u32 * 1009 + 17) % 12289) as u16);
         let packed = pack_spend_witness(&residues);
         let w = SpendWitness {
@@ -835,10 +845,10 @@ mod small_config_classc_tests {
             account_state_root: core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(7)),
             message_digest: core::array::from_fn(|i| (i as u8).wrapping_mul(7).wrapping_add(1)),
         };
-        let (trace, pv) = generate_spend_trace(&w);
+        let (trace, pv, _frame_digest) = generate_spend_trace(&air, &w);
 
         let cfg = small_config(&perm, &hash, &compress);
-        let proof = p3_prove(&cfg, &SpendAir, trace, &pv);
-        p3_verify(&cfg, &SpendAir, &proof, &pv).expect("small-config spend proof verifies");
+        let proof = p3_prove(&cfg, &air, trace, &pv);
+        p3_verify(&cfg, &air, &proof, &pv).expect("small-config spend proof verifies");
     }
 }

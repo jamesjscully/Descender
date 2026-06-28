@@ -1,39 +1,44 @@
-//! Phase-2 SPEND leaf AIR (core) — proves a spend authorizes EXACTLY the packed witness the
-//! account-creation leaf produced.
+//! Phase-2 SPEND leaf AIR — proves a spend authorizes EXACTLY the packed witness the
+//! account-creation leaf produced, and binds the spend STATEMENT to it via an in-AIR Poseidon2
+//! checked-core frame digest.
 //!
-//! # What this proves (and what it defers)
+//! # What this proves
 //!
-//! The creation leaf ([`crate::air`], CLASS C) PUBLISHES a `packed_witness_commitment` — 32 bytes
-//! that 14-bit-LE-pack the 18 canonical q12289 residues `syndrome[12] ‖ masked_projection[6]` (the
-//! "reviewed-fq12 packed witness state-18" frame the deployed spend verifier consumes). For the
-//! `{creation + spend}` co-verification to be sound, the spend must consume the SAME packed witness,
-//! over canonical residues — otherwise creation and spend can diverge (audit MED-2).
+//! 1. **Packed-witness consumption (creation↔spend binding).** The PUBLIC `packed_witness_commitment`
+//!    (the 32-byte reviewed-fq12 packed-witness state-18 frame the creation leaf publishes) is a
+//!    well-formed 14-bit-LE packing of 18 residues `syndrome[12] ‖ projection[6]`, EACH canonical
+//!    `< q12289`, byte-for-bit identical to the creation leaf's CLASS-C packing
+//!    (`pack_reviewed_fq12_packed_witness_state18_from_parts`). The residue VALUES are private — the
+//!    spend does not re-open them ("no spend-time opening"); only the public commitment and the
+//!    canonical-packing relation are proven.
+//! 2. **Checked-core FRAME-DIGEST binding (statement ↔ witness).** A Poseidon2 sponge computes, IN
+//!    CIRCUIT, `frame_digest = Poseidon2(DOMAIN ‖ message ‖ account_id ‖ slot_id ‖ account_state_root
+//!    ‖ packed_witness_commitment)`, with the sponge's input lanes constrained EQUAL to the pinned
+//!    domain and the PUBLIC statement bytes, and the squeezed digest exposed as the PUBLIC
+//!    `frame_digest`. So the statement is no longer a free passenger: it is cryptographically bound to
+//!    the exact packed witness under a domain-separated digest (the SHA→Poseidon2 rehost of the
+//!    deployed direct spend verifier's challenge frame — see
+//!    `research/spend_fs_full_poseidon2_rehost_plan.md`).
 //!
-//! This AIR is the spend side of that invariant: it proves, IN-CIRCUIT, that the PUBLIC
-//! `packed_witness_commitment` it carries is a well-formed packing of 18 residues, EACH canonical
-//! `< q12289`, using the byte-for-byte-identical 14-bit-LE scheme as the creation leaf
-//! (`pack_reviewed_fq12_packed_witness_state18_from_parts`). It then exposes the spend STATEMENT
-//! (message ‖ account_id ‖ slot_id ‖ account_state_root ‖ packed_witness_commitment) as the
-//! transcript-bound public values, and pins a `spend_relation_id` so a spend proof for this
-//! relation/profile cannot be reinterpreted as another's.
+//! `frame_digest` is the value the recursion / settlement layer (and the deployed registry) bind: it
+//! commits the spend to one (message, account, slot, state) over one packed witness, which is equated
+//! to the creation proof's `packed_witness_commitment` to close audit MED-2.
 //!
-//! DEFERRED to later increments (documented, not hidden):
-//!   * the Poseidon2 checked-core FRAME-DIGEST sponge that binds message/account/slot/state TO the
-//!     packed witness in-circuit (the SHA→Poseidon2 rehost; today the deployed Rust spend verifier
-//!     does this off-circuit — see `research/spend_fs_full_poseidon2_rehost_plan.md`);
-//!   * the full Fq12 checked-core SIGNATURE equation over the syndrome (the heavy cryptographic core,
-//!     performed by the deployed direct spend verifier in `parameter-search`).
-//!
-//! So the binding this AIR establishes is: a spend proof exists for a WELL-FORMED packed witness of
-//! canonical residues, carrying a fixed statement — the consumption anchor the recursion / settlement
-//! layer equates to the creation proof's `packed_witness_commitment` (closing MED-2's spend half).
-//! The residue VALUES are private (the spend does not re-open them); only the public commitment and
-//! the canonical-packing relation are proven, matching "no spend-time opening" in the spec.
+//! DEFERRED to the next increment (documented): the full Fq12 checked-core SIGNATURE equation over
+//! the syndrome (the heavy cryptographic core, performed by the deployed direct spend verifier in
+//! `parameter-search`). This AIR proves the spend is over a well-formed, canonical packed witness and
+//! a domain-bound statement; the signature-acceptance predicate is the remaining piece.
 
-use crate::config::Val;
+use crate::config::{
+    Val, HALF_FULL_ROUNDS, PARTIAL_ROUNDS, SBOX_DEGREE, SBOX_REGISTERS, WIDTH,
+};
+use crate::poseidon2_sponge::{build_elems, eval_sponge, run_sponge, SpongeSpec};
+use crate::reduce_gadget::perm_num_cols;
+use crate::LinLayers;
 use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
 use p3_field::PrimeCharacteristicRing;
 use p3_matrix::dense::RowMajorMatrix;
+use p3_poseidon2_air::RoundConstants;
 
 extern crate alloc;
 use alloc::vec::Vec;
@@ -57,35 +62,56 @@ pub const SPEND_COMMIT_BYTES: usize = 32;
 
 const BYTE_BITS: usize = 8;
 
-// ---- Per-residue column layout: value ‖ bits[14] ‖ slack ‖ slack_bits[14] (canonical < q) -------
-//
-// Identical to the creation leaf's `SYNDROME_CELLS` shape; ALL 18 residues are canonical-checked
-// here (the spend consumes a fully-canonical frame).
+// ---- Residue column layout: value ‖ bits[14] ‖ slack ‖ slack_bits[14] (canonical < q) -----------
 
 const RESIDUE_CELLS: usize = 1 + SPEND_RESIDUE_BITS + 1 + SPEND_RESIDUE_BITS; // 30
-/// Total main-trace width.
-pub const SPEND_WIDTH: usize = SPEND_RESIDUES * RESIDUE_CELLS; // 540
+/// Width of the residue (packed-witness consumption) region.
+pub const RESIDUE_REGION_WIDTH: usize = SPEND_RESIDUES * RESIDUE_CELLS; // 540
 
 const fn residue_base(r: usize) -> usize {
     r * RESIDUE_CELLS
 }
 
-// ---- Public-value layout (the spend statement) --------------------------------------------------
+// ---- Frame-digest sponge: DOMAIN ‖ message[32] ‖ account_id[32] ‖ slot[8] ‖ state[32] ‖ packed[32]
+
+const FRAME_DOMAIN_LANES: usize = 1;
+const FRAME_MSG_LANE: usize = FRAME_DOMAIN_LANES; // 1
+const FRAME_ACCT_LANE: usize = FRAME_MSG_LANE + 32; // 33
+const FRAME_SLOT_LANE: usize = FRAME_ACCT_LANE + 32; // 65
+const FRAME_STATE_LANE: usize = FRAME_SLOT_LANE + 8; // 73
+const FRAME_PACKED_LANE: usize = FRAME_STATE_LANE + 32; // 105
+/// Total frame-sponge input lanes (DOMAIN ‖ 136 statement bytes).
+pub const FRAME_INPUT_LANES: usize = FRAME_PACKED_LANE + 32; // 137
+/// Squeezed frame-digest lanes.
+pub const FRAME_DIGEST_ELEMS: usize = 8;
+
+/// Domain-separation tag for the spend frame digest ("SPFR"; canonical < the KoalaBear modulus).
+pub const SPEND_FRAME_DOMAIN: u32 = 0x5350_4652;
+
+/// The frame sponge spec: DOMAIN lane (not byte-ranged) ‖ 136 byte-ranged statement lanes → 8 out.
+fn frame_spec() -> SpongeSpec {
+    let mut br = alloc::vec![false; FRAME_DOMAIN_LANES];
+    br.extend(alloc::vec![true; FRAME_INPUT_LANES - FRAME_DOMAIN_LANES]);
+    SpongeSpec::new(br, FRAME_DIGEST_ELEMS)
+}
+
+// ---- Public-value layout (the spend statement + frame digest) -----------------------------------
 
 pub const PV_PACKED_OFF: usize = 0;
 pub const PV_ACCOUNT_ID_OFF: usize = PV_PACKED_OFF + SPEND_COMMIT_BYTES; // 32
 pub const PV_SLOT_OFF: usize = PV_ACCOUNT_ID_OFF + 32; // 64
 pub const PV_STATE_ROOT_OFF: usize = PV_SLOT_OFF + 8; // 72
 pub const PV_MESSAGE_OFF: usize = PV_STATE_ROOT_OFF + 32; // 104
-pub const PV_RELATION_ID_OFF: usize = PV_MESSAGE_OFF + 32; // 136
+pub const PV_FRAME_DIGEST_OFF: usize = PV_MESSAGE_OFF + 32; // 136
+pub const PV_RELATION_ID_OFF: usize = PV_FRAME_DIGEST_OFF + FRAME_DIGEST_ELEMS; // 144
 pub const SPEND_RELATION_ID_ELEMS: usize = 4;
-pub const SPEND_N_PUBLIC: usize = PV_RELATION_ID_OFF + SPEND_RELATION_ID_ELEMS; // 140
+pub const SPEND_N_PUBLIC: usize = PV_RELATION_ID_OFF + SPEND_RELATION_ID_ELEMS; // 148
 
 /// Pinned spend relation/profile id. Bump on any change to the spend relation / frame / public
-/// layout. Encodes: tag "SPND" ‖ ("v1" ‖ public-width) ‖ (residues<<8 ‖ bits) ‖ q.
+/// layout. Encodes: tag "SPND" ‖ ("v2" ‖ public-width) ‖ (residues<<8 ‖ bits) ‖ q.
 pub const SPEND_RELATION_ID: [u32; SPEND_RELATION_ID_ELEMS] = [
     0x5350_4E44, // "SPND"
-    0x7631_0000 | (SPEND_N_PUBLIC as u32 & 0xFFFF),
+    0x7632_0000 | (SPEND_N_PUBLIC as u32 & 0xFFFF), // v2 (frame-digest added)
     ((SPEND_RESIDUES as u32) << 8) | (SPEND_RESIDUE_BITS as u32),
     SPEND_Q,
 ];
@@ -94,12 +120,46 @@ fn ce<AB: AirBuilder>(v: u64) -> AB::Expr {
     AB::Expr::from(AB::F::from_u64(v))
 }
 
-/// The spend leaf AIR (core): packed-witness well-formedness + canonical residues + statement.
-pub struct SpendAir;
+/// The spend leaf AIR: packed-witness consumption + canonical residues + checked-core frame digest.
+pub struct SpendAir {
+    constants: RoundConstants<Val, WIDTH, HALF_FULL_ROUNDS, PARTIAL_ROUNDS>,
+    beginning_full_rc: [[Val; WIDTH]; HALF_FULL_ROUNDS],
+    partial_rc: [Val; PARTIAL_ROUNDS],
+    ending_full_rc: [[Val; WIDTH]; HALF_FULL_ROUNDS],
+    perm_cols: usize,
+}
 
-impl<F: PrimeCharacteristicRing + Sync> BaseAir<F> for SpendAir {
+impl SpendAir {
+    pub fn from_arrays(
+        beginning_full_rc: [[Val; WIDTH]; HALF_FULL_ROUNDS],
+        partial_rc: [Val; PARTIAL_ROUNDS],
+        ending_full_rc: [[Val; WIDTH]; HALF_FULL_ROUNDS],
+    ) -> Self {
+        let constants = RoundConstants::new(beginning_full_rc, partial_rc, ending_full_rc);
+        let perm_cols =
+            perm_num_cols::<WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS>();
+        Self {
+            constants,
+            beginning_full_rc,
+            partial_rc,
+            ending_full_rc,
+            perm_cols,
+        }
+    }
+
+    /// Column offset of the frame-sponge block (after the residue region).
+    fn frame_off(&self) -> usize {
+        RESIDUE_REGION_WIDTH
+    }
+
+    pub fn trace_width(&self) -> usize {
+        RESIDUE_REGION_WIDTH + frame_spec().width(self.perm_cols)
+    }
+}
+
+impl BaseAir<Val> for SpendAir {
     fn width(&self) -> usize {
-        SPEND_WIDTH
+        self.trace_width()
     }
     fn num_public_values(&self) -> usize {
         SPEND_N_PUBLIC
@@ -112,9 +172,8 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for SpendAir {
         let local = main.current_slice().to_vec();
         let public = builder.public_values().to_vec();
 
-        // The 252-bit residue stream, in residue order (residue r → bits [r*14, r*14+14)).
+        // ---- (1) packed-witness consumption: 18 canonical residues pack to the public commitment.
         let mut stream: Vec<AB::Expr> = Vec::with_capacity(SPEND_STREAM_BITS);
-
         for r in 0..SPEND_RESIDUES {
             let base = residue_base(r);
             let val_off = base;
@@ -122,7 +181,6 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for SpendAir {
             let slack_off = base + 1 + SPEND_RESIDUE_BITS;
             let slack_bits_off = slack_off + 1;
 
-            // value == recompose(bits[14]); each bit boolean; bits feed the stream.
             let mut val_rc = AB::Expr::ZERO;
             for b in 0..SPEND_RESIDUE_BITS {
                 let bit = local[bits_off + b];
@@ -132,7 +190,6 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for SpendAir {
             }
             builder.assert_eq(local[val_off].into(), val_rc);
 
-            // Canonical `< q`: value + slack == q-1 with slack ∈ [0, q) via its own 14-bit decomp.
             let mut slack_rc = AB::Expr::ZERO;
             for b in 0..SPEND_RESIDUE_BITS {
                 let bit = local[slack_bits_off + b];
@@ -147,9 +204,6 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for SpendAir {
         }
         debug_assert_eq!(stream.len(), SPEND_STREAM_BITS);
 
-        // packed_witness_commitment[k] == LE byte of the stream (high bits 252..256 zero by
-        // construction — out-of-range stream positions contribute ZERO). Binds the private residue
-        // bits to the PUBLIC commitment, byte-for-byte identical to the creation leaf's packing.
         for k in 0..SPEND_COMMIT_BYTES {
             let mut byte = AB::Expr::ZERO;
             for b in 0..BYTE_BITS {
@@ -161,7 +215,40 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for SpendAir {
             builder.assert_eq(byte, public[PV_PACKED_OFF + k].clone().into());
         }
 
-        // Pin the spend relation id (proof-system bookkeeping; the verifier also checks it).
+        // ---- (2) checked-core frame digest: bind statement ‖ packed witness via Poseidon2.
+        let foff = self.frame_off();
+        let spec = frame_spec();
+        // Bind the sponge input lanes: DOMAIN ‖ message ‖ account_id ‖ slot ‖ state_root ‖ packed.
+        builder.assert_eq(local[foff].into(), ce::<AB>(SPEND_FRAME_DOMAIN as u64));
+        let bind = |builder: &mut AB, lane0: usize, pv0: usize, n: usize, local: &[AB::Var]| {
+            for i in 0..n {
+                builder.assert_eq(
+                    local[foff + lane0 + i].into(),
+                    public[pv0 + i].clone().into(),
+                );
+            }
+        };
+        bind(builder, FRAME_MSG_LANE, PV_MESSAGE_OFF, 32, &local);
+        bind(builder, FRAME_ACCT_LANE, PV_ACCOUNT_ID_OFF, 32, &local);
+        bind(builder, FRAME_SLOT_LANE, PV_SLOT_OFF, 8, &local);
+        bind(builder, FRAME_STATE_LANE, PV_STATE_ROOT_OFF, 32, &local);
+        bind(builder, FRAME_PACKED_LANE, PV_PACKED_OFF, 32, &local);
+
+        let outs = eval_sponge::<AB, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS>(
+            builder,
+            &local,
+            foff,
+            self.perm_cols,
+            &spec,
+            &self.beginning_full_rc,
+            &self.partial_rc,
+            &self.ending_full_rc,
+        );
+        for j in 0..FRAME_DIGEST_ELEMS {
+            builder.assert_eq(outs[j].clone(), public[PV_FRAME_DIGEST_OFF + j].clone().into());
+        }
+
+        // ---- (3) pin the spend relation id (proof-system bookkeeping).
         for j in 0..SPEND_RELATION_ID_ELEMS {
             builder.assert_eq(
                 public[PV_RELATION_ID_OFF + j].clone().into(),
@@ -171,9 +258,8 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for SpendAir {
     }
 }
 
-/// The spend statement supplied by the prover/caller. `packed_witness_commitment` is the EXACT
-/// 32-byte value the creation leaf published (the consumption anchor); the residues are the prover's
-/// private opening of it (canonical q12289 values). `syndrome[12] ‖ projection[6]`.
+/// The spend statement supplied by the prover. `packed_witness_commitment` is the EXACT 32-byte value
+/// the creation leaf published; `residues` are the prover's private canonical opening of it.
 pub struct SpendWitness {
     pub residues: [u16; SPEND_RESIDUES],
     pub packed_witness_commitment: [u8; SPEND_COMMIT_BYTES],
@@ -206,10 +292,16 @@ pub fn pack_spend_witness(residues: &[u16; SPEND_RESIDUES]) -> [u8; SPEND_COMMIT
     out
 }
 
-/// Build the single-row spend trace + the public-value vector for [`SpendAir`]. The trace is padded
-/// to 2 identical rows (smallest power of two). Panics if a residue is non-canonical (`>= q`).
-pub fn generate_spend_trace(w: &SpendWitness) -> (RowMajorMatrix<Val>, Vec<Val>) {
-    let mut row = [Val::ZERO; SPEND_WIDTH];
+/// Build the single-row spend trace (padded to 2 rows) + the public-value vector for [`SpendAir`].
+/// Returns `(trace, public_values, frame_digest)`. Panics on a non-canonical residue (`>= q`).
+pub fn generate_spend_trace(
+    air: &SpendAir,
+    w: &SpendWitness,
+) -> (RowMajorMatrix<Val>, Vec<Val>, [Val; FRAME_DIGEST_ELEMS]) {
+    let width = air.trace_width();
+    let mut row = alloc::vec![Val::ZERO; width];
+
+    // (1) residue cells.
     for (r, &v) in w.residues.iter().enumerate() {
         assert!((v as u32) < SPEND_Q, "spend residue {r} is non-canonical (>= q12289)");
         let base = residue_base(r);
@@ -224,20 +316,60 @@ pub fn generate_spend_trace(w: &SpendWitness) -> (RowMajorMatrix<Val>, Vec<Val>)
         }
     }
 
+    // (2) frame-sponge block: input lanes ‖ byte bits ‖ perm blocks.
+    let foff = air.frame_off();
+    let spec = frame_spec();
+    let mut data: Vec<u32> = Vec::with_capacity(FRAME_INPUT_LANES);
+    data.push(SPEND_FRAME_DOMAIN);
+    data.extend(w.message_digest.iter().map(|&b| b as u32));
+    data.extend(w.account_id.iter().map(|&b| b as u32));
+    data.extend(w.slot_id.to_le_bytes().iter().map(|&b| b as u32));
+    data.extend(w.account_state_root.iter().map(|&b| b as u32));
+    data.extend(w.packed_witness_commitment.iter().map(|&b| b as u32));
+    debug_assert_eq!(data.len(), FRAME_INPUT_LANES);
+
+    for (i, &v) in data.iter().enumerate() {
+        row[foff + i] = Val::from_u32(v);
+    }
+    let lane_bits_off = spec.n_input;
+    let mut bit_cursor = 0usize;
+    for (i, &v) in data.iter().enumerate() {
+        if spec.byte_ranged[i] {
+            for b in 0..BYTE_BITS {
+                row[foff + lane_bits_off + bit_cursor * BYTE_BITS + b] = Val::from_u32((v >> b) & 1);
+            }
+            bit_cursor += 1;
+        }
+    }
+    let elems = build_elems::<Val>(&data, &spec);
+    let (blocks, _post, outputs) = run_sponge::<
+        Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+    >(&elems, &spec, &air.constants, air.perm_cols);
+    let perms_off = spec.perms_off();
+    for (p, b) in blocks.iter().enumerate() {
+        let base = foff + perms_off + p * air.perm_cols;
+        row[base..base + air.perm_cols].copy_from_slice(b);
+    }
+    let mut frame_digest = [Val::ZERO; FRAME_DIGEST_ELEMS];
+    for j in 0..FRAME_DIGEST_ELEMS {
+        frame_digest[j] = outputs[j];
+    }
+
+    // Public values.
     let mut pv = Vec::with_capacity(SPEND_N_PUBLIC);
     pv.extend(w.packed_witness_commitment.iter().map(|&b| Val::from_u32(b as u32)));
     pv.extend(w.account_id.iter().map(|&b| Val::from_u32(b as u32)));
     pv.extend(w.slot_id.to_le_bytes().iter().map(|&b| Val::from_u32(b as u32)));
     pv.extend(w.account_state_root.iter().map(|&b| Val::from_u32(b as u32)));
     pv.extend(w.message_digest.iter().map(|&b| Val::from_u32(b as u32)));
+    pv.extend(frame_digest.iter().copied());
     pv.extend(SPEND_RELATION_ID.iter().map(|&id| Val::from_u32(id)));
     debug_assert_eq!(pv.len(), SPEND_N_PUBLIC);
 
-    // Pad to 2 identical rows (smallest power-of-two height).
-    let mut values = Vec::with_capacity(2 * SPEND_WIDTH);
+    let mut values = Vec::with_capacity(2 * width);
     values.extend_from_slice(&row);
     values.extend_from_slice(&row);
-    (RowMajorMatrix::new(values, SPEND_WIDTH), pv)
+    (RowMajorMatrix::new(values, width), pv, frame_digest)
 }
 
 #[cfg(test)]
@@ -248,9 +380,20 @@ mod tests {
         SYNDROME_LANES,
     };
     use p3_air::check_constraints;
+    use p3_koala_bear::{
+        KOALABEAR_POSEIDON2_RC_16_EXTERNAL_FINAL, KOALABEAR_POSEIDON2_RC_16_EXTERNAL_INITIAL,
+        KOALABEAR_POSEIDON2_RC_16_INTERNAL,
+    };
+
+    fn air() -> SpendAir {
+        SpendAir::from_arrays(
+            KOALABEAR_POSEIDON2_RC_16_EXTERNAL_INITIAL,
+            KOALABEAR_POSEIDON2_RC_16_INTERNAL,
+            KOALABEAR_POSEIDON2_RC_16_EXTERNAL_FINAL,
+        )
+    }
 
     fn sample_witness() -> SpendWitness {
-        // 18 canonical residues (12 syndrome ‖ 6 projection).
         let residues: [u16; SPEND_RESIDUES] =
             core::array::from_fn(|i| ((i as u32 * 1009 + 17) % SPEND_Q) as u16);
         let packed = pack_spend_witness(&residues);
@@ -264,8 +407,7 @@ mod tests {
         }
     }
 
-    /// FIDELITY-PIN: the spend frame shape matches the creation leaf's CLASS-C frame exactly, so the
-    /// two crates pack/consume the identical reviewed-fq12 packed-witness state-18 layout.
+    /// FIDELITY-PIN: the spend frame shape matches the creation leaf's CLASS-C frame exactly.
     #[test]
     fn spend_frame_shape_matches_creation_leaf() {
         assert_eq!(SPEND_SYNDROME_LANES, SYNDROME_LANES);
@@ -275,53 +417,77 @@ mod tests {
         assert_eq!(SPEND_COMMIT_BYTES, PACKED_WITNESS_COMMITMENT_BYTES);
     }
 
-    /// COMPLETENESS: an honest spend witness satisfies every constraint.
+    /// COMPLETENESS: an honest spend witness (incl. the in-AIR frame sponge) satisfies all constraints.
     #[test]
     fn honest_spend_satisfies_constraints() {
-        let (trace, pv) = generate_spend_trace(&sample_witness());
-        check_constraints(&SpendAir, &trace, &pv);
+        let a = air();
+        let (trace, pv, _fd) = generate_spend_trace(&a, &sample_witness());
+        check_constraints(&a, &trace, &pv);
     }
 
-    /// SOUNDNESS: claim a different packed_witness_commitment than the residues actually pack to →
-    /// the byte-packing equality fails (the spend cannot consume a witness it did not open).
+    /// SOUNDNESS: claim a different packed_witness_commitment than the residues pack to → the
+    /// byte-packing equality fails.
     #[test]
     #[should_panic]
     fn tampered_packed_commitment_violates_constraints() {
-        let (trace, mut pv) = generate_spend_trace(&sample_witness());
-        pv[PV_PACKED_OFF] += Val::ONE; // claim a different commitment byte 0
-        check_constraints(&SpendAir, &trace, &pv);
+        let a = air();
+        let (trace, mut pv, _fd) = generate_spend_trace(&a, &sample_witness());
+        pv[PV_PACKED_OFF] += Val::ONE;
+        check_constraints(&a, &trace, &pv);
     }
 
     /// SOUNDNESS: a non-canonical residue (value + slack != q-1) is rejected.
     #[test]
     #[should_panic]
     fn noncanonical_residue_violates_constraints() {
-        let (mut trace, pv) = generate_spend_trace(&sample_witness());
-        // Corrupt residue 0's slack so value+slack != q-1 (both rows).
+        let a = air();
+        let (mut trace, pv, _fd) = generate_spend_trace(&a, &sample_witness());
         let slack_off = residue_base(0) + 1 + SPEND_RESIDUE_BITS;
+        let w = a.trace_width();
         for r in 0..2 {
-            trace.values[r * SPEND_WIDTH + slack_off] += Val::ONE;
+            trace.values[r * w + slack_off] += Val::ONE;
         }
-        check_constraints(&SpendAir, &trace, &pv);
+        check_constraints(&a, &trace, &pv);
     }
 
-    /// SOUNDNESS: a wrong spend_relation_id (not the pinned constant) is rejected.
+    /// SOUNDNESS: tamper the claimed frame_digest → the squeeze-equality fails (statement is bound).
+    #[test]
+    #[should_panic]
+    fn tampered_frame_digest_violates_constraints() {
+        let a = air();
+        let (trace, mut pv, _fd) = generate_spend_trace(&a, &sample_witness());
+        pv[PV_FRAME_DIGEST_OFF] += Val::ONE;
+        check_constraints(&a, &trace, &pv);
+    }
+
+    /// SOUNDNESS: change a statement public (message byte) WITHOUT recomputing the digest → the
+    /// frame input-lane binding (lane == public message byte) fails. The statement is bound to the
+    /// digest, so it cannot be swapped post hoc.
+    #[test]
+    #[should_panic]
+    fn statement_swap_without_digest_violates_constraints() {
+        let a = air();
+        let (trace, mut pv, _fd) = generate_spend_trace(&a, &sample_witness());
+        pv[PV_MESSAGE_OFF] += Val::ONE; // change the message but keep the old digest + trace
+        check_constraints(&a, &trace, &pv);
+    }
+
+    /// SOUNDNESS: a wrong spend_relation_id is rejected.
     #[test]
     #[should_panic]
     fn wrong_spend_relation_id_violates_constraints() {
-        let (trace, mut pv) = generate_spend_trace(&sample_witness());
+        let a = air();
+        let (trace, mut pv, _fd) = generate_spend_trace(&a, &sample_witness());
         pv[PV_RELATION_ID_OFF] += Val::ONE;
-        check_constraints(&SpendAir, &trace, &pv);
+        check_constraints(&a, &trace, &pv);
     }
 
-    /// The reference packer matches a hand bit-pack of residue 0 (LE), sanity-checking the layout.
+    /// The reference packer matches a hand bit-pack of residue 0 (LE).
     #[test]
     fn packer_roundtrip_low_residue() {
         let mut residues = [0u16; SPEND_RESIDUES];
-        residues[0] = 0x1ABC & (SPEND_Q as u16 - 1).min(0x3FFF); // 14-bit value
-        residues[0] = (residues[0] as u32 % SPEND_Q) as u16;
+        residues[0] = ((0x1ABCu32) % SPEND_Q) as u16;
         let packed = pack_spend_witness(&residues);
-        // residue 0 occupies bits 0..14 → bytes 0 (8 bits) + low 6 bits of byte 1.
         let recon = (packed[0] as u32) | (((packed[1] as u32) & 0x3F) << 8);
         assert_eq!(recon, residues[0] as u32);
     }
