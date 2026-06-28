@@ -378,3 +378,16 @@ unforgeability is still enforced off-circuit by the deployed direct spend verifi
 input-derivations. Also deferred: lifting the co-verification binding into the recursion AIR for O(1)
 on-chain. Validated: `spend_air` sigma tests (`tampered_sigma_c_violates_identity`,
 `sigma_identity_matches_native`) + the full-spend prove/verify; account-stark lib 41 green, warning-clean.
+
+## Implemented (2026-06-27): sigma inputs w/t bound to public commitments in-circuit
+
+The sigma inputs `w` and `t` are no longer free public lanes: the spend AIR now also proves
+`w == unpack(witness_commitment)` and `t == unpack(proof_commitment)` in-circuit — the 12 canonical
+`w`/`t` lanes pack (14-bit LE) into the public 32-byte commitments, byte-identical to the deployed
+`pack_reviewed_fq12_account_carried_syndrome_digest`, with bits ≥ 168 forced zero (high-bit
+canonicity). So of the three sigma inputs, two (`w`, `t`) are now bound to their public commitments
+in-AIR; only `c = hash(challenge)` remains SHA-gated (the spend FS SHA→Poseidon2 rehost). The residual
+off-circuit surface is now exactly: `c`'s hash-derivation, and tying `witness_commitment` to the
+account's creation-committed key + `proof_commitment` into the challenge (Fiat-Shamir). Validated:
+`spend_air::tampered_witness_commitment_violates_binding` + full-spend prove/verify; account-stark lib
+42 green, warning-clean.
