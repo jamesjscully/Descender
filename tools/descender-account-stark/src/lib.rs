@@ -493,6 +493,12 @@ pub struct SpendPublic {
     /// `Poseidon2(DOMAIN ‖ message ‖ account_id ‖ slot ‖ state ‖ packed_witness)` — the in-AIR
     /// checked-core frame digest binding the statement to the packed witness.
     pub frame_digest: [Val; spend_air::FRAME_DIGEST_ELEMS],
+    /// Sigma public inputs: challenge action vector `c`, witness syndrome `w`, randomizer `t`.
+    /// The spend AIR proves `syndrome == t + c⊛w`. (Their derivations — `c = hash(challenge)`,
+    /// `w`/`t` from commitments — are not yet in-circuit; see `spend_air`.)
+    pub sigma_c: [Val; checked_core::CC_ROWS],
+    pub sigma_w: [Val; checked_core::CC_ROWS],
+    pub sigma_t: [Val; checked_core::CC_ROWS],
 }
 
 fn build_spend_air() -> spend_air::SpendAir {
@@ -514,6 +520,9 @@ fn spend_public_values(p: &SpendPublic) -> Vec<Val> {
     v.extend(p.message_digest.iter().map(|&b| Val::from_u32(b as u32)));
     v.extend(p.frame_digest.iter().copied());
     v.extend(spend_air::SPEND_RELATION_ID.iter().map(|&id| Val::from_u32(id)));
+    v.extend(p.sigma_c.iter().copied());
+    v.extend(p.sigma_w.iter().copied());
+    v.extend(p.sigma_t.iter().copied());
     v
 }
 
@@ -530,6 +539,7 @@ pub fn prove_spend_authorization_with_seed(
     let cfg = build_config(&perm, &hash, &compress, mask_seed);
     let proof = p3_prove(&cfg, &air, trace, &pv);
     let (_residues, packed) = spend_air::spend_residues_and_packed(w);
+    let sigma_t = spend_air::derive_sigma_t(w);
     let public = SpendPublic {
         packed_witness_commitment: packed,
         account_id: w.account_id,
@@ -537,6 +547,9 @@ pub fn prove_spend_authorization_with_seed(
         account_state_root: w.account_state_root,
         message_digest: w.message_digest,
         frame_digest,
+        sigma_c: core::array::from_fn(|i| Val::from_u32(w.sigma_c[i] as u32)),
+        sigma_w: core::array::from_fn(|i| Val::from_u32(w.sigma_w[i] as u32)),
+        sigma_t: core::array::from_fn(|i| Val::from_u32(sigma_t[i] as u32)),
     };
     Ok((public, proof))
 }
@@ -954,9 +967,13 @@ mod small_config_classc_tests {
         // checked-core SIS) under a real prove/verify.
         let response: [u16; 22] = core::array::from_fn(|i| ((i as u32 * 503 + 7) % 12289) as u16);
         let projection: [u16; 6] = core::array::from_fn(|i| ((i as u32 * 211 + 5) % 12289) as u16);
+        let sigma_c: [u16; 12] = core::array::from_fn(|i| ((i as u32 * 97 + 13) % 12289) as u16);
+        let sigma_w: [u16; 12] = core::array::from_fn(|i| ((i as u32 * 149 + 29) % 12289) as u16);
         let w = SpendWitness {
             response,
             projection,
+            sigma_c,
+            sigma_w,
             account_id: core::array::from_fn(|i| (i as u8).wrapping_mul(13).wrapping_add(3)),
             slot_id: 0x0000_0000_0000_0042,
             account_state_root: core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(7)),
@@ -1023,9 +1040,13 @@ mod small_config_classc_tests {
             KOALABEAR_POSEIDON2_RC_16_INTERNAL,
             KOALABEAR_POSEIDON2_RC_16_EXTERNAL_FINAL,
         );
+        let sigma_c: [u16; 12] = core::array::from_fn(|i| ((i as u32 * 97 + 13) % 12289) as u16);
+        let sigma_w: [u16; 12] = core::array::from_fn(|i| ((i as u32 * 149 + 29) % 12289) as u16);
         let w = SpendWitness {
             response,
             projection,
+            sigma_c,
+            sigma_w,
             account_id: s.account_id,
             slot_id: s.slot_id,
             account_state_root: s.account_state_root,
@@ -1037,6 +1058,7 @@ mod small_config_classc_tests {
 
         // ---- MED-2 binding: the spend consumes EXACTLY the creation's packed witness.
         let (_residues, packed) = crate::spend_air::spend_residues_and_packed(&w);
+        let sigma_t = crate::spend_air::derive_sigma_t(&w);
         let spublic = SpendPublic {
             packed_witness_commitment: packed,
             account_id: w.account_id,
@@ -1044,6 +1066,9 @@ mod small_config_classc_tests {
             account_state_root: w.account_state_root,
             message_digest: w.message_digest,
             frame_digest,
+            sigma_c: core::array::from_fn(|i| Val::from_u32(w.sigma_c[i] as u32)),
+            sigma_w: core::array::from_fn(|i| Val::from_u32(w.sigma_w[i] as u32)),
+            sigma_t: core::array::from_fn(|i| Val::from_u32(sigma_t[i] as u32)),
         };
         assert!(
             creation_spend_packed_witness_binds(&cpublic, &spublic),

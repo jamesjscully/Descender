@@ -25,7 +25,9 @@
 //! exists for a well-formed, canonical packed witness, bound to a statement, whose syndrome is a valid
 //! checked-core signature.
 
-use crate::checked_core::{checked_core_matrix, response_syndrome, CC_COLS, CC_ROWS, CC_Q};
+use crate::checked_core::{
+    checked_core_matrix, fq12_mul, response_syndrome, CC_COLS, CC_ROWS, CC_Q,
+};
 use crate::config::{Val, HALF_FULL_ROUNDS, PARTIAL_ROUNDS, SBOX_DEGREE, SBOX_REGISTERS, WIDTH};
 use crate::poseidon2_sponge::{build_elems, eval_sponge, run_sponge, SpongeSpec};
 use crate::reduce_gadget::perm_num_cols;
@@ -102,6 +104,47 @@ const fn cc_row_base(row: usize) -> usize {
     CC_COLS * RESIDUE_CELLS + row * ROW_REDUCE_CELLS
 }
 
+// ---- Sigma region: prove `syndrome == t + c⊛w` (the sigma acceptance identity) in-circuit --------
+//
+// `c`, `w`, `t` are 12-lane canonical syndrome vectors carried as PUBLIC inputs (c = challenge action
+// vector, w = witness syndrome, t = proof-commitment randomizer). `⊛` is Fq12 multiply mod
+// `x^12 + x + 25` ([`crate::checked_core::fq12_mul`]). This binds the consumed `syndrome` to the
+// sigma combination of the public (c, w, t) — together with `H·response == syndrome` it puts the FULL
+// sigma equation `H·r == t + c⊛w` in-circuit.
+//
+// DEFERRED (NOT in-circuit yet): the DERIVATIONS of the inputs — `c = hash(challenge)` (SHA-based;
+// gated on the spend FS SHA→Poseidon2 rehost), and `w`/`t` from their commitments. Until those land,
+// `c`/`w`/`t` are unbound public inputs, so this region adds the sigma ARITHMETIC in-circuit and
+// reduces the off-circuit surface to the input-derivations — it is NOT yet standalone unforgeability.
+
+const FOLD_K_BITS: usize = 6; // fold quotient < 27
+const PROD_REDUCE_CELLS: usize = K_BITS + RESIDUE_CELLS; // 18 + 30 = 48
+const FOLD_REDUCE_CELLS: usize = FOLD_K_BITS + RESIDUE_CELLS; // 6 + 30 = 36
+const SIGMA_PROD_COEFFS: usize = 2 * CC_ROWS - 1; // 23 raw product coefficients
+const SIGMA_VEC_REGION: usize = 3 * CC_ROWS * RESIDUE_CELLS; // c,w,t lanes: 36 × 30 = 1080
+/// Width of the sigma region: c/w/t lanes ‖ 23 product reductions ‖ 12 fold reductions ‖ 12 finals.
+pub const SIGMA_REGION_WIDTH: usize =
+    SIGMA_VEC_REGION + SIGMA_PROD_COEFFS * PROD_REDUCE_CELLS + CC_ROWS * FOLD_REDUCE_CELLS + CC_ROWS;
+
+const fn sigma_c_base(i: usize) -> usize {
+    i * RESIDUE_CELLS
+}
+const fn sigma_w_base(i: usize) -> usize {
+    CC_ROWS * RESIDUE_CELLS + i * RESIDUE_CELLS
+}
+const fn sigma_t_base(i: usize) -> usize {
+    2 * CC_ROWS * RESIDUE_CELLS + i * RESIDUE_CELLS
+}
+const fn sigma_prod_base(k: usize) -> usize {
+    SIGMA_VEC_REGION + k * PROD_REDUCE_CELLS
+}
+const fn sigma_fold_base(d: usize) -> usize {
+    SIGMA_VEC_REGION + SIGMA_PROD_COEFFS * PROD_REDUCE_CELLS + d * FOLD_REDUCE_CELLS
+}
+const fn sigma_final_base(d: usize) -> usize {
+    SIGMA_VEC_REGION + SIGMA_PROD_COEFFS * PROD_REDUCE_CELLS + CC_ROWS * FOLD_REDUCE_CELLS + d
+}
+
 // ---- Public-value layout (the spend statement + frame digest) -----------------------------------
 
 pub const PV_PACKED_OFF: usize = 0;
@@ -112,13 +155,17 @@ pub const PV_MESSAGE_OFF: usize = PV_STATE_ROOT_OFF + 32; // 104
 pub const PV_FRAME_DIGEST_OFF: usize = PV_MESSAGE_OFF + 32; // 136
 pub const PV_RELATION_ID_OFF: usize = PV_FRAME_DIGEST_OFF + FRAME_DIGEST_ELEMS; // 144
 pub const SPEND_RELATION_ID_ELEMS: usize = 4;
-pub const SPEND_N_PUBLIC: usize = PV_RELATION_ID_OFF + SPEND_RELATION_ID_ELEMS; // 148
+/// Sigma public inputs (challenge action vector, witness syndrome, proof-commitment randomizer).
+pub const PV_SIGMA_C_OFF: usize = PV_RELATION_ID_OFF + SPEND_RELATION_ID_ELEMS; // 148
+pub const PV_SIGMA_W_OFF: usize = PV_SIGMA_C_OFF + CC_ROWS; // 160
+pub const PV_SIGMA_T_OFF: usize = PV_SIGMA_W_OFF + CC_ROWS; // 172
+pub const SPEND_N_PUBLIC: usize = PV_SIGMA_T_OFF + CC_ROWS; // 184
 
-/// Pinned spend relation/profile id. Encodes: "SPND" ‖ ("v3" ‖ public-width) ‖ (residues<<8 ‖ bits) ‖ q.
-/// v3 = the checked-core SIS signature relation is now in-circuit.
+/// Pinned spend relation/profile id. Encodes: "SPND" ‖ ("v4" ‖ public-width) ‖ (residues<<8 ‖ bits) ‖ q.
+/// v4 = the sigma acceptance identity (syndrome == t + c⊛w) is now in-circuit alongside the SIS.
 pub const SPEND_RELATION_ID: [u32; SPEND_RELATION_ID_ELEMS] = [
     0x5350_4E44, // "SPND"
-    0x7633_0000 | (SPEND_N_PUBLIC as u32 & 0xFFFF), // v3
+    0x7634_0000 | (SPEND_N_PUBLIC as u32 & 0xFFFF), // v4
     ((SPEND_RESIDUES as u32) << 8) | (SPEND_RESIDUE_BITS as u32),
     SPEND_Q,
 ];
@@ -162,8 +209,11 @@ impl SpendAir {
     fn cc_off(&self) -> usize {
         RESIDUE_REGION_WIDTH + frame_spec().width(self.perm_cols)
     }
-    pub fn trace_width(&self) -> usize {
+    fn sigma_off(&self) -> usize {
         self.cc_off() + CC_REGION_WIDTH
+    }
+    pub fn trace_width(&self) -> usize {
+        self.sigma_off() + SIGMA_REGION_WIDTH
     }
 }
 
@@ -286,6 +336,60 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for SpendAir {
             builder.assert_eq(cr0 + cr1, kf.into() * q.clone() + syndrome_row);
         }
 
+        // ---- (3b) sigma acceptance identity: syndrome == t + c⊛w (Fq12), with c/w/t public.
+        let sg = self.sigma_off();
+        let mut cl: Vec<AB::Expr> = Vec::with_capacity(CC_ROWS);
+        let mut wl: Vec<AB::Expr> = Vec::with_capacity(CC_ROWS);
+        let mut tl: Vec<AB::Expr> = Vec::with_capacity(CC_ROWS);
+        for i in 0..CC_ROWS {
+            let cv = assert_canonical_residue(builder, &local, sg + sigma_c_base(i));
+            builder.assert_eq(cv.clone(), public[PV_SIGMA_C_OFF + i].clone().into());
+            cl.push(cv);
+            let wv = assert_canonical_residue(builder, &local, sg + sigma_w_base(i));
+            builder.assert_eq(wv.clone(), public[PV_SIGMA_W_OFF + i].clone().into());
+            wl.push(wv);
+            let tv = assert_canonical_residue(builder, &local, sg + sigma_t_base(i));
+            builder.assert_eq(tv.clone(), public[PV_SIGMA_T_OFF + i].clone().into());
+            tl.push(tv);
+        }
+        // Raw product p[k] = Σ_{i+j=k} c[i]·w[j], reduced mod q (≤12 terms, no field overflow).
+        let mut p_red: Vec<AB::Expr> = Vec::with_capacity(SIGMA_PROD_COEFFS);
+        for k in 0..SIGMA_PROD_COEFFS {
+            let mut x = AB::Expr::ZERO;
+            for i in 0..CC_ROWS {
+                if k >= i && k - i < CC_ROWS {
+                    x += cl[i].clone() * wl[k - i].clone();
+                }
+            }
+            let base = sg + sigma_prod_base(k);
+            let (kq, _) = recompose_bits(builder, &local, base, K_BITS);
+            let r = assert_canonical_residue(builder, &local, base + K_BITS);
+            builder.assert_eq(x, kq * q.clone() + r.clone());
+            p_red.push(r);
+        }
+        // Fold degrees 12..22 into 0..11: reduced[d] = p[d] - 25·p[12+d] - p[11+d] (mod q), then
+        // expected[d] = (reduced[d] + t[d]) mod q == syndrome[d].
+        let q26 = ce::<AB>(26 * CC_Q as u64);
+        for d in 0..CC_ROWS {
+            // Y = p[d] + 26q - 25·p[12+d](d≤10) - p[11+d](d≥1)  ∈ [0, 27q).
+            let mut y = p_red[d].clone() + q26.clone();
+            if d <= CC_ROWS - 2 {
+                y -= ce::<AB>(25) * p_red[CC_ROWS + d].clone();
+            }
+            if d >= 1 {
+                y -= p_red[CC_ROWS - 1 + d].clone();
+            }
+            let fbase = sg + sigma_fold_base(d);
+            let (kfold, _) = recompose_bits(builder, &local, fbase, FOLD_K_BITS);
+            let reduced = assert_canonical_residue(builder, &local, fbase + FOLD_K_BITS);
+            builder.assert_eq(y, kfold * q.clone() + reduced.clone());
+            // expected[d] = reduced + t[d] == kfin·q + syndrome[d]  (kfin boolean).
+            let kfin = local[sg + sigma_final_base(d)];
+            builder.assert_bool(kfin);
+            let syndrome_d: AB::Expr = local[residue_base(d)].into();
+            builder.assert_eq(reduced + tl[d].clone(), kfin.into() * q.clone() + syndrome_d);
+        }
+
         // ---- (4) pin the spend relation id.
         for j in 0..SPEND_RELATION_ID_ELEMS {
             builder.assert_eq(
@@ -319,10 +423,22 @@ fn recompose_bits<AB: AirBuilder>(
 pub struct SpendWitness {
     pub response: [u16; CC_COLS],
     pub projection: [u16; SPEND_PROJECTION_LANES],
+    /// Sigma challenge action vector and witness syndrome (public inputs `c`, `w`). The
+    /// proof-commitment randomizer `t` is DERIVED so that `t + c⊛w == syndrome` (the spend's syndrome
+    /// is `H·response`); a real prover instead fixes `t` first and solves for `response`.
+    pub sigma_c: [u16; CC_ROWS],
+    pub sigma_w: [u16; CC_ROWS],
     pub account_id: [u8; 32],
     pub slot_id: u64,
     pub account_state_root: [u8; 32],
     pub message_digest: [u8; 32],
+}
+
+/// Derive the sigma randomizer `t = syndrome - (c⊛w) mod q` so the acceptance identity holds.
+pub fn derive_sigma_t(w: &SpendWitness) -> [u16; CC_ROWS] {
+    let syndrome = response_syndrome(&w.response);
+    let cw = fq12_mul(&w.sigma_c, &w.sigma_w);
+    core::array::from_fn(|d| ((syndrome[d] as u32 + CC_Q as u32 - cw[d] as u32) % CC_Q as u32) as u16)
 }
 
 /// 14-bit-LE pack of the 18 residues into 32 bytes — byte-for-bit identical to the deployed
@@ -458,6 +574,51 @@ pub fn generate_spend_trace(
         row[rb + 2 * CHUNK_REDUCE_CELLS] = Val::from_u32(kf as u32);
     }
 
+    // (3b) sigma region: c/w/t lanes ‖ product reductions ‖ fold reductions ‖ finals.
+    let sg = air.sigma_off();
+    let sigma_t = derive_sigma_t(w);
+    for i in 0..CC_ROWS {
+        fill_canonical(&mut row, sg + sigma_c_base(i), w.sigma_c[i] as u32);
+        fill_canonical(&mut row, sg + sigma_w_base(i), w.sigma_w[i] as u32);
+        fill_canonical(&mut row, sg + sigma_t_base(i), sigma_t[i] as u32);
+    }
+    // Raw products p[k] = Σ_{i+j=k} c[i]·w[j] (unreduced ≤12-term sum), reduce mod q.
+    let mut p_red = [0u64; SIGMA_PROD_COEFFS];
+    for (k, pr) in p_red.iter_mut().enumerate() {
+        let mut x = 0u64;
+        for i in 0..CC_ROWS {
+            if k >= i && k - i < CC_ROWS {
+                x += w.sigma_c[i] as u64 * w.sigma_w[k - i] as u64;
+            }
+        }
+        let base = sg + sigma_prod_base(k);
+        let (kq, rem) = (x / q, x % q);
+        fill_bits(&mut row, base, kq as u32, K_BITS);
+        fill_canonical(&mut row, base + K_BITS, rem as u32);
+        *pr = rem;
+    }
+    // Fold + final.
+    for d in 0..CC_ROWS {
+        let mut y: i64 = p_red[d] as i64 + 26 * q as i64;
+        if d <= CC_ROWS - 2 {
+            y -= 25 * p_red[CC_ROWS + d] as i64;
+        }
+        if d >= 1 {
+            y -= p_red[CC_ROWS - 1 + d] as i64;
+        }
+        debug_assert!(y >= 0);
+        let y = y as u64;
+        let fbase = sg + sigma_fold_base(d);
+        let (kfold, reduced) = (y / q, y % q);
+        fill_bits(&mut row, fbase, kfold as u32, FOLD_K_BITS);
+        fill_canonical(&mut row, fbase + FOLD_K_BITS, reduced as u32);
+        let expected = reduced + sigma_t[d] as u64;
+        let kfin = expected / q;
+        debug_assert!(kfin <= 1);
+        debug_assert_eq!(expected - kfin * q, syndrome[d] as u64, "sigma identity mismatch");
+        row[sg + sigma_final_base(d)] = Val::from_u32(kfin as u32);
+    }
+
     // Public values.
     let mut pv = Vec::with_capacity(SPEND_N_PUBLIC);
     pv.extend(packed.iter().map(|&b| Val::from_u32(b as u32)));
@@ -467,6 +628,9 @@ pub fn generate_spend_trace(
     pv.extend(w.message_digest.iter().map(|&b| Val::from_u32(b as u32)));
     pv.extend(frame_digest.iter().copied());
     pv.extend(SPEND_RELATION_ID.iter().map(|&id| Val::from_u32(id)));
+    pv.extend(w.sigma_c.iter().map(|&v| Val::from_u32(v as u32)));
+    pv.extend(w.sigma_w.iter().map(|&v| Val::from_u32(v as u32)));
+    pv.extend(sigma_t.iter().map(|&v| Val::from_u32(v as u32)));
     debug_assert_eq!(pv.len(), SPEND_N_PUBLIC);
 
     let mut values = Vec::with_capacity(2 * width);
@@ -502,9 +666,14 @@ mod tests {
             core::array::from_fn(|i| ((i as u32 * 503 + 7) % CC_Q as u32) as u16);
         let projection: [u16; SPEND_PROJECTION_LANES] =
             core::array::from_fn(|i| ((i as u32 * 211 + 5) % CC_Q as u32) as u16);
+        // Sigma c/w are free canonical vectors; t is derived so the identity holds.
+        let sigma_c: [u16; CC_ROWS] = core::array::from_fn(|i| ((i as u32 * 97 + 13) % CC_Q as u32) as u16);
+        let sigma_w: [u16; CC_ROWS] = core::array::from_fn(|i| ((i as u32 * 149 + 29) % CC_Q as u32) as u16);
         SpendWitness {
             response,
             projection,
+            sigma_c,
+            sigma_w,
             account_id: core::array::from_fn(|i| (i as u8).wrapping_mul(13).wrapping_add(3)),
             slot_id: 0xDEAD_BEEF_0000_0042,
             account_state_root: core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(7)),
@@ -584,6 +753,28 @@ mod tests {
             trace.values[r * w + slack_off] += Val::ONE;
         }
         check_constraints(&a, &trace, &pv);
+    }
+
+    /// SIGMA SOUNDNESS: tamper a public sigma input (c lane 0) so `t + c⊛w != syndrome` → the sigma
+    /// identity fails (the consumed syndrome no longer matches the public sigma combination).
+    #[test]
+    #[should_panic]
+    fn tampered_sigma_c_violates_identity() {
+        let a = air();
+        let (trace, mut pv, _fd) = generate_spend_trace(&a, &sample_witness());
+        pv[PV_SIGMA_C_OFF] += Val::ONE; // change public c without re-deriving t
+        check_constraints(&a, &trace, &pv);
+    }
+
+    /// SIGMA SOUNDNESS: the in-circuit sigma "expected" equals the native `sigma_expected` (t + c⊛w),
+    /// and equals the consumed syndrome (H·response).
+    #[test]
+    fn sigma_identity_matches_native() {
+        use crate::checked_core::{response_syndrome, sigma_expected};
+        let w = sample_witness();
+        let t = derive_sigma_t(&w);
+        let expected = sigma_expected(&t, &w.sigma_c, &w.sigma_w);
+        assert_eq!(expected, response_syndrome(&w.response), "sigma expected != H·response");
     }
 
     #[test]

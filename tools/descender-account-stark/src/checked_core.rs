@@ -68,6 +68,48 @@ pub fn response_syndrome(response: &[u16; CC_COLS]) -> [u16; CC_ROWS] {
     })
 }
 
+/// Action polynomial `M(x) = x^12 + x + 25` (low-to-high), byte-identical to the deployed
+/// `REVIEWED_FQ12_ACCOUNT_CARRIED_ACTION_POLYNOMIAL_COEFFICIENTS_LOW_TO_HIGH`. Fq12 = F_q[x]/(M).
+pub const CC_ACTION_POLY: [u16; 13] = [25, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
+
+/// Fq12 multiply `c·w mod (M, q)`, matching the deployed `fq12_syndrome_mul`. Because `M` is sparse
+/// (`x^12 ≡ -x - 25`), reducing the degree-22 product folds in ONE pass without cascading:
+/// `x^{12+j} ≡ -25·x^j - x^{j+1}` (lands in degrees ≤ 11).
+pub fn fq12_mul(c: &[u16; CC_ROWS], w: &[u16; CC_ROWS]) -> [u16; CC_ROWS] {
+    let q = CC_Q as u32;
+    // Raw product (degrees 0..=22), each coefficient reduced mod q.
+    let mut p = [0u32; 2 * CC_ROWS - 1];
+    for (i, &ci) in c.iter().enumerate() {
+        for (j, &wj) in w.iter().enumerate() {
+            p[i + j] = (p[i + j] + (ci as u32 * wj as u32) % q) % q;
+        }
+    }
+    // Fold degrees 12..=22 into 0..=11 via x^{12+j} ≡ -25·x^j - x^{j+1}.
+    let mut out = [0i64; CC_ROWS];
+    for (d, slot) in out.iter_mut().enumerate() {
+        *slot = p[d] as i64;
+    }
+    for j in 0..(CC_ROWS - 1) {
+        let hi = p[CC_ROWS + j] as i64; // coefficient of x^{12+j}
+        out[j] -= 25 * hi;
+        out[j + 1] -= hi;
+    }
+    core::array::from_fn(|d| out[d].rem_euclid(q as i64) as u16)
+}
+
+/// Componentwise `c + w mod q`, matching the deployed `fq12_syndrome_add`.
+pub fn fq12_add(a: &[u16; CC_ROWS], b: &[u16; CC_ROWS]) -> [u16; CC_ROWS] {
+    core::array::from_fn(|i| ((a[i] as u32 + b[i] as u32) % CC_Q as u32) as u16)
+}
+
+/// The sigma "expected" syndrome `t + c⊙w mod q` (the deployed acceptance target, with `c`/`w`/`t`
+/// supplied directly as syndrome vectors). The full deployed derivation expands `c` from the
+/// challenge (SHA-based) and `w`/`t` from commitments — those input-derivations are NOT performed
+/// here.
+pub fn sigma_expected(t: &[u16; CC_ROWS], c: &[u16; CC_ROWS], w: &[u16; CC_ROWS]) -> [u16; CC_ROWS] {
+    fq12_add(t, &fq12_mul(c, w))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -84,6 +126,52 @@ mod tests {
         // Determinism: recompute a couple of entries.
         assert_eq!(h[0][0], matrix_entry(0, 0));
         assert_eq!(h[11][21], matrix_entry(11, 21));
+    }
+
+    /// FIDELITY: the single-pass `fq12_mul` fold equals the deployed iterative `poly_mul_mod`
+    /// algorithm (high-to-low pop reduction) for random inputs.
+    #[test]
+    fn fq12_mul_matches_iterative_reduction() {
+        let q = CC_Q as u32;
+        // Reference: the deployed poly_mul_mod (iterative monic reduction) + normalize.
+        let reference = |c: &[u16; CC_ROWS], w: &[u16; CC_ROWS]| -> [u16; CC_ROWS] {
+            let modulus = CC_ACTION_POLY;
+            let mut product: Vec<u16> = vec![0u16; c.len() + w.len() - 1];
+            for (i, &x) in c.iter().enumerate() {
+                for (j, &y) in w.iter().enumerate() {
+                    product[i + j] = ((product[i + j] as u32 + (x as u32 * y as u32) % q) % q) as u16;
+                }
+            }
+            while product.len() >= modulus.len() {
+                let coeff = *product.last().unwrap();
+                let degree_delta = product.len() - modulus.len();
+                product.pop();
+                if coeff == 0 {
+                    while product.len() > 1 && *product.last().unwrap() == 0 {
+                        product.pop();
+                    }
+                    continue;
+                }
+                for (idx, &mc) in modulus[..modulus.len() - 1].iter().enumerate() {
+                    let d = degree_delta + idx;
+                    let sub = (coeff as u32 * mc as u32) % q;
+                    product[d] = ((product[d] as u32 + q - sub) % q) as u16;
+                }
+                while product.len() > 1 && *product.last().unwrap() == 0 {
+                    product.pop();
+                }
+            }
+            let mut out = [0u16; CC_ROWS];
+            for (i, &v) in product.iter().enumerate() {
+                out[i] = v;
+            }
+            out
+        };
+        for seed in 0..8u32 {
+            let c: [u16; CC_ROWS] = core::array::from_fn(|i| (((seed * 131 + i as u32) * 977 + 3) % q) as u16);
+            let w: [u16; CC_ROWS] = core::array::from_fn(|i| (((seed * 17 + i as u32) * 613 + 11) % q) as u16);
+            assert_eq!(fq12_mul(&c, &w), reference(&c, &w), "fq12_mul != iterative reduction");
+        }
     }
 
     /// `response_syndrome` reduces mod q and is deterministic.
