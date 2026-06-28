@@ -118,6 +118,67 @@ pub fn eval_alpha_fold<AB: AirBuilder<F = Val>>(
     get(acc_off(off, k, k - 1))
 }
 
+/// GENERIC committed-accumulator fold over residuals supplied as EXPRESSIONS (e.g. a relation's
+/// C(zeta) residuals re-derived from opened-at-zeta cells). Asserts the Horner chain against committed
+/// `apow(i)`/`acc(i)` extension columns and returns the fold result `Σ_r alpha^r · res_r`. Every
+/// emitted constraint is degree ≤ (1 + deg(res_r)) — independent of the residual COUNT — so any
+/// relation's full C(zeta) fold becomes provable. This is the re-arithmetization primitive; both the
+/// creation leaf mirror and the (future) spend mirror fold through it.
+pub fn assert_committed_fold<AB, FApow, FAcc>(
+    builder: &mut AB,
+    residuals: &[[AB::Expr; D]],
+    apow: &FApow,
+    acc: &FAcc,
+    alpha: &[AB::Expr; D],
+) -> [AB::Expr; D]
+where
+    AB: AirBuilder<F = Val>,
+    FApow: Fn(usize) -> [AB::Expr; D],
+    FAcc: Fn(usize) -> [AB::Expr; D],
+{
+    let n = residuals.len();
+    assert!(n >= 1);
+    let one = octic_one::<AB>();
+    let a0 = apow(0);
+    for i in 0..D {
+        builder.assert_eq(a0[i].clone(), one[i].clone());
+    }
+    let acc0 = acc(0);
+    for i in 0..D {
+        builder.assert_eq(acc0[i].clone(), residuals[0][i].clone());
+    }
+    for step in 1..n {
+        let pow = apow(step);
+        let want_pow = octic_mul::<AB>(&apow(step - 1), alpha);
+        for i in 0..D {
+            builder.assert_eq(pow[i].clone(), want_pow[i].clone());
+        }
+        let cur = acc(step);
+        let term = octic_mul::<AB>(&pow, &residuals[step]);
+        let want = octic_add::<AB>(&acc(step - 1), &term);
+        for i in 0..D {
+            builder.assert_eq(cur[i].clone(), want[i].clone());
+        }
+    }
+    acc(n - 1)
+}
+
+/// GENERIC native witness fill for [`assert_committed_fold`]: given the residual VALUES, returns the
+/// committed Horner state `(a_pow[n], acc[n])` (`a_pow[r]=alpha^r`, `acc[r]=Σ_{j≤r} alpha^j·res_j`).
+pub fn committed_fold_values(alpha: Challenge, residuals: &[Challenge]) -> (Vec<Challenge>, Vec<Challenge>) {
+    let mut apow = Vec::with_capacity(residuals.len());
+    let mut accv = Vec::with_capacity(residuals.len());
+    let mut a = Challenge::ONE;
+    let mut s = Challenge::ZERO;
+    for &r in residuals {
+        s += a * r;
+        apow.push(a);
+        accv.push(s);
+        a *= alpha;
+    }
+    (apow, accv)
+}
+
 /// Native reference fold: `Σ_r alpha^r · res_r` (the value the in-AIR fold reconstructs).
 pub fn native_alpha_fold(alpha: Challenge, residuals: &[Challenge]) -> Challenge {
     let mut acc = Challenge::ZERO;

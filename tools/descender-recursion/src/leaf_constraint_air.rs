@@ -2593,32 +2593,10 @@ where
     FApow: Fn(usize) -> [AB::Expr; D],
     FAcc: Fn(usize) -> [AB::Expr; D],
 {
+    // Delegate to the GENERIC re-arithmetization primitive (the committed-accumulator fold), shared
+    // with the future spend C(zeta) mirror.
     let residuals = leaf_residuals::<AB, FCell>(cell);
-    let one = octic_scalar::<AB>(1);
-    // a_pow[0] == 1
-    let a0 = apow(0);
-    for i in 0..D {
-        builder.assert_eq(a0[i].clone(), one[i].clone());
-    }
-    // acc[0] == a_pow[0]·res[0] == res[0]
-    let acc0 = acc(0);
-    for i in 0..D {
-        builder.assert_eq(acc0[i].clone(), residuals[0][i].clone());
-    }
-    for step in 1..N_CONSTRAINTS {
-        let pow = apow(step);
-        let want_pow = octic_mul::<AB>(&apow(step - 1), alpha);
-        for i in 0..D {
-            builder.assert_eq(pow[i].clone(), want_pow[i].clone());
-        }
-        let cur_acc = acc(step);
-        let term = octic_mul::<AB>(&pow, &residuals[step]);
-        let want_acc = octic_add::<AB>(&acc(step - 1), &term);
-        for i in 0..D {
-            builder.assert_eq(cur_acc[i].clone(), want_acc[i].clone());
-        }
-    }
-    acc(N_CONSTRAINTS - 1)
+    crate::alpha_fold::assert_committed_fold::<AB, FApow, FAcc>(builder, &residuals, apow, acc, alpha)
 }
 
 /// Native witness fill for [`assert_c_partial_committed`]: returns `(a_pow[K], acc[K])`, the committed
@@ -2627,17 +2605,9 @@ pub fn c_partial_accumulator_values(
     cells: &[Challenge; N_OPENED_CELLS],
     alpha: Challenge,
 ) -> (Vec<Challenge>, Vec<Challenge>) {
-    let mut apow = Vec::with_capacity(N_CONSTRAINTS);
-    let mut accv = Vec::with_capacity(N_CONSTRAINTS);
-    let mut a = Challenge::ONE;
-    let mut s = Challenge::ZERO;
-    for r in 0..N_CONSTRAINTS {
-        s += a * constraint_residual(cells, r);
-        apow.push(a);
-        accv.push(s);
-        a *= alpha;
-    }
-    (apow, accv)
+    let residual_values: Vec<Challenge> =
+        (0..N_CONSTRAINTS).map(|r| constraint_residual(cells, r)).collect();
+    crate::alpha_fold::committed_fold_values(alpha, &residual_values)
 }
 
 /// Push a SQUEEZE sponge's residuals (input/capacity bindings ‖ per-perm Poseidon2 round residuals ‖
