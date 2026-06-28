@@ -163,6 +163,111 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for BlockRecursiveAir {
     }
 }
 
+// ---- Reference block builders (non-test) — the canonical way to assemble member windows ---------
+//
+// `settlement::prove_block` consumes member windows (each a packed `recursive_air` window verifying
+// one member in-circuit). These helpers build a `cfg_merkle`-depth block — every member verified by
+// a Merkle opening in-circuit, then chained — and double as the worked example for callers wiring a
+// real block. Deeper member cfgs (leaf-hash / FRI / DEEP / full-FS) compose identically; see the
+// depth-ladder tests below.
+
+/// Reference helper: the minimal member-verification config — a Merkle opening verified in-circuit
+/// for `levels`-deep trees. Deeper cfgs add leaf-hash / FRI descent / DEEP+quotient / full FS.
+pub fn cfg_merkle_settlement(levels: usize) -> RecursiveConfig {
+    RecursiveConfig {
+        merkle_levels: levels,
+        ..RecursiveConfig::single_window(levels)
+    }
+}
+
+/// Reference helper: build `n` member windows for a [`cfg_merkle_settlement`] block — each a packed
+/// `recursive_air` window verifying a Merkle opening in-circuit. The canonical example of assembling
+/// member windows for [`crate::settlement::prove_block`].
+pub fn windows_for_settlement(cfg: &RecursiveConfig, levels: usize, n: usize) -> Vec<Vec<Val>> {
+    use crate::challenger::RATE;
+    use crate::merkle::{compressor, Digest};
+    use crate::recursive_air::{pack_window, WindowInputs};
+    use descender_account_stark::{Challenge, SALT_ELEMS, WIDTH};
+    use p3_field::{BasedVectorSpace, PrimeCharacteristicRing};
+    use p3_symmetric::PseudoCompressionFunction;
+
+    let d = |seed: u32| -> Digest {
+        core::array::from_fn(|i| {
+            Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32 + 1))
+        })
+    };
+    let ext = |seed: u32| -> Challenge {
+        Challenge::from_basis_coefficients_fn(|i| {
+            Val::from_u32(seed.wrapping_mul(40503).wrapping_add(i as u32 + 1))
+        })
+    };
+    let c = compressor();
+    let leaf_count = 1usize << levels;
+    (0..n as u32)
+        .map(|member| {
+            let leaves: Vec<Digest> = (0..leaf_count as u32)
+                .map(|x| d(x + member * 1000 + 1))
+                .collect();
+            // Reference Merkle tree: fold leaves up to the root, recording sibling levels.
+            let mut levels_vec = vec![leaves.clone()];
+            let mut cur = leaves.clone();
+            while cur.len() > 1 {
+                cur = cur.chunks_exact(2).map(|p| c.compress([p[0], p[1]])).collect();
+                levels_vec.push(cur.clone());
+            }
+            let idx = (member as usize) % leaf_count;
+            let mut sibs = Vec::new();
+            let mut k = idx;
+            for level in &levels_vec[..levels_vec.len() - 1] {
+                sibs.push(level[k ^ 1]);
+                k >>= 1;
+            }
+            let inp = WindowInputs {
+                draw_out: Val::from_u32(idx as u32),
+                e0: ext(1),
+                e1: ext(2),
+                beta: ext(3),
+                descent: &[],
+                merkle_leaf: leaves[idx],
+                merkle_siblings: &sibs,
+                deep_zeta: Challenge::ZERO,
+                deep_q: Challenge::ZERO,
+                deep_alpha: Challenge::ZERO,
+                fs_blocks: &[],
+                sponge_in: [Val::ZERO; WIDTH],
+                prior_state: [Val::ZERO; WIDTH],
+                absorbed: [Val::ZERO; RATE],
+                prefix_blocks: &[],
+                public_io: &[],
+                fs_beta_blocks: &[],
+                fs_ood_blocks: &[],
+                fs_ood_partial_block: [Val::ZERO; RATE],
+                fs_final_blocks: &[],
+                fs_final_partial_block: [Val::ZERO; RATE],
+                inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+                layer_opens: &[],
+                final_poly_x: Val::ZERO,
+                final_poly_coeffs: &[],
+                leaf_row: &[],
+                leaf_salt: [Val::ZERO; SALT_ELEMS],
+                dr_value_at_zeta: &[],
+                dr_value_at_zeta_next: &[],
+                dr_x: Val::ZERO,
+                lc_value_at_zeta: &[],
+                lc_c_committed: Challenge::ZERO,
+                quot_commit: [Val::ZERO; DIGEST_ELEMS],
+                quot_opened_at_x: &[],
+                quot_at_zeta: &[],
+                quot_zps: &[],
+                quot_salt: [Val::ZERO; SALT_ELEMS],
+                quot_x: Val::ZERO,
+                quot_siblings: &[],
+            };
+            pack_window(cfg, &inp)
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
