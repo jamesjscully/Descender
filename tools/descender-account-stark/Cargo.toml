@@ -25,6 +25,9 @@ p3-air = "0.6.1"
 p3-maybe-rayon = { version = "0.6.1", features = ["parallel"] }
 rand = "0.10"
 serde = { version = "1", features = ["derive"] }
+# Derives the fixed SIS checked-core matrix H (12×22) by SHA256 rejection sampling, byte-identical to
+# the deployed `domain_matrix_entry` — used by the spend leaf's checked-core signature constraint.
+sha2 = "0.10"
 
 [dev-dependencies]
 # Standalone (NO-Plonky3) projection-mask PRF. Used ONLY by the equivalence test
@@ -34,7 +37,6 @@ descender-mask-prf = { path = "../descender-mask-prf" }
 # Test-only: frozen q128 KAT — serialize a deterministic production-config proof and pin its
 # SHA-256 digest (single-threaded for deterministic FRI query-PoW grinding).
 bincode = "1"
-sha2 = "0.10"
 rayon = "1"
 
 [features]

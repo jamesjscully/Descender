@@ -57,6 +57,7 @@ mod counting_serializer;
 pub mod reduce_gadget;
 pub mod sponge_compression;
 pub mod pad_seed_registry; // F2 — global reorg-safe pad-seed admission registry (mask-PRF single-use, persistent across reorgs)
+pub mod checked_core; // Phase-2 — SPEND checked-core SIS matrix H + response->syndrome map (signature relation)
 pub mod poseidon2_sponge; // shared in-AIR Poseidon2 sponge primitives (free-function form; spend/recursion reuse)
 pub mod spend_air; // Phase-2 — SPEND leaf AIR (core): packed-witness consumption + canonical residues + statement
 
@@ -528,8 +529,9 @@ pub fn prove_spend_authorization_with_seed(
     let (trace, pv, frame_digest) = spend_air::generate_spend_trace(&air, w);
     let cfg = build_config(&perm, &hash, &compress, mask_seed);
     let proof = p3_prove(&cfg, &air, trace, &pv);
+    let (_residues, packed) = spend_air::spend_residues_and_packed(w);
     let public = SpendPublic {
-        packed_witness_commitment: w.packed_witness_commitment,
+        packed_witness_commitment: packed,
         account_id: w.account_id,
         slot_id: w.slot_id,
         account_state_root: w.account_state_root,
@@ -932,7 +934,7 @@ mod small_config_classc_tests {
     /// binding the recursion/settlement layer enforces between the two proofs).
     #[test]
     fn small_config_spend_prove_verify() {
-        use crate::spend_air::{generate_spend_trace, pack_spend_witness, SpendAir, SpendWitness};
+        use crate::spend_air::{generate_spend_trace, SpendAir, SpendWitness};
         use p3_koala_bear::{
             KOALABEAR_POSEIDON2_RC_16_EXTERNAL_FINAL, KOALABEAR_POSEIDON2_RC_16_EXTERNAL_INITIAL,
             KOALABEAR_POSEIDON2_RC_16_INTERNAL,
@@ -947,14 +949,14 @@ mod small_config_classc_tests {
             KOALABEAR_POSEIDON2_RC_16_EXTERNAL_FINAL,
         );
 
-        // Residues consumed by the spend = a canonical reviewed-fq12 frame; the AIR's in-circuit
-        // packing reproduces the reference packer, and the in-AIR Poseidon2 frame-digest matches the
-        // native recompute (run_sponge), all checked by prove/verify.
-        let residues: [u16; 18] = core::array::from_fn(|i| ((i as u32 * 1009 + 17) % 12289) as u16);
-        let packed = pack_spend_witness(&residues);
+        // A canonical checked-core response; the syndrome is DERIVED as H·response (a valid
+        // signature), and the AIR verifies the full spend relation (packing + frame digest +
+        // checked-core SIS) under a real prove/verify.
+        let response: [u16; 22] = core::array::from_fn(|i| ((i as u32 * 503 + 7) % 12289) as u16);
+        let projection: [u16; 6] = core::array::from_fn(|i| ((i as u32 * 211 + 5) % 12289) as u16);
         let w = SpendWitness {
-            residues,
-            packed_witness_commitment: packed,
+            response,
+            projection,
             account_id: core::array::from_fn(|i| (i as u8).wrapping_mul(13).wrapping_add(3)),
             slot_id: 0x0000_0000_0000_0042,
             account_state_root: core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(7)),
@@ -973,13 +975,20 @@ mod small_config_classc_tests {
     /// packed-witness binding holds — then confirm a spend over a DIFFERENT witness FAILS the binding.
     #[test]
     fn small_config_creation_spend_co_verification_and_med2_binding() {
-        use crate::spend_air::{generate_spend_trace, pack_spend_witness, SpendAir, SpendWitness};
+        use crate::checked_core::response_syndrome;
+        use crate::spend_air::{generate_spend_trace, pack_residues, SpendAir, SpendWitness};
         use p3_koala_bear::{
             KOALABEAR_POSEIDON2_RC_16_EXTERNAL_FINAL, KOALABEAR_POSEIDON2_RC_16_EXTERNAL_INITIAL,
             KOALABEAR_POSEIDON2_RC_16_INTERNAL,
         };
 
-        let s = small_secrets();
+        // A valid checked-core signature: pick a canonical response, the syndrome is H·response.
+        let response: [u16; 22] = core::array::from_fn(|i| ((i as u32 * 503 + 7) % 12289) as u16);
+        let syndrome = response_syndrome(&response);
+
+        // The creation leaf commits THAT syndrome (its checked-core public input = the signature).
+        let mut s = small_secrets();
+        s.syndrome = syndrome;
         let full = to_full_secrets(&s).expect("valid witness");
         let perm: Perm = default_koalabear_poseidon2_16();
         let hash = MyHash::new(perm.clone());
@@ -996,30 +1005,27 @@ mod small_config_classc_tests {
         let cproof = p3_prove(&cfg, &cair, ctrace, &cpv);
         p3_verify(&cfg, &cair, &cproof, &cpv).expect("creation proof verifies");
 
-        // ---- The creation's EXACT reviewed-fq12 residues: syndrome[12] ‖ masked_projection[6].
+        // ---- Spend consumes the creation's masked_projection (residues 12..17) + the SAME syndrome.
+        let projection: [u16; 6] =
+            core::array::from_fn(|i| cinst.masked_projection[i].as_canonical_u32() as u16);
         let mut residues = [0u16; 18];
-        for (i, &sv) in s.syndrome.iter().enumerate() {
-            residues[i] = sv;
-        }
-        for (i, mv) in cinst.masked_projection.iter().enumerate() {
-            residues[12 + i] = mv.as_canonical_u32() as u16;
-        }
-        let packed = pack_spend_witness(&residues);
-        // The spend packer reproduces the creation leaf's published commitment byte-for-byte.
+        residues[..12].copy_from_slice(&syndrome);
+        residues[12..].copy_from_slice(&projection);
+        // The spend's derived packed witness reproduces the creation's published commitment.
         let creation_packed: Vec<u32> =
             cpublic.packed_witness_commitment.iter().map(|v| v.as_canonical_u32()).collect();
-        let spend_packed: Vec<u32> = packed.iter().map(|&b| b as u32).collect();
+        let spend_packed: Vec<u32> = pack_residues(&residues).iter().map(|&b| b as u32).collect();
         assert_eq!(creation_packed, spend_packed, "spend packer != creation packed witness");
 
-        // ---- Spend proof over the SAME packed witness (small config).
+        // ---- Spend proof (small config): checked-core SIS H·response == syndrome verified in-circuit.
         let sair = SpendAir::from_arrays(
             KOALABEAR_POSEIDON2_RC_16_EXTERNAL_INITIAL,
             KOALABEAR_POSEIDON2_RC_16_INTERNAL,
             KOALABEAR_POSEIDON2_RC_16_EXTERNAL_FINAL,
         );
         let w = SpendWitness {
-            residues,
-            packed_witness_commitment: packed,
+            response,
+            projection,
             account_id: s.account_id,
             slot_id: s.slot_id,
             account_state_root: s.account_state_root,
@@ -1030,8 +1036,9 @@ mod small_config_classc_tests {
         p3_verify(&cfg, &sair, &sproof, &spv).expect("spend proof verifies");
 
         // ---- MED-2 binding: the spend consumes EXACTLY the creation's packed witness.
+        let (_residues, packed) = crate::spend_air::spend_residues_and_packed(&w);
         let spublic = SpendPublic {
-            packed_witness_commitment: w.packed_witness_commitment,
+            packed_witness_commitment: packed,
             account_id: w.account_id,
             slot_id: w.slot_id,
             account_state_root: w.account_state_root,
@@ -1045,9 +1052,9 @@ mod small_config_classc_tests {
 
         // ---- A spend over a DIFFERENT witness must FAIL the binding.
         let mut other = residues;
-        other[0] = (other[0] + 1) % 12289;
+        other[12] = (other[12] + 1) % 12289;
         let other_spublic = SpendPublic {
-            packed_witness_commitment: pack_spend_witness(&other),
+            packed_witness_commitment: pack_residues(&other),
             ..spublic.clone()
         };
         assert!(
