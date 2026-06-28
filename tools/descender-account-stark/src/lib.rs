@@ -1096,4 +1096,63 @@ mod small_config_classc_tests {
             "MED-2 binding must FAIL for a spend over a different packed witness"
         );
     }
+
+    fn sample_spend_witness() -> spend_air::SpendWitness {
+        spend_air::SpendWitness {
+            response: core::array::from_fn(|i| ((i as u32 * 503 + 7) % 12289) as u16),
+            projection: core::array::from_fn(|i| ((i as u32 * 211 + 5) % 12289) as u16),
+            sigma_c: core::array::from_fn(|i| ((i as u32 * 97 + 13) % 12289) as u16),
+            sigma_w: core::array::from_fn(|i| ((i as u32 * 149 + 29) % 12289) as u16),
+            account_id: core::array::from_fn(|i| (i as u8).wrapping_mul(13).wrapping_add(3)),
+            slot_id: 0x0000_0000_0000_0042,
+            account_state_root: core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(7)),
+            message_digest: core::array::from_fn(|i| (i as u8).wrapping_mul(7).wrapping_add(1)),
+        }
+    }
+
+    /// The DEPLOYABLE spend API at PRODUCTION q128 config: prove_spend_authorization round-trips
+    /// through verify_spend_authorization, and a tampered statement is rejected. (Slow: full
+    /// production-config prove; run explicitly.)
+    #[test]
+    #[ignore = "slow: production-config spend prove; run explicitly"]
+    fn spend_production_prove_verify_roundtrip() {
+        let w = sample_spend_witness();
+        let (public, proof) = prove_spend_authorization_with_seed(&w, 0x5E_4D_2026).expect("prove");
+        verify_spend_authorization(&public, &proof).expect("production spend proof verifies");
+        // Tamper the statement (message digest) → verification must fail.
+        let mut bad = public.clone();
+        bad.message_digest[0] ^= 0xFF;
+        assert!(
+            verify_spend_authorization(&bad, &proof).is_err(),
+            "a tampered spend statement must be rejected"
+        );
+    }
+
+    /// FROZEN q128 SPEND KAT: a deterministic production-config spend proof has a stable SHA-256
+    /// digest (single-threaded so the FRI query-PoW grind is deterministic). Pins the spend proof
+    /// BYTE FORMAT against drift. (Slow; run explicitly.)
+    #[test]
+    #[ignore = "slow: production-config spend prove ×2 single-threaded; run explicitly for the frozen KAT"]
+    fn frozen_q128_spend_proof_kat() {
+        use sha2::{Digest, Sha256};
+        let w = sample_spend_witness();
+        let digest_once = || -> [u8; 32] {
+            let pool = rayon::ThreadPoolBuilder::new().num_threads(1).build().unwrap();
+            let (_public, proof) = pool
+                .install(|| prove_spend_authorization_with_seed(&w, 0x5E_4D_2026))
+                .expect("prove");
+            let bytes = bincode::serialize(&proof).expect("serialize spend proof");
+            let mut h = Sha256::new();
+            h.update(&bytes);
+            h.finalize().into()
+        };
+        let d1 = digest_once();
+        let d2 = digest_once();
+        assert_eq!(d1, d2, "q128 spend proof is not deterministic under single-thread PoW");
+        let hex: String = d1.iter().map(|b| format!("{b:02x}")).collect();
+        eprintln!("FROZEN-KAT q128 spend proof sha256 = {hex}");
+        // PINNED frozen q128 SPEND KAT digest (single-thread, seed 0x5E_4D_2026, sample_spend_witness).
+        const PINNED: &str = "3bf55df8d189e1cbb103806e04fc0887d204d46f2a7e451d397621e7f3f62e77";
+        assert_eq!(hex, PINNED, "q128 spend proof bytes drifted from the frozen KAT");
+    }
 }
