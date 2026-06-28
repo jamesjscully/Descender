@@ -357,6 +357,24 @@ committing `syndrome = H·response`, proves a spend verifying the SIS in-circuit
 witness, verifies both, and checks the MED-2 binding holds (and fails for a different witness). All at
 real STARK prove/verify; account-stark lib 38 tests green, warning-clean.
 
-REMAINING (deferred): the exact `expected_syndrome = hash(challenge)` derivation in-AIR (today the
-frame digest binds the syndrome to the statement; the precise challenge→syndrome hash is the final
-fidelity link), and lifting the co-verification binding into the recursion AIR for O(1) on-chain.
+UPDATE (2026-06-27): the **sigma acceptance identity is now in-circuit**. The deployed acceptance is
+not `H·r == syndrome` but the full sigma equation `H·r == t + c⊛w (mod q)`, where `t` = proof-commitment
+randomizer, `w` = witness syndrome, `c` = challenge action vector, and `⊛` is Fq12 multiply mod
+`x^12 + x + 25` (`reviewed_fq12_state_assisted_expected_response_syndrome` → `fq12_syndrome_{mul,add}`).
+The spend AIR now ALSO proves `syndrome == t + c⊛w` in-circuit (`spend_air` sigma region +
+`checked_core::fq12_mul`, fidelity-pinned against the deployed iterative `poly_mul_mod`), with `c`/`w`/`t`
+carried as PUBLIC inputs. Combined with `H·response == syndrome` this puts the COMPLETE sigma equation
+`H·r == t + c⊛w` in the circuit.
+
+CORRECTION to the earlier "fidelity link" wording: the `expected = t + c⊛w` check is **security-critical
+(the unforgeability binding), not cosmetic** — `H·r == syndrome` alone is satisfiable by anyone (pick `r`,
+set `syndrome = H·r`); it is `syndrome == t + c⊛w` with `w` = the secret witness and `c` = the challenge
+that ties a spend to the secret key and the message. What is now in-circuit is the sigma ARITHMETIC; what
+remains DEFERRED is the BINDING of its inputs: `c = hash(challenge)` (SHA-based — gated on the spend FS
+SHA→Poseidon2 rehost, `spend_fs_full_poseidon2_rehost_plan.md`) and `w`/`t` from their commitments. Until
+those input-derivations are also in-circuit, `c`/`w`/`t` are unbound public inputs and full standalone
+unforgeability is still enforced off-circuit by the deployed direct spend verifier
+(`path2_native_checked_core_accept_v1`); this increment REDUCES the off-circuit surface to exactly those
+input-derivations. Also deferred: lifting the co-verification binding into the recursion AIR for O(1)
+on-chain. Validated: `spend_air` sigma tests (`tampered_sigma_c_violates_identity`,
+`sigma_identity_matches_native`) + the full-spend prove/verify; account-stark lib 41 green, warning-clean.
