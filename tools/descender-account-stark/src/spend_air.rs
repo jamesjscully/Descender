@@ -67,18 +67,18 @@ pub const fn residue_base(r: usize) -> usize {
 
 // ---- Frame-digest sponge: DOMAIN ‖ message[32] ‖ account_id[32] ‖ slot[8] ‖ state[32] ‖ packed[32]
 
-const FRAME_DOMAIN_LANES: usize = 1;
-const FRAME_MSG_LANE: usize = FRAME_DOMAIN_LANES; // 1
-const FRAME_ACCT_LANE: usize = FRAME_MSG_LANE + 32; // 33
-const FRAME_SLOT_LANE: usize = FRAME_ACCT_LANE + 32; // 65
-const FRAME_STATE_LANE: usize = FRAME_SLOT_LANE + 8; // 73
-const FRAME_PACKED_LANE: usize = FRAME_STATE_LANE + 32; // 105
+pub const FRAME_DOMAIN_LANES: usize = 1;
+pub const FRAME_MSG_LANE: usize = FRAME_DOMAIN_LANES; // 1
+pub const FRAME_ACCT_LANE: usize = FRAME_MSG_LANE + 32; // 33
+pub const FRAME_SLOT_LANE: usize = FRAME_ACCT_LANE + 32; // 65
+pub const FRAME_STATE_LANE: usize = FRAME_SLOT_LANE + 8; // 73
+pub const FRAME_PACKED_LANE: usize = FRAME_STATE_LANE + 32; // 105
 pub const FRAME_INPUT_LANES: usize = FRAME_PACKED_LANE + 32; // 137
 pub const FRAME_DIGEST_ELEMS: usize = 8;
 
 pub const SPEND_FRAME_DOMAIN: u32 = 0x5350_4652; // "SPFR"
 
-fn frame_spec() -> SpongeSpec {
+pub fn frame_spec() -> SpongeSpec {
     let mut br = alloc::vec![false; FRAME_DOMAIN_LANES];
     br.extend(alloc::vec![true; FRAME_INPUT_LANES - FRAME_DOMAIN_LANES]);
     SpongeSpec::new(br, FRAME_DIGEST_ELEMS)
@@ -96,22 +96,22 @@ pub const SPEND_CHALLENGE_DOMAIN: u32 = 0x5350_4348;
 /// Challenge sponge input: DOMAIN ‖ message[32] ‖ account_id[32] ‖ slot[8] ‖ state[32] ‖ wc[32] ‖ pc[32].
 pub const CHALLENGE_INPUT_LANES: usize = 1 + 32 + 32 + 8 + 32 + CC_DIGEST_BYTES + CC_DIGEST_BYTES; // 169
 
-fn challenge_spec() -> SpongeSpec {
+pub fn challenge_spec() -> SpongeSpec {
     let mut br = alloc::vec![false; 1];
     br.extend(alloc::vec![true; CHALLENGE_INPUT_LANES - 1]);
     SpongeSpec::new(br, CC_ROWS)
 }
 
 /// Squeeze-reduction quotient bits: a squeezed field lane `< p` reduces mod q with quotient `< 2^18`.
-const CHALLENGE_K_BITS: usize = 18;
+pub const CHALLENGE_K_BITS: usize = 18;
 /// Challenge input-lane offsets (within the sponge block).
-const CHAL_DOMAIN_LANE: usize = 0;
-const CHAL_MSG_LANE: usize = 1;
-const CHAL_ACCT_LANE: usize = CHAL_MSG_LANE + 32; // 33
-const CHAL_SLOT_LANE: usize = CHAL_ACCT_LANE + 32; // 65
-const CHAL_STATE_LANE: usize = CHAL_SLOT_LANE + 8; // 73
-const CHAL_WC_LANE: usize = CHAL_STATE_LANE + 32; // 105
-const CHAL_PC_LANE: usize = CHAL_WC_LANE + CC_DIGEST_BYTES; // 137
+pub const CHAL_DOMAIN_LANE: usize = 0;
+pub const CHAL_MSG_LANE: usize = 1;
+pub const CHAL_ACCT_LANE: usize = CHAL_MSG_LANE + 32; // 33
+pub const CHAL_SLOT_LANE: usize = CHAL_ACCT_LANE + 32; // 65
+pub const CHAL_STATE_LANE: usize = CHAL_SLOT_LANE + 8; // 73
+pub const CHAL_WC_LANE: usize = CHAL_STATE_LANE + 32; // 105
+pub const CHAL_PC_LANE: usize = CHAL_WC_LANE + CC_DIGEST_BYTES; // 137
 
 /// Assemble the challenge sponge input data (DOMAIN ‖ statement ‖ commitments) as u32 lanes.
 fn challenge_input_data(
@@ -168,19 +168,19 @@ pub fn derive_challenge(
 // (quotient `k` is 18-bit; chunk-sum < 12·q² < p), then the two chunk-residues summed and reduced
 // (final quotient is 1 bit since cr0+cr1 < 2q) and constrained EQUAL to the consumed `syndrome[row]`.
 
-const K_BITS: usize = 18;
-const CHUNK0: usize = 12;
+pub const K_BITS: usize = 18;
+pub const CHUNK0: usize = 12;
 /// Per-row reduction block: k0(1)+k0bits(18) ‖ cr0(1)+bits(14)+slack(1)+slackbits(14)
 ///                        ‖ k1(1)+k1bits(18) ‖ cr1(1)+bits(14)+slack(1)+slackbits(14) ‖ kf(1).
-const CHUNK_REDUCE_CELLS: usize = (1 + K_BITS) + RESIDUE_CELLS; // 19 + 30 = 49
-const ROW_REDUCE_CELLS: usize = 2 * CHUNK_REDUCE_CELLS + 1; // 99
+pub const CHUNK_REDUCE_CELLS: usize = (1 + K_BITS) + RESIDUE_CELLS; // 19 + 30 = 49
+pub const ROW_REDUCE_CELLS: usize = 2 * CHUNK_REDUCE_CELLS + 1; // 99
 /// Width of the checked-core region: 22 response lanes ‖ 12 row-reduction blocks.
 pub const CC_REGION_WIDTH: usize = CC_COLS * RESIDUE_CELLS + CC_ROWS * ROW_REDUCE_CELLS; // 1848
 
-const fn cc_response_base(c: usize) -> usize {
+pub const fn cc_response_base(c: usize) -> usize {
     c * RESIDUE_CELLS
 }
-const fn cc_row_base(row: usize) -> usize {
+pub const fn cc_row_base(row: usize) -> usize {
     CC_COLS * RESIDUE_CELLS + row * ROW_REDUCE_CELLS
 }
 
@@ -197,31 +197,31 @@ const fn cc_row_base(row: usize) -> usize {
 // `c`/`w`/`t` are unbound public inputs, so this region adds the sigma ARITHMETIC in-circuit and
 // reduces the off-circuit surface to the input-derivations — it is NOT yet standalone unforgeability.
 
-const FOLD_K_BITS: usize = 6; // fold quotient < 27
-const PROD_REDUCE_CELLS: usize = K_BITS + RESIDUE_CELLS; // 18 + 30 = 48
-const FOLD_REDUCE_CELLS: usize = FOLD_K_BITS + RESIDUE_CELLS; // 6 + 30 = 36
-const SIGMA_PROD_COEFFS: usize = 2 * CC_ROWS - 1; // 23 raw product coefficients
-const SIGMA_VEC_REGION: usize = 3 * CC_ROWS * RESIDUE_CELLS; // c,w,t lanes: 36 × 30 = 1080
+pub const FOLD_K_BITS: usize = 6; // fold quotient < 27
+pub const PROD_REDUCE_CELLS: usize = K_BITS + RESIDUE_CELLS; // 18 + 30 = 48
+pub const FOLD_REDUCE_CELLS: usize = FOLD_K_BITS + RESIDUE_CELLS; // 6 + 30 = 36
+pub const SIGMA_PROD_COEFFS: usize = 2 * CC_ROWS - 1; // 23 raw product coefficients
+pub const SIGMA_VEC_REGION: usize = 3 * CC_ROWS * RESIDUE_CELLS; // c,w,t lanes: 36 × 30 = 1080
 /// Width of the sigma region: c/w/t lanes ‖ 23 product reductions ‖ 12 fold reductions ‖ 12 finals.
 pub const SIGMA_REGION_WIDTH: usize =
     SIGMA_VEC_REGION + SIGMA_PROD_COEFFS * PROD_REDUCE_CELLS + CC_ROWS * FOLD_REDUCE_CELLS + CC_ROWS;
 
-const fn sigma_c_base(i: usize) -> usize {
+pub const fn sigma_c_base(i: usize) -> usize {
     i * RESIDUE_CELLS
 }
-const fn sigma_w_base(i: usize) -> usize {
+pub const fn sigma_w_base(i: usize) -> usize {
     CC_ROWS * RESIDUE_CELLS + i * RESIDUE_CELLS
 }
-const fn sigma_t_base(i: usize) -> usize {
+pub const fn sigma_t_base(i: usize) -> usize {
     2 * CC_ROWS * RESIDUE_CELLS + i * RESIDUE_CELLS
 }
-const fn sigma_prod_base(k: usize) -> usize {
+pub const fn sigma_prod_base(k: usize) -> usize {
     SIGMA_VEC_REGION + k * PROD_REDUCE_CELLS
 }
-const fn sigma_fold_base(d: usize) -> usize {
+pub const fn sigma_fold_base(d: usize) -> usize {
     SIGMA_VEC_REGION + SIGMA_PROD_COEFFS * PROD_REDUCE_CELLS + d * FOLD_REDUCE_CELLS
 }
-const fn sigma_final_base(d: usize) -> usize {
+pub const fn sigma_final_base(d: usize) -> usize {
     SIGMA_VEC_REGION + SIGMA_PROD_COEFFS * PROD_REDUCE_CELLS + CC_ROWS * FOLD_REDUCE_CELLS + d
 }
 
@@ -286,20 +286,24 @@ impl SpendAir {
         }
     }
 
-    fn frame_off(&self) -> usize {
+    /// Poseidon2 per-block column count (exposed for the recursion's spend C(zeta) mirror).
+    pub fn perm_cols(&self) -> usize {
+        self.perm_cols
+    }
+    pub fn frame_off(&self) -> usize {
         RESIDUE_REGION_WIDTH
     }
-    fn cc_off(&self) -> usize {
+    pub fn cc_off(&self) -> usize {
         RESIDUE_REGION_WIDTH + frame_spec().width(self.perm_cols)
     }
-    fn sigma_off(&self) -> usize {
+    pub fn sigma_off(&self) -> usize {
         self.cc_off() + CC_REGION_WIDTH
     }
     /// Challenge region: the challenge sponge block, then `CC_ROWS` squeeze-reduction k-bit blocks.
-    fn challenge_off(&self) -> usize {
+    pub fn challenge_off(&self) -> usize {
         self.sigma_off() + SIGMA_REGION_WIDTH
     }
-    fn challenge_k_off(&self) -> usize {
+    pub fn challenge_k_off(&self) -> usize {
         self.challenge_off() + challenge_spec().width(self.perm_cols)
     }
     pub fn trace_width(&self) -> usize {

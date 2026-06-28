@@ -72,7 +72,7 @@ impl SpongeSpec {
         self.n_absorb * RATE
     }
 
-    fn n_byte(&self) -> usize {
+    pub fn n_byte(&self) -> usize {
         self.byte_ranged.iter().filter(|&&b| b).count()
     }
 
@@ -86,7 +86,7 @@ impl SpongeSpec {
         self.perms_off() + self.n_perms * perm_cols
     }
 
-    fn output_source(&self, out: usize) -> (usize, usize) {
+    pub fn output_source(&self, out: usize) -> (usize, usize) {
         let mut filled = 0usize;
         let mut read_perm = self.n_absorb - 1;
         let mut remaining = self.n_out;
