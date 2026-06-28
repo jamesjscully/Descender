@@ -308,3 +308,22 @@ constraint-level spend verification — a `spend_constraint_air` re-deriving the
 + frame-digest sponge + checked-core SIS + sigma + challenge sponge), so the aggregator constrains the
 inner spend RELATION and not only its FRI/commitment layer; and the in-circuit `{creation, spend}`
 cross-binding (MED-2 + key) lifted from the settlement layer into the aggregator.
+
+## Full inner C(zeta) per member in the aggregator — constraint-level + provability finding (2026-06-28)
+
+`block_recursive_air` now has its deepest rung: `cfg_full_leaf_member` + `member_window_full_leaf`,
+where each member's DEEP C(zeta) is the FULL alpha-folded creation-leaf constraint
+`recompute_c_partial(value_at_zeta) + C_committed` (honest OOD opening via
+`leaf_constraint_air::honest_cells_for_test`), composed with `C == Z_H(zeta)·Q`, while the member's
+Merkle root chains to one `chain_state_root`. So the aggregator's constraints INCLUDE the full inner
+creation RELATION per member. `full_leaf_czeta_block_constraints_hold` validates an honest block via
+`check_all_constraints` (the same soundness gate `prove` enforces).
+
+FINDING — the full-C(zeta) rung is NOT provable at production knobs. The inlined `recompute_c_partial`
+is very high algebraic degree (leaf Poseidon2 sboxes composed over the degree-8 extension), so
+`uni_stark`'s quotient LDE explodes (tens of GB). This is the concrete reason the PROVEN aggregator
+rungs use the low-degree FRI/DEEP/commitment consumer rather than `deep_c_full_leaf`. Closing the
+full-C(zeta) gap PROVABLY (for BOTH creation and spend) requires a RE-ARITHMETIZED low-degree mirror:
+commit the inner permutation's intermediate states as columns so every constraint is degree ≤ 2 —
+i.e. rebuild the leaf/spend AIR inside the recursion. That re-arithmetization is the remaining
+multi-week frontier; it is one shared piece of work that closes both the creation and spend halves.
