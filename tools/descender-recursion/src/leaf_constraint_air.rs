@@ -147,8 +147,9 @@ use crate::fri_fold_air::{limbs, D, W};
 use crate::inlined_perm::{C_INPUTS, C_OUTPUT, PERM_COLS};
 use crate::inlined_perm_octic::{self, OcticPermCells};
 use descender_account_stark::{
-    Challenge, Val, CHAIN_DIGEST_ELEMS, N_COMMIT_LANES, N_LANES, PACKED_WITNESS_COMMITMENT_BYTES,
-    PUBIO_ROLE_ROOT_OFF, RELATION_ID, RELATION_ID_ELEMS, ROLE_ROOT_ELEMS, SYNDROME_LANES, WIDTH,
+    Challenge, Val, CHAIN_DIGEST_ELEMS, N_COMMIT_LANES, N_LANES, NULLIFIER_ELEMS,
+    PACKED_WITNESS_COMMITMENT_BYTES, PUBIO_ROLE_ROOT_OFF, RELATION_ID, RELATION_ID_ELEMS,
+    ROLE_ROOT_ELEMS, SYNDROME_LANES, WIDTH,
 };
 use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
 use p3_field::{BasedVectorSpace, PrimeCharacteristicRing};
@@ -609,7 +610,9 @@ pub const N_PACKED: usize = PACKED_WITNESS_COMMITMENT_BYTES; // 32
 pub const N_CLASSC: usize = N_SYNDROME + N_PACKED;
 
 // Derived pubio offsets (mirror air.rs `PUBIO_*_OFF`; the leaf does not re-export them at crate root).
-pub const PUBIO_RELATION_ID_OFF_LOCAL: usize = PUBIO_ROLE_ROOT_OFF + ROLE_ROOT_ELEMS;
+// CLASS A-2 nullifier sits between role_root and relation_id in the pubio block.
+pub const PUBIO_NULLIFIER_OFF_LOCAL: usize = PUBIO_ROLE_ROOT_OFF + ROLE_ROOT_ELEMS;
+pub const PUBIO_RELATION_ID_OFF_LOCAL: usize = PUBIO_NULLIFIER_OFF_LOCAL + NULLIFIER_ELEMS;
 pub const PUBIO_SYNDROME_OFF_LOCAL: usize = PUBIO_RELATION_ID_OFF_LOCAL + RELATION_ID_ELEMS;
 pub const PUBIO_PACKED_WITNESS_OFF_LOCAL: usize = PUBIO_SYNDROME_OFF_LOCAL + SYNDROME_LANES;
 
@@ -5392,6 +5395,7 @@ mod tests {
                 + N_LANES
                 + descender_account_stark::CONTEXT_ELEMS
                 + ROLE_ROOT_ELEMS
+                + NULLIFIER_ELEMS
                 + RELATION_ID_ELEMS
         );
         assert_eq!(PUBIO_PACKED_WITNESS_OFF_LOCAL, PUBIO_SYNDROME_OFF_LOCAL + SYNDROME_LANES);

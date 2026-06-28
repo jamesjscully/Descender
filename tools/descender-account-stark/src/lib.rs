@@ -78,8 +78,9 @@ use air::{
 pub use air::{
     reference_c2_mask_prf, BATCH_PUBLIC_VALUES, CHAIN_ABSORB_LEN, CHAIN_DIGEST_ELEMS,
     CHAIN_PERMS_PER_ROW, CHAIN_RATE, CHECKED_CORE_ELEMS, CONTEXT_ELEMS, N_COMMIT_LANES, N_LANES,
-    PACKED_WITNESS_COMMITMENT_BYTES, PERM_WIDTH, PUBIO_ELEMS, PUBIO_ROLE_ROOT_OFF, RELATION_ID,
-    RELATION_ID_ELEMS, ROLE_ROOT_ELEMS, SYNDROME_LANES,
+    PACKED_WITNESS_COMMITMENT_BYTES, PERM_WIDTH, PUBIO_ELEMS, PUBIO_NULLIFIER_OFF,
+    PUBIO_ROLE_ROOT_OFF, RELATION_ID, RELATION_ID_ELEMS, ROLE_ROOT_ELEMS, SYNDROME_LANES,
+    NULLIFIER_DOMAIN, NULLIFIER_ELEMS,
 };
 pub use config::{
     Challenge, Challenger, MyCompress, MyHash, Perm, Val, DIGEST_ELEMS, NUM_RANDOM_CODEWORDS,
@@ -173,6 +174,13 @@ pub struct AccountCreationPublic {
     /// what the deployed leaf's `creation_proof_binding_digest` / native role
     /// root will later check against.
     pub role_root: [Val; ROLE_ROOT_ELEMS],
+    // --- CLASS A-2: SINGLE-USE NULLIFIER (F2: pad-seed reuse under reorg) ---
+    /// `nullifier = Poseidon2(DOMAIN ‖ pad_seed ‖ slot)`, computed IN-AIR and
+    /// exposed as a transcript-bound public value. Nonce-FREE (unlike
+    /// `pad_source_commitment`), so two proofs reusing one `pad_seed` for one
+    /// slot share a nullifier — the single-use signal the `pad_seed_registry`
+    /// enforces ([`crate::pad_seed_registry`]).
+    pub nullifier: [Val; NULLIFIER_ELEMS],
     // --- CLASS B: PROOF-SYSTEM-BOOKKEEPING (relation_id) ---
     /// Pinned relation / proof-system id (constant [`RELATION_ID`]). Pinned
     /// IN-AIR and re-checked by the verifier so a proof for this relation version
@@ -343,6 +351,7 @@ fn public_from_instance(
         account_state_root: s.account_state_root,
         lifecycle_anchor: s.lifecycle_anchor,
         role_root: inst.role_root,
+        nullifier: inst.nullifier,
         relation_id: core::array::from_fn(|j| Val::from_u32(RELATION_ID[j])),
         syndrome: inst.syndrome,
         packed_witness_commitment: inst.packed_witness_commitment,
@@ -355,6 +364,7 @@ fn public_values_vec(p: &AccountCreationPublic) -> Vec<Val> {
             + N_LANES
             + CONTEXT_ELEMS
             + ROLE_ROOT_ELEMS
+            + NULLIFIER_ELEMS
             + RELATION_ID_ELEMS
             + CHECKED_CORE_ELEMS,
     );
@@ -363,6 +373,7 @@ fn public_values_vec(p: &AccountCreationPublic) -> Vec<Val> {
     v.extend_from_slice(&p.masked_projection);
     v.extend_from_slice(&context_field_elems(p));
     v.extend_from_slice(&p.role_root);
+    v.extend_from_slice(&p.nullifier);
     v.extend_from_slice(&p.relation_id);
     v.extend_from_slice(&p.syndrome);
     v.extend_from_slice(&p.packed_witness_commitment);
@@ -493,13 +504,18 @@ fn pubio_tuple(p: &AccountCreationPublic) -> [Val; PUBIO_ELEMS] {
     for j in 0..ROLE_ROOT_ELEMS {
         t[role_off + j] = p.role_root[j];
     }
+    // CLASS A-2 nullifier is part of the per-instance tuple -> bound by the chain.
+    let nullifier_off = role_off + ROLE_ROOT_ELEMS;
+    for j in 0..NULLIFIER_ELEMS {
+        t[nullifier_off + j] = p.nullifier[j];
+    }
     for j in 0..RELATION_ID_ELEMS {
-        t[role_off + ROLE_ROOT_ELEMS + j] = p.relation_id[j];
+        t[nullifier_off + NULLIFIER_ELEMS + j] = p.relation_id[j];
     }
     // CLASS C: syndrome[12] ‖ packed_witness_commitment[32] are part of the
     // per-instance tuple -> bound by the digest chain (a tampered syndrome or
     // forged commitment changes the recomputed digest and is rejected).
-    let cc_off = role_off + ROLE_ROOT_ELEMS + RELATION_ID_ELEMS;
+    let cc_off = nullifier_off + NULLIFIER_ELEMS + RELATION_ID_ELEMS;
     for j in 0..SYNDROME_LANES {
         t[cc_off + j] = p.syndrome[j];
     }
@@ -730,7 +746,9 @@ mod small_config_classc_tests {
         let hex: String = d1.iter().map(|b| format!("{b:02x}")).collect();
         eprintln!("FROZEN-KAT q128 leaf proof sha256 = {hex}");
         // PINNED frozen q128 KAT digest (single-thread, seed 0xF20D_2026, `small_secrets`).
-        const PINNED: &str = "6bc93269a557ea9ea0f48bed0e0c546f0017cc2e35dd78ef7ea3295fa09c16c0";
+        // Re-pinned 2026-06-27 when CLASS A-2 (the F2 single-use `nullifier` public output) was
+        // added to the leaf relation — the new public value changes the proof bytes by design.
+        const PINNED: &str = "652e8b8397c0dc236f58f4ff7f182070426c3b1d135803c44f4a1e87be01e1fa";
         assert_eq!(hex, PINNED, "q128 leaf proof bytes drifted from the frozen KAT");
     }
 

@@ -146,6 +146,7 @@ fn target_b_claim_more_accounts_than_proven() {
         account_state_root: [0xDD; 32],
         lifecycle_anchor: [0xEE; 32],
         role_root: core::array::from_fn(|_| Val::from_u32(0xF00D)),
+        nullifier: core::array::from_fn(|_| Val::from_u32(0xBEEF)),
         // Use the pinned relation_id so this test still exercises the COUNT/digest
         // break (not the CLASS-B relation_id check).
         relation_id: core::array::from_fn(|j| Val::from_u32(RELATION_ID[j])),
@@ -203,6 +204,7 @@ fn target_b_certify_garbage_accounts() {
             account_state_root: [(k as u8).wrapping_add(2); 32],
             lifecycle_anchor: [(k as u8).wrapping_add(3); 32],
             role_root: core::array::from_fn(|j| Val::from_u32((k as u32) * 13 + j as u32)),
+            nullifier: core::array::from_fn(|j| Val::from_u32((k as u32) * 19 + j as u32)),
             // Pinned relation_id so the rejection is due to the digest/STARK break.
             relation_id: core::array::from_fn(|j| Val::from_u32(RELATION_ID[j])),
             syndrome: core::array::from_fn(|j| Val::from_u32((k as u32) * 17 + j as u32)),
