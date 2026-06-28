@@ -290,3 +290,21 @@ fixture computes the FS index via the pub `fs_post_zeta_state`/`fs_squeeze_batch
 trees there. So ONE O(1) proof attests N members each verified by the FULL in-circuit recursive
 verifier and chained to `chain_state_root` — true single-proof O(1) on-chain attestation. Item 1 is
 realized end-to-end (this combination is one the leaf's own recursive_air tests did not assemble).
+
+## Spend proofs aggregate to O(1) (2026-06-28)
+
+`descender_recursion::spend_block` connects the spend subsystem to the O(1) block aggregator. The
+generic recursion machinery (FS transcript + FRI commit-phase fold + Merkle/FRI-layer openings +
+DEEP/quotient consumer) is NOT creation-coupled — the only creation coupling is the optional
+`deep_c_full_leaf` full-C(zeta) re-derivation, which the creation aggregator itself runs WITHOUT — so
+a spend proof verifies in-circuit at the SAME depth the creation aggregator runs at. `windows_for_spend`
+turns each real `SpendWitness` (via `spend_air::spend_derive` → `packed_witness_commitment` →
+`spend_leaf_digest`) into a generic `recursive_air` member window opening that commitment, and
+`block_recursive_air` folds N of them into one `chain_state_root`. `proves_spend_block_q128`
+proves+verifies a 4-spend block at production q128 knobs.
+
+REMAINING (same class as the creation aggregator's open `deep_c_full_leaf` gap): the full
+constraint-level spend verification — a `spend_constraint_air` re-deriving the spend C(zeta) (packing
++ frame-digest sponge + checked-core SIS + sigma + challenge sponge), so the aggregator constrains the
+inner spend RELATION and not only its FRI/commitment layer; and the in-circuit `{creation, spend}`
+cross-binding (MED-2 + key) lifted from the settlement layer into the aggregator.

@@ -143,10 +143,16 @@ native speed. Under native settlement the measured per-block perm counts are thr
 
 ## 5. Remaining gates (precise, honest)
 
-1. **Spend in the O(1) aggregator** (engineering, non-gated, multi-day). Today the spend is a
-   standalone leaf + *settlement-layer* co-verification. For O(1) *on-chain* of `{creation, spend}`
-   the spend proof must be verified INSIDE the aggregator — i.e. a spend recursive verifier
-   (`recursive_air` is currently creation-specific). This is the last substantial non-decision build.
+1. **Spend in the O(1) aggregator.** PARTIALLY DONE (2026-06-28): `descender_recursion::spend_block`
+   aggregates N real spend witnesses (via `spend_air::spend_derive`) into one `chain_state_root`
+   through the generic recursion — each member's `packed_witness_commitment` verified in-circuit at the
+   SAME depth the creation aggregator runs at (`proves_spend_block_q128`, production q128). The generic
+   machinery is not creation-coupled, so spends reuse it as-is. REMAINING (the deeper rung): the full
+   constraint-level spend verification — a `spend_constraint_air` re-deriving the spend C(zeta)
+   (packing + frame/challenge sponges + SIS + sigma) — and lifting the `{creation, spend}` cross-binding
+   (MED-2 + key) into the aggregator. This deeper rung is the SAME class of open item as the creation
+   aggregator's own `deep_c_full_leaf` gap (the creation aggregator also does not yet re-derive its full
+   inner C(zeta)); closing it for both is one shared piece of remaining work.
 2. **L1 settlement bridge** (decision + build). Position taken (native settlement) for the verifier;
    posting rollup state to L1 re-introduces the precompile-vs-SNARK-wrap PQ trade-off — a maintainer
    decision (future ADR).
