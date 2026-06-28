@@ -80,7 +80,8 @@ use air::{
 
 pub use air::{
     reference_c2_mask_prf, BATCH_PUBLIC_VALUES, CHAIN_ABSORB_LEN, CHAIN_DIGEST_ELEMS,
-    CHAIN_PERMS_PER_ROW, CHAIN_RATE, CHECKED_CORE_ELEMS, CONTEXT_ELEMS, N_COMMIT_LANES, N_LANES,
+    CHAIN_PERMS_PER_ROW, CHAIN_RATE, CHECKED_CORE_ELEMS, CONTEXT_ELEMS, KEY_COMMITMENT_BYTES,
+    PUBIO_KEY_COMMITMENT_OFF, N_COMMIT_LANES, N_LANES,
     PACKED_LANE_BITS, PACKED_WITNESS_COMMITMENT_BYTES, PACKED_WITNESS_RESIDUES, PERM_WIDTH,
     PUBIO_ELEMS, PUBIO_NULLIFIER_OFF,
     PUBIO_ROLE_ROOT_OFF, RELATION_ID, RELATION_ID_ELEMS, ROLE_ROOT_ELEMS, SYNDROME_LANES,
@@ -140,6 +141,11 @@ pub struct AccountCreationSecrets {
     /// in-circuit into `packed_witness_commitment`). The 6 masked_projection
     /// residues (12..17) are derived in-circuit from `account_projection`.
     pub syndrome: [u16; SYNDROME_LANES],
+    /// CLASS A-3 — the account's REGISTERED checked-core key commitment: the 32-byte
+    /// `pack_reviewed_fq12_account_carried_syndrome_digest` of the account's checked-core signing-key
+    /// (witness) syndrome. PUBLIC; a spend binds its `witness_commitment` to this, tying the spend to
+    /// the account's creation-registered key.
+    pub checked_core_key_commitment: [u8; KEY_COMMITMENT_BYTES],
 }
 
 /// The PUBLIC statement for one account-creation instance.
@@ -203,6 +209,9 @@ pub struct AccountCreationPublic {
     /// leaf/spend `packed_witness_commitment` will later be checked equal to (that
     /// equality-to-deployed-leaf is the wiring step, not this relation).
     pub packed_witness_commitment: [Val; PACKED_WITNESS_COMMITMENT_BYTES],
+    /// CLASS A-3 — the account's REGISTERED checked-core key commitment (32-byte syndrome digest of
+    /// the account's signing key). A spend binds `witness_commitment == checked_core_key_commitment`.
+    pub checked_core_key_commitment: [Val; KEY_COMMITMENT_BYTES],
 }
 
 /// Field-embed the public context exactly as the AIR `context` block:
@@ -338,6 +347,7 @@ fn to_full_secrets(s: &AccountCreationSecrets) -> Result<FullSecrets, Error> {
         verifier_version: s.verifier_version,
         account_state_root: s.account_state_root,
         syndrome: s.syndrome,
+        checked_core_key_commitment: s.checked_core_key_commitment,
     })
 }
 
@@ -359,6 +369,7 @@ fn public_from_instance(
         relation_id: core::array::from_fn(|j| Val::from_u32(RELATION_ID[j])),
         syndrome: inst.syndrome,
         packed_witness_commitment: inst.packed_witness_commitment,
+        checked_core_key_commitment: inst.checked_core_key_commitment,
     }
 }
 
@@ -381,6 +392,7 @@ fn public_values_vec(p: &AccountCreationPublic) -> Vec<Val> {
     v.extend_from_slice(&p.relation_id);
     v.extend_from_slice(&p.syndrome);
     v.extend_from_slice(&p.packed_witness_commitment);
+    v.extend_from_slice(&p.checked_core_key_commitment);
     v
 }
 
@@ -592,6 +604,19 @@ pub fn creation_spend_packed_witness_binds(
             .all(|(c, &s)| c.as_canonical_u32() == s as u32)
 }
 
+/// The public-key↔account binding: the spend's checked-core key (`witness_commitment`) equals the key
+/// the account REGISTERED at creation (`checked_core_key_commitment`). `true` iff they match
+/// byte-for-byte. Together with the spend's in-circuit proof that it knows the key's preimage (the SIS
+/// + sigma), this ties the spend to the account's creation-registered signing key.
+pub fn creation_spend_key_binds(creation: &AccountCreationPublic, spend: &SpendPublic) -> bool {
+    creation.checked_core_key_commitment.len() == spend.witness_commitment.len()
+        && creation
+            .checked_core_key_commitment
+            .iter()
+            .zip(spend.witness_commitment.iter())
+            .all(|(c, &s)| c.as_canonical_u32() == s as u32)
+}
+
 /// Co-verify a {creation, spend} pair: BOTH proofs must verify AND the spend must consume EXACTLY the
 /// creation's packed witness (MED-2). `Ok(())` only if all three hold. This is the settlement-layer
 /// co-verification of the `{creation + spend}` composition.
@@ -606,6 +631,12 @@ pub fn verify_creation_and_spend(
     if !creation_spend_packed_witness_binds(creation, spend) {
         return Err(Error::PublicMismatch(
             "MED-2: spend packed_witness_commitment != creation packed_witness_commitment".into(),
+        ));
+    }
+    if !creation_spend_key_binds(creation, spend) {
+        return Err(Error::PublicMismatch(
+            "spend witness_commitment != creation checked_core_key_commitment (wrong account key)"
+                .into(),
         ));
     }
     Ok(())
@@ -660,6 +691,10 @@ fn pubio_tuple(p: &AccountCreationPublic) -> [Val; PUBIO_ELEMS] {
     }
     for j in 0..PACKED_WITNESS_COMMITMENT_BYTES {
         t[cc_off + SYNDROME_LANES + j] = p.packed_witness_commitment[j];
+    }
+    // CLASS A-3: the registered checked-core key commitment is part of the per-instance tuple.
+    for j in 0..KEY_COMMITMENT_BYTES {
+        t[PUBIO_KEY_COMMITMENT_OFF + j] = p.checked_core_key_commitment[j];
     }
     t
 }
@@ -856,6 +891,7 @@ mod small_config_classc_tests {
             verifier_version: 0x0102_0304,
             account_state_root: core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(7)),
             syndrome: core::array::from_fn(|i| ((i as u32 * 1009 + 17) % 12289) as u16),
+            checked_core_key_commitment: core::array::from_fn(|i| (i as u8).wrapping_mul(19).wrapping_add(2)),
         }
     }
 
@@ -887,7 +923,8 @@ mod small_config_classc_tests {
         // PINNED frozen q128 KAT digest (single-thread, seed 0xF20D_2026, `small_secrets`).
         // Re-pinned 2026-06-27 when CLASS A-2 (the F2 single-use `nullifier` public output) was
         // added to the leaf relation — the new public value changes the proof bytes by design.
-        const PINNED: &str = "652e8b8397c0dc236f58f4ff7f182070426c3b1d135803c44f4a1e87be01e1fa";
+        // Re-pinned 2026-06-28 when CLASS A-3 (the `checked_core_key_commitment` registration) landed.
+        const PINNED: &str = "b79c7375484b78a5d00579e1d02b93eda1ea04cffc70923a0164887bbe82b4a0";
         assert_eq!(hex, PINNED, "q128 leaf proof bytes drifted from the frozen KAT");
     }
 
@@ -1027,6 +1064,8 @@ mod small_config_classc_tests {
 
         let mut s = s0;
         s.syndrome = syndrome;
+        // The account REGISTERS its checked-core key commitment = pack(sigma_w) — the spend's key.
+        s.checked_core_key_commitment = pack_syndrome_digest(&sigma_w);
         let full = to_full_secrets(&s).expect("valid witness");
 
         // ---- Creation proof (small config) + its public statement.
@@ -1081,6 +1120,18 @@ mod small_config_classc_tests {
         assert!(
             creation_spend_packed_witness_binds(&cpublic, &spublic),
             "MED-2 binding must hold for a spend over the creation's packed witness"
+        );
+        // ---- Public-key↔account binding: the spend's key == the account's registered key.
+        assert!(
+            creation_spend_key_binds(&cpublic, &spublic),
+            "key binding must hold: spend witness_commitment == creation checked_core_key_commitment"
+        );
+        // A spend with a DIFFERENT key must FAIL the key binding (creation registered pack(sigma_w)).
+        let mut wrong_key = spublic.clone();
+        wrong_key.witness_commitment[0] ^= 0xFF;
+        assert!(
+            !creation_spend_key_binds(&cpublic, &wrong_key),
+            "key binding must FAIL when the spend uses a key other than the account's registered one"
         );
 
         // ---- A spend over a DIFFERENT witness must FAIL the binding.

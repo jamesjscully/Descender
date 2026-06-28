@@ -46,6 +46,7 @@ fn fixed_projection_secrets(seed: u64, fixed_proj: [u16; N_LANES]) -> AccountCre
         syndrome: core::array::from_fn(|i| {
             (seed.wrapping_mul(13).wrapping_add(i as u64) % 12289) as u16
         }),
+        checked_core_key_commitment: [0x2bu8; 32],
     }
 }
 

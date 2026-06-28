@@ -25,6 +25,7 @@ fn sample_secrets() -> AccountCreationSecrets {
         verifier_version: 0x0001_0002,
         account_state_root: [0x55; 32],
         syndrome: [9, 8, 7, 6, 5, 4, 3, 2, 1, 100, 200, 300],
+        checked_core_key_commitment: [0x2bu8; 32],
     }
 }
 

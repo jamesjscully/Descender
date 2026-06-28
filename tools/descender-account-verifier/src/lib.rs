@@ -49,8 +49,8 @@ use sha2::{Digest, Sha256};
 // ---------------------------------------------------------------------------
 pub use descender_account_stark::{
     prove_account_creation, prove_account_creation_with_seed, AccountCreationPublic,
-    AccountCreationSecrets, Error as StarkError, Proof, Val, N_COMMIT_LANES, N_LANES,
-    NULLIFIER_ELEMS, PACKED_WITNESS_COMMITMENT_BYTES, RELATION_ID_ELEMS, ROLE_ROOT_ELEMS,
+    AccountCreationSecrets, Error as StarkError, Proof, Val, KEY_COMMITMENT_BYTES, N_COMMIT_LANES,
+    N_LANES, NULLIFIER_ELEMS, PACKED_WITNESS_COMMITMENT_BYTES, RELATION_ID_ELEMS, ROLE_ROOT_ELEMS,
     SYNDROME_LANES,
 };
 pub use descender_account_stark::{
@@ -160,6 +160,8 @@ struct PublicWire {
     relation_id: Vec<u32>,
     syndrome: Vec<u32>,
     packed_witness_commitment: Vec<u32>,
+    /// CLASS A-3: the account's registered checked-core key commitment.
+    checked_core_key_commitment: Vec<u32>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -202,6 +204,7 @@ fn public_to_wire(p: &AccountCreationPublic) -> PublicWire {
         relation_id: vals_to_u32(&p.relation_id),
         syndrome: vals_to_u32(&p.syndrome),
         packed_witness_commitment: vals_to_u32(&p.packed_witness_commitment),
+        checked_core_key_commitment: vals_to_u32(&p.checked_core_key_commitment),
     }
 }
 
@@ -228,6 +231,10 @@ fn wire_to_public(w: &PublicWire) -> Result<AccountCreationPublic, VerifyError> 
         packed_witness_commitment: u32s_to_vals::<PACKED_WITNESS_COMMITMENT_BYTES>(
             &w.packed_witness_commitment,
             "packed_witness_commitment",
+        )?,
+        checked_core_key_commitment: u32s_to_vals::<KEY_COMMITMENT_BYTES>(
+            &w.checked_core_key_commitment,
+            "checked_core_key_commitment",
         )?,
     })
 }

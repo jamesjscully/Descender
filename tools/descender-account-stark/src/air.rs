@@ -224,6 +224,21 @@ const Q12289_PACK: u32 = Q12289_CARRIER;
 /// CLASS-C public field elements: syndrome[12] ‖ packed_witness_commitment[32].
 pub const CHECKED_CORE_ELEMS: usize = SYNDROME_LANES + PACKED_WITNESS_COMMITMENT_BYTES;
 
+// ---------------------------------------------------------------------------
+// CLASS A-3 — CHECKED-CORE KEY REGISTRATION.
+//
+// The account REGISTERS its checked-core signing-key commitment at creation: a 32-byte digest
+// `checked_core_key_commitment = pack_reviewed_fq12_account_carried_syndrome_digest(witness_syndrome)`
+// (14-bit-LE pack of the 12-lane key/witness syndrome). It is a PUBLIC value carried in the
+// per-instance statement (transcript-bound + folded into the batch digest chain), so the account's
+// (account_id, key) pair is fixed by its creation proof. A spend then proves its checked-core key
+// equals this registered commitment (`witness_commitment == checked_core_key_commitment`), tying the
+// spend to the account's creation-registered key. The commitment is a registered INPUT (the account
+// supplies it); the spend — not the creation — proves knowledge of its preimage (the SIS + sigma).
+// ---------------------------------------------------------------------------
+/// `checked_core_key_commitment` byte anchors (one 12-lane syndrome digest = 32 bytes).
+pub const KEY_COMMITMENT_BYTES: usize = 32;
+
 // --- C4 canonical base-128 (mirrors base128_range_air_q12289) ---
 const C4_BASE: u32 = 128;
 const C4_DIGIT_BITS: usize = 7;
@@ -413,7 +428,8 @@ pub const PUBIO_ELEMS: usize = N_COMMIT_LANES
     + ROLE_ROOT_ELEMS
     + NULLIFIER_ELEMS
     + RELATION_ID_ELEMS
-    + CHECKED_CORE_ELEMS;
+    + CHECKED_CORE_ELEMS
+    + KEY_COMMITMENT_BYTES;
 
 /// Offset (within one row's pubio block) of the `role_root` lanes.
 pub const PUBIO_ROLE_ROOT_OFF: usize = 2 * N_COMMIT_LANES + N_LANES + CONTEXT_ELEMS;
@@ -426,6 +442,8 @@ pub const PUBIO_SYNDROME_OFF: usize = PUBIO_RELATION_ID_OFF + RELATION_ID_ELEMS;
 /// CLASS C — offset (within one row's pubio block) of the
 /// `packed_witness_commitment` byte anchors.
 pub const PUBIO_PACKED_WITNESS_OFF: usize = PUBIO_SYNDROME_OFF + SYNDROME_LANES;
+/// CLASS A-3 — offset (within one row's pubio block) of the `checked_core_key_commitment` bytes.
+pub const PUBIO_KEY_COMMITMENT_OFF: usize = PUBIO_PACKED_WITNESS_OFF + PACKED_WITNESS_COMMITMENT_BYTES;
 
 // ---------------------------------------------------------------------------
 // BATCH DIGEST CHAIN (the per-row public-IO binding commitment).
@@ -676,8 +694,8 @@ impl<
             // digest[8] ‖ count_n[1] — the transcript-bound chain commitment.
             BATCH_PUBLIC_VALUES
         } else {
-            // pad[10] ‖ opening[10] ‖ masked[6] ‖ context ‖ role_root ‖
-            // nullifier ‖ relation_id ‖ syndrome[12] ‖ packed_witness_commitment[32].
+            // pad[10] ‖ opening[10] ‖ masked[6] ‖ context ‖ role_root ‖ nullifier ‖ relation_id ‖
+            // syndrome[12] ‖ packed_witness_commitment[32] ‖ checked_core_key_commitment[32].
             N_COMMIT_LANES
                 + N_COMMIT_LANES
                 + N_LANES
@@ -686,6 +704,7 @@ impl<
                 + NULLIFIER_ELEMS
                 + RELATION_ID_ELEMS
                 + CHECKED_CORE_ELEMS
+                + KEY_COMMITMENT_BYTES
         }
     }
 }
@@ -1627,6 +1646,10 @@ pub struct FullSecrets {
     /// witness frame; each a canonical q12289 residue from the spend's checked-core
     /// frame). The 6 masked_projection residues are derived in-circuit.
     pub syndrome: [u16; SYNDROME_LANES],
+    /// CLASS A-3 — the account's REGISTERED checked-core key commitment (32-byte syndrome digest of
+    /// the account's witness/signing key). Carried as a public statement value; a spend binds its
+    /// `witness_commitment` to this.
+    pub checked_core_key_commitment: [u8; KEY_COMMITMENT_BYTES],
 }
 
 /// Computed public outputs + intermediate values from the honest sponge run.
@@ -1649,6 +1672,8 @@ pub struct FullInstance<F> {
     /// `[syndrome[0..12] ‖ masked_projection[0..6]]` as 14-bit LE — IDENTICAL to
     /// the deployed `pack_reviewed_fq12_packed_witness_state18_from_parts`.
     pub packed_witness_commitment: [F; PACKED_WITNESS_COMMITMENT_BYTES],
+    /// CLASS A-3: the account's registered checked-core key commitment (32-byte syndrome digest).
+    pub checked_core_key_commitment: [F; KEY_COMMITMENT_BYTES],
     #[allow(dead_code)]
     pub masks: [u32; N_LANES],
     pub _phantom: PhantomData<F>,
@@ -2261,6 +2286,13 @@ fn build_full_row<
     for k in 0..PACKED_WITNESS_COMMITMENT_BYTES {
         row[lay.pubio_off + PUBIO_PACKED_WITNESS_OFF + k] = packed_witness_commitment[k];
     }
+    // CLASS A-3: the registered checked-core key commitment into the pubio block (batch-chain bound).
+    let mut checked_core_key_commitment = [F::ZERO; KEY_COMMITMENT_BYTES];
+    for k in 0..KEY_COMMITMENT_BYTES {
+        let b = F::from_u32(secrets.checked_core_key_commitment[k] as u32);
+        checked_core_key_commitment[k] = b;
+        row[lay.pubio_off + PUBIO_KEY_COMMITMENT_OFF + k] = b;
+    }
 
     let inst = FullInstance {
         pad_source_commitment,
@@ -2271,6 +2303,7 @@ fn build_full_row<
         nullifier,
         syndrome: syndrome_f,
         packed_witness_commitment,
+        checked_core_key_commitment,
         masks,
         _phantom: PhantomData,
     };
@@ -2288,7 +2321,8 @@ pub fn full_public_values<F: PrimeField32>(inst: &FullInstance<F>) -> Vec<F> {
             + ROLE_ROOT_ELEMS
             + NULLIFIER_ELEMS
             + RELATION_ID_ELEMS
-            + CHECKED_CORE_ELEMS,
+            + CHECKED_CORE_ELEMS
+            + KEY_COMMITMENT_BYTES,
     );
     v.extend_from_slice(&inst.pad_source_commitment);
     v.extend_from_slice(&inst.opening_tuple_commitment);
@@ -2299,6 +2333,7 @@ pub fn full_public_values<F: PrimeField32>(inst: &FullInstance<F>) -> Vec<F> {
     v.extend(RELATION_ID.iter().map(|&id| F::from_u32(id)));
     v.extend_from_slice(&inst.syndrome);
     v.extend_from_slice(&inst.packed_witness_commitment);
+    v.extend_from_slice(&inst.checked_core_key_commitment);
     v
 }
 
@@ -2347,6 +2382,8 @@ mod context_constraint_tests {
             account_state_root: core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(7)),
             // CLASS C: 12 canonical (< q12289) checked-core syndrome lanes.
             syndrome: core::array::from_fn(|i| ((i as u32 * 1009 + 17) % Q12289_CARRIER) as u16),
+            // CLASS A-3: a registered key commitment (declared; any value is creation-valid).
+            checked_core_key_commitment: core::array::from_fn(|i| (i as u8).wrapping_mul(19).wrapping_add(2)),
         }
     }
 

@@ -25,6 +25,7 @@ fn honest_secrets() -> AccountCreationSecrets {
         verifier_version: 0x0000_0007,
         account_state_root: [0x33; 32],
         syndrome: [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120],
+        checked_core_key_commitment: [0x2bu8; 32],
     }
 }
 
