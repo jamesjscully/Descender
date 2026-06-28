@@ -391,3 +391,12 @@ off-circuit surface is now exactly: `c`'s hash-derivation, and tying `witness_co
 account's creation-committed key + `proof_commitment` into the challenge (Fiat-Shamir). Validated:
 `spend_air::tampered_witness_commitment_violates_binding` + full-spend prove/verify; account-stark lib
 42 green, warning-clean.
+
+## Implemented (2026-06-27): deployable spend API at production q128 config + frozen KAT
+
+`descender_account_stark::{prove_spend_authorization,verify_spend_authorization}` are validated at the
+PRODUCTION q128 config (digest-13 sponge, 120 queries, blowup 4): `spend_production_prove_verify_roundtrip`
+proves a spend and verifies it, and rejects a tampered statement. The spend proof BYTE FORMAT is pinned
+by `frozen_q128_spend_proof_kat` (single-thread deterministic PoW grind; SHA-256 digest
+`3bf55df8…f3f62e77`), mirroring the creation leaf's frozen KAT — drift protection for the whole spend
+subsystem. (Both are `#[ignore]` — slow production proves; run explicitly.)
