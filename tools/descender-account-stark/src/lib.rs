@@ -540,23 +540,22 @@ pub fn prove_spend_authorization_with_seed(
     let hash = MyHash::new(perm.clone());
     let compress = MyCompress::new(MyHash::new(perm.clone()));
     let air = build_spend_air();
+    let d = spend_air::spend_derive(&air, w);
     let (trace, pv, frame_digest) = spend_air::generate_spend_trace(&air, w);
     let cfg = build_config(&perm, &hash, &compress, mask_seed);
     let proof = p3_prove(&cfg, &air, trace, &pv);
-    let (_residues, packed) = spend_air::spend_residues_and_packed(w);
-    let sigma_t = spend_air::derive_sigma_t(w);
     let public = SpendPublic {
-        packed_witness_commitment: packed,
+        packed_witness_commitment: d.packed,
         account_id: w.account_id,
         slot_id: w.slot_id,
         account_state_root: w.account_state_root,
         message_digest: w.message_digest,
         frame_digest,
-        sigma_c: core::array::from_fn(|i| Val::from_u32(w.sigma_c[i] as u32)),
+        sigma_c: core::array::from_fn(|i| Val::from_u32(d.sigma_c[i] as u32)),
         sigma_w: core::array::from_fn(|i| Val::from_u32(w.sigma_w[i] as u32)),
-        sigma_t: core::array::from_fn(|i| Val::from_u32(sigma_t[i] as u32)),
-        witness_commitment: checked_core::pack_syndrome_digest(&w.sigma_w),
-        proof_commitment: checked_core::pack_syndrome_digest(&sigma_t),
+        sigma_t: core::array::from_fn(|i| Val::from_u32(w.sigma_t[i] as u32)),
+        witness_commitment: d.witness_commitment,
+        proof_commitment: d.proof_commitment,
     };
     Ok((public, proof))
 }
@@ -969,18 +968,13 @@ mod small_config_classc_tests {
             KOALABEAR_POSEIDON2_RC_16_EXTERNAL_FINAL,
         );
 
-        // A canonical checked-core response; the syndrome is DERIVED as H·response (a valid
-        // signature), and the AIR verifies the full spend relation (packing + frame digest +
-        // checked-core SIS) under a real prove/verify.
-        let response: [u16; 22] = core::array::from_fn(|i| ((i as u32 * 503 + 7) % 12289) as u16);
-        let projection: [u16; 6] = core::array::from_fn(|i| ((i as u32 * 211 + 5) % 12289) as u16);
-        let sigma_c: [u16; 12] = core::array::from_fn(|i| ((i as u32 * 97 + 13) % 12289) as u16);
-        let sigma_w: [u16; 12] = core::array::from_fn(|i| ((i as u32 * 149 + 29) % 12289) as u16);
+        // Rehosted flow: fix the key (sigma_w) and nonce (sigma_t); the AIR derives c (Poseidon2),
+        // syndrome, and the solved response, and verifies the full spend relation (packing + frame
+        // digest + checked-core SIS + sigma identity + in-circuit challenge) under a real prove/verify.
         let w = SpendWitness {
-            response,
-            projection,
-            sigma_c,
-            sigma_w,
+            sigma_w: core::array::from_fn(|i| ((i as u32 * 149 + 29) % 12289) as u16),
+            sigma_t: core::array::from_fn(|i| ((i as u32 * 71 + 5) % 12289) as u16),
+            projection: core::array::from_fn(|i| ((i as u32 * 211 + 5) % 12289) as u16),
             account_id: core::array::from_fn(|i| (i as u8).wrapping_mul(13).wrapping_add(3)),
             slot_id: 0x0000_0000_0000_0042,
             account_state_root: core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(7)),
@@ -999,25 +993,41 @@ mod small_config_classc_tests {
     /// packed-witness binding holds — then confirm a spend over a DIFFERENT witness FAILS the binding.
     #[test]
     fn small_config_creation_spend_co_verification_and_med2_binding() {
-        use crate::checked_core::response_syndrome;
-        use crate::spend_air::{generate_spend_trace, pack_residues, SpendAir, SpendWitness};
+        use crate::checked_core::{pack_syndrome_digest, sigma_expected};
+        use crate::spend_air::{
+            derive_challenge, generate_spend_trace, pack_residues, spend_derive, SpendAir,
+            SpendWitness,
+        };
         use p3_koala_bear::{
             KOALABEAR_POSEIDON2_RC_16_EXTERNAL_FINAL, KOALABEAR_POSEIDON2_RC_16_EXTERNAL_INITIAL,
             KOALABEAR_POSEIDON2_RC_16_INTERNAL,
         };
 
-        // A valid checked-core signature: pick a canonical response, the syndrome is H·response.
-        let response: [u16; 22] = core::array::from_fn(|i| ((i as u32 * 503 + 7) % 12289) as u16);
-        let syndrome = response_syndrome(&response);
-
-        // The creation leaf commits THAT syndrome (its checked-core public input = the signature).
-        let mut s = small_secrets();
-        s.syndrome = syndrome;
-        let full = to_full_secrets(&s).expect("valid witness");
         let perm: Perm = default_koalabear_poseidon2_16();
         let hash = MyHash::new(perm.clone());
         let compress = MyCompress::new(MyHash::new(perm.clone()));
         let cfg = small_config(&perm, &hash, &compress);
+        let sair = SpendAir::from_arrays(
+            KOALABEAR_POSEIDON2_RC_16_EXTERNAL_INITIAL,
+            KOALABEAR_POSEIDON2_RC_16_INTERNAL,
+            KOALABEAR_POSEIDON2_RC_16_EXTERNAL_FINAL,
+        );
+
+        // Rehosted flow: fix the key (sigma_w) + nonce (sigma_t); derive the Poseidon2 challenge over
+        // the statement + commitments, then syndrome = t + c⊛w. The creation leaf commits THAT
+        // syndrome (its checked-core public input = the signature target).
+        let s0 = small_secrets();
+        let message: [u8; 32] = core::array::from_fn(|i| (i as u8).wrapping_mul(11).wrapping_add(2));
+        let sigma_w: [u16; 12] = core::array::from_fn(|i| ((i as u32 * 149 + 29) % 12289) as u16);
+        let sigma_t: [u16; 12] = core::array::from_fn(|i| ((i as u32 * 71 + 5) % 12289) as u16);
+        let wc = pack_syndrome_digest(&sigma_w);
+        let pc = pack_syndrome_digest(&sigma_t);
+        let c = derive_challenge(&sair, &message, &s0.account_id, s0.slot_id, &s0.account_state_root, &wc, &pc);
+        let syndrome = sigma_expected(&sigma_t, &c, &sigma_w);
+
+        let mut s = s0;
+        s.syndrome = syndrome;
+        let full = to_full_secrets(&s).expect("valid witness");
 
         // ---- Creation proof (small config) + its public statement.
         let cair = build_air(false);
@@ -1029,55 +1039,44 @@ mod small_config_classc_tests {
         let cproof = p3_prove(&cfg, &cair, ctrace, &cpv);
         p3_verify(&cfg, &cair, &cproof, &cpv).expect("creation proof verifies");
 
-        // ---- Spend consumes the creation's masked_projection (residues 12..17) + the SAME syndrome.
+        // ---- Spend consumes the creation's masked_projection + the SAME (derived) syndrome.
         let projection: [u16; 6] =
             core::array::from_fn(|i| cinst.masked_projection[i].as_canonical_u32() as u16);
-        let mut residues = [0u16; 18];
-        residues[..12].copy_from_slice(&syndrome);
-        residues[12..].copy_from_slice(&projection);
-        // The spend's derived packed witness reproduces the creation's published commitment.
-        let creation_packed: Vec<u32> =
-            cpublic.packed_witness_commitment.iter().map(|v| v.as_canonical_u32()).collect();
-        let spend_packed: Vec<u32> = pack_residues(&residues).iter().map(|&b| b as u32).collect();
-        assert_eq!(creation_packed, spend_packed, "spend packer != creation packed witness");
-
-        // ---- Spend proof (small config): checked-core SIS H·response == syndrome verified in-circuit.
-        let sair = SpendAir::from_arrays(
-            KOALABEAR_POSEIDON2_RC_16_EXTERNAL_INITIAL,
-            KOALABEAR_POSEIDON2_RC_16_INTERNAL,
-            KOALABEAR_POSEIDON2_RC_16_EXTERNAL_FINAL,
-        );
-        let sigma_c: [u16; 12] = core::array::from_fn(|i| ((i as u32 * 97 + 13) % 12289) as u16);
-        let sigma_w: [u16; 12] = core::array::from_fn(|i| ((i as u32 * 149 + 29) % 12289) as u16);
         let w = SpendWitness {
-            response,
-            projection,
-            sigma_c,
             sigma_w,
+            sigma_t,
+            projection,
             account_id: s.account_id,
             slot_id: s.slot_id,
             account_state_root: s.account_state_root,
-            message_digest: core::array::from_fn(|i| (i as u8).wrapping_mul(11).wrapping_add(2)),
+            message_digest: message,
         };
+        let d = spend_derive(&sair, &w);
+        assert_eq!(d.syndrome, syndrome, "spend-derived syndrome != creation syndrome");
+        // The spend's derived packed witness reproduces the creation's published commitment.
+        let creation_packed: Vec<u32> =
+            cpublic.packed_witness_commitment.iter().map(|v| v.as_canonical_u32()).collect();
+        let spend_packed: Vec<u32> = d.packed.iter().map(|&b| b as u32).collect();
+        assert_eq!(creation_packed, spend_packed, "spend packer != creation packed witness");
+
+        // ---- Spend proof (small config): full spend relation verified in-circuit (incl. rehosted c).
         let (strace, spv, frame_digest) = generate_spend_trace(&sair, &w);
         let sproof = p3_prove(&cfg, &sair, strace, &spv);
         p3_verify(&cfg, &sair, &sproof, &spv).expect("spend proof verifies");
 
         // ---- MED-2 binding: the spend consumes EXACTLY the creation's packed witness.
-        let (_residues, packed) = crate::spend_air::spend_residues_and_packed(&w);
-        let sigma_t = crate::spend_air::derive_sigma_t(&w);
         let spublic = SpendPublic {
-            packed_witness_commitment: packed,
+            packed_witness_commitment: d.packed,
             account_id: w.account_id,
             slot_id: w.slot_id,
             account_state_root: w.account_state_root,
             message_digest: w.message_digest,
             frame_digest,
-            sigma_c: core::array::from_fn(|i| Val::from_u32(w.sigma_c[i] as u32)),
+            sigma_c: core::array::from_fn(|i| Val::from_u32(d.sigma_c[i] as u32)),
             sigma_w: core::array::from_fn(|i| Val::from_u32(w.sigma_w[i] as u32)),
-            sigma_t: core::array::from_fn(|i| Val::from_u32(sigma_t[i] as u32)),
-            witness_commitment: crate::checked_core::pack_syndrome_digest(&w.sigma_w),
-            proof_commitment: crate::checked_core::pack_syndrome_digest(&sigma_t),
+            sigma_t: core::array::from_fn(|i| Val::from_u32(w.sigma_t[i] as u32)),
+            witness_commitment: d.witness_commitment,
+            proof_commitment: d.proof_commitment,
         };
         assert!(
             creation_spend_packed_witness_binds(&cpublic, &spublic),
@@ -1085,7 +1084,7 @@ mod small_config_classc_tests {
         );
 
         // ---- A spend over a DIFFERENT witness must FAIL the binding.
-        let mut other = residues;
+        let mut other = d.residues;
         other[12] = (other[12] + 1) % 12289;
         let other_spublic = SpendPublic {
             packed_witness_commitment: pack_residues(&other),
@@ -1099,10 +1098,9 @@ mod small_config_classc_tests {
 
     fn sample_spend_witness() -> spend_air::SpendWitness {
         spend_air::SpendWitness {
-            response: core::array::from_fn(|i| ((i as u32 * 503 + 7) % 12289) as u16),
-            projection: core::array::from_fn(|i| ((i as u32 * 211 + 5) % 12289) as u16),
-            sigma_c: core::array::from_fn(|i| ((i as u32 * 97 + 13) % 12289) as u16),
             sigma_w: core::array::from_fn(|i| ((i as u32 * 149 + 29) % 12289) as u16),
+            sigma_t: core::array::from_fn(|i| ((i as u32 * 71 + 5) % 12289) as u16),
+            projection: core::array::from_fn(|i| ((i as u32 * 211 + 5) % 12289) as u16),
             account_id: core::array::from_fn(|i| (i as u8).wrapping_mul(13).wrapping_add(3)),
             slot_id: 0x0000_0000_0000_0042,
             account_state_root: core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(7)),
@@ -1152,7 +1150,8 @@ mod small_config_classc_tests {
         let hex: String = d1.iter().map(|b| format!("{b:02x}")).collect();
         eprintln!("FROZEN-KAT q128 spend proof sha256 = {hex}");
         // PINNED frozen q128 SPEND KAT digest (single-thread, seed 0x5E_4D_2026, sample_spend_witness).
-        const PINNED: &str = "3bf55df8d189e1cbb103806e04fc0887d204d46f2a7e451d397621e7f3f62e77";
+        // Re-pinned 2026-06-27 when the rehosted in-AIR Poseidon2 challenge region landed.
+        const PINNED: &str = "297df18647c3c9f3f2a286a4e2d33beb38bac3448031ccfdfc8635d3f0ce4e24";
         assert_eq!(hex, PINNED, "q128 spend proof bytes drifted from the frozen KAT");
     }
 }
