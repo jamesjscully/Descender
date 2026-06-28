@@ -26,7 +26,8 @@
 //! checked-core signature.
 
 use crate::checked_core::{
-    checked_core_matrix, fq12_mul, response_syndrome, CC_COLS, CC_ROWS, CC_Q,
+    checked_core_matrix, fq12_mul, pack_syndrome_digest, response_syndrome, CC_COLS, CC_DIGEST_BYTES,
+    CC_ROWS, CC_Q, CC_SYNDROME_DIGEST_BITS,
 };
 use crate::config::{Val, HALF_FULL_ROUNDS, PARTIAL_ROUNDS, SBOX_DEGREE, SBOX_REGISTERS, WIDTH};
 use crate::poseidon2_sponge::{build_elems, eval_sponge, run_sponge, SpongeSpec};
@@ -159,13 +160,16 @@ pub const SPEND_RELATION_ID_ELEMS: usize = 4;
 pub const PV_SIGMA_C_OFF: usize = PV_RELATION_ID_OFF + SPEND_RELATION_ID_ELEMS; // 148
 pub const PV_SIGMA_W_OFF: usize = PV_SIGMA_C_OFF + CC_ROWS; // 160
 pub const PV_SIGMA_T_OFF: usize = PV_SIGMA_W_OFF + CC_ROWS; // 172
-pub const SPEND_N_PUBLIC: usize = PV_SIGMA_T_OFF + CC_ROWS; // 184
+/// Sigma input COMMITMENTS: `w == unpack(witness_commitment)`, `t == unpack(proof_commitment)`.
+pub const PV_WITNESS_COMMITMENT_OFF: usize = PV_SIGMA_T_OFF + CC_ROWS; // 184
+pub const PV_PROOF_COMMITMENT_OFF: usize = PV_WITNESS_COMMITMENT_OFF + CC_DIGEST_BYTES; // 216
+pub const SPEND_N_PUBLIC: usize = PV_PROOF_COMMITMENT_OFF + CC_DIGEST_BYTES; // 248
 
-/// Pinned spend relation/profile id. Encodes: "SPND" ‖ ("v4" ‖ public-width) ‖ (residues<<8 ‖ bits) ‖ q.
-/// v4 = the sigma acceptance identity (syndrome == t + c⊛w) is now in-circuit alongside the SIS.
+/// Pinned spend relation/profile id. Encodes: "SPND" ‖ ("v5" ‖ public-width) ‖ (residues<<8 ‖ bits) ‖ q.
+/// v5 = sigma inputs w/t are now bound to public commitments in-circuit (w/t = unpack(commitment)).
 pub const SPEND_RELATION_ID: [u32; SPEND_RELATION_ID_ELEMS] = [
     0x5350_4E44, // "SPND"
-    0x7634_0000 | (SPEND_N_PUBLIC as u32 & 0xFFFF), // v4
+    0x7635_0000 | (SPEND_N_PUBLIC as u32 & 0xFFFF), // v5
     ((SPEND_RESIDUES as u32) << 8) | (SPEND_RESIDUE_BITS as u32),
     SPEND_Q,
 ];
@@ -388,6 +392,28 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for SpendAir {
             builder.assert_bool(kfin);
             let syndrome_d: AB::Expr = local[residue_base(d)].into();
             builder.assert_eq(reduced + tl[d].clone(), kfin.into() * q.clone() + syndrome_d);
+        }
+
+        // ---- (3c) bind sigma inputs to public commitments: w == unpack(witness_commitment),
+        //          t == unpack(proof_commitment). 12 lanes × 14 bits → 32-byte digest (14-bit LE),
+        //          bytes carrying bits ≥ 168 are forced to ZERO (high-bit canonicity).
+        for (lane_base, commit_off) in [
+            (sigma_w_base as fn(usize) -> usize, PV_WITNESS_COMMITMENT_OFF),
+            (sigma_t_base as fn(usize) -> usize, PV_PROOF_COMMITMENT_OFF),
+        ] {
+            for k in 0..CC_DIGEST_BYTES {
+                let mut byte = AB::Expr::ZERO;
+                for b in 0..BYTE_BITS {
+                    let pos = k * BYTE_BITS + b;
+                    if pos < CC_SYNDROME_DIGEST_BITS {
+                        let lane = pos / SPEND_RESIDUE_BITS;
+                        let bit = pos % SPEND_RESIDUE_BITS;
+                        // lane value-bit b lives at residue cell offset 1 + bit.
+                        byte += local[sg + lane_base(lane) + 1 + bit].into() * ce::<AB>(1u64 << b);
+                    }
+                }
+                builder.assert_eq(byte, public[commit_off + k].clone().into());
+            }
         }
 
         // ---- (4) pin the spend relation id.
@@ -631,6 +657,10 @@ pub fn generate_spend_trace(
     pv.extend(w.sigma_c.iter().map(|&v| Val::from_u32(v as u32)));
     pv.extend(w.sigma_w.iter().map(|&v| Val::from_u32(v as u32)));
     pv.extend(sigma_t.iter().map(|&v| Val::from_u32(v as u32)));
+    let witness_commitment = pack_syndrome_digest(&w.sigma_w);
+    let proof_commitment = pack_syndrome_digest(&sigma_t);
+    pv.extend(witness_commitment.iter().map(|&b| Val::from_u32(b as u32)));
+    pv.extend(proof_commitment.iter().map(|&b| Val::from_u32(b as u32)));
     debug_assert_eq!(pv.len(), SPEND_N_PUBLIC);
 
     let mut values = Vec::with_capacity(2 * width);
@@ -763,6 +793,17 @@ mod tests {
         let a = air();
         let (trace, mut pv, _fd) = generate_spend_trace(&a, &sample_witness());
         pv[PV_SIGMA_C_OFF] += Val::ONE; // change public c without re-deriving t
+        check_constraints(&a, &trace, &pv);
+    }
+
+    /// SIGMA SOUNDNESS: tamper the public witness_commitment → the `w == unpack(witness_commitment)`
+    /// digest-packing equality fails (w is bound to its commitment, not free).
+    #[test]
+    #[should_panic]
+    fn tampered_witness_commitment_violates_binding() {
+        let a = air();
+        let (trace, mut pv, _fd) = generate_spend_trace(&a, &sample_witness());
+        pv[PV_WITNESS_COMMITMENT_OFF] += Val::ONE;
         check_constraints(&a, &trace, &pv);
     }
 

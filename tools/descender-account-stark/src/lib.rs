@@ -499,6 +499,9 @@ pub struct SpendPublic {
     pub sigma_c: [Val; checked_core::CC_ROWS],
     pub sigma_w: [Val; checked_core::CC_ROWS],
     pub sigma_t: [Val; checked_core::CC_ROWS],
+    /// Sigma input commitments: `w == unpack(witness_commitment)`, `t == unpack(proof_commitment)`.
+    pub witness_commitment: [u8; checked_core::CC_DIGEST_BYTES],
+    pub proof_commitment: [u8; checked_core::CC_DIGEST_BYTES],
 }
 
 fn build_spend_air() -> spend_air::SpendAir {
@@ -523,6 +526,8 @@ fn spend_public_values(p: &SpendPublic) -> Vec<Val> {
     v.extend(p.sigma_c.iter().copied());
     v.extend(p.sigma_w.iter().copied());
     v.extend(p.sigma_t.iter().copied());
+    v.extend(p.witness_commitment.iter().map(|&b| Val::from_u32(b as u32)));
+    v.extend(p.proof_commitment.iter().map(|&b| Val::from_u32(b as u32)));
     v
 }
 
@@ -550,6 +555,8 @@ pub fn prove_spend_authorization_with_seed(
         sigma_c: core::array::from_fn(|i| Val::from_u32(w.sigma_c[i] as u32)),
         sigma_w: core::array::from_fn(|i| Val::from_u32(w.sigma_w[i] as u32)),
         sigma_t: core::array::from_fn(|i| Val::from_u32(sigma_t[i] as u32)),
+        witness_commitment: checked_core::pack_syndrome_digest(&w.sigma_w),
+        proof_commitment: checked_core::pack_syndrome_digest(&sigma_t),
     };
     Ok((public, proof))
 }
@@ -1069,6 +1076,8 @@ mod small_config_classc_tests {
             sigma_c: core::array::from_fn(|i| Val::from_u32(w.sigma_c[i] as u32)),
             sigma_w: core::array::from_fn(|i| Val::from_u32(w.sigma_w[i] as u32)),
             sigma_t: core::array::from_fn(|i| Val::from_u32(sigma_t[i] as u32)),
+            witness_commitment: crate::checked_core::pack_syndrome_digest(&w.sigma_w),
+            proof_commitment: crate::checked_core::pack_syndrome_digest(&sigma_t),
         };
         assert!(
             creation_spend_packed_witness_binds(&cpublic, &spublic),

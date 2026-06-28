@@ -97,6 +97,26 @@ pub fn fq12_mul(c: &[u16; CC_ROWS], w: &[u16; CC_ROWS]) -> [u16; CC_ROWS] {
     core::array::from_fn(|d| out[d].rem_euclid(q as i64) as u16)
 }
 
+/// Bits in a 12-lane syndrome digest (12 × 14 = 168); bytes carry 256 bits, the top 88 are zero.
+pub const CC_SYNDROME_DIGEST_BITS: usize = CC_ROWS * 14;
+/// Byte length of a syndrome digest commitment (= deployed `DIGEST_BYTES`).
+pub const CC_DIGEST_BYTES: usize = 32;
+
+/// Pack a 12-lane canonical syndrome into a 32-byte digest, 14-bit LE — byte-identical to the deployed
+/// `pack_reviewed_fq12_account_carried_syndrome_digest` (`write_bits_le(idx*14, 14, value)`).
+pub fn pack_syndrome_digest(syndrome: &[u16; CC_ROWS]) -> [u8; CC_DIGEST_BYTES] {
+    let mut out = [0u8; CC_DIGEST_BYTES];
+    for (idx, &v) in syndrome.iter().enumerate() {
+        for b in 0..14 {
+            if (v >> b) & 1 == 1 {
+                let pos = idx * 14 + b;
+                out[pos / 8] |= 1u8 << (pos % 8);
+            }
+        }
+    }
+    out
+}
+
 /// Componentwise `c + w mod q`, matching the deployed `fq12_syndrome_add`.
 pub fn fq12_add(a: &[u16; CC_ROWS], b: &[u16; CC_ROWS]) -> [u16; CC_ROWS] {
     core::array::from_fn(|i| ((a[i] as u32 + b[i] as u32) % CC_Q as u32) as u16)
