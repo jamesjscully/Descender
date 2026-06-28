@@ -470,7 +470,7 @@ image of the Lean-derived coupling `success_implies_accepted_or_break_of_structu
   > recover a C1–C7-satisfying witness (a valid hidden opening) OR export a named
   > binding break (short SIS kernel from a double opening / a hash collision on a
   > commitment root). This is NOT proven and NOT claimed proven; it is the genuine
-  > multi-week cryptographic content. Verifier completeness/round-trip do NOT
+  > core cryptographic content. Verifier completeness/round-trip do NOT
   > depend on it — the SOUNDNESS claim does. (`path2_descent_sis_feasibility.md:66`,
   > `creation_time_relation_validity_VERDICT.md §B` — every C1–C7-satisfying
   > assignment is already PROVEN relation-valid, so the extractor closes
@@ -576,8 +576,8 @@ is different and stronger:
 - GAP C **is** wired: `gap_c_remodel_spine_wiring.ec` (exit 0) plugs the concrete
   ε's into the spine hypothesis (`remodelled_per_event_meets_spine_hyp`).
 - GAP A **is** built: `public_creation_verifier_build_result.md` +
-  `accepted_spend_forgery_reduction.ec` (the AP2-N003 term it lists as "external/
-  multi-week, not yet discharged" is now proven `accepted_spend_term_le_2pow_neg129`).
+  `accepted_spend_forgery_reduction.ec` (the AP2-N003 term it lists as "external,
+  not yet discharged" is now proven `accepted_spend_term_le_2pow_neg129`).
 
 The `assumption_ledger_authoritative.md` summary table (line 116) and
 `creation_time_binding_VERDICT.md §1` also still phrase the binding residual as

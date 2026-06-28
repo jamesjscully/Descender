@@ -55,6 +55,7 @@ mod air;
 mod config;
 mod counting_serializer;
 pub mod reduce_gadget;
+pub mod sponge_compression;
 
 use p3_field::PrimeCharacteristicRing;
 use p3_uni_stark::{prove as p3_prove, verify as p3_verify};

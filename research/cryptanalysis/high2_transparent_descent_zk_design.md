@@ -297,7 +297,7 @@ and the decisive advantage of the descent-framed route over a generic ZK bolt-on
 
 ### 3.3 What the extractor obligation still requires (honest residual)
 
-`p2_sis_extractor` is **not yet proven** — it is the genuine multi-week cryptographic content of this
+`p2_sis_extractor` is **not yet proven** — it is the genuine core cryptographic content of this
 fix (the analog of the spend-path's per-event reductions). It is a standard but non-trivial knowledge-
 soundness/extraction argument for a FRI-style argument over this specific relation. It is *scoped and
 named*, not hand-waved: see §5 step 6.
@@ -407,14 +407,14 @@ NON-DEFAULT entry point; do NOT touch `production_deployment_preflight` (stays f
 
 Steps 1–5 are additive and cannot regress existing behavior (sentinel preserved). Step 6 is the single
 behavior-flipping commit, with its test updates in lockstep — mirroring the project's marker-gate
-discipline. Step 7 is the genuine multi-week proof effort.
+discipline. Step 7 is the genuine core proof effort.
 
 ---
 
 ## 6. RISKS / OPEN QUESTIONS (maintainer sign-off)
 
 1. **`p2_sis_extractor` is unproven (PRIMARY).** The knowledge-soundness/extraction argument (§3.1,
-   §3.3) is the real cryptographic content and is multi-week. The code can be built and pass
+   §3.3) is the real cryptographic content. The code can be built and pass
    round-trip + negative-control tests WITHOUT it, but **HIGH-2 is not truly resolved until the
    extractor obligation is discharged or externally accepted** — otherwise the proof is "accepts honest,
    rejects the controls we tried," not "knowledge-sound." Sign-off needed: is a scoped+named extractor

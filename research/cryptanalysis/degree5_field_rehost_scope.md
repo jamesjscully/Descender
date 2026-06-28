@@ -1,5 +1,14 @@
 # Challenge-field re-host scope — clearing the field-bound soundness term
 
+> **RESOLVED 2026-06-26: the binomial degree-8 option from §1 was ADOPTED**
+> (`config.rs:111` `Challenge = BinomialExtensionField<Val,8>`, `|F| ≈ 2²⁴⁷·⁹`).
+> The field-bound FRI-AoK term is cleared (`≈ 2⁻²¹⁵⁻²²⁴`); see
+> `fri_aok_extractor_instantiation.md` §9 for the re-priced composed error. The
+> remaining knowledge-soundness floor is the field-INDEPENDENT width-16
+> Poseidon2/Merkle 124-bit capacity floor (`ADR-0006`), tracked separately as a
+> sponge-capacity (`c=9`) work item, not a field-rehost item. This scope is
+> discharged.
+
 **Date:** 2026-06-19. **Status:** SCOPE (analysis only; no code changed).
 **Motivation:** `fri_aok_extractor_instantiation.md` (§5) showed the deployed leaf
 STARK's COMPOSED knowledge-soundness is field-bound at **≈ 2⁻⁹²…⁻¹⁰⁰**, not 2⁻¹²⁸ —

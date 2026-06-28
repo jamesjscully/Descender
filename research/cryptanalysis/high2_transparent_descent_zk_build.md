@@ -160,7 +160,7 @@ the threshold with the current uncompacted encoding.
 > from a double opening; or a hash collision on a commitment root).
 
 This obligation is **NOT proven** and is NOT claimed proven. It is the genuine
-multi-week cryptographic content of the fix (the analog of the spend-path per-event
+core cryptographic content of the fix (the analog of the spend-path per-event
 reductions). The implemented verifier provides COMPLETENESS + the round-trip +
 negative-control matrix, which do NOT depend on the extractor. The full SOUNDNESS
 (knowledge-soundness) claim DOES depend on it. Recorded as a named obligation in

@@ -285,6 +285,15 @@ simulator semantics, no-export theorem closure, frozen no-export vectors,
 external review, and deployment readiness. The denylist term
 `private_trace_material` covers private trace material.
 
+The algebra-layer simulator/no-export theorem for the selected payload is now
+stated and proven in
+`research/path2_account_stark_simulator_no_export_theorem_v1.md` (`S(pub) ≈_c
+Real` from the allowlist alone, reducing no-export to {zk-FRI HVZK, Poseidon2
+mask-PRF, Poseidon2 commitment hiding}). It does NOT close the boundary report:
+the implementation no-export scan, frozen no-export vectors, the pad-seed
+single-use lifecycle term (`DIR-LIFE-001`), the Lean public-view predicate, and
+external review remain the open blockers, and the report flags stay false.
+
 ## Helper API Rule
 
 Public helper APIs may expose only:

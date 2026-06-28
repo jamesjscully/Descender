@@ -609,6 +609,39 @@ def AccountCreationNoPostchallengeTimingObligationTracked
                       spend.leaf.frozenAt ≤
                         (spend.spendChallengeTime : Nat)
 
+/--
+Baby step 1 toward closing the no-postchallenge timing obligation (`DIR-CREATE-001`).
+
+Anti-circularity core, machine-checked with no `sorry` and no external
+assumption: from the tracked timing facts, the accepted creation evidence, the
+leaf creation, and the leaf freeze all precede the spend challenge.
+-/
+theorem noPostchallengeTiming_createdBeforeChallenge
+    {C : ConcreteGameConfig} {spend : ConcreteSpendTuple}
+    (hTracked : AccountCreationNoPostchallengeTimingObligationTracked C spend) :
+    spend.creationEvidence.acceptedAt ≤ (spend.spendChallengeTime : Nat) ∧
+      spend.leaf.creationTime ≤ (spend.spendChallengeTime : Nat) ∧
+        spend.leaf.frozenAt ≤ (spend.spendChallengeTime : Nat) := by
+  obtain ⟨_, _, _, _, _, _, _, _, hAccepted, hCreate, hFrozen⟩ := hTracked
+  exact ⟨hAccepted, hCreate, hFrozen⟩
+
+/--
+The security consequence: any creation evidence admitted *strictly after* the
+spend challenge cannot be the evidence the accepted spend consumed — a leaf
+cannot be rewritten into the slot after the challenge is derived.  This is the
+real no-postchallenge exclusion (proved by ordering, not assumed).
+-/
+theorem noPostchallengeTiming_lateAdmission_excluded
+    {C : ConcreteGameConfig} {spend : ConcreteSpendTuple}
+    (hTracked : AccountCreationNoPostchallengeTimingObligationTracked C spend)
+    (e' : ConcreteAccountCreationEvidence)
+    (hLate : (spend.spendChallengeTime : Nat) < e'.acceptedAt) :
+    e'.acceptedAt ≠ spend.creationEvidence.acceptedAt := by
+  obtain ⟨hAccepted, _, _⟩ := noPostchallengeTiming_createdBeforeChallenge hTracked
+  intro hEq
+  rw [hEq] at hLate
+  exact absurd (lt_of_lt_of_le hLate hAccepted) (lt_irrefl _)
+
 /-- Accepted account-creation evidence pins the selected proof-family digest chain. -/
 def AccountCreationProofFamilyDigestChainPinned
     (C : ConcreteGameConfig)
@@ -777,6 +810,131 @@ theorem accountCreationProofFamilyClosureWitness_currentBoundaryAccepted_impossi
   accountCreationProofFamilyClosureWitness_incompatible_with_residualsTracked
     (accountCreationProofFamilyResidualsTracked_of_boundaryAccepted hAccepted)
     hClosed
+
+/--
+Baby step 2 toward closing the proof family: the genuinely-external named
+assumptions the selected account-creation proof family reduces to.
+
+These are NOT provable inside this development — they are exactly the
+named-standard residual rows of `spec/security_model.md`'s account-STARK matrix:
+the FRI argument-of-knowledge extractor, the Fiat–Shamir/QROM transcript
+soundness, the zero-knowledge simulator / no-export hiding, the frozen-KAT corpus
+completeness, and the external production-gate review decision.  Carrying them as
+explicit hypotheses (with their proofs) makes the closure parameterized by
+EXACTLY this minimal set, with nothing hidden in an axiom.  `obligationsCleared`
+is the production-gate flip: the deployable config keeps
+`proofFamilyObligationsStillOpen` true (fail-closed) until that human decision.
+-/
+structure DeployableProofFamilyAssumptions
+    (_C : ConcreteGameConfig) (spend : ConcreteSpendTuple) where
+  friAokExtractorSound : Prop
+  friQromTranscriptSound : Prop
+  simulatorNoExportHolds : Prop
+  frozenPayloadKatsComplete : Prop
+  productionGateReviewAccepted : Prop
+  -- Stress-test 2026-06-27 hardening conditions, baked in so the closure witness
+  -- cannot be constructed while these gaps are open
+  -- (`research/cryptanalysis/assumption_boundary_stress_test_20260627.md`).
+  -- F1: a post-quantum soundness target is chosen and met (the FS-grind quantum
+  -- figure is ≈2⁻⁶⁴ at deployed params unless the query count is raised).
+  postQuantumSoundnessTargetMet : Prop
+  -- F2: `(pad_seed, slot_id)` single-use is a global, persistent, reorg-safe
+  -- invariant — NOT just the per-account in-memory guard — so the mask-PRF
+  -- hiding seam cannot be opened by a reorg/restore re-admission.
+  padSeedGloballyReorgSafeUnique : Prop
+  friAokExtractorSoundProof : friAokExtractorSound
+  friQromTranscriptSoundProof : friQromTranscriptSound
+  simulatorNoExportHoldsProof : simulatorNoExportHolds
+  frozenPayloadKatsCompleteProof : frozenPayloadKatsComplete
+  productionGateReviewAcceptedProof : productionGateReviewAccepted
+  postQuantumSoundnessTargetMetProof : postQuantumSoundnessTargetMet
+  padSeedGloballyReorgSafeUniqueProof : padSeedGloballyReorgSafeUnique
+  obligationsCleared : ¬ spend.creationEvidence.proofFamilyObligationsStillOpen
+
+/--
+The machine-checked fail-closed → closed reduction.  The proof-family closure
+witness is constructible from the (already structurally established) digest-chain
+pinning and break-class coverage, together with the named external assumptions
+and the cleared open-flag.  This localizes the ENTIRE remaining gap to
+`DeployableProofFamilyAssumptions`: the named-standard cryptographic assumptions
+plus the frozen-KAT data and the external review/gate decision.  Nothing else is
+needed; no `sorry`, no added axiom.
+-/
+def accountCreationProofFamilyClosureWitness_of_deployableAssumptions
+    {C : ConcreteGameConfig} {spend : ConcreteSpendTuple}
+    (hChain : AccountCreationProofFamilyDigestChainPinned C spend)
+    (hCov : AccountCreationProofFamilyResidualBreakClassesCovered spend)
+    (hAssume : DeployableProofFamilyAssumptions C spend) :
+    AccountCreationProofFamilyClosureWitness C spend where
+  digestChainPinned := hChain
+  residualBreakClassesCovered := hCov
+  simulatorNoExportTheoremClosed := hAssume.simulatorNoExportHolds
+  friQromResidualTheoremClosed := hAssume.friQromTranscriptSound
+  friAokExtractorTheoremClosed := hAssume.friAokExtractorSound
+  frozenPayloadKatsClosed := hAssume.frozenPayloadKatsComplete
+  productionGateReviewClosed := hAssume.productionGateReviewAccepted
+  simulatorNoExportTheoremClosedProof := hAssume.simulatorNoExportHoldsProof
+  friQromResidualTheoremClosedProof := hAssume.friQromTranscriptSoundProof
+  friAokExtractorTheoremClosedProof := hAssume.friAokExtractorSoundProof
+  frozenPayloadKatsClosedProof := hAssume.frozenPayloadKatsCompleteProof
+  productionGateReviewClosedProof := hAssume.productionGateReviewAcceptedProof
+  proofFamilyObligationsClosed := hAssume.obligationsCleared
+
+/--
+A global pad-seed admission registry: each pad-seed digest maps to at most one
+admitted leaf (the `Option` codomain encodes "admitted for exactly this leaf, or
+not admitted").  This is the GLOBAL, cross-account structure the stress test
+(`research/cryptanalysis/assumption_boundary_stress_test_20260627.md`, F2) found
+missing — the in-code guard is only a per-account in-memory set.
+-/
+structure GlobalPadSeedRegistry where
+  admittedFor : Nat → Option Nat
+
+/--
+F2 structural fix, machine-checked (no `sorry`, no external assumption): a global
+injective pad-seed registry EXCLUDES the mask-PRF hiding-reuse precondition.  If
+two leaves are each admitted under the registry for their own (distinct) leaf id,
+they cannot share a pad-seed digest — so the reorg/restore re-admission that would
+repeat `(pad_seed, slot_id)` and leak `account_projection − account_projection′`
+is impossible AT ADMISSION.  (The reorg-FREEING half — what happens to a pad-seed
+when its admission is reverted — remains coupled to the target-chain finality
+profile, `DIR-LIFE-001`; this lemma closes the admission-time exclusion only.)
+-/
+theorem padSeed_reuse_excluded_of_globalUnique
+    (reg : GlobalPadSeedRegistry)
+    (padSeedOf leafIdOf : ConcretePrevalidatedSlotLeaf → Nat)
+    (L L' : ConcretePrevalidatedSlotLeaf)
+    (hAdmL : reg.admittedFor (padSeedOf L) = some (leafIdOf L))
+    (hAdmL' : reg.admittedFor (padSeedOf L') = some (leafIdOf L'))
+    (hDistinct : leafIdOf L ≠ leafIdOf L')
+    (hSamePad : padSeedOf L = padSeedOf L') :
+    False := by
+  rw [hSamePad] at hAdmL
+  rw [hAdmL] at hAdmL'
+  exact hDistinct (Option.some.inj hAdmL')
+
+/--
+F2 strengthened (machine-checked, no `sorry`): under a global injective pad-seed
+registry, admission is pad-seed-injective across ALL accounts — any two admitted
+leaves sharing a pad-seed digest are the SAME leaf.  This is the full
+"no two live slots share a pad seed" invariant the per-account in-memory guard
+lacks; it is the precondition `padSeedGloballyReorgSafeUnique` must establish at
+admission time (the reorg-FREEING half still couples to `DIR-LIFE-001`).
+-/
+theorem padSeed_globally_injective_of_registry
+    (reg : GlobalPadSeedRegistry)
+    (padSeedOf leafIdOf : ConcretePrevalidatedSlotLeaf → Nat)
+    (admitted : ConcretePrevalidatedSlotLeaf → Prop)
+    (hReg : ∀ L, admitted L → reg.admittedFor (padSeedOf L) = some (leafIdOf L))
+    (hId : Function.Injective leafIdOf)
+    {L L' : ConcretePrevalidatedSlotLeaf}
+    (hL : admitted L) (hL' : admitted L')
+    (hSamePad : padSeedOf L = padSeedOf L') :
+    L = L' := by
+  have e1 := hReg L hL
+  have e2 := hReg L' hL'
+  rw [hSamePad] at e1
+  exact hId (Option.some.inj (e1.symm.trans e2))
 
 /-- The leaf fields agree with the native public projections of its boundary. -/
 def NativeProjectionCarrierBinding

@@ -94,7 +94,7 @@ the structural→numeric bridge. Still required (the honest residual):
 - a **faithful concrete game `G`** — a real finite trace model of the bounded
   EUF-CMA experiment tied to the actual verifier (the byte-for-byte bridge,
   AP2-006). This is the part the closure theorems take as input; building it is
-  multi-week and partly external.
+  a substantial effort and partly external.
 - the **per-event cryptographic bounds** as hypotheses to discharge: the
   accepted-spend forgery bound (SIS / response-link-coded hardness) and the
   QROM/hash/domain-separation break bounds. These are *correctly* explicit — a

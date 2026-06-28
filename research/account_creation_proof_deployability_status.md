@@ -131,7 +131,7 @@ cryptanalysis + review/gate-flip. Recursion (5) is OPTIONAL scale and was advanc
   field-bound-soundness-ceiling + degree5_field_rehost_scope.md.
 - **#5 recursion** → OPTIONAL (scale). Advanced this session: all 5 gadget references validated,
   gadget-1 a real `Air<AB>`, Poseidon2 dep de-risked, recursive extractor argued+reviewed,
-  composition architecture decided (monolithic-inline). Remaining = the multi-week monolithic
+  composition architecture decided (monolithic-inline). Remaining = the monolithic
   `recursive_air` build. NOT on the deployable critical path.
 
 ⇒ **Internal prover/code work for the DEPLOYABLE base scheme is DONE.** Remaining blockers are
@@ -169,5 +169,5 @@ cryptographic-engineering item) is now FAST, ZERO-KNOWLEDGE, 128-bit, and cleanl
 packaged — the hard performance + correctness risks are retired and assumptions
 were tested as we went. The path to a fully deployable WHOLE descender is now
 integration (1–4), optional aggregation (5), and the irreducible external
-cryptanalysis (6) — multi-week and partly third-party, not solvable by further
+cryptanalysis (6) — partly third-party, not solvable by further
 prover work this session.

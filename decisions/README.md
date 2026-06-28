@@ -46,3 +46,4 @@ a new ADR.
 | `ADR-0005` | `Accepted` | `2026-06-20` | Archive Legacy Projection-Carrier Product Target | `ADR-0005-archive-legacy-projection-carrier-product-target.md` |
 | `ADR-0006` | `Accepted` | `2026-06-20` | Security-Level Position For The Active Path | `ADR-0006-security-level-position.md` |
 | `ADR-0007` | `Accepted` | `2026-06-20` | Research Automation Follows Current Authority | `ADR-0007-research-automation-follows-current-authority.md` |
+| `ADR-0008` | `Accepted` | `2026-06-27` | Commit To Hard Quantum-128 Security Target | `ADR-0008-commit-hard-quantum-128-target.md` |

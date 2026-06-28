@@ -89,6 +89,7 @@ kept now and what must be true before it can be removed or relocated.
 | `research/cryptanalysis/frame_prf_poseidon2_ro_reduction.md` | `ACTIVE_RESEARCH` | Poseidon2 frame-PRF random-oracle reduction note |
 | `research/cryptanalysis/frame_prf_ro_discharge.md` | `ACTIVE_RESEARCH` | frame-PRF RO/QROM discharge note |
 | `research/cryptanalysis/fri_aok_extractor_instantiation.md` | `ACTIVE_RESEARCH` | FRI argument-of-knowledge extractor instantiation for account creation |
+| `research/cryptanalysis/assumption_boundary_stress_test_20260627.md` | `ACTIVE_RESEARCH` | adversarial stress test of the deployable assumption boundary (quantum FS-grind shortfall, pad-seed freshness seam, quantum Merkle-collision floor) |
 | `research/cryptanalysis/gap_c_remodel_result.md` | `ACTIVE_RESEARCH` | second-preimage remodeling result for binding-break budget closure |
 | `research/cryptanalysis/hiding_sampler_discipline_audit.md` | `ACTIVE_RESEARCH` | sampler-discipline audit evidence for witness hiding |
 | `research/cryptanalysis/high2_transparent_descent_zk_build.md` | `ACTIVE_RESEARCH` | historical transparent-descent ZK build result retained as research evidence, not current product path authority |
@@ -137,6 +138,16 @@ kept now and what must be true before it can be removed or relocated.
 | `research/prevalidated_slot_leaf_v1_frame.md` | `ACTIVE_SUPPORT` | current leaf and authorization digest frame |
 | `research/checked_core_fs_poseidon2_rehost.md` | `ACTIVE_SUPPORT` | Poseidon2 checked-core Fiat-Shamir re-host evidence supporting ADR-0004 and `spec/wire_formats.md` |
 | `research/path2_account_stark_air_soundness_audit.md` | `ACTIVE_SUPPORT` | account-creation STARK soundness audit supporting the active Poseidon2/Plonky3 account-creation path |
+| `research/path2_account_stark_arithmetization_soundness_theorem_v1.md` | `ACTIVE_SUPPORT` | positive clause-by-clause arithmetization-soundness theorem (trace ⊨ AIR ⟹ R_air) supporting `DIR-STARK-001` and the active Poseidon2/Plonky3 account-creation path |
+| `research/path2_account_stark_simulator_no_export_theorem_v1.md` | `ACTIVE_SUPPORT` | simulator / no-export theorem for `Path2AccountStarkCreationPayloadV1` supporting `DIR-PAYLOAD-001`/`DIR-CREATE-001` and the no-export boundary target |
+| `research/path2_account_stark_transcript_qrom_theorem_v1.md` | `ACTIVE_SUPPORT` | account-STARK Fiat–Shamir/QROM transcript-soundness theorem and classical+quantum pricing supporting `DIR-QROM-001`/`DIR-PROOF-001` |
+| `research/path2_account_stark_replay_anchor_binding_theorem_v1.md` | `ACTIVE_SUPPORT` | theorem-level replay-payload + deployed-anchor binding (`R_wiring`) supporting `DIR-BIND-001` |
+| `research/path2_authorization_class_binding_theorem_v1.md` | `ACTIVE_SUPPORT` | authorization-class binding theorem (typed compatibility + field-completeness) supporting `DIR-AUTHCLASS-001` |
+| `research/path2_honest_create_sampler_timing_theorem_v1.md` | `ACTIVE_SUPPORT` | honest-create sampler soundness + no-postchallenge timing (anti-circularity) theorem supporting `DIR-CREATE-001` |
+| `research/path2_account_stark_payload_injectivity_rejection_completeness_v1.md` | `ACTIVE_SUPPORT` | payload byte-model parser-injectivity + rejection-class completeness supporting `DIR-STARK-001`/`DIR-REJECT-001` |
+| `research/path2_lifecycle_finality_theorem_v1.md` | `ACTIVE_SUPPORT` | consume-once lifecycle theorem with profiled reorg/finality assumption supporting `DIR-LIFE-001` |
+| `research/path2_economic_deployment_architecture_v1.md` | `ACTIVE_SUPPORT` | economic deployment-architecture decision analysis (4.75 MB creation proof ⇒ PQ validity rollup + native STARK recursion) supporting `AGG-ROLLUP-001`/`ADOPT-ETH-ROLLUP-001` |
+| `research/path2_quantum128_parameterization_v1.md` | `ACTIVE_SUPPORT` | exact atomic quantum-128 parameter set (queries 120, rate 7/cap 9, digest 13) implementing `ADR-0008`, supporting `DIR-QROM-001`/`DIR-STARK-001`/`ADOPT-128-001` |
 | `research/slot_authorization_handle_v1_spec.md` | `ACTIVE_SUPPORT` | normalized spend-time authorization handle interface |
 | `research/account_creation_evidence_v1_spec.md` | `ACTIVE_SUPPORT` | current creation evidence envelope |
 | `research/creation_hidden_source_relation_v1_spec.md` | `ACTIVE_SUPPORT` | account-creation hidden-source relation for Path 2 |

@@ -7,6 +7,27 @@ the concrete knowledge-soundness error and an HONEST residual on what binds.
 (`tools/descender-account-stark`), single-instance and batch modes. Recursive
 (round-by-round under an outer AIR) extractor is flagged future work in §6.
 
+> **UPDATE 2026-06-26 — RE-PRICED TO THE DEPLOYED DEGREE-8 FIELD (see §9).**
+> §0's parameter table, §4b's additive-term table, and §5's verdict were written
+> at the **degree-4** challenge field and concluded the composed error was
+> field-bound at ~2⁻⁹²⁻¹⁰⁰, recommending a degree-5 extension. The deployed
+> config has since moved to a **degree-8** extension (`config.rs:111`,
+> `|F| = p⁸ ≈ 2²⁴⁷·⁹`), which **resolves** that field-bound blocker. The
+> extractor CONSTRUCTION (§1–§3) is field-independent and stands unchanged;
+> only the error budget changes. **§9 supersedes §0's field row, §4b, and §5.**
+> Net: the composed AoK error is now bounded by the INDEPENDENT Poseidon2
+> sponge/Merkle 124-bit capacity floor (honest headline 2⁻¹²⁴, per `ADR-0006`),
+> not by the field. The original degree-5 recommendation is superseded by the
+> adopted degree-8 extension.
+>
+> **SCOPE — this §9 figure (2⁻¹²⁴) is the CLASSICAL, INTERACTIVE IOP extractor
+> error.** The FS-compiled (non-interactive) and QUANTUM figures are weaker and
+> are corrected in `research/path2_account_stark_transcript_qrom_theorem_v1.md`
+> (red-team 2026-06-27): under Fiat–Shamir the full query+PoW grinding budget is
+> Grover-able, so quantum FS soundness at deployed params (s=56, g=16) is ≈ 2⁻⁶⁴,
+> not 2⁻¹²⁴; the quantum Merkle/sponge collision floor is ≈ 2⁻⁸²⁻⁹⁹. Do not read
+> this interactive 2⁻¹²⁴ as the post-quantum end-to-end figure.
+
 This is a paper instantiation, not a Lean/EC machine proof. It is honest about the
 binding constraint (§4): under the conservative Johnson regime the **query-phase**
 soundness reaches 128 bits, but the FRI **commit/fold + DEEP additive** term over
@@ -332,3 +353,106 @@ RBR knowledge soundness composes; ethSTARK recursion analyses):
   instantiation, not a Lean/EC machine proof — same composition-seam posture as the
   dossier's GAP-B/D. (3) The recursive extractor (§6) is future work and inherits
   the §5 field constraint at the outer layer.
+
+> NOTE (2026-06-26): residual (1) is SUPERSEDED by §9 — the deployed degree-8
+> field clears the field-bound term; the binding constraint is now the 124-bit
+> Poseidon2/Merkle floor. Residuals (2) and (3) stand.
+
+---
+
+## 9. Re-pricing at the deployed degree-8 challenge field (2026-06-26)
+
+**Why this section exists.** When §0/§4b/§5 were written, `Challenge` was a
+degree-4 extension (`|F| ≈ 2¹²⁴`) and the additive FRI-commit/DEEP term
+`≈ |L|·log|L| / |F|` was the binding constraint at `≈ 2⁻⁹²⁻¹⁰⁰`, so §5
+recommended a degree-5 extension. The deployed config instead adopted a
+**degree-8** binomial extension. This section re-prices the SAME extractor
+(§1–§3 unchanged — the construction does not depend on the field size) at the
+deployed parameters and states the composed result and the new binding term.
+
+### 9.1 Updated pinned parameters (verified against `src/config.rs`, 2026-06-26)
+
+| Symbol | Value | Source |
+|---|---|---|
+| Base field `Val` | KoalaBear, `p = 2³¹ − 2²⁴ + 1`, `log₂ p = 30.99` | `config.rs:110` |
+| Challenge field `Challenge` | `BinomialExtensionField<Val,8>` (degree-8) | `config.rs:111` |
+| `\|F\| = p⁸` | `log₂ = 8·30.99 = 247.91` bits | computed |
+| `PROD_LOG_BLOWUP` | 4 ⇒ `ρ = 1/16`, `√ρ = 1/4`, `½·log_blowup = 2` b/query | `config.rs:51` |
+| `PROD_NUM_QUERIES` | `s = 56` | `config.rs:53` |
+| `PROD_QUERY_POW_BITS` | `g = 16` | `config.rs:55` |
+| Sponge width / rate / capacity | `WIDTH=16`, `RATE=8`, `c = 8` | `config.rs:45`, `air.rs:419` |
+| Merkle digest | `DIGEST_ELEMS = 8` (≈ 248-bit digest) | `config.rs:94` |
+
+### 9.2 Re-computed error terms
+
+- **Query phase (field-independent):** `err_query = (√ρ)^s · 2^{−g} = (1/4)^{56}·2^{−16} = 2^{−128}`. Unchanged. ✓
+- **Commit/fold + DEEP additive (the term that was binding at degree-4):**
+  `err_commit + err_DEEP ≈ (r·|L| + D)/|F|` with `|F| = 2^{247.91}`:
+
+  | `log₂ D` | `\|L\| = 2^{logD+4}` | `r = log₂ D` | `(r·|L|+D)/|F|` |
+  |---|---|---|---|
+  | 16 | `2²⁰` | 16 | `≈ 2^{−223.9}` |
+  | 20 | `2²⁴` | 20 | `≈ 2^{−219.7}` |
+  | 24 | `2²⁸` | 24 | `≈ 2^{−215.3}` |
+
+  The additive field term is now `≈ 2^{−215 … −224}`, **far below** `2⁻¹²⁸`
+  (consistent with the config comment's `~2⁻²²⁸⁻²³⁰`, which folds the constants
+  more tightly). The degree-4 blocker is cleared. This is the unconditional,
+  batch-size- and list-constant-independent +124-bit field margin the degree-8
+  raise was made for (`config.rs:113-121`).
+- **Merkle/MMCS collision (Poseidon2 CR, named-standard):** 8-element digest ⇒
+  `err_MMCS ≈ Q_H² / 2^{≈248} ≈ 2^{−124}` at the structural floor (`Q_H ≈ 2^{62}`).
+- **Poseidon2-sponge indifferentiability floor (capacity-bound, field-independent):**
+  `c/2 = 4` KoalaBear elements `≈ 124` bits ⇒ `≈ 2^{−124}`.
+
+### 9.3 Composed knowledge-soundness error — updated verdict
+
+```
+    κ = err_query + (err_commit + err_DEEP) + err_MMCS + err_sponge
+      ≈ 2^{−128} + 2^{−215..−224} + 2^{−124} + 2^{−124}
+      ≈ 2^{−124}      (the Poseidon2 124-bit capacity/Merkle floor now dominates).
+```
+
+**The binding constraint is no longer the field.** At degree-8 the additive FRI
+term vanishes (`≈ 2⁻²²⁰`); the query phase delivers `2⁻¹²⁸`; the composed AoK
+error is set by the **width-16 Poseidon2 sponge / Merkle 124-bit floor**
+(`c/2 ≈ 124`, `DIGEST_ELEMS=8`). Honest headline knowledge-soundness =
+**2⁻¹²⁴**, exactly the `ADR-0006` / `spec/security_model.md` width-16
+Poseidon2/Merkle security-level position — a known, accepted floor, not an open
+extractor gap. The original §5 degree-5 recommendation is **superseded**: the
+degree-8 extension was adopted instead (no query-schedule change; unconditional
+field margin).
+
+### 9.4 Composition with the arithmetization-soundness theorem (closes acceptance ⟹ knowledge for R_air)
+
+The extractor outputs a trace `T` consistent with the prover's commitments and
+the accepting transcript, with error `κ ≈ 2⁻¹²⁴` (§9.3). By
+`research/path2_account_stark_arithmetization_soundness_theorem_v1.md`
+(R_air arithmetization soundness), any such constraint-satisfying `T` decodes to
+a witness satisfying the in-circuit creation relation `R_air`. Composing:
+
+```
+    Verifier accepts  ⟹  (extractor §1–§3, err ≈ 2⁻¹²⁴)  a trace T ⊨ AIR
+                       ⟹  (R_air arithmetization-soundness theorem)  T decodes to a witness ⊨ R_air.
+```
+
+So **accepting account-STARK proof ⟹ extractable witness satisfying the
+in-circuit account-creation relation**, with composed error `≈ 2⁻¹²⁴`, modulo:
+(i) named-standard primitives (BCIKS proximity gap, FRI/RBR soundness, DEEP,
+Poseidon2-Merkle CR); (ii) the accepted 124-bit Poseidon2-capacity floor (a
+hard-128 headline needs sponge capacity `c=9` — a separate, already-named work
+item, `config.rs:120-124`); (iii) paper-vs-Lean/EC mechanization (GAP-B/D seam);
+(iv) external proof-family review. The out-of-AIR clauses (`R_wiring`,
+`R_namespace`) are owned by `DIR-BIND-001`/`DIR-LIFE-001`.
+
+### 9.5 What this changes in the tracker / gates
+
+This re-pricing does NOT flip `fri_aok_extractor_theorem_instantiated`,
+`accepting_proof_implies_extractable_witness`, `external_extractor_review_complete`,
+or `deployment_ready` in `Path2AccountStarkFriAokBoundaryReportV1` — the
+consistency gate keeps them false pending the Lean/EC mechanization and external
+review. It removes the **field-bound** characterization of the residual: the
+extractor's composed error is now bounded by the accepted 124-bit floor, in sync
+with `config.rs` and `spec/security_model.md`, not by an unacknowledged
+92–100-bit field gap. The earlier "adopt degree-5" guidance is closed as
+superseded-by-degree-8.

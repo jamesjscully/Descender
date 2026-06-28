@@ -596,12 +596,26 @@ checked by `path2_account_stark_fri_aok_boundary_consistency`.
 
 The active Poseidon2/Plonky3 path has a real generic floor around 124 bits from
 the width-16 Poseidon2 sponge capacity and 8-element Merkle digest birthday
-bound. This is acceptable as the current practical design target only if it is
-stated plainly.
+bound. This is the honest CLASSICAL floor and is acceptable as a current
+practical design target only if it is stated plainly.
 
-The project must not claim "hard 128-bit security everywhere" while the width-16
-Poseidon2 floor remains active. A future hard-128 profile requires a separate
-decision and implementation path.
+The POST-QUANTUM position is weaker and must be disclosed (assumption-boundary
+stress test, `research/cryptanalysis/assumption_boundary_stress_test_20260627.md`,
+2026-06-27): under non-interactive Fiat-Shamir the full FRI query plus
+proof-of-work grinding budget is a single Grover search, so at the deployed
+parameters (56 queries, 16-bit PoW) the quantum knowledge-soundness is only
+~2^-64, and the 8-element Merkle/sponge digest gives ~2^-82..-99 quantum
+collision (binding). The deployed active path is therefore ~124-bit classical /
+~64-bit quantum — materially below a post-quantum-128 claim.
+
+`ADR-0008` commits the deployable bar to hard quantum-128 and is the governing
+decision: it requires raising the FRI query count so the Grover-halved budget
+reaches ~128 (about 120 queries) AND widening the Poseidon2 sponge capacity to
+c=9 with a matching Merkle digest, then re-pricing and refreshing KATs. Until
+that re-parameterization (`DIR-QROM-001`, `DIR-STARK-001`, `ADOPT-128-001`) lands
+on both the inner account-STARK and the outer recursion layer, the honest
+deployed figure is ~124 classical / ~64 quantum, and the project must not claim
+"hard 128-bit security everywhere" — classically or quantumly.
 
 ## Challenge Budget Terminology
 

@@ -105,3 +105,12 @@ boundary (packed-witness binding, negative-tested), and MED-3 has a regression g
 ALL THREE MED findings remediated. Remaining: the standard FRI-AoK extractor
 (`p2_sis_extractor`) obligation and the conservative-Johnson FRI soundness label —
 both named-standard, neither an active false-accept.
+
+This audit is the *negative* direction (no false-accept hole found). The
+*positive* clause-by-clause arithmetization-soundness theorem — every
+constraint-satisfying trace decodes to a witness satisfying the in-circuit
+relation `R_air` — is stated and proven in
+`research/path2_account_stark_arithmetization_soundness_theorem_v1.md`. Together
+they close the statement-correctness obligation at the arithmetization layer and
+hand off the extractor (acceptance ⟹ trace exists) and transcript-QROM
+(`pv` binding) obligations to `DIR-PROOF-001`/`DIR-QROM-001`.

@@ -198,7 +198,7 @@ obligation that an external reviewer would want discharged or accepted explicitl
 Per project memory, `SelectedRust*Certificate` types are provably uninhabited
 until the AP2-N003 accepted-spend numeric bound (`PricedAcceptedSpendNumericCertificate`)
 is supplied. The accepted-spend probability term `Pr[accepted] <= 2^-129` that the
-spine consumes is the WS7 numeric obligation, still external/multi-week, not yet
+spine consumes is the WS7 numeric obligation, still external, not yet
 discharged with the real EUF-CMA trace model.
 
 ---
