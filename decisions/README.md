@@ -47,3 +47,5 @@ a new ADR.
 | `ADR-0006` | `Accepted` | `2026-06-20` | Security-Level Position For The Active Path | `ADR-0006-security-level-position.md` |
 | `ADR-0007` | `Accepted` | `2026-06-20` | Research Automation Follows Current Authority | `ADR-0007-research-automation-follows-current-authority.md` |
 | `ADR-0008` | `Accepted` | `2026-06-27` | Commit To Hard Quantum-128 Security Target | `ADR-0008-commit-hard-quantum-128-target.md` |
+| `ADR-0009` | `Accepted` | `2026-06-28` | Native Sovereign Post-Quantum Validity-Rollup Settlement | `ADR-0009-native-sovereign-pq-rollup-settlement.md` |
+| `ADR-0010` | `Accepted` | `2026-06-28` | Pad-Seed Registry & Spend-Lifecycle Consensus Wiring + Finality (D2) | `ADR-0010-registry-lifecycle-consensus-wiring-and-finality.md` |
