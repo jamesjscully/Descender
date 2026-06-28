@@ -327,3 +327,38 @@ full-C(zeta) gap PROVABLY (for BOTH creation and spend) requires a RE-ARITHMETIZ
 commit the inner permutation's intermediate states as columns so every constraint is degree ≤ 2 —
 i.e. rebuild the leaf/spend AIR inside the recursion. That re-arithmetization is the remaining
 multi-week frontier; it is one shared piece of work that closes both the creation and spend halves.
+
+## Re-arithmetization COMPLETE: full inner C(zeta) is provable (2026-06-28)
+
+The full-C(zeta) provability gap (the inline alpha-fold `Σ_r alpha^r·res_r` was degree ~N_CONSTRAINTS
+in the opened `alpha`, exploding the quotient LDE to tens of GB) is RESOLVED. Root cause: the leaf
+residuals were already degree ≤3; only the inline `alpha^r` powers blew up the degree.
+
+The fix — a committed-accumulator (Horner) fold, now a reusable primitive
+`descender_recursion::alpha_fold`:
+- `assert_committed_fold(residuals, apow, acc, alpha)` asserts `a_pow[0]=1`,
+  `a_pow[i]=a_pow[i-1]·alpha`, `acc[0]=res[0]`, `acc[i]=acc[i-1]+a_pow[i]·res[i]` against committed
+  `a_pow`/`acc` extension columns; every constraint is degree ≤ 4, INDEPENDENT of the residual count,
+  so any relation's full C(zeta) fold is provable. `committed_fold_values` is the native fill.
+
+Applied to the creation leaf:
+- `leaf_constraint_air`: `leaf_residuals` (the ~N_CONSTRAINTS degree-≤3 residual exprs, factored from
+  `recompute_c_partial`) + `assert_c_partial_committed` (delegates to the primitive) +
+  `c_partial_accumulator_values` (native fill).
+- `recursive_air`: the (LC) block carries the `a_pow`/`acc` columns (`lc_apow`/`lc_acc`, gated on
+  `deep_c_full_leaf`); `eval_full_leaf_c` folds via the committed accumulator; `pack_window` fills it.
+
+Proven end-to-end at PRODUCTION q128 knobs:
+- `alpha_fold::proves_large_fold_q128` — a 2000-term fold proves+verifies (degree ≤2).
+- `leaf_constraint_air::full_leaf_czeta_folds_provably_q128` — the full creation C(zeta) (all
+  N_CONSTRAINTS residuals) folds + proves, with a fidelity assert against the native
+  `partial_constraint_eval`.
+- `recursive_air::full_leaf_window_proves_q128` — the ACTUAL recursive_air window with
+  `deep_c_full_leaf` proves+verifies. The full inner creation relation C(zeta) is provable inside the
+  recursion window.
+
+REMAINING (a SEPARATE build that REUSES this, not part of the re-arithmetization itself): a
+`spend_constraint_air` re-deriving the spend relation's C(zeta) residuals (packing + frame/challenge
+Poseidon2 sponges + checked-core SIS + sigma), which would fold through the same
+`alpha_fold::assert_committed_fold` primitive. That is the spend recursive verifier's constraint
+mirror — comparable in size to `leaf_constraint_air`.
