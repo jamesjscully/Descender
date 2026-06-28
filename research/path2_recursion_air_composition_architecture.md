@@ -357,8 +357,40 @@ Proven end-to-end at PRODUCTION q128 knobs:
   `deep_c_full_leaf` proves+verifies. The full inner creation relation C(zeta) is provable inside the
   recursion window.
 
-REMAINING (a SEPARATE build that REUSES this, not part of the re-arithmetization itself): a
-`spend_constraint_air` re-deriving the spend relation's C(zeta) residuals (packing + frame/challenge
-Poseidon2 sponges + checked-core SIS + sigma), which would fold through the same
-`alpha_fold::assert_committed_fold` primitive. That is the spend recursive verifier's constraint
-mirror — comparable in size to `leaf_constraint_air`.
+## Spend full-C(zeta) mirror COMPLETE: the spend relation folds provably (2026-06-28)
+
+The spend recursive verifier's constraint mirror — `descender_recursion::spend_constraint_air` — now
+re-derives the ENTIRE spend relation C(zeta) over opened-at-zeta cells and folds it through the SAME
+`alpha_fold::assert_committed_fold` primitive. Every class `spend_air::SpendAir::eval` emits is
+transcribed into an octic residual `lhs(zeta) − rhs(zeta)`:
+- **packed-witness consumption** — 18 canonical residues + the 32-byte 14-bit-LE packing bound to the
+  public `packed_witness_commitment`.
+- **frame-digest sponge** — domain pin + statement-lane bindings + the full Poseidon2 sponge
+  (byte-decompositions, absorb/capacity wiring, per-block octic perm residuals reusing
+  `inlined_perm_octic::perm_residuals`) + the squeezed digest bound to the public `frame_digest`.
+- **checked-core SIS** — 22 canonical response lanes + the per-row two-chunk matrix-vector reductions
+  (`syndrome[row] == Σ H[row][c]·r[c] mod q`).
+- **sigma identity** — c/w/t canonical + public-bound, the 23 `c⊛w` product reductions, and the 12
+  fold+final reductions binding `syndrome == t + c⊛w` (Fq12).
+- **sigma input commitments** — `w == unpack(witness_commitment)`, `t == unpack(proof_commitment)`.
+- **rehosted challenge sponge** — domain pin + statement/commitment bindings + the full Poseidon2
+  sponge + the per-lane squeeze reduction binding `sigma_c == challenge mod q`.
+- **relation-id** — the four pinned `SPEND_RELATION_ID` public elements.
+
+Since `SBOX_REGISTERS=0`, the spend sponge's `p3_poseidon2_air::Poseidon2Cols` layout coincides with
+the `inlined_perm` layout cell-for-cell, so the octic perm primitive is reused directly. The spend
+layout is exposed from `spend_air` (region offsets + per-block `perm_cols` + the canonical/reduction
+cell-base fns) so the mirror stays pinned to the source AIR.
+
+Proven:
+- `spend_constraint_air::full_spend_residuals_vanish_on_honest_trace` — every residual of the full
+  mirror VANISHES on a real lifted `generate_spend_trace` row (the octic transcription re-derives the
+  entire spend relation correctly; a wrong limb is caught by attempted equality, not inspection).
+- `full_spend_czeta_fold_constraints_hold_{honest,arbitrary}` — the committed-accumulator fold holds
+  on honest cells (C(zeta)=0) and on arbitrary cells (in-AIR octic exprs match the native authority
+  limb-for-limb under nonzero residuals).
+- `full_spend_czeta_folds_provably_q128` — the FULL spend C(zeta) (all classes) proves+verifies at
+  PRODUCTION q128 knobs (~57s). The spend full-C(zeta) gap is CLOSED.
+
+The same re-arithmetization primitive now closes BOTH halves: creation (`leaf_constraint_air`) and
+spend (`spend_constraint_air`).
