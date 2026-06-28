@@ -298,3 +298,28 @@ using it directly in the Path 2 leaf creates a circular dependency through
 `slot_authorization_digest`. Path 2 spend authorization must therefore consume a
 leaf bound to `CreationHiddenSourceStatementV1`, while the spend challenge binds
 message, proof commitment, and `slot_authorization_digest` separately.
+
+## Implemented (2026-06-27, q128 worktree): SPEND leaf AIR core
+
+The first Plonky3 SPEND leaf AIR has landed: `descender_account_stark::spend_air` (`SpendAir`). It is
+the in-circuit SPEND SIDE of the creation↔spend consumption invariant. It proves that the spend's
+PUBLIC `packed_witness_commitment` (the 32-byte reviewed-fq12 packed-witness state-18 frame the
+creation leaf publishes) is a well-formed 14-bit-LE packing of 18 residues `syndrome[12] ‖
+projection[6]`, EACH canonical `< q12289`, byte-for-bit identical to the deployed
+`pack_reviewed_fq12_packed_witness_state18_from_parts` and to the creation leaf's CLASS-C packing (a
+fidelity-pin test asserts the shapes match). It carries the spend STATEMENT (message ‖ account_id ‖
+slot_id ‖ account_state_root ‖ packed_witness_commitment) as the transcript-bound public values and
+pins a `spend_relation_id`. The residue VALUES are private — the spend does not re-open them (matches
+"no spend-time opening"); only the public commitment and the canonical-packing relation are proven.
+
+This is the consumption anchor the recursion / settlement layer equates to the creation proof's
+`packed_witness_commitment` (closing the spend half of audit MED-2): a spend proof exists for a
+WELL-FORMED, canonical packed witness carrying a fixed statement.
+
+DEFERRED (documented, next increments, NOT hidden): (1) the Poseidon2 checked-core FRAME-DIGEST
+sponge that binds message/account/slot/state TO the packed witness in-circuit (the SHA→Poseidon2
+rehost — today the deployed Rust direct spend verifier does this off-circuit); (2) the full Fq12
+checked-core SIGNATURE equation over the syndrome (the heavy cryptographic core, performed by the
+deployed direct spend verifier in `parameter-search`). Validated: 6 `spend_air` unit tests (shape
+fidelity-pin, completeness, tampered-commitment / non-canonical-residue / wrong-relation-id
+soundness, packer roundtrip) + a small-config STARK prove/verify (`small_config_spend_prove_verify`).
