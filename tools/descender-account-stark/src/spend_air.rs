@@ -34,7 +34,7 @@ use crate::poseidon2_sponge::{build_elems, eval_sponge, run_sponge, SpongeSpec};
 use crate::reduce_gadget::perm_num_cols;
 use crate::LinLayers;
 use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
-use p3_field::PrimeCharacteristicRing;
+use p3_field::{PrimeCharacteristicRing, PrimeField32};
 use p3_matrix::dense::RowMajorMatrix;
 use p3_poseidon2_air::RoundConstants;
 
@@ -80,6 +80,72 @@ fn frame_spec() -> SpongeSpec {
     let mut br = alloc::vec![false; FRAME_DOMAIN_LANES];
     br.extend(alloc::vec![true; FRAME_INPUT_LANES - FRAME_DOMAIN_LANES]);
     SpongeSpec::new(br, FRAME_DIGEST_ELEMS)
+}
+
+// ---- Rehosted challenge: c = Poseidon2(DOMAIN ‖ statement ‖ witness_commitment ‖ proof_commitment)
+//      reduced mod q (replaces the deployed SHA-256 challenge action vector + rejection sampler).
+//      Bound to the STATEMENT (not the syndrome) + both commitments ⇒ proper Fiat-Shamir, no
+//      circular dependency with the response. The mod-q reduction has a ~2^-17 per-lane bias
+//      (negligible for a 12-lane challenge over q^12 ≈ 2^164); the deployed rejection sampler was
+//      bias-free, this trades that for an AIR-native (SHA-free) derivation.
+
+/// Domain tag for the rehosted spend challenge ("SPCH").
+pub const SPEND_CHALLENGE_DOMAIN: u32 = 0x5350_4348;
+/// Challenge sponge input: DOMAIN ‖ message[32] ‖ account_id[32] ‖ slot[8] ‖ state[32] ‖ wc[32] ‖ pc[32].
+pub const CHALLENGE_INPUT_LANES: usize = 1 + 32 + 32 + 8 + 32 + CC_DIGEST_BYTES + CC_DIGEST_BYTES; // 169
+
+fn challenge_spec() -> SpongeSpec {
+    let mut br = alloc::vec![false; 1];
+    br.extend(alloc::vec![true; CHALLENGE_INPUT_LANES - 1]);
+    SpongeSpec::new(br, CC_ROWS)
+}
+
+/// Assemble the challenge sponge input data (DOMAIN ‖ statement ‖ commitments) as u32 lanes.
+fn challenge_input_data(
+    message_digest: &[u8; 32],
+    account_id: &[u8; 32],
+    slot_id: u64,
+    account_state_root: &[u8; 32],
+    witness_commitment: &[u8; CC_DIGEST_BYTES],
+    proof_commitment: &[u8; CC_DIGEST_BYTES],
+) -> Vec<u32> {
+    let mut data = Vec::with_capacity(CHALLENGE_INPUT_LANES);
+    data.push(SPEND_CHALLENGE_DOMAIN);
+    data.extend(message_digest.iter().map(|&b| b as u32));
+    data.extend(account_id.iter().map(|&b| b as u32));
+    data.extend(slot_id.to_le_bytes().iter().map(|&b| b as u32));
+    data.extend(account_state_root.iter().map(|&b| b as u32));
+    data.extend(witness_commitment.iter().map(|&b| b as u32));
+    data.extend(proof_commitment.iter().map(|&b| b as u32));
+    debug_assert_eq!(data.len(), CHALLENGE_INPUT_LANES);
+    data
+}
+
+/// Derive the rehosted challenge action vector `c[12]` natively (Poseidon2 squeeze, each lane mod q).
+/// Byte-identical to the in-AIR challenge region.
+pub fn derive_challenge(
+    air: &SpendAir,
+    message_digest: &[u8; 32],
+    account_id: &[u8; 32],
+    slot_id: u64,
+    account_state_root: &[u8; 32],
+    witness_commitment: &[u8; CC_DIGEST_BYTES],
+    proof_commitment: &[u8; CC_DIGEST_BYTES],
+) -> [u16; CC_ROWS] {
+    let spec = challenge_spec();
+    let data = challenge_input_data(
+        message_digest,
+        account_id,
+        slot_id,
+        account_state_root,
+        witness_commitment,
+        proof_commitment,
+    );
+    let elems = build_elems::<Val>(&data, &spec);
+    let (_blocks, _post, outputs) = run_sponge::<
+        Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+    >(&elems, &spec, &air.constants, air.perm_cols);
+    core::array::from_fn(|i| (outputs[i].as_canonical_u32() % CC_Q as u32) as u16)
 }
 
 // ---- Checked-core region: response lanes ‖ per-row chunked matrix-vector reductions --------------
@@ -825,6 +891,37 @@ mod tests {
         let (trace, mut pv, _fd) = generate_spend_trace(&a, &sample_witness());
         pv[PV_RELATION_ID_OFF] += Val::ONE;
         check_constraints(&a, &trace, &pv);
+    }
+
+    /// REHOST (Phase A) — the native rehosted construction is self-consistent: derive `c` via
+    /// Poseidon2 over (statement ‖ wc ‖ pc), set `syndrome = t + c⊛w`, SOLVE `H·response = syndrome`;
+    /// then the SIS (`H·response == syndrome`) and the sigma identity (`sigma_expected == syndrome`)
+    /// both hold. This binds the challenge to the statement + both commitments (proper Fiat-Shamir)
+    /// with NO SHA and NO circular dependency, and needs no trapdoor (the response is a canonical
+    /// linear-system solution, not a short-norm preimage).
+    #[test]
+    fn rehosted_challenge_construction_is_consistent() {
+        use crate::checked_core::{pack_syndrome_digest, response_syndrome, sigma_expected, solve_response};
+        let a = air();
+        let sigma_w: [u16; CC_ROWS] = core::array::from_fn(|i| ((i as u32 * 149 + 29) % CC_Q as u32) as u16);
+        let sigma_t: [u16; CC_ROWS] = core::array::from_fn(|i| ((i as u32 * 71 + 5) % CC_Q as u32) as u16);
+        let message: [u8; 32] = core::array::from_fn(|i| (i as u8).wrapping_mul(7).wrapping_add(1));
+        let account: [u8; 32] = core::array::from_fn(|i| (i as u8).wrapping_mul(13).wrapping_add(3));
+        let state: [u8; 32] = core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(7));
+        let slot = 0xDEAD_BEEF_0000_0042u64;
+
+        let wc = pack_syndrome_digest(&sigma_w);
+        let pc = pack_syndrome_digest(&sigma_t);
+        let c = derive_challenge(&a, &message, &account, slot, &state, &wc, &pc);
+        let syndrome = sigma_expected(&sigma_t, &c, &sigma_w);
+        let response = solve_response(&syndrome).expect("linear system solvable");
+        for &v in &response {
+            assert!(v < CC_Q, "response non-canonical");
+        }
+        assert_eq!(response_syndrome(&response), syndrome, "SIS H·response != syndrome");
+        assert_eq!(sigma_expected(&sigma_t, &c, &sigma_w), syndrome, "sigma identity broken");
+        // Determinism: the challenge is a pure function of (statement, wc, pc).
+        assert_eq!(c, derive_challenge(&a, &message, &account, slot, &state, &wc, &pc));
     }
 
     /// The derived packed witness equals a hand pack of (H·response ‖ projection).

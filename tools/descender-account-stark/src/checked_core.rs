@@ -117,6 +117,93 @@ pub fn pack_syndrome_digest(syndrome: &[u16; CC_ROWS]) -> [u8; CC_DIGEST_BYTES] 
     out
 }
 
+fn inv_mod_q(a: u32) -> u32 {
+    // q is prime ⇒ a^(q-2) mod q (Fermat).
+    let q = CC_Q as u64;
+    let mut base = (a as u64) % q;
+    let mut exp = q - 2;
+    let mut acc = 1u64;
+    while exp > 0 {
+        if exp & 1 == 1 {
+            acc = acc * base % q;
+        }
+        base = base * base % q;
+        exp >>= 1;
+    }
+    acc as u32
+}
+
+/// Solve `H·r == expected (mod q)` for a CANONICAL response `r[22]` (the checked-core response is
+/// canonical `< q`, not short-norm, so this is a solvable linear system — NOT SIS-hard). Gaussian
+/// elimination mod q over the 12×22 system; free variables set to 0. Used to construct honest test
+/// witnesses (and by a real signer). Returns `None` only if the (random-`H`) system is inconsistent.
+pub fn solve_response(expected: &[u16; CC_ROWS]) -> Option<[u16; CC_COLS]> {
+    let q = CC_Q as u32;
+    let h = checked_core_matrix();
+    // Augmented matrix [H | expected], CC_ROWS × (CC_COLS+1), as u32 in [0,q).
+    let mut a = [[0u32; CC_COLS + 1]; CC_ROWS];
+    for r in 0..CC_ROWS {
+        for c in 0..CC_COLS {
+            a[r][c] = h[r][c] as u32 % q;
+        }
+        a[r][CC_COLS] = expected[r] as u32 % q;
+    }
+    // Forward elimination with pivoting; track pivot column per row.
+    let mut pivot_col = [usize::MAX; CC_ROWS];
+    let mut row = 0usize;
+    for col in 0..CC_COLS {
+        if row >= CC_ROWS {
+            break;
+        }
+        // Find a pivot in this column at or below `row`.
+        let mut sel = None;
+        for r in row..CC_ROWS {
+            if a[r][col] != 0 {
+                sel = Some(r);
+                break;
+            }
+        }
+        let Some(sel) = sel else { continue };
+        a.swap(row, sel);
+        // Normalize pivot row.
+        let inv = inv_mod_q(a[row][col]) as u64;
+        for c in col..=CC_COLS {
+            a[row][c] = (a[row][c] as u64 * inv % q as u64) as u32;
+        }
+        // Eliminate this column from all other rows.
+        for r in 0..CC_ROWS {
+            if r != row && a[r][col] != 0 {
+                let factor = a[r][col] as u64;
+                for c in col..=CC_COLS {
+                    let sub = factor * a[row][c] as u64 % q as u64;
+                    a[r][c] = ((a[r][c] as u64 + q as u64 - sub) % q as u64) as u32;
+                }
+            }
+        }
+        pivot_col[row] = col;
+        row += 1;
+    }
+    // Consistency: any all-zero H-row with nonzero rhs ⇒ no solution.
+    for r in 0..CC_ROWS {
+        if pivot_col[r] == usize::MAX && a[r][CC_COLS] != 0 {
+            // (row r was never assigned a pivot but might still be zero-row)
+        }
+    }
+    for r in row..CC_ROWS {
+        if a[r][CC_COLS] != 0 {
+            return None;
+        }
+    }
+    // Back-substitute: free variables = 0, pivots = rhs.
+    let mut out = [0u16; CC_COLS];
+    for r in 0..CC_ROWS {
+        if pivot_col[r] != usize::MAX {
+            out[pivot_col[r]] = a[r][CC_COLS] as u16;
+        }
+    }
+    Some(out)
+}
+
 /// Componentwise `c + w mod q`, matching the deployed `fq12_syndrome_add`.
 pub fn fq12_add(a: &[u16; CC_ROWS], b: &[u16; CC_ROWS]) -> [u16; CC_ROWS] {
     core::array::from_fn(|i| ((a[i] as u32 + b[i] as u32) % CC_Q as u32) as u16)
@@ -191,6 +278,21 @@ mod tests {
             let c: [u16; CC_ROWS] = core::array::from_fn(|i| (((seed * 131 + i as u32) * 977 + 3) % q) as u16);
             let w: [u16; CC_ROWS] = core::array::from_fn(|i| (((seed * 17 + i as u32) * 613 + 11) % q) as u16);
             assert_eq!(fq12_mul(&c, &w), reference(&c, &w), "fq12_mul != iterative reduction");
+        }
+    }
+
+    /// The linear solver returns a canonical `r` with `H·r == expected` (any target is solvable since
+    /// `H` is 12×22 over the field).
+    #[test]
+    fn solve_response_satisfies_system() {
+        for seed in 0..8u32 {
+            let expected: [u16; CC_ROWS] =
+                core::array::from_fn(|i| (((seed * 31 + i as u32) * 701 + 13) % CC_Q as u32) as u16);
+            let r = solve_response(&expected).expect("system solvable");
+            for &v in &r {
+                assert!(v < CC_Q, "response lane non-canonical");
+            }
+            assert_eq!(response_syndrome(&r), expected, "H·solve(expected) != expected");
         }
     }
 
