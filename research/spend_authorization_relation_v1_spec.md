@@ -323,3 +323,40 @@ checked-core SIGNATURE equation over the syndrome (the heavy cryptographic core,
 deployed direct spend verifier in `parameter-search`). Validated: 6 `spend_air` unit tests (shape
 fidelity-pin, completeness, tampered-commitment / non-canonical-residue / wrong-relation-id
 soundness, packer roundtrip) + a small-config STARK prove/verify (`small_config_spend_prove_verify`).
+
+## Implemented (2026-06-27, q128 worktree): SPEND leaf AIR — all three Phase-2 increments
+
+The spend leaf relation is now a real Plonky3 AIR (`descender_account_stark::spend_air::SpendAir`)
+proving, in-circuit and at production config, the full spend core:
+
+1. **Packed-witness consumption.** The PUBLIC `packed_witness_commitment` is a well-formed 14-bit-LE
+   packing of 18 canonical-`<q12289` residues `syndrome[12] ‖ projection[6]`, byte-identical to the
+   creation leaf's CLASS-C packing (fidelity-pin). Residue values stay private ("no spend-time opening").
+2. **Checked-core frame-digest binding.** `frame_digest = Poseidon2(DOMAIN ‖ message ‖ account_id ‖
+   slot_id ‖ account_state_root ‖ packed_witness_commitment)` is computed in-circuit (shared
+   `poseidon2_sponge` module) with input lanes bound to the public statement, exposed as a public
+   output — the SHA→Poseidon2 rehost of the deployed challenge frame, so the statement is
+   cryptographically bound to the witness.
+3. **Checked-core SIS signature.** A private canonical response `r[22]` satisfies `syndrome[row] =
+   Σ_col H[row][col]·r[col] mod q` for the FIXED public matrix `H` (12×22, SHA256-derived
+   byte-identical to the deployed `domain_matrix_entry`; `descender_account_stark::checked_core`),
+   constrained EQUAL to the consumed syndrome lanes. Proving the committed syndrome has a known short
+   canonical preimage under `H` IS the checked-core acceptance (`path2_native_checked_core_accept_v1`'s
+   sigma equation); the per-row 22-term product is evaluated in two field-safe chunks with in-AIR
+   mod-q reductions.
+
+**Co-verification + MED-2.** `descender_account_stark::{prove,verify}_spend_authorization` mirror the
+creation prove/verify path; `creation_spend_packed_witness_binds` + `verify_creation_and_spend`
+verify BOTH proofs and enforce `creation.packed_witness == spend.packed_witness` (the spend consumes
+EXACTLY the creation's committed witness — closing audit MED-2 at the settlement layer, the deployable
+form under the native-settlement architecture; the in-circuit-recursion binding is the O(1)-on-chain
+optimization, future work).
+
+Validated end-to-end: `small_config_creation_spend_co_verification_and_med2_binding` proves a creation
+committing `syndrome = H·response`, proves a spend verifying the SIS in-circuit over the same packed
+witness, verifies both, and checks the MED-2 binding holds (and fails for a different witness). All at
+real STARK prove/verify; account-stark lib 38 tests green, warning-clean.
+
+REMAINING (deferred): the exact `expected_syndrome = hash(challenge)` derivation in-AIR (today the
+frame digest binds the syndrome to the statement; the precise challenge→syndrome hash is the final
+fidelity link), and lifting the co-verification binding into the recursion AIR for O(1) on-chain.
