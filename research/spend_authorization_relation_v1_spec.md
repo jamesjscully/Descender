@@ -400,3 +400,29 @@ proves a spend and verifies it, and rejects a tampered statement. The spend proo
 by `frozen_q128_spend_proof_kat` (single-thread deterministic PoW grind; SHA-256 digest
 `3bf55df8…f3f62e77`), mirroring the creation leaf's frozen KAT — drift protection for the whole spend
 subsystem. (Both are `#[ignore]` — slow production proves; run explicitly.)
+
+## Implemented (2026-06-27): SHA→Poseidon2 challenge rehost — sigma `c` derived IN-CIRCUIT
+
+The last SHA-gated piece is closed. The spend challenge action vector `c` is now derived in-circuit by
+a Poseidon2 sponge over `DOMAIN ‖ message ‖ account_id ‖ slot ‖ state ‖ witness_commitment ‖
+proof_commitment`, each squeezed lane reduced mod q (`spend_air` challenge region; native mirror
+`derive_challenge`). This REPLACES the deployed SHA-256 challenge + `uniform_mod_from_hash` rejection
+sampler — no SHA in the spend AIR, no variable-length rejection loop (the mod-q reduction has a ~2^-17
+per-lane bias, negligible over the 12-lane challenge space ≈ 2^164).
+
+The squeezed `c` is constrained EQUAL to the `sigma_c` used in the acceptance identity, so the FULL
+sigma equation `H·r == t + c⊛w` is now self-contained in the circuit with `c` BOUND (to the statement
++ both commitments — proper Fiat-Shamir: the nonce `proof_commitment` is in the challenge preimage).
+
+Witness flow restructured to the real prover order (no trapdoor needed, since the checked-core
+response is canonical not short-norm): fix key `sigma_w` + nonce `sigma_t` → commitments → Poseidon2
+challenge `c` → `syndrome = t + c⊛w` → SOLVE `H·response = syndrome` (`checked_core::solve_response`,
+Gaussian elimination mod q). `spend_derive` performs this; `SpendWitness` now carries only
+`{sigma_w, sigma_t, projection, statement}`.
+
+RESIDUAL off-circuit surface (now minimal): binding `witness_commitment` to the account's
+creation-committed checked-core key, and `proof_commitment`'s freshness — i.e. the public-key↔account
+binding, a creation-side concern. The spend's own acceptance (packing + frame digest + SIS + sigma
+identity + challenge derivation) is now fully in-circuit. Validated at production q128: spend_air 13 +
+checked_core 6 + prove/verify + co-verification; frozen spend KAT re-pinned (297df186…);
+account-stark lib 44 green, warning-clean.
