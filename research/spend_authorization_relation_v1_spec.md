@@ -426,3 +426,27 @@ binding, a creation-side concern. The spend's own acceptance (packing + frame di
 identity + challenge derivation) is now fully in-circuit. Validated at production q128: spend_air 13 +
 checked_core 6 + prove/verify + co-verification; frozen spend KAT re-pinned (297df186…);
 account-stark lib 44 green, warning-clean.
+
+## Implemented (2026-06-28): public-key↔account binding — spend key tied to creation-registered key
+
+The last residual off-circuit gap is closed. The account-creation leaf now REGISTERS its checked-core
+signing-key commitment as a public output: CLASS A-3 `checked_core_key_commitment` (32-byte
+`pack_reviewed_fq12_account_carried_syndrome_digest` of the account's witness/key syndrome), carried
+in the per-instance statement — transcript-bound (single mode) and folded into the batch digest chain
+(deployed aggregation path), so the account's `(account_id, key)` pair is fixed by its creation proof.
+
+A spend then binds, at co-verification, `spend.witness_commitment == creation.checked_core_key_commitment`
+(`creation_spend_key_binds`, enforced in `verify_creation_and_spend` alongside the MED-2
+packed-witness binding). Since the spend ALSO proves in-circuit that it knows the key's preimage (the
+SIS `H·r == syndrome` + the sigma identity, with `w = unpack(witness_commitment)`), a spend is now
+tied to the account's creation-registered signing key: a spend with any other key fails the binding.
+
+Validated: co-verification test asserts the key binding holds for the honest pair and FAILS for a
+wrong key; creation pubio extended (CLASS A-3 threaded through `AccountCreationPublic`, the batch
+digest chain `pubio_tuple`, single-mode public values, and the deployed verifier transport wire);
+frozen creation KAT re-pinned (b79c7375…). account-stark lib 44 + context_binding 6 green; verifier
+crate tests green (full deployed prove/verify with the new pubio + wire); all crates warning-clean.
+
+With this, the spend's acceptance is fully in-circuit AND tied to the account's registered key; the
+`{creation, spend}` composition's settlement-layer co-verification (`verify_creation_and_spend`)
+enforces both proofs + MED-2 packed-witness binding + the public-key↔account binding.
