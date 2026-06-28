@@ -1029,4 +1029,113 @@ mod tests {
         verify(&config, &BlockRecursiveAir { cfg }, &proof, &root.to_vec())
             .expect("true O(1) block proof must verify at production q128 knobs");
     }
+
+    // ---- DEEPEST rung: full inner-leaf C(zeta) re-derivation per member (deep_c_full_leaf) --------
+    // Each member's DEEP C(zeta) is the FULL alpha-folded creation-leaf constraint
+    // `recompute_c_partial(value_at_zeta) + C_committed` (NOT the linear reduction), composed with
+    // C == Z_H(zeta)·Q — so the aggregator constrains the inner creation RELATION per member, not only
+    // its FRI/commitment layer. Closes the creation half of the shared full-C(zeta) gap.
+
+    fn cfg_full_leaf_member(levels: usize, k: usize) -> RecursiveConfig {
+        RecursiveConfig {
+            merkle_levels: levels,
+            deep_log_degree: Some(k),
+            deep_c_full_leaf: true,
+            ..RecursiveConfig::single_window(levels)
+        }
+    }
+
+    /// One member window: a Merkle opening (→ the chain-folded root) PLUS the full-leaf-mirror (LC)
+    /// block carrying an HONEST creation-leaf OOD opening (`honest_cells_for_test`), so the in-circuit
+    /// DEEP C(zeta) is the full folded leaf constraint with zero residual.
+    fn member_window_full_leaf(cfg: &RecursiveConfig, levels: usize, member: u32) -> Vec<Val> {
+        let n = 1usize << levels;
+        let idx = (member as usize) % n;
+        let leaves: Vec<Digest> =
+            (0..n as u32).map(|r| d(r.wrapping_mul(1000) + member + 31)).collect();
+        let tree = RefTree::new(leaves.clone());
+        let sibs = tree.auth_path(idx);
+        let c4: [u32; crate::leaf_constraint_air::C4_LANES] =
+            core::array::from_fn(|i| member.wrapping_mul(101).wrapping_add(i as u32 * 777) % 12289);
+        let cells = crate::leaf_constraint_air::honest_cells_for_test(
+            c4,
+            member.wrapping_mul(7).wrapping_add(17),
+        );
+        let inp = WindowInputs {
+            draw_out: Val::from_u32(idx as u32),
+            e0: ext(member + 1),
+            e1: ext(member + 2),
+            beta: ext(member + 3),
+            descent: &[],
+            merkle_leaf: leaves[idx],
+            merkle_siblings: &sibs,
+            deep_zeta: ext(member + 40),
+            deep_q: Challenge::ZERO,
+            deep_alpha: ext(member + 50),
+            fs_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
+            public_io: &[],
+            fs_beta_blocks: &[],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &cells,
+            lc_c_committed: ext(member + 60),
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
+        };
+        pack_window(cfg, &inp)
+    }
+
+    /// DEEPEST O(1) BLOCK: every member's FULL inner creation-leaf C(zeta) is re-derived in-circuit
+    /// (`deep_c_full_leaf`) and the members chain to one `chain_state_root`. Validated via the
+    /// constraint CHECKER (`check_all_constraints`) — the same soundness gate `prove` enforces — on an
+    /// honest block: the aggregator's constraints INCLUDE the full inner creation RELATION per member.
+    ///
+    /// NOTE on provability: a real production-knob `prove` of THIS rung is memory-infeasible. The
+    /// inlined `recompute_c_partial` is very high algebraic degree (the leaf's Poseidon2 sboxes
+    /// composed over the degree-8 extension), so `uni_stark`'s quotient LDE explodes (tens of GB).
+    /// This is why the creation aggregator's PROVEN rungs use the FRI/DEEP/commitment consumer (low
+    /// degree) rather than `deep_c_full_leaf`. Closing the full-C(zeta) gap PROVABLY (for both creation
+    /// and spend) requires a RE-ARITHMETIZED low-degree mirror — committing the inner perm's
+    /// intermediate states as columns so every constraint is degree ≤ 2, i.e. rebuilding the leaf AIR
+    /// inside the recursion. That is the remaining multi-week frontier; this test pins that the
+    /// full-C(zeta) constraints themselves are correct and satisfied in the aggregator context.
+    #[test]
+    fn full_leaf_czeta_block_constraints_hold() {
+        let levels = 3usize;
+        let k = 6usize;
+        let cfg = cfg_full_leaf_member(levels, k);
+        let n = 4usize;
+        let ws: Vec<Vec<Val>> =
+            (0..n as u32).map(|m| member_window_full_leaf(&cfg, levels, m)).collect();
+        let flat = build_trace(&cfg, &ws);
+        let root = trace_root(&cfg, n, &flat);
+        let trace = RowMajorMatrix::new(flat, n_cols(&cfg));
+        let report =
+            check_all_constraints(&BlockRecursiveAir { cfg }, &trace, &root.to_vec(), None);
+        assert!(
+            report.is_ok(),
+            "honest full-leaf-C(zeta) block rejected: {} failures",
+            report.failures.len()
+        );
+    }
 }
