@@ -102,6 +102,7 @@ pub mod verifier_cost; // on-chain verification cost basis — MEASURE the aggre
 pub mod settlement; // DEPLOYABLE verifier — native settlement/rollup O(1) block verify (prove_block/verify_block + transport)
 pub mod spend_block; // Phase-2→3 bridge — aggregate SPEND proofs into one O(1) chain_state_root (generic recursion)
 pub mod alpha_fold; // re-arithmetization — low-degree committed-accumulator alpha-batch fold (makes full-C(zeta) provable)
+pub mod spend_constraint_air; // spend recursive-verifier C(zeta) mirror — opened-cell residuals folded via alpha_fold
 
 /// Phase-1 milestone marker (kept until `recursive_air` lands). Asserts the
 /// re-exported leaf config is reachable so the crate's single-source-of-truth wiring

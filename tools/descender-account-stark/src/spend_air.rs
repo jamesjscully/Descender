@@ -54,11 +54,14 @@ const BYTE_BITS: usize = 8;
 
 // ---- Canonical residue cell: value ‖ bits[14] ‖ slack ‖ slack_bits[14] (proves 0 <= v < q) -------
 
-const RESIDUE_CELLS: usize = 1 + SPEND_RESIDUE_BITS + 1 + SPEND_RESIDUE_BITS; // 30
+/// Per-residue cell layout: value ‖ bits[14] ‖ slack ‖ slack_bits[14]. Exposed so the recursion's
+/// spend C(zeta) mirror (`descender_recursion::spend_constraint_air`) can read the opened cells.
+pub const RESIDUE_CELLS: usize = 1 + SPEND_RESIDUE_BITS + 1 + SPEND_RESIDUE_BITS; // 30
 /// Width of the residue (packed-witness consumption) region.
 pub const RESIDUE_REGION_WIDTH: usize = SPEND_RESIDUES * RESIDUE_CELLS; // 540
 
-const fn residue_base(r: usize) -> usize {
+/// Trace-column base of residue `r`'s cell block (within the spend AIR row). Public for the mirror.
+pub const fn residue_base(r: usize) -> usize {
     r * RESIDUE_CELLS
 }
 

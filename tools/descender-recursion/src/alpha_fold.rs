@@ -56,6 +56,22 @@ fn octic_one<AB: AirBuilder>() -> [AB::Expr; D] {
     core::array::from_fn(|i| if i == 0 { AB::Expr::ONE } else { AB::Expr::ZERO })
 }
 
+/// Octic subtract `a - b` over the degree-8 extension (componentwise), as in-AIR expressions.
+pub fn octic_sub<AB: AirBuilder>(a: &[AB::Expr; D], b: &[AB::Expr; D]) -> [AB::Expr; D] {
+    core::array::from_fn(|i| a[i].clone() - b[i].clone())
+}
+
+/// A base-field scalar `c` embedded as an octic extension element `[c, 0, ..., 0]`.
+pub fn octic_scalar<AB: AirBuilder<F = Val>>(c: u64) -> [AB::Expr; D] {
+    core::array::from_fn(|i| {
+        if i == 0 {
+            AB::Expr::from(AB::F::from_u64(c))
+        } else {
+            AB::Expr::ZERO
+        }
+    })
+}
+
 /// Column layout for a K-term fold block at base `off`: `alpha[D] ‖ res[K·D] ‖ a_pow[K·D] ‖ acc[K·D]`.
 pub const fn fold_block_width(k: usize) -> usize {
     D + 3 * k * D
