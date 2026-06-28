@@ -73,6 +73,23 @@ So both halves of F2 are now realized in code; what remains is wiring this regis
 consensus admission path and pinning the reorg/free policy to the chosen finality profile (D2,
 deployment decision) — not a missing-mechanism gap.
 
+UPDATE (2026-06-27, q128 worktree — the core-AIR nullifier): the registry's KEY is now a real
+proof-bound public value. The leaf relation exposes a new CLASS A-2 public output
+`nullifier = Poseidon2(DOMAIN ‖ pad_seed ‖ slot)`, computed IN-AIR over the SAME pad_seed lanes that
+feed C1 (seam-bound to C2) and the SAME slot lanes that feed C2 (context-bound to the public slot),
+its squeezed digest constrained EQUAL to the public `nullifier` (`air.rs` CLASS A-2 block). Crucially
+it is NONCE-FREE: unlike `pad_source_commitment` (C1), which is blinded by `nonce_c1` and so differs
+across honest re-proofs of one pad_seed (making it useless as a reuse key), two proofs reusing one
+pad_seed for one slot yield the IDENTICAL nullifier — exactly the single-use signal the registry
+needs. This closes the gap flagged earlier ("`pad_source_commitment` is nonce-blinded, unsuitable; F2
+needs a new public AIR output"): the registry can now key on a value the proof itself binds, so a
+reused pad_seed cannot present a fresh-looking admission. Implemented + tested at production q128 knobs
+(`air.rs` tests `nullifier_matches_recompute_and_is_nonce_free`, `forged_nullifier_violates_constraints`,
+`nullifier_domain_lane_mismatch_violates_constraints`; threaded through `AccountCreationPublic`, the
+batch digest chain, the recursion public-IO mirror, and the deployed verifier's transport wire; frozen
+q128 KAT re-pinned). What remains for F2 is purely the consensus wiring + D2 policy — no missing
+in-circuit mechanism.
+
 ### F3 — 🟠 Quantum Merkle/sponge collision floor ≈ 2⁻⁸²⁻⁹⁹ (not itemized)
 
 The 8-element (~248-bit) Merkle/sponge digest has classical collision resistance
