@@ -1717,16 +1717,26 @@ const LC_VZETA: usize = 0;
 fn lc_c_committed(_cfg: &RecursiveConfig) -> usize {
     LC_VZETA + lc::N_OPENED_CELLS * D
 }
+/// Within-block offset of the committed-accumulator `a_pow[K·D]` columns (`K = lc::N_CONSTRAINTS`):
+/// the re-arithmetization that makes the full leaf C(zeta) PROVABLE (degree ≤ 4 instead of ~K).
+fn lc_apow(cfg: &RecursiveConfig) -> usize {
+    lc_c_committed(cfg) + D
+}
+/// Within-block offset of the committed-accumulator `acc[K·D]` columns.
+fn lc_acc(cfg: &RecursiveConfig) -> usize {
+    lc_apow(cfg) + lc::N_CONSTRAINTS * D
+}
 
 /// Base of the (LC) full-leaf-mirror block (after the (DR) block).
 fn lc_base(cfg: &RecursiveConfig) -> usize {
     dr_base(cfg) + dr_size(cfg)
 }
 
-/// Size of the (LC) block. 0 unless `deep_c_full_leaf`.
+/// Size of the (LC) block. 0 unless `deep_c_full_leaf`. Includes the committed Horner accumulator
+/// (`a_pow`, `acc`) so the full leaf C(zeta) folds at degree ≤ 4 (provable).
 fn lc_size(cfg: &RecursiveConfig) -> usize {
     if cfg.deep_c_full_leaf {
-        lc::N_OPENED_CELLS * D + D /* C_committed */
+        lc::N_OPENED_CELLS * D + D /* C_committed */ + 2 * lc::N_CONSTRAINTS * D /* a_pow ‖ acc */
     } else {
         0
     }
@@ -2556,6 +2566,18 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
         }
         let cc = lcb + lc_c_committed(cfg);
         row[cc..cc + D].copy_from_slice(&limbs(inp.lc_c_committed));
+        // Committed Horner accumulator over the leaf residuals (a_pow[r]=alpha^r,
+        // acc[r]=Σ_{j≤r} alpha^j·res_j), filled from the native reference. Makes the eval's fold
+        // assertion hold with zero residual on an honest window — and the fold provable (degree ≤ 4).
+        let cells: [Challenge; lc::N_OPENED_CELLS] =
+            core::array::from_fn(|i| inp.lc_value_at_zeta[i]);
+        let (apow_v, acc_v) = lc::c_partial_accumulator_values(&cells, deep_alpha);
+        let ap = lcb + lc_apow(cfg);
+        let ac = lcb + lc_acc(cfg);
+        for r in 0..lc::N_CONSTRAINTS {
+            row[ap + r * D..ap + r * D + D].copy_from_slice(&limbs(apow_v[r]));
+            row[ac + r * D..ac + r * D + D].copy_from_slice(&limbs(acc_v[r]));
+        }
     }
 
     // (b) challenger-draw columns: one per bound challenge (= the challenge limbs themselves; the
@@ -3239,7 +3261,17 @@ fn eval_full_leaf_c<AB: AirBuilder<F = Val>>(
     let cell = |c_idx: usize| -> [AB::Expr; D] {
         core::array::from_fn(|j| l(lcb + LC_VZETA + c_idx * D + j))
     };
-    let c_partial = lc::recompute_c_partial::<AB, _>(&cell, &alpha);
+    // PROVABLE fold: the committed Horner accumulator over the leaf residuals (degree ≤ 4), instead of
+    // the inline `recompute_c_partial` (degree ~N_CONSTRAINTS, which explodes the quotient LDE).
+    let apow_off = lc_apow(cfg);
+    let acc_off = lc_acc(cfg);
+    let apow = |i: usize| -> [AB::Expr; D] {
+        core::array::from_fn(|j| l(lcb + apow_off + i * D + j))
+    };
+    let acc = |i: usize| -> [AB::Expr; D] {
+        core::array::from_fn(|j| l(lcb + acc_off + i * D + j))
+    };
+    let c_partial = lc::assert_c_partial_committed::<AB, _, _, _>(builder, &cell, &apow, &acc, &alpha);
     let c_committed: [AB::Expr; D] =
         core::array::from_fn(|j| l(lcb + lc_c_committed(cfg) + j));
     // C == C_partial + C_committed (limb-for-limb).
@@ -10748,6 +10780,65 @@ mod tests {
                 report.failures.len()
             );
         }
+    }
+
+    /// STEP-3 RESULT: the ACTUAL `recursive_air` window with `deep_c_full_leaf` (full inner creation
+    /// C(zeta) re-derived via the committed-accumulator fold in the LC block) PROVES + verifies at
+    /// PRODUCTION q128 knobs — where the inline fold exploded the quotient LDE (80 GB). The full inner
+    /// creation relation is now provable inside the recursion window.
+    #[test]
+    #[ignore = "slow: full-leaf recursive_air window prove at production q128 (committed fold)"]
+    fn full_leaf_window_proves_q128() {
+        use descender_account_stark::{
+            Challenge, MyCompress, MyHash, Perm, Val, DIGEST_ELEMS, PROD_LOG_BLOWUP,
+            PROD_NUM_QUERIES, PROD_QUERY_POW_BITS,
+        };
+        use p3_challenger::DuplexChallenger;
+        use p3_commit::ExtensionMmcs;
+        use p3_dft::Radix2DitParallel;
+        use p3_field::Field;
+        use p3_fri::{FriParameters, TwoAdicFriPcs};
+        use p3_koala_bear::default_koalabear_poseidon2_16;
+        use p3_merkle_tree::MerkleTreeMmcs;
+        use p3_uni_stark::{prove, verify, StarkConfig};
+
+        type ValMmcs = MerkleTreeMmcs<<Val as Field>::Packing, <Val as Field>::Packing, MyHash, MyCompress, 2, DIGEST_ELEMS>;
+        type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
+        type DftT = Radix2DitParallel<Val>;
+        type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
+
+        let perm: Perm = default_koalabear_poseidon2_16();
+        let val_mmcs = ValMmcs::new(MyHash::new(perm.clone()), MyCompress::new(MyHash::new(perm.clone())), 0);
+        let challenge_mmcs = ChallengeMmcs::new(val_mmcs.clone());
+        let fri_params = FriParameters {
+            log_blowup: PROD_LOG_BLOWUP,
+            log_final_poly_len: 0,
+            max_log_arity: 1,
+            num_queries: PROD_NUM_QUERIES,
+            commit_proof_of_work_bits: 0,
+            query_proof_of_work_bits: PROD_QUERY_POW_BITS,
+            mmcs: challenge_mmcs,
+        };
+        let pcs = Pcs::new(DftT::default(), val_mmcs, fri_params);
+        let config = OuterConfig::new(pcs, MyChallenger::new(perm.clone()));
+
+        let k = 6usize;
+        let cfg = cfg_full_leaf(8, k);
+        let alpha = ext_multi(40 + k as u32);
+        let zeta = ext_multi(50 + k as u32);
+        let c_committed = ext_multi(9);
+        let (row, _cells) =
+            full_leaf_window(&cfg, [0, 1, 127, 12288, 5000, 96], 17, alpha, zeta, c_committed);
+        // Pad to 2 identical rows (the single window has no cross-row constraints).
+        let w = n_cols(&cfg);
+        let mut values = row.clone();
+        values.extend_from_slice(&row);
+        let trace = RowMajorMatrix::new(values, w);
+        let proof = prove(&config, &RecursiveAir { cfg: cfg.clone() }, trace, &alloc::vec![]);
+        verify(&config, &RecursiveAir { cfg }, &proof, &alloc::vec![])
+            .expect("full-leaf recursive_air window must prove+verify at production q128 knobs");
     }
 
     /// FORGERY — a forged `value_at_zeta` column (≠ the real OOD eval) now BREAKS THE FULL FOLDED
