@@ -69,7 +69,8 @@
 use crate::inlined_perm::{
     self, eval_perm, ConstantsExpr, PermCells, C_INPUTS, C_OUTPUT, PERM_COLS,
 };
-use crate::recursive_air::{leaf_hash_digest, leaf_hash_pre_states};
+use crate::leaf_hash::{leaf_hash_digest, leaf_hash_pre_states};
+use crate::merkle_air::{eval_node, node_blocks, ABSORB_LEN, N_PERM};
 use descender_account_stark::{Challenge, Val, DIGEST_ELEMS, SALT_ELEMS, WIDTH};
 use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
 use p3_field::{BasedVectorSpace, PrimeCharacteristicRing};
@@ -77,11 +78,14 @@ use p3_field::{BasedVectorSpace, PrimeCharacteristicRing};
 extern crate alloc;
 use alloc::vec::Vec;
 
-/// Extension degree (deg-8 challenge field) = digest width. `DIGEST_ELEMS == D == 8` on the
-/// deployed config, so a layer leaf's flattened pair is `2·D` base elems.
-pub const D: usize = DIGEST_ELEMS;
-/// Rate of the Poseidon2 sponge (RATE == DIGEST_ELEMS == 8 on the deployed instance).
-pub const RATE: usize = DIGEST_ELEMS;
+/// Extension degree of the challenge field (`BinomialExtensionField<Val,8>`). This is the FRI
+/// codeword element width (`D` base limbs) and is DISTINCT from the Merkle digest width
+/// (`DIGEST_ELEMS = 13`) at the quantum-128 profile — sourced from `fri_fold_air::D` so the two
+/// can never silently re-merge.
+pub const D: usize = crate::fri_fold_air::D;
+/// The leaf-row hash (`MyHash`) sponge rate — `crate::leaf_hash::LEAF_HASH_RATE = 7` at q128,
+/// DISTINCT from the FS challenger rate (8) and the digest width (13).
+pub const RATE: usize = crate::leaf_hash::LEAF_HASH_RATE;
 
 /// The flattened arity-2 leaf row: `[evals[0]; D] ‖ [evals[1]; D]`.
 pub const LEAF_ROW_LEN: usize = 2 * D;
@@ -130,12 +134,19 @@ const fn merkle_base() -> usize {
     leaf_perm_base(leaf_perms())
 }
 
-/// Per-level sub-block: `running[8] ‖ sibling[8] ‖ selector_bit ‖ perm[PERM_COLS]`.
+/// Per-level sub-block: `running[13] ‖ sibling[13] ‖ selector_bit ‖ node_sponge[N_PERM·PERM_COLS]`.
+/// At q128 each Merkle node is the digest-13 sponge-mode 2-to-1 compression (`N_PERM` perm blocks),
+/// NOT a single truncated permutation.
 const ML_RUNNING: usize = 0;
 const ML_SIBLING: usize = DIGEST_ELEMS;
 const ML_BIT: usize = 2 * DIGEST_ELEMS;
 const ML_PERM: usize = ML_BIT + 1;
-const MERKLE_LEVEL: usize = ML_PERM + PERM_COLS;
+const MERKLE_LEVEL: usize = ML_PERM + N_PERM * PERM_COLS;
+
+/// Absolute offset of a Merkle node's reconstructed digest (last sponge block's `output[..13]`).
+const fn node_digest_off(lbase: usize) -> usize {
+    lbase + ML_PERM + (N_PERM - 1) * PERM_COLS + C_OUTPUT
+}
 
 const fn merkle_level_base(level: usize) -> usize {
     merkle_base() + level * MERKLE_LEVEL
@@ -230,27 +241,24 @@ pub fn pack_layer(levels: usize, inp: &LayerInputs) -> Vec<Val> {
         row[lbase + ML_RUNNING..lbase + ML_RUNNING + DIGEST_ELEMS].copy_from_slice(&running);
         row[lbase + ML_SIBLING..lbase + ML_SIBLING + DIGEST_ELEMS].copy_from_slice(&sib);
         row[lbase + ML_BIT] = if bit { Val::ONE } else { Val::ZERO };
-        // place into the 16-lane perm input per fold_step / TruncatedPermutation.
+        // q128 node compression: sponge-mode 2-to-1 over combined = a ‖ b (ordered by bit).
         let (a, b) = if bit { (sib, running) } else { (running, sib) };
-        let mut input16 = [Val::ZERO; WIDTH];
-        input16[..DIGEST_ELEMS].copy_from_slice(&a);
-        input16[DIGEST_ELEMS..].copy_from_slice(&b);
-        let cols = inlined_perm::generate_perm_cols(input16, &consts);
-        row[lbase + ML_PERM..lbase + ML_PERM + PERM_COLS].copy_from_slice(&cols);
-        running = {
-            let out = inlined_perm::perm_output(&cols);
-            core::array::from_fn(|i| out[i])
-        };
+        let mut combined = [Val::ZERO; ABSORB_LEN];
+        combined[..DIGEST_ELEMS].copy_from_slice(&a);
+        combined[DIGEST_ELEMS..].copy_from_slice(&b);
+        let (blocks, digest) = node_blocks(&combined, &consts);
+        row[lbase + ML_PERM..lbase + ML_PERM + N_PERM * PERM_COLS].copy_from_slice(&blocks);
+        running = digest;
         node_idx >>= 1;
     }
     debug_assert_eq!(running, inp.layer_commit, "in-AIR fold root != layer_commit (honest build)");
     row
 }
 
-/// The reconstructed root of a packed layer-open row (last level's perm output[..8]).
+/// The reconstructed root of a packed layer-open row (last level's node digest).
 pub fn layer_root(levels: usize, row: &[Val]) -> [Val; DIGEST_ELEMS] {
-    let lbase = merkle_level_base(levels - 1);
-    core::array::from_fn(|i| row[lbase + ML_PERM + C_OUTPUT + i])
+    let off = node_digest_off(merkle_level_base(levels - 1));
+    core::array::from_fn(|i| row[off + i])
 }
 
 /// Per-round FRI commit-phase LAYER opening AIR. One row = one round.
@@ -354,38 +362,37 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for FriLayerOpenAir {
             builder.assert_zero(l(l0 + ML_RUNNING + i) - l(last_lh + C_OUTPUT + i));
         }
 
-        // ===== Merkle path: per-level placement-by-bit + perm + chaining + root == layer_commit ===
+        // ===== Merkle path: per-level sponge-mode node compression + chaining + root binding =====
         for level in 0..levels {
             let lbase = merkle_level_base(level);
             let bit = l(lbase + ML_BIT);
-            for i in 0..DIGEST_ELEMS {
-                let running_i = l(lbase + ML_RUNNING + i);
-                let sibling_i = l(lbase + ML_SIBLING + i);
-                let in_a = l(lbase + ML_PERM + C_INPUTS + i);
-                let in_b = l(lbase + ML_PERM + C_INPUTS + DIGEST_ELEMS + i);
-                builder.assert_zero(
-                    in_a - ((one.clone() - bit.clone()) * running_i.clone()
-                        + bit.clone() * sibling_i.clone()),
-                );
-                builder.assert_zero(
-                    in_b - ((one.clone() - bit.clone()) * sibling_i + bit.clone() * running_i),
-                );
-            }
-            eval_perm::<AB, _>(builder, &cells, lbase + ML_PERM, &consts);
-            // chain: next level's running == this level's output.
+            // combined = a ‖ b ordered by the selector bit: first DIGEST_ELEMS lanes are child a
+            // = (1-bit)·running + bit·sibling, next DIGEST_ELEMS are child b = the other.
+            let run_e: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(lbase + ML_RUNNING + i)).collect();
+            let sib_e: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(lbase + ML_SIBLING + i)).collect();
+            let bit_c = bit.clone();
+            let combined = |g: usize| -> AB::Expr {
+                if g < DIGEST_ELEMS {
+                    (one.clone() - bit_c.clone()) * run_e[g].clone() + bit_c.clone() * sib_e[g].clone()
+                } else {
+                    let k = g - DIGEST_ELEMS;
+                    (one.clone() - bit_c.clone()) * sib_e[k].clone() + bit_c.clone() * run_e[k].clone()
+                }
+            };
+            eval_node::<AB, _, _>(builder, &cells, lbase + ML_PERM, combined, &consts);
+            // chain: next level's running == this level's reconstructed node digest.
             if level + 1 < levels {
                 let nbase = merkle_level_base(level + 1);
+                let this_out = node_digest_off(lbase);
                 for i in 0..DIGEST_ELEMS {
-                    builder.assert_zero(
-                        l(nbase + ML_RUNNING + i) - l(lbase + ML_PERM + C_OUTPUT + i),
-                    );
+                    builder.assert_zero(l(nbase + ML_RUNNING + i) - l(this_out + i));
                 }
             }
         }
-        // root binding: last level's reconstructed root == the bound round-r layer commitment.
-        let llast = merkle_level_base(levels - 1);
+        // root binding: last level's reconstructed node digest == the bound round-r layer commitment.
+        let llast_out = node_digest_off(merkle_level_base(levels - 1));
         for i in 0..DIGEST_ELEMS {
-            builder.assert_zero(l(llast + ML_PERM + C_OUTPUT + i) - l(C_LAYER_COMMIT + i));
+            builder.assert_zero(l(llast_out + i) - l(C_LAYER_COMMIT + i));
         }
     }
 }
@@ -568,19 +575,19 @@ mod tests {
     /// zero residual. Anchors the per-layer leaf hash + node fold to the deployed verifier.
     #[test]
     fn fidelity_real_mmcs_layer_open_authenticates_in_air() {
-        use descender_account_stark::Perm;
+        use descender_account_stark::{MyCompress, MyHash, Perm};
         use p3_commit::Mmcs;
         use p3_koala_bear::default_koalabear_poseidon2_16;
         use p3_matrix::Dimensions;
         use p3_merkle_tree::MerkleTreeMmcs;
-        use p3_symmetric::{PaddingFreeSponge, TruncatedPermutation};
 
-        type LeafHash = PaddingFreeSponge<Perm, 16, 8, DIGEST_ELEMS>;
-        type NodeCompress = TruncatedPermutation<Perm, 2, DIGEST_ELEMS, 16>;
+        // The deployed q128 leaf-hash + node compression: MyHash = PaddingFreeSponge<Perm,16,7,13>,
+        // MyCompress = SpongeCompression<MyHash> (a 13-element digest cannot use a 2-to-1 truncated
+        // permutation: 2·13 > 16).
         let perm: Perm = default_koalabear_poseidon2_16();
-        let hash = LeafHash::new(perm.clone());
-        let compress = NodeCompress::new(perm.clone());
-        type RealMmcs = MerkleTreeMmcs<Val, Val, LeafHash, NodeCompress, 2, DIGEST_ELEMS>;
+        let hash = MyHash::new(perm.clone());
+        let compress = MyCompress::new(MyHash::new(perm.clone()));
+        type RealMmcs = MerkleTreeMmcs<Val, Val, MyHash, MyCompress, 2, DIGEST_ELEMS>;
         let mmcs: RealMmcs = MerkleTreeMmcs::new(hash, compress, /*cap_height=*/ 0);
 
         // A FRI commit-phase layer is a matrix of arity-2 rows of flattened pairs. We model the
@@ -773,11 +780,11 @@ mod tests {
         let new_bit = !cur_bit;
         row[lbase + ML_BIT] = if new_bit { Val::ONE } else { Val::ZERO };
         let (a, b) = if new_bit { (sib0, running) } else { (running, sib0) };
-        let mut input16 = [Val::ZERO; WIDTH];
-        input16[..DIGEST_ELEMS].copy_from_slice(&a);
-        input16[DIGEST_ELEMS..].copy_from_slice(&b);
-        let cols = inlined_perm::generate_perm_cols(input16, &consts);
-        row[lbase + ML_PERM..lbase + ML_PERM + PERM_COLS].copy_from_slice(&cols);
+        let mut combined = [Val::ZERO; ABSORB_LEN];
+        combined[..DIGEST_ELEMS].copy_from_slice(&a);
+        combined[DIGEST_ELEMS..].copy_from_slice(&b);
+        let (blocks, _d) = node_blocks(&combined, &consts);
+        row[lbase + ML_PERM..lbase + ML_PERM + N_PERM * PERM_COLS].copy_from_slice(&blocks);
         let m = RowMajorMatrix::new(row, n_cols(node_levels));
         assert!(!check_all_constraints(&FriLayerOpenAir { levels: node_levels }, &m, &[], None).is_ok(), "flipped path selector accepted");
     }

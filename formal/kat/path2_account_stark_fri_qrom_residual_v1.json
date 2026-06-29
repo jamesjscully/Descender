@@ -34,19 +34,19 @@
     "corpus_id": "Descender.Path2.AccountStarkFriQromResidual.v1",
     "corpus_version": 1,
     "digests": {
-      "account_stark_fri_qrom_residual_report_digest": "f2278bb76f1c4db70f40bf6b780add418a9f7536a4ef810def0b37b8ea570ece",
-      "account_stark_fri_qrom_residual_report_recomputed_digest": "f2278bb76f1c4db70f40bf6b780add418a9f7536a4ef810def0b37b8ea570ece"
+      "account_stark_fri_qrom_residual_report_digest": "a275e34633ce69695d7c2617019f127c1a74d6de240fc6c86a156afe41781650",
+      "account_stark_fri_qrom_residual_report_recomputed_digest": "a275e34633ce69695d7c2617019f127c1a74d6de240fc6c86a156afe41781650"
     },
     "fri_schedule": {
       "challenge_extension_degree": 8,
       "challenge_field_bits_floor": 247,
       "commit_pow_bits": 0,
       "config_source": "tools/descender-account-stark/src/config.rs",
-      "conservative_johnson_bits": 128,
+      "conservative_johnson_bits": 256,
       "log_blowup": 4,
-      "num_queries": 56,
-      "optimistic_capacity_bits": 240,
-      "poseidon2_sponge_floor_bits": 124,
+      "num_queries": 120,
+      "optimistic_capacity_bits": 496,
+      "poseidon2_sponge_floor_bits": 139,
       "poseidon2_width": 16,
       "proof_system": "Plonky3 HidingFriPcs over KoalaBear with Poseidon2-Merkle and DuplexChallenger",
       "query_pow_bits": 16
@@ -71,5 +71,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.AccountStarkFriQromResidualManifest.v1"
   },
-  "manifest_digest": "aae8b2179a211a33564a8be1c3b29cebd48e02f3b8b5c5e341718de6362bb3cb"
+  "manifest_digest": "4d2d928433b3710678d8a0a5929077d87bd4831fe0f23c869b71c6daf58b893c"
 }

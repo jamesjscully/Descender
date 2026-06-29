@@ -7,17 +7,20 @@
 //!     `default_koalabear_poseidon2_16()` (Grain-derived `RC_16` tables). The SAME
 //!     instance drives (a) the AIR Poseidon2 round constraints, (b) the witness
 //!     trace generator, and (c) the Merkle/MMCS hash + the Fiat–Shamir challenger.
-//!   * Hash/Merkle: Poseidon2-Merkle (recursion-friendly), NOT Keccak:
-//!     `PaddingFreeSponge<Perm,16,8,8>` leaf + `TruncatedPermutation<Perm,2,8,16>`
-//!     compression; 8-field-element digests.
-//!   * FRI (128-bit CONSERVATIVE / Johnson-bound, NOT capacity-regime):
+//!   * Hash/Merkle: Poseidon2-Merkle (recursion-friendly), NOT Keccak. QUANTUM-128
+//!     profile (ADR-0008): `PaddingFreeSponge<Perm,16,7,13>` leaf (rate 7, capacity
+//!     c=9) + sponge-mode `SpongeCompression` 2-to-1 (a 13-element digest cannot use a
+//!     truncated permutation: `2*13 > WIDTH=16`); 13-field-element (~403-bit) digests,
+//!     so the quantum (BHT) collision floor is ~403/3 ≈ 134 bits and the sponge
+//!     indifferentiability floor is c/2 ≈ 139 bits.
+//!   * FRI (quantum-128 CONSERVATIVE / Johnson-bound, NOT capacity-regime):
 //!     `log_blowup = 4` (rate rho = 1/16; ZK requires >= 2),
-//!     `num_queries = 56`, `query_proof_of_work_bits = 16`.
-//!     See [`PROD_SOUNDNESS_BITS`] for the exact soundness calculation. The old
-//!     `56*2 + 16 = 128` label was the OPTIMISTIC capacity-regime formula
-//!     `num_queries*log_blowup + query_pow`, which assumed the up-to-capacity
-//!     proximity-gap conjecture — disproven late-2025. This config is sized for
-//!     the conservative Johnson estimate instead.
+//!     `num_queries = 120`, `query_proof_of_work_bits = 16`.
+//!     See [`PROD_SOUNDNESS_BITS`] for the exact soundness calculation: the
+//!     conservative Johnson figure is `120*(0.5*4) + 16 = 256` classical, so the
+//!     Grover-halved non-interactive FS-grind floor is ~128 quantum. (Raised from the
+//!     56-query digest-8 profile, whose ~64-bit quantum FS-grind floor was the binding
+//!     quantum-128 blocker.)
 //!   * ZK ON: `HidingFriPcs` (doubled domain + random codewords + ethSTARK R(X))
 //!     over a salted-leaf `MerkleTreeHidingMmcs`.
 
@@ -27,7 +30,7 @@ use p3_field::extension::BinomialExtensionField;
 use p3_field::Field;
 use p3_fri::HidingFriPcs;
 use p3_merkle_tree::MerkleTreeHidingMmcs;
-use p3_symmetric::{PaddingFreeSponge, TruncatedPermutation};
+use p3_symmetric::PaddingFreeSponge;
 use p3_uni_stark::StarkConfig;
 use rand::rngs::SmallRng;
 
@@ -45,12 +48,13 @@ use p3_koala_bear::{
 pub const WIDTH: usize = 16;
 
 /// PINNED FRI: blowup exponent. Rate `rho = 1/2^PROD_LOG_BLOWUP = 1/16`.
-/// Chosen at 4 (not 2) so the CONSERVATIVE Johnson soundness reaches 128 bits at
-/// only 56 queries (the smallest-proof point — see `PROD_SOUNDNESS_BITS`). ZK
-/// requires `log_blowup >= 2`; 4 satisfies that.
+/// Chosen at 4 (not 2) so each query contributes `0.5*log_blowup = 2` conservative
+/// Johnson bits; at the quantum-128 profile's 120 queries that is `120*2 + 16 = 256`
+/// classical ⇒ ~128 quantum after Grover-halving the FS-grind (see `PROD_SOUNDNESS_BITS`).
+/// ZK requires `log_blowup >= 2`; 4 satisfies that.
 pub const PROD_LOG_BLOWUP: usize = 4;
 /// PINNED FRI: query count.
-pub const PROD_NUM_QUERIES: usize = 56;
+pub const PROD_NUM_QUERIES: usize = 120;
 /// PINNED FRI: query proof-of-work grinding bits.
 pub const PROD_QUERY_POW_BITS: usize = 16;
 /// PINNED FRI: commit-phase proof-of-work bits.
@@ -67,14 +71,15 @@ pub const PROD_COMMIT_POW_BITS: usize = 0;
 /// proof-of-work grinding:
 ///
 ///   conservative_bits = num_queries * (0.5 * log_blowup) + query_pow_bits
-///                     = 56 * (0.5 * 4)      + 16
-///                     = 56 * 2              + 16
-///                     = 128.
+///                     = 120 * (0.5 * 4)     + 16
+///                     = 120 * 2             + 16
+///                     = 256.
 ///
-/// (For contrast the OPTIMISTIC capacity formula would read
-/// `num_queries*log_blowup + query_pow = 56*4 + 16 = 240` bits — we do NOT claim
-/// that. We size for the conservative 128.) Expressed as an integer-bits const,
-/// `0.5*log_blowup` is exact here because `log_blowup` is even.
+/// This 256 classical figure is the quantum-128 sizing: the non-interactive FS query
+/// grind is Grover-able, halving the effective budget to ~128 quantum (ADR-0008). (For
+/// contrast the OPTIMISTIC capacity formula would read `num_queries*log_blowup +
+/// query_pow = 120*4 + 16 = 496` bits — we do NOT claim that.) Expressed as an
+/// integer-bits const, `0.5*log_blowup` is exact here because `log_blowup` is even.
 ///
 /// IMPORTANT (2026-06-19): this is the QUERY-PHASE figure ONLY. The COMPOSED
 /// knowledge-soundness error also carries the FRI commit/fold + DEEP ADDITIVE term
@@ -91,7 +96,7 @@ pub const NUM_RANDOM_CODEWORDS: usize = 4;
 /// Salt field elems per hiding Merkle leaf (~31 bits each).
 pub const SALT_ELEMS: usize = 4;
 /// Poseidon2-Merkle digest width (field elements).
-pub const DIGEST_ELEMS: usize = 8;
+pub const DIGEST_ELEMS: usize = 13;
 
 // ---------------------------------------------------------------------------
 // KoalaBear Poseidon2 const-generic parameters (the pinned instance's shape).
@@ -120,9 +125,12 @@ pub type Val = KoalaBear;
 /// (BinomialExtensionData<8>, EXT_TWO_ADICITY=27) and gives an unconditional +124-bit
 /// field margin (composed ~2^-228..-230), batch-size- and list-constant-independent.
 /// See research/cryptanalysis/{fri_aok_extractor_instantiation,degree5_field_rehost_scope}.md.
-/// NOTE: the Poseidon2-sponge indifferentiability floor (c/2 ~= 124, capacity-bound) is
-/// INDEPENDENT of this field and still caps the honest headline at 2^-124 until sponge
-/// capacity is widened to c=9 (separate work item).
+/// NOTE: the Poseidon2-sponge indifferentiability floor (c/2, capacity-bound) is
+/// INDEPENDENT of this field. At the quantum-128 profile the leaf/Merkle sponge uses
+/// capacity c = WIDTH - RATE = 16 - 7 = 9, so that floor is c/2 ≈ 139 bits (raised from
+/// the digest-8 profile's c=8 ⇒ ~124). The FS `Challenger` below retains rate 8 / c=8;
+/// whether it must also move to c=9 for the headline is tracked in
+/// research/path2_quantum128_parameterization_v1.md (config assumption-boundary note).
 pub type Challenge = BinomialExtensionField<Val, 8>;
 /// The pinned Poseidon2 permutation.
 pub type Perm = Poseidon2KoalaBear<16>;
@@ -130,9 +138,9 @@ pub type Perm = Poseidon2KoalaBear<16>;
 pub type LinLayers = GenericPoseidon2LinearLayersKoalaBear;
 
 /// Poseidon2-Merkle leaf hash.
-pub type MyHash = PaddingFreeSponge<Perm, 16, 8, DIGEST_ELEMS>;
+pub type MyHash = PaddingFreeSponge<Perm, 16, 7, DIGEST_ELEMS>;
 /// Poseidon2-Merkle 2-to-1 compression.
-pub type MyCompress = TruncatedPermutation<Perm, 2, DIGEST_ELEMS, 16>;
+pub type MyCompress = crate::sponge_compression::SpongeCompression<MyHash>;
 /// Salted-leaf (ZK) Merkle MMCS.
 pub type HidingValMmcs = MerkleTreeHidingMmcs<
     <Val as Field>::Packing,

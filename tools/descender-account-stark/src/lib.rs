@@ -56,8 +56,12 @@ mod config;
 mod counting_serializer;
 pub mod reduce_gadget;
 pub mod sponge_compression;
+pub mod pad_seed_registry; // F2 — global reorg-safe pad-seed admission registry (mask-PRF single-use, persistent across reorgs)
+pub mod checked_core; // Phase-2 — SPEND checked-core SIS matrix H + response->syndrome map (signature relation)
+pub mod poseidon2_sponge; // shared in-AIR Poseidon2 sponge primitives (free-function form; spend/recursion reuse)
+pub mod spend_air; // Phase-2 — SPEND leaf AIR (core): packed-witness consumption + canonical residues + statement
 
-use p3_field::PrimeCharacteristicRing;
+use p3_field::{PrimeCharacteristicRing, PrimeField32};
 use p3_uni_stark::{prove as p3_prove, verify as p3_verify};
 use rand::rngs::SmallRng;
 use rand::SeedableRng;
@@ -76,17 +80,20 @@ use air::{
 
 pub use air::{
     reference_c2_mask_prf, BATCH_PUBLIC_VALUES, CHAIN_ABSORB_LEN, CHAIN_DIGEST_ELEMS,
-    CHAIN_PERMS_PER_ROW, CHAIN_RATE, CHECKED_CORE_ELEMS, CONTEXT_ELEMS, N_COMMIT_LANES, N_LANES,
-    PACKED_WITNESS_COMMITMENT_BYTES, PERM_WIDTH, PUBIO_ELEMS, PUBIO_ROLE_ROOT_OFF, RELATION_ID,
-    RELATION_ID_ELEMS, ROLE_ROOT_ELEMS, SYNDROME_LANES,
+    CHAIN_PERMS_PER_ROW, CHAIN_RATE, CHECKED_CORE_ELEMS, CONTEXT_ELEMS, KEY_COMMITMENT_BYTES,
+    PUBIO_KEY_COMMITMENT_OFF, N_COMMIT_LANES, N_LANES,
+    PACKED_LANE_BITS, PACKED_WITNESS_COMMITMENT_BYTES, PACKED_WITNESS_RESIDUES, PERM_WIDTH,
+    PUBIO_ELEMS, PUBIO_NULLIFIER_OFF,
+    PUBIO_ROLE_ROOT_OFF, RELATION_ID, RELATION_ID_ELEMS, ROLE_ROOT_ELEMS, SYNDROME_LANES,
+    NULLIFIER_DOMAIN, NULLIFIER_ELEMS,
 };
 pub use config::{
-    Challenge, Challenger, Perm, Val, DIGEST_ELEMS, NUM_RANDOM_CODEWORDS, PROD_LOG_BLOWUP,
-    PROD_NUM_QUERIES, PROD_QUERY_POW_BITS, PROD_SOUNDNESS_BITS, SALT_ELEMS, WIDTH,
+    Challenge, Challenger, MyCompress, MyHash, Perm, Val, DIGEST_ELEMS, NUM_RANDOM_CODEWORDS,
+    PROD_LOG_BLOWUP, PROD_NUM_QUERIES, PROD_QUERY_POW_BITS, PROD_SOUNDNESS_BITS, SALT_ELEMS, WIDTH,
 };
 
 use config::{
-    Dft, HidingChallengeMmcs, HidingValMmcs, LinLayers, MyCompress, MyHash, ZkConfig, ZkPcs,
+    Dft, HidingChallengeMmcs, HidingValMmcs, LinLayers, ZkConfig, ZkPcs,
     HALF_FULL_ROUNDS, PARTIAL_ROUNDS, PROD_COMMIT_POW_BITS, SBOX_DEGREE, SBOX_REGISTERS,
 };
 
@@ -134,6 +141,11 @@ pub struct AccountCreationSecrets {
     /// in-circuit into `packed_witness_commitment`). The 6 masked_projection
     /// residues (12..17) are derived in-circuit from `account_projection`.
     pub syndrome: [u16; SYNDROME_LANES],
+    /// CLASS A-3 — the account's REGISTERED checked-core key commitment: the 32-byte
+    /// `pack_reviewed_fq12_account_carried_syndrome_digest` of the account's checked-core signing-key
+    /// (witness) syndrome. PUBLIC; a spend binds its `witness_commitment` to this, tying the spend to
+    /// the account's creation-registered key.
+    pub checked_core_key_commitment: [u8; KEY_COMMITMENT_BYTES],
 }
 
 /// The PUBLIC statement for one account-creation instance.
@@ -172,6 +184,13 @@ pub struct AccountCreationPublic {
     /// what the deployed leaf's `creation_proof_binding_digest` / native role
     /// root will later check against.
     pub role_root: [Val; ROLE_ROOT_ELEMS],
+    // --- CLASS A-2: SINGLE-USE NULLIFIER (F2: pad-seed reuse under reorg) ---
+    /// `nullifier = Poseidon2(DOMAIN ‖ pad_seed ‖ slot)`, computed IN-AIR and
+    /// exposed as a transcript-bound public value. Nonce-FREE (unlike
+    /// `pad_source_commitment`), so two proofs reusing one `pad_seed` for one
+    /// slot share a nullifier — the single-use signal the `pad_seed_registry`
+    /// enforces ([`crate::pad_seed_registry`]).
+    pub nullifier: [Val; NULLIFIER_ELEMS],
     // --- CLASS B: PROOF-SYSTEM-BOOKKEEPING (relation_id) ---
     /// Pinned relation / proof-system id (constant [`RELATION_ID`]). Pinned
     /// IN-AIR and re-checked by the verifier so a proof for this relation version
@@ -190,6 +209,9 @@ pub struct AccountCreationPublic {
     /// leaf/spend `packed_witness_commitment` will later be checked equal to (that
     /// equality-to-deployed-leaf is the wiring step, not this relation).
     pub packed_witness_commitment: [Val; PACKED_WITNESS_COMMITMENT_BYTES],
+    /// CLASS A-3 — the account's REGISTERED checked-core key commitment (32-byte syndrome digest of
+    /// the account's signing key). A spend binds `witness_commitment == checked_core_key_commitment`.
+    pub checked_core_key_commitment: [Val; KEY_COMMITMENT_BYTES],
 }
 
 /// Field-embed the public context exactly as the AIR `context` block:
@@ -325,6 +347,7 @@ fn to_full_secrets(s: &AccountCreationSecrets) -> Result<FullSecrets, Error> {
         verifier_version: s.verifier_version,
         account_state_root: s.account_state_root,
         syndrome: s.syndrome,
+        checked_core_key_commitment: s.checked_core_key_commitment,
     })
 }
 
@@ -342,9 +365,11 @@ fn public_from_instance(
         account_state_root: s.account_state_root,
         lifecycle_anchor: s.lifecycle_anchor,
         role_root: inst.role_root,
+        nullifier: inst.nullifier,
         relation_id: core::array::from_fn(|j| Val::from_u32(RELATION_ID[j])),
         syndrome: inst.syndrome,
         packed_witness_commitment: inst.packed_witness_commitment,
+        checked_core_key_commitment: inst.checked_core_key_commitment,
     }
 }
 
@@ -354,6 +379,7 @@ fn public_values_vec(p: &AccountCreationPublic) -> Vec<Val> {
             + N_LANES
             + CONTEXT_ELEMS
             + ROLE_ROOT_ELEMS
+            + NULLIFIER_ELEMS
             + RELATION_ID_ELEMS
             + CHECKED_CORE_ELEMS,
     );
@@ -362,9 +388,11 @@ fn public_values_vec(p: &AccountCreationPublic) -> Vec<Val> {
     v.extend_from_slice(&p.masked_projection);
     v.extend_from_slice(&context_field_elems(p));
     v.extend_from_slice(&p.role_root);
+    v.extend_from_slice(&p.nullifier);
     v.extend_from_slice(&p.relation_id);
     v.extend_from_slice(&p.syndrome);
     v.extend_from_slice(&p.packed_witness_commitment);
+    v.extend_from_slice(&p.checked_core_key_commitment);
     v
 }
 
@@ -387,7 +415,7 @@ pub fn prove_account_creation_with_seed(
     let full = to_full_secrets(secrets)?;
     let perm: Perm = default_koalabear_poseidon2_16();
     let hash = MyHash::new(perm.clone());
-    let compress = MyCompress::new(perm.clone());
+    let compress = MyCompress::new(MyHash::new(perm.clone()));
     let air = build_air(false);
 
     // Single-instance trace: 2 identical honest rows (power-of-two minimum).
@@ -453,11 +481,165 @@ pub fn verify_account_creation(
     check_relation_id(public)?;
     let perm: Perm = default_koalabear_poseidon2_16();
     let hash = MyHash::new(perm.clone());
-    let compress = MyCompress::new(perm.clone());
+    let compress = MyCompress::new(MyHash::new(perm.clone()));
     let air = build_air(false);
     let cfg = build_config(&perm, &hash, &compress, /*verify mask seed irrelevant*/ 0);
     let pv = public_values_vec(public);
     p3_verify(&cfg, &air, proof, &pv).map_err(|e| Error::Verification(format!("{e:?}")))
+}
+
+// ===========================================================================
+// Phase-2 SPEND authorization proof API (+ creation↔spend MED-2 binding)
+// ===========================================================================
+
+pub use spend_air::{SpendWitness, FRAME_DIGEST_ELEMS as SPEND_FRAME_DIGEST_ELEMS};
+
+/// The verified SPEND statement (mirrors [`spend_air`]'s public-value layout).
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SpendPublic {
+    pub packed_witness_commitment: [u8; spend_air::SPEND_COMMIT_BYTES],
+    pub account_id: [u8; 32],
+    pub slot_id: u64,
+    pub account_state_root: [u8; 32],
+    pub message_digest: [u8; 32],
+    /// `Poseidon2(DOMAIN ‖ message ‖ account_id ‖ slot ‖ state ‖ packed_witness)` — the in-AIR
+    /// checked-core frame digest binding the statement to the packed witness.
+    pub frame_digest: [Val; spend_air::FRAME_DIGEST_ELEMS],
+    /// Sigma public inputs: challenge action vector `c`, witness syndrome `w`, randomizer `t`.
+    /// The spend AIR proves `syndrome == t + c⊛w`. (Their derivations — `c = hash(challenge)`,
+    /// `w`/`t` from commitments — are not yet in-circuit; see `spend_air`.)
+    pub sigma_c: [Val; checked_core::CC_ROWS],
+    pub sigma_w: [Val; checked_core::CC_ROWS],
+    pub sigma_t: [Val; checked_core::CC_ROWS],
+    /// Sigma input commitments: `w == unpack(witness_commitment)`, `t == unpack(proof_commitment)`.
+    pub witness_commitment: [u8; checked_core::CC_DIGEST_BYTES],
+    pub proof_commitment: [u8; checked_core::CC_DIGEST_BYTES],
+}
+
+fn build_spend_air() -> spend_air::SpendAir {
+    spend_air::SpendAir::from_arrays(
+        KOALABEAR_POSEIDON2_RC_16_EXTERNAL_INITIAL,
+        KOALABEAR_POSEIDON2_RC_16_INTERNAL,
+        KOALABEAR_POSEIDON2_RC_16_EXTERNAL_FINAL,
+    )
+}
+
+/// Public-value vector for a [`SpendPublic`], in EXACTLY [`spend_air`]'s layout (mirrors
+/// `generate_spend_trace`).
+fn spend_public_values(p: &SpendPublic) -> Vec<Val> {
+    let mut v = Vec::with_capacity(spend_air::SPEND_N_PUBLIC);
+    v.extend(p.packed_witness_commitment.iter().map(|&b| Val::from_u32(b as u32)));
+    v.extend(p.account_id.iter().map(|&b| Val::from_u32(b as u32)));
+    v.extend(p.slot_id.to_le_bytes().iter().map(|&b| Val::from_u32(b as u32)));
+    v.extend(p.account_state_root.iter().map(|&b| Val::from_u32(b as u32)));
+    v.extend(p.message_digest.iter().map(|&b| Val::from_u32(b as u32)));
+    v.extend(p.frame_digest.iter().copied());
+    v.extend(spend_air::SPEND_RELATION_ID.iter().map(|&id| Val::from_u32(id)));
+    v.extend(p.sigma_c.iter().copied());
+    v.extend(p.sigma_w.iter().copied());
+    v.extend(p.sigma_t.iter().copied());
+    v.extend(p.witness_commitment.iter().map(|&b| Val::from_u32(b as u32)));
+    v.extend(p.proof_commitment.iter().map(|&b| Val::from_u32(b as u32)));
+    v
+}
+
+/// Prove one SPEND authorization (production config), with an explicit ZK mask seed.
+pub fn prove_spend_authorization_with_seed(
+    w: &SpendWitness,
+    mask_seed: u64,
+) -> Result<(SpendPublic, Proof), Error> {
+    let perm: Perm = default_koalabear_poseidon2_16();
+    let hash = MyHash::new(perm.clone());
+    let compress = MyCompress::new(MyHash::new(perm.clone()));
+    let air = build_spend_air();
+    let d = spend_air::spend_derive(&air, w);
+    let (trace, pv, frame_digest) = spend_air::generate_spend_trace(&air, w);
+    let cfg = build_config(&perm, &hash, &compress, mask_seed);
+    let proof = p3_prove(&cfg, &air, trace, &pv);
+    let public = SpendPublic {
+        packed_witness_commitment: d.packed,
+        account_id: w.account_id,
+        slot_id: w.slot_id,
+        account_state_root: w.account_state_root,
+        message_digest: w.message_digest,
+        frame_digest,
+        sigma_c: core::array::from_fn(|i| Val::from_u32(d.sigma_c[i] as u32)),
+        sigma_w: core::array::from_fn(|i| Val::from_u32(w.sigma_w[i] as u32)),
+        sigma_t: core::array::from_fn(|i| Val::from_u32(w.sigma_t[i] as u32)),
+        witness_commitment: d.witness_commitment,
+        proof_commitment: d.proof_commitment,
+    };
+    Ok((public, proof))
+}
+
+/// Prove one SPEND authorization (production config), fresh ZK randomness per proof.
+pub fn prove_spend_authorization(w: &SpendWitness) -> Result<(SpendPublic, Proof), Error> {
+    prove_spend_authorization_with_seed(w, fresh_mask_seed())
+}
+
+/// Verify one SPEND authorization proof against its public statement.
+pub fn verify_spend_authorization(public: &SpendPublic, proof: &Proof) -> Result<(), Error> {
+    let perm: Perm = default_koalabear_poseidon2_16();
+    let hash = MyHash::new(perm.clone());
+    let compress = MyCompress::new(MyHash::new(perm.clone()));
+    let air = build_spend_air();
+    let cfg = build_config(&perm, &hash, &compress, 0);
+    let pv = spend_public_values(public);
+    p3_verify(&cfg, &air, proof, &pv).map_err(|e| Error::Verification(format!("{e:?}")))
+}
+
+/// The creation↔spend MED-2 binding: the spend consumes EXACTLY the packed witness the creation
+/// leaf published. `true` iff `creation.packed_witness_commitment == spend.packed_witness_commitment`
+/// byte-for-byte. The two proofs are verified separately; this is the cross-proof equality that closes
+/// MED-2 (a spend cannot consume a witness different from the one creation committed to).
+pub fn creation_spend_packed_witness_binds(
+    creation: &AccountCreationPublic,
+    spend: &SpendPublic,
+) -> bool {
+    creation.packed_witness_commitment.len() == spend.packed_witness_commitment.len()
+        && creation
+            .packed_witness_commitment
+            .iter()
+            .zip(spend.packed_witness_commitment.iter())
+            .all(|(c, &s)| c.as_canonical_u32() == s as u32)
+}
+
+/// The public-key↔account binding: the spend's checked-core key (`witness_commitment`) equals the key
+/// the account REGISTERED at creation (`checked_core_key_commitment`). `true` iff they match
+/// byte-for-byte. Together with the spend's in-circuit proof that it knows the key's preimage (the SIS
+/// + sigma), this ties the spend to the account's creation-registered signing key.
+pub fn creation_spend_key_binds(creation: &AccountCreationPublic, spend: &SpendPublic) -> bool {
+    creation.checked_core_key_commitment.len() == spend.witness_commitment.len()
+        && creation
+            .checked_core_key_commitment
+            .iter()
+            .zip(spend.witness_commitment.iter())
+            .all(|(c, &s)| c.as_canonical_u32() == s as u32)
+}
+
+/// Co-verify a {creation, spend} pair: BOTH proofs must verify AND the spend must consume EXACTLY the
+/// creation's packed witness (MED-2). `Ok(())` only if all three hold. This is the settlement-layer
+/// co-verification of the `{creation + spend}` composition.
+pub fn verify_creation_and_spend(
+    creation: &AccountCreationPublic,
+    creation_proof: &Proof,
+    spend: &SpendPublic,
+    spend_proof: &Proof,
+) -> Result<(), Error> {
+    verify_account_creation(creation, creation_proof)?;
+    verify_spend_authorization(spend, spend_proof)?;
+    if !creation_spend_packed_witness_binds(creation, spend) {
+        return Err(Error::PublicMismatch(
+            "MED-2: spend packed_witness_commitment != creation packed_witness_commitment".into(),
+        ));
+    }
+    if !creation_spend_key_binds(creation, spend) {
+        return Err(Error::PublicMismatch(
+            "spend witness_commitment != creation checked_core_key_commitment (wrong account key)"
+                .into(),
+        ));
+    }
+    Ok(())
 }
 
 // ===========================================================================
@@ -492,18 +674,27 @@ fn pubio_tuple(p: &AccountCreationPublic) -> [Val; PUBIO_ELEMS] {
     for j in 0..ROLE_ROOT_ELEMS {
         t[role_off + j] = p.role_root[j];
     }
+    // CLASS A-2 nullifier is part of the per-instance tuple -> bound by the chain.
+    let nullifier_off = role_off + ROLE_ROOT_ELEMS;
+    for j in 0..NULLIFIER_ELEMS {
+        t[nullifier_off + j] = p.nullifier[j];
+    }
     for j in 0..RELATION_ID_ELEMS {
-        t[role_off + ROLE_ROOT_ELEMS + j] = p.relation_id[j];
+        t[nullifier_off + NULLIFIER_ELEMS + j] = p.relation_id[j];
     }
     // CLASS C: syndrome[12] ‖ packed_witness_commitment[32] are part of the
     // per-instance tuple -> bound by the digest chain (a tampered syndrome or
     // forged commitment changes the recomputed digest and is rejected).
-    let cc_off = role_off + ROLE_ROOT_ELEMS + RELATION_ID_ELEMS;
+    let cc_off = nullifier_off + NULLIFIER_ELEMS + RELATION_ID_ELEMS;
     for j in 0..SYNDROME_LANES {
         t[cc_off + j] = p.syndrome[j];
     }
     for j in 0..PACKED_WITNESS_COMMITMENT_BYTES {
         t[cc_off + SYNDROME_LANES + j] = p.packed_witness_commitment[j];
+    }
+    // CLASS A-3: the registered checked-core key commitment is part of the per-instance tuple.
+    for j in 0..KEY_COMMITMENT_BYTES {
+        t[PUBIO_KEY_COMMITMENT_OFF + j] = p.checked_core_key_commitment[j];
     }
     t
 }
@@ -563,7 +754,7 @@ pub fn prove_account_creation_batch_with_seed(
 
     let perm: Perm = default_koalabear_poseidon2_16();
     let hash = MyHash::new(perm.clone());
-    let compress = MyCompress::new(perm.clone());
+    let compress = MyCompress::new(MyHash::new(perm.clone()));
     let air = build_air(true);
 
     let (trace, insts, digest, n) = generate_batch_trace::<
@@ -614,7 +805,7 @@ pub fn verify_account_creation_batch(
     }
     let perm: Perm = default_koalabear_poseidon2_16();
     let hash = MyHash::new(perm.clone());
-    let compress = MyCompress::new(perm.clone());
+    let compress = MyCompress::new(MyHash::new(perm.clone()));
     let air = build_air(true);
     let cfg = build_config(&perm, &hash, &compress, 0);
 
@@ -700,7 +891,41 @@ mod small_config_classc_tests {
             verifier_version: 0x0102_0304,
             account_state_root: core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(7)),
             syndrome: core::array::from_fn(|i| ((i as u32 * 1009 + 17) % 12289) as u16),
+            checked_core_key_commitment: core::array::from_fn(|i| (i as u8).wrapping_mul(19).wrapping_add(2)),
         }
+    }
+
+    /// FROZEN q128 KAT: a deterministic PRODUCTION-config (digest-13 sponge, rate-7, 120 queries,
+    /// query-PoW 16) account-creation proof has a stable SHA-256 digest. Proving runs single-threaded
+    /// so the FRI query-PoW grind is deterministic (the parallel grind returns a witness-order-
+    /// dependent nonce). This pins the q128 proof BYTE FORMAT against drift — a frozen-byte-format KAT
+    /// (DIR-STARK-001). Slow (full production prove, twice); run explicitly.
+    #[test]
+    #[ignore = "slow: production-config prove ×2 single-threaded; run explicitly for the frozen q128 KAT"]
+    fn frozen_q128_leaf_proof_kat() {
+        use sha2::{Digest, Sha256};
+        let s = small_secrets();
+        let digest_once = || -> [u8; 32] {
+            let pool = rayon::ThreadPoolBuilder::new().num_threads(1).build().unwrap();
+            let (_public, proof) = pool
+                .install(|| prove_account_creation_with_seed(&s, 0xF20D_2026_u64))
+                .expect("prove");
+            let bytes = bincode::serialize(&proof).expect("serialize proof");
+            let mut h = Sha256::new();
+            h.update(&bytes);
+            h.finalize().into()
+        };
+        let d1 = digest_once();
+        let d2 = digest_once();
+        assert_eq!(d1, d2, "q128 leaf proof is not deterministic under single-thread PoW");
+        let hex: String = d1.iter().map(|b| format!("{b:02x}")).collect();
+        eprintln!("FROZEN-KAT q128 leaf proof sha256 = {hex}");
+        // PINNED frozen q128 KAT digest (single-thread, seed 0xF20D_2026, `small_secrets`).
+        // Re-pinned 2026-06-27 when CLASS A-2 (the F2 single-use `nullifier` public output) was
+        // added to the leaf relation — the new public value changes the proof bytes by design.
+        // Re-pinned 2026-06-28 when CLASS A-3 (the `checked_core_key_commitment` registration) landed.
+        const PINNED: &str = "b79c7375484b78a5d00579e1d02b93eda1ea04cffc70923a0164887bbe82b4a0";
+        assert_eq!(hex, PINNED, "q128 leaf proof bytes drifted from the frozen KAT");
     }
 
     /// Build a DELIBERATELY SMALL ZK config: log_blowup=2 (the ZK minimum) and only
@@ -736,7 +961,7 @@ mod small_config_classc_tests {
         let full = to_full_secrets(&s).expect("valid witness");
         let perm: Perm = default_koalabear_poseidon2_16();
         let hash = MyHash::new(perm.clone());
-        let compress = MyCompress::new(perm.clone());
+        let compress = MyCompress::new(MyHash::new(perm.clone()));
         let air = build_air(false);
 
         // Smallest power-of-two trace (2 identical honest rows).
@@ -756,5 +981,228 @@ mod small_config_classc_tests {
         let public = public_from_instance(&inst, &s);
         assert_eq!(public.syndrome.len(), SYNDROME_LANES);
         assert_eq!(public.packed_witness_commitment.len(), PACKED_WITNESS_COMMITMENT_BYTES);
+    }
+
+    /// Phase-2 SPEND leaf AIR: a real small-config STARK prove/verify of the spend core — the spend
+    /// proves its PUBLIC `packed_witness_commitment` is a well-formed packing of 18 canonical q12289
+    /// residues (the creation↔spend consumption invariant). Also checks the spend's commitment EQUALS
+    /// the creation leaf's published `packed_witness_commitment` over the same residues (the MED-2
+    /// binding the recursion/settlement layer enforces between the two proofs).
+    #[test]
+    fn small_config_spend_prove_verify() {
+        use crate::spend_air::{generate_spend_trace, SpendAir, SpendWitness};
+        use p3_koala_bear::{
+            KOALABEAR_POSEIDON2_RC_16_EXTERNAL_FINAL, KOALABEAR_POSEIDON2_RC_16_EXTERNAL_INITIAL,
+            KOALABEAR_POSEIDON2_RC_16_INTERNAL,
+        };
+
+        let perm: Perm = default_koalabear_poseidon2_16();
+        let hash = MyHash::new(perm.clone());
+        let compress = MyCompress::new(MyHash::new(perm.clone()));
+        let air = SpendAir::from_arrays(
+            KOALABEAR_POSEIDON2_RC_16_EXTERNAL_INITIAL,
+            KOALABEAR_POSEIDON2_RC_16_INTERNAL,
+            KOALABEAR_POSEIDON2_RC_16_EXTERNAL_FINAL,
+        );
+
+        // Rehosted flow: fix the key (sigma_w) and nonce (sigma_t); the AIR derives c (Poseidon2),
+        // syndrome, and the solved response, and verifies the full spend relation (packing + frame
+        // digest + checked-core SIS + sigma identity + in-circuit challenge) under a real prove/verify.
+        let w = SpendWitness {
+            sigma_w: core::array::from_fn(|i| ((i as u32 * 149 + 29) % 12289) as u16),
+            sigma_t: core::array::from_fn(|i| ((i as u32 * 71 + 5) % 12289) as u16),
+            projection: core::array::from_fn(|i| ((i as u32 * 211 + 5) % 12289) as u16),
+            account_id: core::array::from_fn(|i| (i as u8).wrapping_mul(13).wrapping_add(3)),
+            slot_id: 0x0000_0000_0000_0042,
+            account_state_root: core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(7)),
+            message_digest: core::array::from_fn(|i| (i as u8).wrapping_mul(7).wrapping_add(1)),
+        };
+        let (trace, pv, _frame_digest) = generate_spend_trace(&air, &w);
+
+        let cfg = small_config(&perm, &hash, &compress);
+        let proof = p3_prove(&cfg, &air, trace, &pv);
+        p3_verify(&cfg, &air, &proof, &pv).expect("small-config spend proof verifies");
+    }
+
+    /// Phase-2 increment 2 — {creation, spend} CO-VERIFICATION + MED-2 binding (small config). Build
+    /// a creation proof, derive its EXACT reviewed-fq12 residues (syndrome ‖ masked_projection), build
+    /// a spend consuming the SAME packed witness, prove+verify BOTH, and check the creation↔spend
+    /// packed-witness binding holds — then confirm a spend over a DIFFERENT witness FAILS the binding.
+    #[test]
+    fn small_config_creation_spend_co_verification_and_med2_binding() {
+        use crate::checked_core::{pack_syndrome_digest, sigma_expected};
+        use crate::spend_air::{
+            derive_challenge, generate_spend_trace, pack_residues, spend_derive, SpendAir,
+            SpendWitness,
+        };
+        use p3_koala_bear::{
+            KOALABEAR_POSEIDON2_RC_16_EXTERNAL_FINAL, KOALABEAR_POSEIDON2_RC_16_EXTERNAL_INITIAL,
+            KOALABEAR_POSEIDON2_RC_16_INTERNAL,
+        };
+
+        let perm: Perm = default_koalabear_poseidon2_16();
+        let hash = MyHash::new(perm.clone());
+        let compress = MyCompress::new(MyHash::new(perm.clone()));
+        let cfg = small_config(&perm, &hash, &compress);
+        let sair = SpendAir::from_arrays(
+            KOALABEAR_POSEIDON2_RC_16_EXTERNAL_INITIAL,
+            KOALABEAR_POSEIDON2_RC_16_INTERNAL,
+            KOALABEAR_POSEIDON2_RC_16_EXTERNAL_FINAL,
+        );
+
+        // Rehosted flow: fix the key (sigma_w) + nonce (sigma_t); derive the Poseidon2 challenge over
+        // the statement + commitments, then syndrome = t + c⊛w. The creation leaf commits THAT
+        // syndrome (its checked-core public input = the signature target).
+        let s0 = small_secrets();
+        let message: [u8; 32] = core::array::from_fn(|i| (i as u8).wrapping_mul(11).wrapping_add(2));
+        let sigma_w: [u16; 12] = core::array::from_fn(|i| ((i as u32 * 149 + 29) % 12289) as u16);
+        let sigma_t: [u16; 12] = core::array::from_fn(|i| ((i as u32 * 71 + 5) % 12289) as u16);
+        let wc = pack_syndrome_digest(&sigma_w);
+        let pc = pack_syndrome_digest(&sigma_t);
+        let c = derive_challenge(&sair, &message, &s0.account_id, s0.slot_id, &s0.account_state_root, &wc, &pc);
+        let syndrome = sigma_expected(&sigma_t, &c, &sigma_w);
+
+        let mut s = s0;
+        s.syndrome = syndrome;
+        // The account REGISTERS its checked-core key commitment = pack(sigma_w) — the spend's key.
+        s.checked_core_key_commitment = pack_syndrome_digest(&sigma_w);
+        let full = to_full_secrets(&s).expect("valid witness");
+
+        // ---- Creation proof (small config) + its public statement.
+        let cair = build_air(false);
+        let (ctrace, cinst) = generate_full_trace::<
+            Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+        >(&full, cair.constants(), 2);
+        let cpublic = public_from_instance(&cinst, &s);
+        let cpv = full_public_values(&cinst);
+        let cproof = p3_prove(&cfg, &cair, ctrace, &cpv);
+        p3_verify(&cfg, &cair, &cproof, &cpv).expect("creation proof verifies");
+
+        // ---- Spend consumes the creation's masked_projection + the SAME (derived) syndrome.
+        let projection: [u16; 6] =
+            core::array::from_fn(|i| cinst.masked_projection[i].as_canonical_u32() as u16);
+        let w = SpendWitness {
+            sigma_w,
+            sigma_t,
+            projection,
+            account_id: s.account_id,
+            slot_id: s.slot_id,
+            account_state_root: s.account_state_root,
+            message_digest: message,
+        };
+        let d = spend_derive(&sair, &w);
+        assert_eq!(d.syndrome, syndrome, "spend-derived syndrome != creation syndrome");
+        // The spend's derived packed witness reproduces the creation's published commitment.
+        let creation_packed: Vec<u32> =
+            cpublic.packed_witness_commitment.iter().map(|v| v.as_canonical_u32()).collect();
+        let spend_packed: Vec<u32> = d.packed.iter().map(|&b| b as u32).collect();
+        assert_eq!(creation_packed, spend_packed, "spend packer != creation packed witness");
+
+        // ---- Spend proof (small config): full spend relation verified in-circuit (incl. rehosted c).
+        let (strace, spv, frame_digest) = generate_spend_trace(&sair, &w);
+        let sproof = p3_prove(&cfg, &sair, strace, &spv);
+        p3_verify(&cfg, &sair, &sproof, &spv).expect("spend proof verifies");
+
+        // ---- MED-2 binding: the spend consumes EXACTLY the creation's packed witness.
+        let spublic = SpendPublic {
+            packed_witness_commitment: d.packed,
+            account_id: w.account_id,
+            slot_id: w.slot_id,
+            account_state_root: w.account_state_root,
+            message_digest: w.message_digest,
+            frame_digest,
+            sigma_c: core::array::from_fn(|i| Val::from_u32(d.sigma_c[i] as u32)),
+            sigma_w: core::array::from_fn(|i| Val::from_u32(w.sigma_w[i] as u32)),
+            sigma_t: core::array::from_fn(|i| Val::from_u32(w.sigma_t[i] as u32)),
+            witness_commitment: d.witness_commitment,
+            proof_commitment: d.proof_commitment,
+        };
+        assert!(
+            creation_spend_packed_witness_binds(&cpublic, &spublic),
+            "MED-2 binding must hold for a spend over the creation's packed witness"
+        );
+        // ---- Public-key↔account binding: the spend's key == the account's registered key.
+        assert!(
+            creation_spend_key_binds(&cpublic, &spublic),
+            "key binding must hold: spend witness_commitment == creation checked_core_key_commitment"
+        );
+        // A spend with a DIFFERENT key must FAIL the key binding (creation registered pack(sigma_w)).
+        let mut wrong_key = spublic.clone();
+        wrong_key.witness_commitment[0] ^= 0xFF;
+        assert!(
+            !creation_spend_key_binds(&cpublic, &wrong_key),
+            "key binding must FAIL when the spend uses a key other than the account's registered one"
+        );
+
+        // ---- A spend over a DIFFERENT witness must FAIL the binding.
+        let mut other = d.residues;
+        other[12] = (other[12] + 1) % 12289;
+        let other_spublic = SpendPublic {
+            packed_witness_commitment: pack_residues(&other),
+            ..spublic.clone()
+        };
+        assert!(
+            !creation_spend_packed_witness_binds(&cpublic, &other_spublic),
+            "MED-2 binding must FAIL for a spend over a different packed witness"
+        );
+    }
+
+    fn sample_spend_witness() -> spend_air::SpendWitness {
+        spend_air::SpendWitness {
+            sigma_w: core::array::from_fn(|i| ((i as u32 * 149 + 29) % 12289) as u16),
+            sigma_t: core::array::from_fn(|i| ((i as u32 * 71 + 5) % 12289) as u16),
+            projection: core::array::from_fn(|i| ((i as u32 * 211 + 5) % 12289) as u16),
+            account_id: core::array::from_fn(|i| (i as u8).wrapping_mul(13).wrapping_add(3)),
+            slot_id: 0x0000_0000_0000_0042,
+            account_state_root: core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(7)),
+            message_digest: core::array::from_fn(|i| (i as u8).wrapping_mul(7).wrapping_add(1)),
+        }
+    }
+
+    /// The DEPLOYABLE spend API at PRODUCTION q128 config: prove_spend_authorization round-trips
+    /// through verify_spend_authorization, and a tampered statement is rejected. (Slow: full
+    /// production-config prove; run explicitly.)
+    #[test]
+    #[ignore = "slow: production-config spend prove; run explicitly"]
+    fn spend_production_prove_verify_roundtrip() {
+        let w = sample_spend_witness();
+        let (public, proof) = prove_spend_authorization_with_seed(&w, 0x5E_4D_2026).expect("prove");
+        verify_spend_authorization(&public, &proof).expect("production spend proof verifies");
+        // Tamper the statement (message digest) → verification must fail.
+        let mut bad = public.clone();
+        bad.message_digest[0] ^= 0xFF;
+        assert!(
+            verify_spend_authorization(&bad, &proof).is_err(),
+            "a tampered spend statement must be rejected"
+        );
+    }
+
+    /// FROZEN q128 SPEND KAT: a deterministic production-config spend proof has a stable SHA-256
+    /// digest (single-threaded so the FRI query-PoW grind is deterministic). Pins the spend proof
+    /// BYTE FORMAT against drift. (Slow; run explicitly.)
+    #[test]
+    #[ignore = "slow: production-config spend prove ×2 single-threaded; run explicitly for the frozen KAT"]
+    fn frozen_q128_spend_proof_kat() {
+        use sha2::{Digest, Sha256};
+        let w = sample_spend_witness();
+        let digest_once = || -> [u8; 32] {
+            let pool = rayon::ThreadPoolBuilder::new().num_threads(1).build().unwrap();
+            let (_public, proof) = pool
+                .install(|| prove_spend_authorization_with_seed(&w, 0x5E_4D_2026))
+                .expect("prove");
+            let bytes = bincode::serialize(&proof).expect("serialize spend proof");
+            let mut h = Sha256::new();
+            h.update(&bytes);
+            h.finalize().into()
+        };
+        let d1 = digest_once();
+        let d2 = digest_once();
+        assert_eq!(d1, d2, "q128 spend proof is not deterministic under single-thread PoW");
+        let hex: String = d1.iter().map(|b| format!("{b:02x}")).collect();
+        eprintln!("FROZEN-KAT q128 spend proof sha256 = {hex}");
+        // PINNED frozen q128 SPEND KAT digest (single-thread, seed 0x5E_4D_2026, sample_spend_witness).
+        // Re-pinned 2026-06-27 when the rehosted in-AIR Poseidon2 challenge region landed.
+        const PINNED: &str = "297df18647c3c9f3f2a286a4e2d33beb38bac3448031ccfdfc8635d3f0ce4e24";
+        assert_eq!(hex, PINNED, "q128 spend proof bytes drifted from the frozen KAT");
     }
 }

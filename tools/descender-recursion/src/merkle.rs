@@ -5,29 +5,36 @@
 //! at each level `pos_in_group = index % 2` places the running digest, the sibling fills
 //! the other slot, and `compress` folds them — `inputs = [digest, sibling]` when the index
 //! bit is 0, else `[sibling, digest]`; then `index /= 2`. The node compression is the
-//! leaf STARK's exact `MyCompress = TruncatedPermutation<Perm, 2, 8, 16>` (so node hashing
-//! is byte-identical to the deployed Merkle), used here as a BLACK BOX — gadget 2's AIR
-//! will constrain the Poseidon2 permutation inside it via the gadget-2/Poseidon2 sub-AIR.
+//! leaf STARK's exact `MyCompress` — at the quantum-128 binding profile this is
+//! `SpongeCompression<PaddingFreeSponge<Perm, 16, 7, 13>>` (sponge-mode 2-to-1, so a
+//! 13-element / ≈403-bit digest fits — `2·13 > WIDTH` rules out a truncated permutation;
+//! see `descender_account_stark::sponge_compression` and
+//! `research/path2_quantum128_parameterization_v1.md`). Node hashing is byte-identical to
+//! the deployed leaf Merkle. It is used here as a BLACK BOX — gadget 2's AIR will constrain
+//! the Poseidon2 permutations inside the sponge via the gadget-2/Poseidon2 sub-AIR.
 //!
 //! Scope of this reference: the binary single-matrix path fold (the dominant case for the
 //! recursion's FRI-layer openings). DEFERRED: leaf-row hashing (`MyHash` over opened matrix
 //! rows incl. the hiding salt) and the multi-height batch injection (batch.rs:243-259) for
 //! mixed-height commitments — documented follow-ons, same pattern.
 
-use descender_account_stark::{Perm, Val, DIGEST_ELEMS, WIDTH};
+use descender_account_stark::{MyCompress, MyHash, Val, DIGEST_ELEMS, WIDTH};
 use p3_koala_bear::default_koalabear_poseidon2_16;
-use p3_symmetric::{PseudoCompressionFunction, TruncatedPermutation};
+use p3_symmetric::PseudoCompressionFunction;
 
-/// A Merkle node digest (8 KoalaBear elems ≈ 248 bits — the accepted 2⁻¹²⁴ creation floor).
+/// A Merkle node digest (13 KoalaBear elems ≈ 403 bits — the quantum-128 binding profile,
+/// BHT collision ≈ 403/3 ≈ 134 bits; `research/path2_quantum128_parameterization_v1.md`).
 pub type Digest = [Val; DIGEST_ELEMS];
 
-/// The leaf STARK's exact 2-to-1 node compression (`MyCompress`). Literal const params
-/// `2,8,16` match `config::MyCompress`; [`assert_layout_matches_leaf`] pins them.
-pub type Compress = TruncatedPermutation<Perm, 2, DIGEST_ELEMS, WIDTH>;
+/// The leaf STARK's exact 2-to-1 node compression (`MyCompress`), re-exported from the leaf
+/// config so node hashing is byte-identical. At q128 this is the sponge-mode
+/// `SpongeCompression<PaddingFreeSponge<Perm, 16, 7, 13>>`; [`assert_layout_matches_leaf`]
+/// pins the digest/permutation width.
+pub type Compress = MyCompress;
 
 /// Build the node compressor over the pinned Poseidon2-16 (byte-identical to the leaf).
 pub fn compressor() -> Compress {
-    TruncatedPermutation::new(default_koalabear_poseidon2_16())
+    MyCompress::new(MyHash::new(default_koalabear_poseidon2_16()))
 }
 
 /// One fold step (spec / `batch.rs:216-232`): place `digest` at `index_bit`'s slot, the
@@ -64,9 +71,10 @@ pub fn verify_path(
     fold_to_root(c, leaf, index, siblings) == root
 }
 
-/// Drift guard: the const layout must match the leaf STARK's `MyCompress`/digest.
+/// Drift guard: the const layout must match the leaf STARK's `MyCompress`/digest at the
+/// quantum-128 binding profile (13-element sponge-mode digest over the width-16 permutation).
 pub fn assert_layout_matches_leaf() {
-    assert_eq!(DIGEST_ELEMS, 8, "digest width drifted from leaf config");
+    assert_eq!(DIGEST_ELEMS, 13, "digest width drifted from leaf config (q128 = 13)");
     assert_eq!(WIDTH, 16, "Poseidon2 width drifted from leaf config");
 }
 

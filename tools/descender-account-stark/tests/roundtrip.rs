@@ -30,6 +30,7 @@ fn secrets_a() -> AccountCreationSecrets {
         verifier_version: 0x0102_0304,
         account_state_root: core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(7)),
         syndrome: core::array::from_fn(|i| ((i as u32 * 1009 + 17) % 12289) as u16),
+        checked_core_key_commitment: [0x2bu8; 32],
     }
 }
 
@@ -50,6 +51,7 @@ fn secrets_indexed(seed: u64) -> AccountCreationSecrets {
         syndrome: core::array::from_fn(|i| {
             (seed.wrapping_mul(13).wrapping_add(i as u64) % 12289) as u16
         }),
+        checked_core_key_commitment: [0x2bu8; 32],
     }
 }
 

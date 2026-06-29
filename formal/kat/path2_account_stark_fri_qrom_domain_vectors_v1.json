@@ -15,10 +15,10 @@
     "boundary_report": {
       "blocker": "account-STARK residual matrix: FRI soundness margin, recursion, Poseidon2 transcript, and multi-target/QROM pricing are not closed",
       "deployment_ready": false,
-      "digest": "f2278bb76f1c4db70f40bf6b780add418a9f7536a4ef810def0b37b8ea570ece",
+      "digest": "a275e34633ce69695d7c2617019f127c1a74d6de240fc6c86a156afe41781650",
       "domain": "Descender.Path2.AccountStarkFriQromResidualReport.v1",
       "proof_system": "Plonky3 HidingFriPcs over KoalaBear with Poseidon2-Merkle and DuplexChallenger",
-      "recomputed_digest": "f2278bb76f1c4db70f40bf6b780add418a9f7536a4ef810def0b37b8ea570ece",
+      "recomputed_digest": "a275e34633ce69695d7c2617019f127c1a74d6de240fc6c86a156afe41781650",
       "selected_payload_type": "Path2AccountStarkCreationPayloadV1",
       "selected_proof_family": "Plonky3/q12289 account-creation STARK"
     },
@@ -37,7 +37,7 @@
       {
         "case_id": "fri_qrom_poseidon2_width_and_sponge_floor",
         "kind": "audit",
-        "poseidon2_sponge_floor_bits": 124,
+        "poseidon2_sponge_floor_bits": 139,
         "poseidon2_width": 16,
         "sponge_floor_supports_current_124_bit_floor": true,
         "surface": "Path2AccountStarkFriQromResidualReportV1.poseidon2_width"
@@ -48,10 +48,10 @@
         "challenge_field_bits_floor": 247,
         "challenge_field_pinned": true,
         "fri_commit_pow_bits": 0,
-        "fri_conservative_johnson_bits": 128,
+        "fri_conservative_johnson_bits": 256,
         "fri_log_blowup": 4,
-        "fri_num_queries": 56,
-        "fri_optimistic_capacity_bits": 240,
+        "fri_num_queries": 120,
+        "fri_optimistic_capacity_bits": 496,
         "fri_query_pow_bits": 16,
         "fri_schedule_pinned": true,
         "kind": "audit",
@@ -102,5 +102,5 @@
     "schema": "Descender.Path2.AccountStarkFriQromDomainVectors.v1",
     "status": "digest_pinned_fri_qrom_domain_audit_vectors"
   },
-  "corpus_digest": "aad6636ecccf468034434966d98062ddd9cebc1a730d7f0fbc22410cbe5d7bb1"
+  "corpus_digest": "0fa010a1aa275035b809d8763e6187ee7a7d9f4862edefb608ebe1d3b3e76b65"
 }

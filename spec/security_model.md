@@ -588,34 +588,35 @@ checked by `path2_account_stark_fri_aok_boundary_consistency`.
 | AIR relation soundness | `research/path2_account_stark_air_soundness_audit.md` reports all relation classes wired and MED findings remediated. | External proof-family review confirms the AIR constraints match the claimed creation relation and no false statement accepts except with a named proof break. | `account_stark_air_soundness_break` |
 | FRI argument-of-knowledge extractor | The AIR is fully constrained, and `Path2AccountStarkFriAokBoundaryReportV1` plus `formal/kat/path2_account_stark_fri_aok_boundary_v1.json` pin the support audit, selected proof family, FRI/QROM residual digest, residual-matrix digest, AIR coverage counts, MED remediation counts, and open extractor/review/deployment flags. | A concrete extractor theorem for the selected Plonky3/q12289 configuration shows accepting proof implies an extractable account-creation witness or exports a named FRI/AoK break. | `account_stark_fri_aok_extractor_break` |
 | Zero-knowledge simulator and no-export statement | Boundary text forbids export of pad source, projection, syndrome, opening tuple, witness, mask, and private trace material; `Path2AccountCreationNoExportBoundaryReportV1` plus `formal/kat/path2_account_creation_no_export_boundary_v1.json` pin the support file, selected payload endpoints, payload byte-model/KAT-boundary digests, denylist, simulator/no-export theorem targets, accepted-bundle simulator public-input allowlist, public-payload-only byte model, mutation coverage, and fail-closed production gate while leaving simulator, no-export, accepted-bundle simulability, review, and deployment flags false. | Simulator theorem for the selected payload proves the accepted public bundle can be simulated from public anchors and allowed commitments without revealing private creation material. | `account_stark_simulator_or_no_export_break` |
-| FRI soundness margin and recursion ledger | `Path2AccountStarkFriQromResidualReportV1` pins `log_blowup = 4`, `num_queries = 56`, query PoW 16, conservative-Johnson FRI label 128 bits, degree-8 challenge field, ~124-bit Poseidon2 sponge floor, and checked-core QROM `log2(T) <= 54`; `formal/kat/path2_account_stark_fri_qrom_domain_vectors_v1.json` adds digest-pinned audit cases for the selected proof-family domain, FRI schedule, checked-core QROM import, and open theorem flags; the consistency gates compare these to active config, checked-in manifests, and generated QROM artifacts. | Residual-assumption ledger prices FRI queries, field size, the account-STARK Poseidon2/FRI transcript theorem, recursion if used, and multi-target/QROM terms against the selected deployment profile, then obtains external FRI/QROM review. | `fri_soundness_margin_break` |
+| FRI soundness margin and recursion ledger | `Path2AccountStarkFriQromResidualReportV1` pins `log_blowup = 4`, `num_queries = 120`, query PoW 16, conservative-Johnson FRI label 256 bits, degree-8 challenge field, 139-bit Poseidon2 sponge floor, and checked-core QROM `log2(T) <= 54`; `formal/kat/path2_account_stark_fri_qrom_domain_vectors_v1.json` adds digest-pinned audit cases for the selected proof-family domain, FRI schedule, checked-core QROM import, and open theorem flags; the consistency gates compare these to active config, checked-in manifests, and generated QROM artifacts. | Residual-assumption ledger prices FRI queries, field size, the account-STARK Poseidon2/FRI transcript theorem, recursion if used, and multi-target/QROM terms against the selected deployment profile, then obtains external FRI/QROM review. | `fri_soundness_margin_break` |
 | Production admission gate and review disposition | `verify_path2_direct_creation_account_stark_payload_boundary_for_production` remains fail-closed and regression-tested. | External review, tracker disposition, and explicit maintainer decision flip the production gate; otherwise production admission must continue to reject. | `account_stark_production_gate_break` |
 | Legacy proof-route disposition | Transparent descent/native-boundary paths are fail-closed support and cannot be selected by implication. | Any route change requires an ADR that updates this matrix, wire formats, KAT scope, and tracker ownership before the route can become deployment authority. | `proof_route_authority_break` |
 
 ## Current Security-Level Position
 
-The active Poseidon2/Plonky3 path has a real generic floor around 124 bits from
-the width-16 Poseidon2 sponge capacity and 8-element Merkle digest birthday
-bound. This is the honest CLASSICAL floor and is acceptable as a current
-practical design target only if it is stated plainly.
+The active Poseidon2/Plonky3 path has been re-parameterized to the q128 profile:
+120 FRI queries, query PoW 16, and width-16 Poseidon2 with capacity 9 and a
+13-element Merkle digest. The generated residual ledger now prices the
+conservative-Johnson FRI label at 256 bits and the Poseidon2/Merkle generic
+floor at 139 bits. This is the honest current parameter floor and must be stated
+plainly.
 
-The POST-QUANTUM position is weaker and must be disclosed (assumption-boundary
-stress test, `research/cryptanalysis/assumption_boundary_stress_test_20260627.md`,
+The pre-q128 POST-QUANTUM shortfall remains important historical evidence
+(assumption-boundary stress test,
+`research/cryptanalysis/assumption_boundary_stress_test_20260627.md`,
 2026-06-27): under non-interactive Fiat-Shamir the full FRI query plus
-proof-of-work grinding budget is a single Grover search, so at the deployed
-parameters (56 queries, 16-bit PoW) the quantum knowledge-soundness is only
-~2^-64, and the 8-element Merkle/sponge digest gives ~2^-82..-99 quantum
-collision (binding). The deployed active path is therefore ~124-bit classical /
-~64-bit quantum — materially below a post-quantum-128 claim.
+proof-of-work grinding budget is a single Grover search, so the earlier
+56-query/capacity-8 profile could not support a hard quantum-128 claim. The
+current q128 profile is the response to that finding; it does not by itself
+clear the deployment gate.
 
 `ADR-0008` commits the deployable bar to hard quantum-128 and is the governing
-decision: it requires raising the FRI query count so the Grover-halved budget
-reaches ~128 (about 120 queries) AND widening the Poseidon2 sponge capacity to
-c=9 with a matching Merkle digest, then re-pricing and refreshing KATs. Until
-that re-parameterization (`DIR-QROM-001`, `DIR-STARK-001`, `ADOPT-128-001`) lands
-on both the inner account-STARK and the outer recursion layer, the honest
-deployed figure is ~124 classical / ~64 quantum, and the project must not claim
-"hard 128-bit security everywhere" — classically or quantumly.
+decision. The current implementation has landed the q128 parameter profile for
+the active account-STARK/direct path, but a deployment-ready hard-128 claim still
+depends on the frozen KAT corpus, external FRI/QROM and implementation review,
+the production-gate decision, and any selected aggregation/recursion review
+scope. Until those gates close, the project must not claim "hard 128-bit
+deployment readiness."
 
 ## Challenge Budget Terminology
 
@@ -729,5 +730,6 @@ Current non-claims:
 - adaptor signatures;
 - consensus finality or arbitrary reorg handling inside the cryptographic
   theorem;
-- hard 128-bit security without a future hardening profile;
+- deployment-ready hard 128-bit security without q128 KAT freeze, external
+  review, and production-gate acceptance;
 - deployability based only on internal tests or internal proof notes.

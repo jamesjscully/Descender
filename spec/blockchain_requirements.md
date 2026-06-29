@@ -95,8 +95,8 @@ A chain may consider Mode A only when all of these are satisfied:
 6. verifier rejection is deterministic, panic-free, and consensus-safe;
 7. lifecycle/reorg/finality policy is specified under `spec/lifecycle_model.md`
    for the target chain;
-8. security level is stated honestly, including the current 124-bit floor unless
-   a hard-128 profile has been adopted by ADR;
+8. security level is stated honestly, including the current q128 parameter floor
+   and the remaining review/production gates;
 9. third-party cryptanalysis has reviewed the coded-SIS/lattice core, QROM/hash
    framing, Poseidon2/FRI usage, and lifecycle model.
 
@@ -199,13 +199,14 @@ surface has a concrete proof or state artifact.
 
 Security-level positioning is an adoption surface because chain, bridge,
 custody, and standards reviewers need the claim stated without ambiguity. The
-current direct-mode path may disclose the 124-bit practical floor, but a hard
-128-bit claim requires a separate ADR, implementation profile, KAT refresh, and
-review package.
+current direct-mode path uses the q128 parameter profile and may disclose the
+139-bit practical Poseidon2/Merkle floor, but a deployment-ready hard-128 claim
+still requires the KAT freeze, external review package, and production-gate
+acceptance.
 
 | Surface | Required class | Readiness | Required artifact | Tracker rows |
 |---|---|---|---|---|
-| Hard-128 profile decision | `direct` | `not_ready` | decision on whether the 124-bit practical floor is acceptable for the target adopter or a hard-128 profile is required | `ADOPT-128-001`, `DIR-QROM-001`, `DIR-REVIEW-001` |
+| Hard-128 profile decision | `direct` | `not_ready` | evidence that the q128 practical floor and remaining review obligations are acceptable for the target adopter | `ADOPT-128-001`, `DIR-QROM-001`, `DIR-REVIEW-001` |
 
 ## Ethereum Adoption Surfaces
 
@@ -291,8 +292,8 @@ Descender must not imply these are solved by the base signature primitive:
 - Schnorr-style adaptor signatures;
 - threshold signing as one compact native Descender signature;
 - validator finality or bridge safety without explicit account/committee state;
-- hard 128-bit security while the active path is still using the 124-bit
-  Poseidon2/Merkle floor;
+- deployment-ready hard 128-bit security before q128 KAT freeze, external
+  review, and production-gate acceptance;
 - deployability based only on internal notes or prototype tests.
 
 ## Product Bar

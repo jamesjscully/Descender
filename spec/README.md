@@ -82,7 +82,7 @@ only after a concrete accumulator, rollup proof, or batch proof system is named.
 | Aggregation | Proof/state aggregation, not native BLS-style signature aggregation |
 | Recursion | Poseidon2-friendly STARK recursion path in `tools/descender-recursion` |
 | Policy | Account/state policy layer in `spec/policy_model.md` over admitted slots, not Schnorr/BLS algebra |
-| Security level | Current practical floor is the width-16 Poseidon2/Merkle 124-bit floor unless a future hard-128 profile is adopted |
+| Security level | Current q128 parameter floor is the width-16 Poseidon2/Merkle 139-bit floor; deployment claims still require the review and production gates |
 
 ## Current Non-Active Paths
 

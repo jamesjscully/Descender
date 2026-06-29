@@ -20,17 +20,20 @@ p3-fri = "0.6.1"
 p3-commit = "0.6.1"
 p3-challenger = "0.6.1"
 p3-symmetric = "0.6.1"
+# Aggregate STARK PCS node layer (`MerkleTreeMmcs`) + DFT (`Radix2DitParallel`) used by the
+# `settlement` verifier (`settlement::prod_config`) — the native O(1) block verifier exercised by
+# settlement/rollup full-node evidence. Promoted from dev-only so the verifier API can serialize proofs.
+p3-merkle-tree = "0.6.1"
+p3-dft = "0.6.1"
+# Serialize/deserialize the aggregate O(1) block proof for transport to the settlement layer
+# (`settlement::{serialize_block_proof, deserialize_block_proof}`).
+serde = { version = "1", features = ["derive"] }
+bincode = "1"
 
 [dev-dependencies]
 # Test-only: deterministic round-constants for the gadget-2 Poseidon2 compression AIR
 # integration check (RoundConstants::from_rng with a fixed SmallRng seed).
 rand = "0.10"
-# Test-only: build a REAL p3 `MerkleTreeMmcs` over the leaf `MyHash`/`MyCompress` node layer,
-# open a leaf, and FIDELITY-PIN that the in-AIR main-trace Merkle opening reproduces the real root
-# with zero residual — the node-fold layer the recursion mirrors. (`MyHash`/`MyCompress` and the
-# `Mmcs` trait `commit`/`open_batch`/`verify_batch` come from `descender-account-stark` /
-# `p3-commit`, already deps; this adds the tree builder.)
-p3-merkle-tree = "0.6.1"
 
 [profile.release]
 opt-level = 3

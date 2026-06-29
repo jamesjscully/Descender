@@ -10744,7 +10744,7 @@ pub const PATH2_ACCOUNT_STARK_PROOF_SYSTEM: &str =
     "Plonky3 HidingFriPcs over KoalaBear with Poseidon2-Merkle and DuplexChallenger";
 pub const PATH2_ACCOUNT_STARK_POSEIDON2_WIDTH: usize = 16;
 pub const PATH2_ACCOUNT_STARK_FRI_LOG_BLOWUP: usize = 4;
-pub const PATH2_ACCOUNT_STARK_FRI_NUM_QUERIES: usize = 56;
+pub const PATH2_ACCOUNT_STARK_FRI_NUM_QUERIES: usize = 120;
 pub const PATH2_ACCOUNT_STARK_FRI_QUERY_POW_BITS: usize = 16;
 pub const PATH2_ACCOUNT_STARK_FRI_COMMIT_POW_BITS: usize = 0;
 pub const PATH2_ACCOUNT_STARK_FRI_CONSERVATIVE_JOHNSON_BITS: usize =
@@ -10755,7 +10755,7 @@ pub const PATH2_ACCOUNT_STARK_FRI_OPTIMISTIC_CAPACITY_BITS: usize =
         + PATH2_ACCOUNT_STARK_FRI_QUERY_POW_BITS;
 pub const PATH2_ACCOUNT_STARK_CHALLENGE_EXTENSION_DEGREE: usize = 8;
 pub const PATH2_ACCOUNT_STARK_CHALLENGE_FIELD_BITS_FLOOR: usize = 247;
-pub const PATH2_ACCOUNT_STARK_POSEIDON2_SPONGE_FLOOR_BITS: usize = 124;
+pub const PATH2_ACCOUNT_STARK_POSEIDON2_SPONGE_FLOOR_BITS: usize = 139;
 pub const PATH2_CHECKED_CORE_QROM_ALGEBRAIC_CHALLENGE_BITS: usize = 182;
 pub const PATH2_CHECKED_CORE_QROM_HARDENING_BITS: usize = 64;
 pub const PATH2_CHECKED_CORE_QROM_TOTAL_TRANSCRIPT_BITS: usize = 246;
@@ -47511,6 +47511,9 @@ fn path2_account_stark_prove_creation_with_mask_seed_option_v1(
         verifier_version: PATH2_ACCOUNT_STARK_VERIFIER_VERSION,
         account_state_root: leaf.account_state_root_before,
         syndrome: opening.witness_syndrome,
+        checked_core_key_commitment: pack_reviewed_fq12_account_carried_syndrome_digest(
+            &opening.witness_syndrome,
+        )?,
     };
 
     let (public, proof) = match proof_mask_seed {
@@ -113216,14 +113219,14 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert_eq!(report.proof_system, PATH2_ACCOUNT_STARK_PROOF_SYSTEM);
         assert_eq!(report.poseidon2_width, 16);
         assert_eq!(report.fri_log_blowup, 4);
-        assert_eq!(report.fri_num_queries, 56);
+        assert_eq!(report.fri_num_queries, 120);
         assert_eq!(report.fri_query_pow_bits, 16);
         assert_eq!(report.fri_commit_pow_bits, 0);
-        assert_eq!(report.fri_conservative_johnson_bits, 128);
-        assert_eq!(report.fri_optimistic_capacity_bits, 240);
+        assert_eq!(report.fri_conservative_johnson_bits, 256);
+        assert_eq!(report.fri_optimistic_capacity_bits, 496);
         assert_eq!(report.challenge_extension_degree, 8);
         assert_eq!(report.challenge_field_bits_floor, 247);
-        assert_eq!(report.poseidon2_sponge_floor_bits, 124);
+        assert_eq!(report.poseidon2_sponge_floor_bits, 139);
         assert_eq!(report.checked_core_qrom_artifacts, PATH2_CHECKED_CORE_QROM_ARTIFACTS.as_ref());
         assert_eq!(
             report.qrom_domain_vector_case_ids,

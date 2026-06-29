@@ -147,8 +147,9 @@ use crate::fri_fold_air::{limbs, D, W};
 use crate::inlined_perm::{C_INPUTS, C_OUTPUT, PERM_COLS};
 use crate::inlined_perm_octic::{self, OcticPermCells};
 use descender_account_stark::{
-    Challenge, Val, CHAIN_DIGEST_ELEMS, N_COMMIT_LANES, N_LANES, PACKED_WITNESS_COMMITMENT_BYTES,
-    PUBIO_ROLE_ROOT_OFF, RELATION_ID, RELATION_ID_ELEMS, ROLE_ROOT_ELEMS, SYNDROME_LANES, WIDTH,
+    Challenge, Val, CHAIN_DIGEST_ELEMS, N_COMMIT_LANES, N_LANES, NULLIFIER_ELEMS,
+    PACKED_WITNESS_COMMITMENT_BYTES, PUBIO_ROLE_ROOT_OFF, RELATION_ID, RELATION_ID_ELEMS,
+    ROLE_ROOT_ELEMS, SYNDROME_LANES, WIDTH,
 };
 use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
 use p3_field::{BasedVectorSpace, PrimeCharacteristicRing};
@@ -609,7 +610,9 @@ pub const N_PACKED: usize = PACKED_WITNESS_COMMITMENT_BYTES; // 32
 pub const N_CLASSC: usize = N_SYNDROME + N_PACKED;
 
 // Derived pubio offsets (mirror air.rs `PUBIO_*_OFF`; the leaf does not re-export them at crate root).
-pub const PUBIO_RELATION_ID_OFF_LOCAL: usize = PUBIO_ROLE_ROOT_OFF + ROLE_ROOT_ELEMS;
+// CLASS A-2 nullifier sits between role_root and relation_id in the pubio block.
+pub const PUBIO_NULLIFIER_OFF_LOCAL: usize = PUBIO_ROLE_ROOT_OFF + ROLE_ROOT_ELEMS;
+pub const PUBIO_RELATION_ID_OFF_LOCAL: usize = PUBIO_NULLIFIER_OFF_LOCAL + NULLIFIER_ELEMS;
 pub const PUBIO_SYNDROME_OFF_LOCAL: usize = PUBIO_RELATION_ID_OFF_LOCAL + RELATION_ID_ELEMS;
 pub const PUBIO_PACKED_WITNESS_OFF_LOCAL: usize = PUBIO_SYNDROME_OFF_LOCAL + SYNDROME_LANES;
 
@@ -2397,7 +2400,7 @@ where
 /// computes natively and the SAME residual ORDER. [`LeafConstraintMirrorAir`] binds this to the
 /// committed `C_partial`; [`crate::deep_air`] wires it as a constrained summand of the DEEP
 /// `C(zeta)`. Soundness lives ENTIRELY in this function's faithfulness to air.rs (fidelity-PINned).
-pub fn recompute_c_partial<AB, FCell>(cell: &FCell, alpha: &[AB::Expr; D]) -> [AB::Expr; D]
+pub fn leaf_residuals<AB, FCell>(cell: &FCell) -> Vec<[AB::Expr; D]>
 where
     AB: AirBuilder<F = Val>,
     FCell: Fn(usize) -> [AB::Expr; D],
@@ -2550,8 +2553,18 @@ where
     push_classc_residuals::<AB, FCell>(cell, &mut residuals);
 
     debug_assert_eq!(residuals.len(), N_CONSTRAINTS);
+    residuals
+}
 
-    // ----- alpha-batch: acc = Σ_r alpha^r · residual_r -----
+/// INLINE alpha-batch fold of the leaf residuals: `Σ_r alpha^r · residual_r`. The returned expression
+/// has degree ~`N_CONSTRAINTS` in `alpha` (powers computed inline), so it is usable for the constraint
+/// CHECKER but NOT provable (the quotient LDE explodes). Use [`assert_c_partial_committed`] to prove.
+pub fn recompute_c_partial<AB, FCell>(cell: &FCell, alpha: &[AB::Expr; D]) -> [AB::Expr; D]
+where
+    AB: AirBuilder<F = Val>,
+    FCell: Fn(usize) -> [AB::Expr; D],
+{
+    let residuals = leaf_residuals::<AB, FCell>(cell);
     let mut acc = octic_scalar::<AB>(0);
     let mut a_pow = octic_scalar::<AB>(1);
     for res in residuals.iter() {
@@ -2560,6 +2573,41 @@ where
         a_pow = octic_mul::<AB>(&a_pow, alpha);
     }
     acc
+}
+
+/// PROVABLE low-degree leaf C(zeta): assert the committed-accumulator Horner fold over the leaf
+/// residuals and return the fold result == `Σ_r alpha^r · residual_r`. `apow(i)`/`acc(i)` read the K
+/// committed extension columns (`K = N_CONSTRAINTS`); `alpha` is the FS challenge. Every emitted
+/// constraint is degree ≤ 4 (committed `a_pow` column × degree-≤3 residual expr), so the fold result
+/// is degree ≤ 4 in the trace — NOT degree ~K — making the full leaf C(zeta) provable.
+pub fn assert_c_partial_committed<AB, FCell, FApow, FAcc>(
+    builder: &mut AB,
+    cell: &FCell,
+    apow: &FApow,
+    acc: &FAcc,
+    alpha: &[AB::Expr; D],
+) -> [AB::Expr; D]
+where
+    AB: AirBuilder<F = Val>,
+    FCell: Fn(usize) -> [AB::Expr; D],
+    FApow: Fn(usize) -> [AB::Expr; D],
+    FAcc: Fn(usize) -> [AB::Expr; D],
+{
+    // Delegate to the GENERIC re-arithmetization primitive (the committed-accumulator fold), shared
+    // with the future spend C(zeta) mirror.
+    let residuals = leaf_residuals::<AB, FCell>(cell);
+    crate::alpha_fold::assert_committed_fold::<AB, FApow, FAcc>(builder, &residuals, apow, acc, alpha)
+}
+
+/// Native witness fill for [`assert_c_partial_committed`]: returns `(a_pow[K], acc[K])`, the committed
+/// Horner state over the leaf residuals (`a_pow[r] = alpha^r`, `acc[r] = Σ_{j≤r} alpha^j · res_j`).
+pub fn c_partial_accumulator_values(
+    cells: &[Challenge; N_OPENED_CELLS],
+    alpha: Challenge,
+) -> (Vec<Challenge>, Vec<Challenge>) {
+    let residual_values: Vec<Challenge> =
+        (0..N_CONSTRAINTS).map(|r| constraint_residual(cells, r)).collect();
+    crate::alpha_fold::committed_fold_values(alpha, &residual_values)
 }
 
 /// Push a SQUEEZE sponge's residuals (input/capacity bindings ‖ per-perm Poseidon2 round residuals ‖
@@ -5392,6 +5440,7 @@ mod tests {
                 + N_LANES
                 + descender_account_stark::CONTEXT_ELEMS
                 + ROLE_ROOT_ELEMS
+                + NULLIFIER_ELEMS
                 + RELATION_ID_ELEMS
         );
         assert_eq!(PUBIO_PACKED_WITNESS_OFF_LOCAL, PUBIO_SYNDROME_OFF_LOCAL + SYNDROME_LANES);
@@ -5891,5 +5940,133 @@ mod tests {
             !check_all_constraints(&LeafChainMirrorAir, &m, &mc_pubs(digest, n), None).is_ok(),
             "broken count accumulator NOT rejected"
         );
+    }
+}
+
+#[cfg(test)]
+mod czeta_fold_prove_tests {
+    //! Validates that the FULL creation-leaf C(zeta) folds PROVABLY via the committed-accumulator
+    //! Horner chain ([`assert_c_partial_committed`]) — the re-arithmetization that makes
+    //! `deep_c_full_leaf` provable. The inline `recompute_c_partial` is degree ~N_CONSTRAINTS in alpha
+    //! and explodes the quotient LDE; this folds the SAME residuals at degree ≤ 4 and PROVES at q128.
+    use super::*;
+    use crate::fri_fold_air::limbs;
+    use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
+    use p3_field::PrimeCharacteristicRing;
+    use p3_matrix::dense::RowMajorMatrix;
+
+    const CELLS: usize = N_OPENED_CELLS;
+    const K: usize = N_CONSTRAINTS;
+    const ALPHA_OFF: usize = CELLS * D;
+    const APOW_OFF: usize = ALPHA_OFF + D;
+    const ACC_OFF: usize = APOW_OFF + K * D;
+    const WIDTH_COLS: usize = ACC_OFF + K * D;
+
+    struct LeafCZetaFoldAir;
+    impl<F: Sync> BaseAir<F> for LeafCZetaFoldAir {
+        fn width(&self) -> usize {
+            WIDTH_COLS
+        }
+        fn num_public_values(&self) -> usize {
+            D
+        }
+    }
+    impl<AB: AirBuilder<F = Val>> Air<AB> for LeafCZetaFoldAir {
+        fn eval(&self, builder: &mut AB) {
+            let main = builder.main();
+            let local = main.current_slice().to_vec();
+            let public = builder.public_values().to_vec();
+            let cell = |c: usize| -> [AB::Expr; D] {
+                core::array::from_fn(|i| local[c * D + i].into())
+            };
+            let apow = |i: usize| -> [AB::Expr; D] {
+                core::array::from_fn(|j| local[APOW_OFF + i * D + j].into())
+            };
+            let acc = |i: usize| -> [AB::Expr; D] {
+                core::array::from_fn(|j| local[ACC_OFF + i * D + j].into())
+            };
+            let alpha: [AB::Expr; D] = core::array::from_fn(|j| local[ALPHA_OFF + j].into());
+            let result = assert_c_partial_committed(builder, &cell, &apow, &acc, &alpha);
+            for j in 0..D {
+                builder.assert_eq(result[j].clone(), public[j].clone().into());
+            }
+        }
+    }
+
+    fn ext_multi(seed: u32) -> Challenge {
+        use p3_field::BasedVectorSpace;
+        Challenge::from_basis_coefficients_fn(|i| {
+            Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32 + 1))
+        })
+    }
+
+    fn build(c4: [u32; C4_LANES], pad_seed: u32, alpha: Challenge) -> (RowMajorMatrix<Val>, Vec<Val>) {
+        let cells = honest_cells_for_test(c4, pad_seed);
+        let (apow, accv) = c_partial_accumulator_values(&cells, alpha);
+        let mut row = vec![Val::ZERO; WIDTH_COLS];
+        for c in 0..CELLS {
+            row[c * D..c * D + D].copy_from_slice(&limbs(cells[c]));
+        }
+        row[ALPHA_OFF..ALPHA_OFF + D].copy_from_slice(&limbs(alpha));
+        for i in 0..K {
+            row[APOW_OFF + i * D..APOW_OFF + i * D + D].copy_from_slice(&limbs(apow[i]));
+            row[ACC_OFF + i * D..ACC_OFF + i * D + D].copy_from_slice(&limbs(accv[i]));
+        }
+        let result = accv[K - 1];
+        // FIDELITY: the committed fold result equals the native partial_constraint_eval.
+        assert_eq!(result, partial_constraint_eval(&cells, alpha), "fold != native C_partial");
+        let pv = limbs(result).to_vec();
+        let mut values = Vec::with_capacity(2 * WIDTH_COLS);
+        values.extend_from_slice(&row);
+        values.extend_from_slice(&row);
+        (RowMajorMatrix::new(values, WIDTH_COLS), pv)
+    }
+
+    /// THE KEY RESULT: the full creation-leaf C(zeta) (all N_CONSTRAINTS residuals) folds via the
+    /// committed accumulator and PROVES+verifies at PRODUCTION q128 knobs — where the inline fold
+    /// explodes. Makes the full inner creation relation provable in a recursive verifier. (~7.5 min.)
+    #[test]
+    #[ignore = "slow: full-leaf C(zeta) committed-accumulator prove at production q128 knobs (~7.5 min)"]
+    fn full_leaf_czeta_folds_provably_q128() {
+        use descender_account_stark::{
+            Challenge as Ch, MyCompress, MyHash, Perm, DIGEST_ELEMS, PROD_LOG_BLOWUP,
+            PROD_NUM_QUERIES, PROD_QUERY_POW_BITS,
+        };
+        use p3_challenger::DuplexChallenger;
+        use p3_commit::ExtensionMmcs;
+        use p3_dft::Radix2DitParallel;
+        use p3_field::Field;
+        use p3_fri::{FriParameters, TwoAdicFriPcs};
+        use p3_koala_bear::default_koalabear_poseidon2_16;
+        use p3_merkle_tree::MerkleTreeMmcs;
+        use p3_uni_stark::{prove, verify, StarkConfig};
+
+        type ValMmcs = MerkleTreeMmcs<<Val as Field>::Packing, <Val as Field>::Packing, MyHash, MyCompress, 2, DIGEST_ELEMS>;
+        type ChallengeMmcs = ExtensionMmcs<Val, Ch, ValMmcs>;
+        type DftT = Radix2DitParallel<Val>;
+        type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type OuterConfig = StarkConfig<Pcs, Ch, MyChallenger>;
+
+        let perm: Perm = default_koalabear_poseidon2_16();
+        let val_mmcs = ValMmcs::new(MyHash::new(perm.clone()), MyCompress::new(MyHash::new(perm.clone())), 0);
+        let challenge_mmcs = ChallengeMmcs::new(val_mmcs.clone());
+        let fri_params = FriParameters {
+            log_blowup: PROD_LOG_BLOWUP,
+            log_final_poly_len: 0,
+            max_log_arity: 1,
+            num_queries: PROD_NUM_QUERIES,
+            commit_proof_of_work_bits: 0,
+            query_proof_of_work_bits: PROD_QUERY_POW_BITS,
+            mmcs: challenge_mmcs,
+        };
+        let pcs = Pcs::new(DftT::default(), val_mmcs, fri_params);
+        let config = OuterConfig::new(pcs, MyChallenger::new(perm.clone()));
+
+        let alpha = ext_multi(42);
+        let (trace, pv) = build([0, 1, 127, 12288, 5000, 96], 17, alpha);
+        let proof = prove(&config, &LeafCZetaFoldAir, trace, &pv);
+        verify(&config, &LeafCZetaFoldAir, &proof, &pv)
+            .expect("full leaf C(zeta) committed-accumulator fold must prove+verify at q128");
     }
 }

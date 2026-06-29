@@ -121,6 +121,32 @@ pub const ROLE_HANDLE_LANES: usize = N_COMMIT_LANES + N_COMMIT_LANES + N_LANES; 
 pub const ROLE_ROOT_ELEMS: usize = 8;
 
 // ---------------------------------------------------------------------------
+// CLASS A-2 — SINGLE-USE NULLIFIER (F2: pad-seed reuse under reorg).
+//
+// A DETERMINISTIC, nonce-FREE commitment to the (pad_seed, slot) pair, exposed
+// as a PUBLIC value so an on-chain / off-chain registry can enforce single-use
+// of each pad_seed-per-slot (the `pad_seed_registry` consumes exactly this):
+//
+//   nullifier = Poseidon2-sponge( DOMAIN ‖ pad_seed[32] ‖ slot[8] ) -> 8 lanes
+//
+// Unlike `pad_source_commitment` (C1), which is BLINDED by `nonce_c1` and so
+// differs across honest re-proofs of the same pad_seed, the nullifier omits the
+// nonce — two proofs reusing one pad_seed for one slot yield the SAME nullifier,
+// which the registry detects. The DOMAIN tag separates this sponge from every
+// other Poseidon2 use in the relation. The sponge INPUT lanes are constrained
+// EQUAL to the real pad_seed lanes (C1, seam-bound to C2) and the real slot
+// lanes (C2, context-bound to the public slot), and the squeezed output is
+// constrained EQUAL to the public `nullifier`.
+// ---------------------------------------------------------------------------
+/// Domain-separation tag absorbed as the nullifier sponge's first input lane
+/// ("NULL" as a big-endian ASCII word; canonical < the KoalaBear modulus).
+pub const NULLIFIER_DOMAIN: u32 = 0x4E55_4C4C;
+/// Nullifier input lanes: DOMAIN[1] ‖ pad_seed[32] ‖ slot[8].
+pub const NULLIFIER_INPUT_LANES: usize = 1 + 32 + SLOT_ID_BYTES;
+/// Number of squeezed `nullifier` field elements (one Poseidon2 digest width).
+pub const NULLIFIER_ELEMS: usize = 8;
+
+// ---------------------------------------------------------------------------
 // CLASS B — PROOF-SYSTEM-BOOKKEEPING (relation_id / proof_system_id).
 //
 // A pinned constant identifying THIS relation version + column profile + query
@@ -197,6 +223,21 @@ const Q12289_PACK: u32 = Q12289_CARRIER;
 
 /// CLASS-C public field elements: syndrome[12] ‖ packed_witness_commitment[32].
 pub const CHECKED_CORE_ELEMS: usize = SYNDROME_LANES + PACKED_WITNESS_COMMITMENT_BYTES;
+
+// ---------------------------------------------------------------------------
+// CLASS A-3 — CHECKED-CORE KEY REGISTRATION.
+//
+// The account REGISTERS its checked-core signing-key commitment at creation: a 32-byte digest
+// `checked_core_key_commitment = pack_reviewed_fq12_account_carried_syndrome_digest(witness_syndrome)`
+// (14-bit-LE pack of the 12-lane key/witness syndrome). It is a PUBLIC value carried in the
+// per-instance statement (transcript-bound + folded into the batch digest chain), so the account's
+// (account_id, key) pair is fixed by its creation proof. A spend then proves its checked-core key
+// equals this registered commitment (`witness_commitment == checked_core_key_commitment`), tying the
+// spend to the account's creation-registered key. The commitment is a registered INPUT (the account
+// supplies it); the spend — not the creation — proves knowledge of its preimage (the SIS + sigma).
+// ---------------------------------------------------------------------------
+/// `checked_core_key_commitment` byte anchors (one 12-lane syndrome digest = 32 bytes).
+pub const KEY_COMMITMENT_BYTES: usize = 32;
 
 // --- C4 canonical base-128 (mirrors base128_range_air_q12289) ---
 const C4_BASE: u32 = 128;
@@ -331,16 +372,21 @@ pub struct FullLayout {
     pub c6_plan: SpongePlan,
     /// CLASS A — role-root sponge over the role-handle commitment lanes.
     pub role_plan: SpongePlan,
+    /// CLASS A-2 — nullifier sponge over DOMAIN ‖ pad_seed[32] ‖ slot[8].
+    pub nullifier_plan: SpongePlan,
     pub perm_cols: usize,
     c1: SpongeLayout,
     c2: SpongeLayout,
     c6: SpongeLayout,
     role: SpongeLayout,
+    nullifier: SpongeLayout,
     pub c1_off: usize,
     pub c2_off: usize,
     pub c6_off: usize,
     /// CLASS A — offset of the role-root sponge block.
     pub role_off: usize,
+    /// CLASS A-2 — offset of the nullifier sponge block.
+    pub nullifier_off: usize,
     pub c4_off: usize,
     pub carry_masked_off: usize,
     pub carry_acc_off: usize,
@@ -380,18 +426,24 @@ pub const PUBIO_ELEMS: usize = N_COMMIT_LANES
     + N_LANES
     + CONTEXT_ELEMS
     + ROLE_ROOT_ELEMS
+    + NULLIFIER_ELEMS
     + RELATION_ID_ELEMS
-    + CHECKED_CORE_ELEMS;
+    + CHECKED_CORE_ELEMS
+    + KEY_COMMITMENT_BYTES;
 
 /// Offset (within one row's pubio block) of the `role_root` lanes.
 pub const PUBIO_ROLE_ROOT_OFF: usize = 2 * N_COMMIT_LANES + N_LANES + CONTEXT_ELEMS;
+/// CLASS A-2 — offset (within one row's pubio block) of the `nullifier` lanes.
+pub const PUBIO_NULLIFIER_OFF: usize = PUBIO_ROLE_ROOT_OFF + ROLE_ROOT_ELEMS;
 /// Offset (within one row's pubio block) of the `relation_id` lanes.
-pub const PUBIO_RELATION_ID_OFF: usize = PUBIO_ROLE_ROOT_OFF + ROLE_ROOT_ELEMS;
+pub const PUBIO_RELATION_ID_OFF: usize = PUBIO_NULLIFIER_OFF + NULLIFIER_ELEMS;
 /// CLASS C — offset (within one row's pubio block) of the `syndrome` lanes.
 pub const PUBIO_SYNDROME_OFF: usize = PUBIO_RELATION_ID_OFF + RELATION_ID_ELEMS;
 /// CLASS C — offset (within one row's pubio block) of the
 /// `packed_witness_commitment` byte anchors.
 pub const PUBIO_PACKED_WITNESS_OFF: usize = PUBIO_SYNDROME_OFF + SYNDROME_LANES;
+/// CLASS A-3 — offset (within one row's pubio block) of the `checked_core_key_commitment` bytes.
+pub const PUBIO_KEY_COMMITMENT_OFF: usize = PUBIO_PACKED_WITNESS_OFF + PACKED_WITNESS_COMMITMENT_BYTES;
 
 // ---------------------------------------------------------------------------
 // BATCH DIGEST CHAIN (the per-row public-IO binding commitment).
@@ -439,17 +491,24 @@ impl FullLayout {
         // CLASS A: role-root sponge over ROLE_HANDLE_LANES field lanes (no byte
         // range — the inputs are 31-bit commitment outputs, not bytes).
         let role_plan = SpongePlan::new(vec![false; ROLE_HANDLE_LANES], ROLE_ROOT_ELEMS);
+        // CLASS A-2: nullifier sponge over DOMAIN[1] (field lane) ‖ pad_seed[32] ‖
+        // slot[8] (byte-ranged). The domain lane is a pinned constant, not a byte.
+        let mut nullifier_br = vec![false; 1];
+        nullifier_br.extend(vec![true; 32 + SLOT_ID_BYTES]);
+        let nullifier_plan = SpongePlan::new(nullifier_br, NULLIFIER_ELEMS);
 
         let c1 = SpongeLayout::new(&c1_plan, false, perm_cols);
         let c2 = SpongeLayout::new(&c2_plan, true, perm_cols);
         let c6 = SpongeLayout::new(&c6_plan, false, perm_cols);
         let role = SpongeLayout::new(&role_plan, false, perm_cols);
+        let nullifier = SpongeLayout::new(&nullifier_plan, false, perm_cols);
 
         let c1_off = 0;
         let c2_off = c1_off + c1.width;
         let c6_off = c2_off + c2.width;
         let role_off = c6_off + c6.width;
-        let c4_off = role_off + role.width;
+        let nullifier_off = role_off + role.width;
+        let c4_off = nullifier_off + nullifier.width;
         let carry_masked_off = c4_off + N_LANES * C4_CELLS;
         let carry_acc_off = carry_masked_off + N_LANES;
         let carry_modq_off = carry_acc_off + N_LANES;
@@ -472,15 +531,18 @@ impl FullLayout {
             c2_plan,
             c6_plan,
             role_plan,
+            nullifier_plan,
             perm_cols,
             c1,
             c2,
             c6,
             role,
+            nullifier,
             c1_off,
             c2_off,
             c6_off,
             role_off,
+            nullifier_off,
             c4_off,
             carry_masked_off,
             carry_acc_off,
@@ -632,15 +694,17 @@ impl<
             // digest[8] ‖ count_n[1] — the transcript-bound chain commitment.
             BATCH_PUBLIC_VALUES
         } else {
-            // pad[10] ‖ opening[10] ‖ masked[6] ‖ context ‖ role_root ‖
-            // relation_id ‖ syndrome[12] ‖ packed_witness_commitment[32].
+            // pad[10] ‖ opening[10] ‖ masked[6] ‖ context ‖ role_root ‖ nullifier ‖ relation_id ‖
+            // syndrome[12] ‖ packed_witness_commitment[32] ‖ checked_core_key_commitment[32].
             N_COMMIT_LANES
                 + N_COMMIT_LANES
                 + N_LANES
                 + CONTEXT_ELEMS
                 + ROLE_ROOT_ELEMS
+                + NULLIFIER_ELEMS
                 + RELATION_ID_ELEMS
                 + CHECKED_CORE_ELEMS
+                + KEY_COMMITMENT_BYTES
         }
     }
 }
@@ -954,6 +1018,59 @@ where
         }
 
         // ===================================================================
+        // CLASS A-2 — SINGLE-USE NULLIFIER (F2).
+        // nullifier = Poseidon2-sponge(DOMAIN ‖ pad_seed[32] ‖ slot[8]). The
+        // sponge INPUT lanes are constrained EQUAL to the pinned DOMAIN, the real
+        // pad_seed lanes (C1, seam-bound to C2) and the real slot lanes (C2,
+        // context-bound to the public slot); the squeezed output is constrained
+        // EQUAL to the public `nullifier`. A nonce-FREE commitment to (pad_seed,
+        // slot) the registry uses to enforce single-use.
+        // ===================================================================
+        {
+            // (i) bind the nullifier sponge's input lanes.
+            let null_lane = |i: usize| local[lay.nullifier_off + lay.nullifier.lanes + i];
+            // lane 0: pinned DOMAIN tag.
+            builder.assert_eq(null_lane(0).into(), ce::<AB>(NULLIFIER_DOMAIN as u64));
+            // lanes 1..33: pad_seed (== C1's pad_seed lanes, seam-bound to C2).
+            for b in 0..32 {
+                builder.assert_eq(
+                    null_lane(1 + b).into(),
+                    local[lay.c1_off + lay.c1.lanes + b].into(),
+                );
+            }
+            // lanes 33..41: slot (== C2's slot lanes [32,40), context-bound to public slot).
+            for b in 0..SLOT_ID_BYTES {
+                builder.assert_eq(
+                    null_lane(1 + 32 + b).into(),
+                    local[lay.c2_off + lay.c2.lanes + 32 + b].into(),
+                );
+            }
+            // (ii) run the nullifier sponge over those (now-bound) input lanes.
+            let nullifier_out = self.eval_sponge::<AB, LinearLayers>(
+                builder,
+                &local,
+                lay.nullifier_off,
+                &lay.nullifier,
+                &lay.nullifier_plan,
+            );
+            // (iii) constrain the squeezed output == the public nullifier.
+            for j in 0..NULLIFIER_ELEMS {
+                if batch {
+                    builder.assert_eq(
+                        nullifier_out[j].clone(),
+                        local[lay.pubio_off + PUBIO_NULLIFIER_OFF + j].into(),
+                    );
+                } else {
+                    builder.assert_eq(
+                        nullifier_out[j].clone(),
+                        public
+                            [2 * N_COMMIT_LANES + N_LANES + CONTEXT_ELEMS + ROLE_ROOT_ELEMS + j],
+                    );
+                }
+            }
+        }
+
+        // ===================================================================
         // CLASS B — PROOF-SYSTEM-BOOKKEEPING (relation_id / proof_system_id).
         // The public relation_id is pinned IN-AIR to the constant RELATION_ID so
         // a proof for this relation/version/profile cannot be reinterpreted as a
@@ -968,9 +1085,14 @@ where
                 );
             } else {
                 builder.assert_eq(
-                    public[2 * N_COMMIT_LANES + N_LANES + CONTEXT_ELEMS + ROLE_ROOT_ELEMS + j]
-                        .clone()
-                        .into(),
+                    public[2 * N_COMMIT_LANES
+                        + N_LANES
+                        + CONTEXT_ELEMS
+                        + ROLE_ROOT_ELEMS
+                        + NULLIFIER_ELEMS
+                        + j]
+                    .clone()
+                    .into(),
                     pinned,
                 );
             }
@@ -988,8 +1110,12 @@ where
         // ===================================================================
         {
             // Single-mode public-value offsets for the CLASS-C region.
-            let cc_base =
-                2 * N_COMMIT_LANES + N_LANES + CONTEXT_ELEMS + ROLE_ROOT_ELEMS + RELATION_ID_ELEMS;
+            let cc_base = 2 * N_COMMIT_LANES
+                + N_LANES
+                + CONTEXT_ELEMS
+                + ROLE_ROOT_ELEMS
+                + NULLIFIER_ELEMS
+                + RELATION_ID_ELEMS;
             // Accessor for a CLASS-C public element (syndrome or commitment byte).
             let cc_pub = |i: usize| -> AB::Expr {
                 if batch {
@@ -1520,6 +1646,10 @@ pub struct FullSecrets {
     /// witness frame; each a canonical q12289 residue from the spend's checked-core
     /// frame). The 6 masked_projection residues are derived in-circuit.
     pub syndrome: [u16; SYNDROME_LANES],
+    /// CLASS A-3 — the account's REGISTERED checked-core key commitment (32-byte syndrome digest of
+    /// the account's witness/signing key). Carried as a public statement value; a spend binds its
+    /// `witness_commitment` to this.
+    pub checked_core_key_commitment: [u8; KEY_COMMITMENT_BYTES],
 }
 
 /// Computed public outputs + intermediate values from the honest sponge run.
@@ -1533,6 +1663,8 @@ pub struct FullInstance<F> {
     pub context: [F; CONTEXT_ELEMS],
     /// CLASS A: role_root = Poseidon2-sponge over the role-handle commitments.
     pub role_root: [F; ROLE_ROOT_ELEMS],
+    /// CLASS A-2: nullifier = Poseidon2-sponge(DOMAIN ‖ pad_seed ‖ slot).
+    pub nullifier: [F; NULLIFIER_ELEMS],
     /// CLASS C: the PUBLIC checked-core syndrome lanes (residues 0..11), echoed
     /// as field elements.
     pub syndrome: [F; SYNDROME_LANES],
@@ -1540,6 +1672,8 @@ pub struct FullInstance<F> {
     /// `[syndrome[0..12] ‖ masked_projection[0..6]]` as 14-bit LE — IDENTICAL to
     /// the deployed `pack_reviewed_fq12_packed_witness_state18_from_parts`.
     pub packed_witness_commitment: [F; PACKED_WITNESS_COMMITMENT_BYTES],
+    /// CLASS A-3: the account's registered checked-core key commitment (32-byte syndrome digest).
+    pub checked_core_key_commitment: [F; KEY_COMMITMENT_BYTES],
     #[allow(dead_code)]
     pub masks: [u32; N_LANES],
     pub _phantom: PhantomData<F>,
@@ -2076,6 +2210,24 @@ fn build_full_row<
         role_root[j] = role_out[j];
     }
 
+    // ----- CLASS A-2: nullifier sponge over DOMAIN ‖ pad_seed ‖ slot -----
+    // nullifier_data = DOMAIN[1] ‖ pad_seed[32] ‖ slot LE[8] (byte-valued except DOMAIN).
+    let mut nullifier_data: Vec<u32> = Vec::with_capacity(NULLIFIER_INPUT_LANES);
+    nullifier_data.push(NULLIFIER_DOMAIN);
+    nullifier_data.extend(secrets.pad_seed.iter().map(|&b| b as u32));
+    nullifier_data.extend(secrets.slot.to_le_bytes().iter().map(|&b| b as u32));
+    let nullifier_out = fill_sponge(
+        &mut row,
+        lay.nullifier_off,
+        &lay.nullifier,
+        &lay.nullifier_plan,
+        &nullifier_data,
+    );
+    let mut nullifier = [F::ZERO; NULLIFIER_ELEMS];
+    for j in 0..NULLIFIER_ELEMS {
+        nullifier[j] = nullifier_out[j];
+    }
+
     // ----- Public-context columns: account_id[32] ‖ slot[8] ‖ ver[4] ‖
     //       state_root[32] ‖ lifecycle[32] (byte-valued field elements) -----
     let mut context = [F::ZERO; CONTEXT_ELEMS];
@@ -2118,6 +2270,10 @@ fn build_full_row<
     for j in 0..ROLE_ROOT_ELEMS {
         row[lay.pubio_off + PUBIO_ROLE_ROOT_OFF + j] = role_root[j];
     }
+    // CLASS A-2: nullifier into the pubio block (so the batch digest covers it).
+    for j in 0..NULLIFIER_ELEMS {
+        row[lay.pubio_off + PUBIO_NULLIFIER_OFF + j] = nullifier[j];
+    }
     // CLASS B: relation_id (pinned constant) into the pubio block.
     for j in 0..RELATION_ID_ELEMS {
         row[lay.pubio_off + PUBIO_RELATION_ID_OFF + j] = F::from_u32(RELATION_ID[j]);
@@ -2130,6 +2286,13 @@ fn build_full_row<
     for k in 0..PACKED_WITNESS_COMMITMENT_BYTES {
         row[lay.pubio_off + PUBIO_PACKED_WITNESS_OFF + k] = packed_witness_commitment[k];
     }
+    // CLASS A-3: the registered checked-core key commitment into the pubio block (batch-chain bound).
+    let mut checked_core_key_commitment = [F::ZERO; KEY_COMMITMENT_BYTES];
+    for k in 0..KEY_COMMITMENT_BYTES {
+        let b = F::from_u32(secrets.checked_core_key_commitment[k] as u32);
+        checked_core_key_commitment[k] = b;
+        row[lay.pubio_off + PUBIO_KEY_COMMITMENT_OFF + k] = b;
+    }
 
     let inst = FullInstance {
         pad_source_commitment,
@@ -2137,8 +2300,10 @@ fn build_full_row<
         masked_projection,
         context,
         role_root,
+        nullifier,
         syndrome: syndrome_f,
         packed_witness_commitment,
+        checked_core_key_commitment,
         masks,
         _phantom: PhantomData,
     };
@@ -2146,7 +2311,7 @@ fn build_full_row<
 }
 
 /// Public-values vector: pad_source_commitment[10] ‖ opening_tuple[10] ‖
-/// masked[6] ‖ context ‖ role_root ‖ relation_id ‖ syndrome[12] ‖
+/// masked[6] ‖ context ‖ role_root ‖ nullifier ‖ relation_id ‖ syndrome[12] ‖
 /// packed_witness_commitment[32].
 pub fn full_public_values<F: PrimeField32>(inst: &FullInstance<F>) -> Vec<F> {
     let mut v = Vec::with_capacity(
@@ -2154,17 +2319,21 @@ pub fn full_public_values<F: PrimeField32>(inst: &FullInstance<F>) -> Vec<F> {
             + N_LANES
             + CONTEXT_ELEMS
             + ROLE_ROOT_ELEMS
+            + NULLIFIER_ELEMS
             + RELATION_ID_ELEMS
-            + CHECKED_CORE_ELEMS,
+            + CHECKED_CORE_ELEMS
+            + KEY_COMMITMENT_BYTES,
     );
     v.extend_from_slice(&inst.pad_source_commitment);
     v.extend_from_slice(&inst.opening_tuple_commitment);
     v.extend_from_slice(&inst.masked_projection);
     v.extend_from_slice(&inst.context);
     v.extend_from_slice(&inst.role_root);
+    v.extend_from_slice(&inst.nullifier);
     v.extend(RELATION_ID.iter().map(|&id| F::from_u32(id)));
     v.extend_from_slice(&inst.syndrome);
     v.extend_from_slice(&inst.packed_witness_commitment);
+    v.extend_from_slice(&inst.checked_core_key_commitment);
     v
 }
 
@@ -2213,6 +2382,8 @@ mod context_constraint_tests {
             account_state_root: core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(7)),
             // CLASS C: 12 canonical (< q12289) checked-core syndrome lanes.
             syndrome: core::array::from_fn(|i| ((i as u32 * 1009 + 17) % Q12289_CARRIER) as u16),
+            // CLASS A-3: a registered key commitment (declared; any value is creation-valid).
+            checked_core_key_commitment: core::array::from_fn(|i| (i as u8).wrapping_mul(19).wrapping_add(2)),
         }
     }
 
@@ -2282,8 +2453,11 @@ mod context_constraint_tests {
     fn role_root_pv_off() -> usize {
         2 * N_COMMIT_LANES + N_LANES + CONTEXT_ELEMS
     }
-    fn relation_id_pv_off() -> usize {
+    fn nullifier_pv_off() -> usize {
         role_root_pv_off() + ROLE_ROOT_ELEMS
+    }
+    fn relation_id_pv_off() -> usize {
+        nullifier_pv_off() + NULLIFIER_ELEMS
     }
 
     // CLASS A completeness: the honest instance's role_root equals the Poseidon2
@@ -2344,6 +2518,95 @@ mod context_constraint_tests {
     fn role_input_lane_mismatch_violates_constraints() {
         let (air, mut trace, pv, lay) = build();
         let col = lay.role_off; // first role-handle input lane (== c1_out[0])
+        let w = lay.width;
+        for r in 0..trace.values.len() / w {
+            trace.values[r * w + col] += Val::ONE;
+        }
+        check_constraints(&air, &trace, &pv);
+    }
+
+    // CLASS A-2 completeness: the honest nullifier equals Poseidon2-sponge(DOMAIN ‖
+    // pad_seed ‖ slot), is carried in the public-value vector, and — being
+    // nonce-FREE — is INVARIANT to the C1 blinding nonce but VARIES with the slot.
+    #[test]
+    fn nullifier_matches_recompute_and_is_nonce_free() {
+        let air: Air = FullRelationAir::from_arrays_mode(
+            KOALABEAR_POSEIDON2_RC_16_EXTERNAL_INITIAL,
+            KOALABEAR_POSEIDON2_RC_16_INTERNAL,
+            KOALABEAR_POSEIDON2_RC_16_EXTERNAL_FINAL,
+            false,
+        );
+        let s = secrets();
+        let (_t, inst) = generate_full_trace::<
+            Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+        >(&s, air.constants(), 2);
+
+        // Independent recompute of the nullifier sponge over DOMAIN ‖ pad_seed ‖ slot.
+        let perm_cols = air.layout().perm_cols;
+        let mut null_br = vec![false; 1];
+        null_br.extend(vec![true; 32 + SLOT_ID_BYTES]);
+        let null_plan = SpongePlan::new(null_br, NULLIFIER_ELEMS);
+        let mut data: Vec<u32> = vec![NULLIFIER_DOMAIN];
+        data.extend(s.pad_seed.iter().map(|&b| b as u32));
+        data.extend(s.slot.to_le_bytes().iter().map(|&b| b as u32));
+        let elems = build_elems::<Val>(&data, &null_plan);
+        let (_b, _post, outputs) = run_sponge::<
+            Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+        >(&elems, &null_plan, air.constants(), perm_cols);
+        for j in 0..NULLIFIER_ELEMS {
+            assert_eq!(inst.nullifier[j], outputs[j], "nullifier[{j}] != recompute");
+        }
+        let pv = full_public_values(&inst);
+        for j in 0..NULLIFIER_ELEMS {
+            assert_eq!(pv[nullifier_pv_off() + j], inst.nullifier[j]);
+        }
+
+        // Nonce-FREE: re-prove the SAME (pad_seed, slot) with a DIFFERENT C1 nonce
+        // -> the pad_source_commitment changes but the nullifier is IDENTICAL
+        // (this is exactly the reuse the registry detects).
+        let mut s2 = secrets();
+        s2.nonce_c1 = core::array::from_fn(|i| s.nonce_c1[i] ^ 0xA5);
+        let (_t2, inst2) = generate_full_trace::<
+            Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+        >(&s2, air.constants(), 2);
+        assert_ne!(
+            inst.pad_source_commitment, inst2.pad_source_commitment,
+            "different C1 nonce should change the blinded pad_source_commitment"
+        );
+        assert_eq!(
+            inst.nullifier, inst2.nullifier,
+            "nullifier must be invariant to the C1 blinding nonce (nonce-free reuse signal)"
+        );
+
+        // Slot-bound: a DIFFERENT slot yields a DIFFERENT nullifier.
+        let mut s3 = secrets();
+        s3.slot ^= 0x1;
+        let (_t3, inst3) = generate_full_trace::<
+            Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+        >(&s3, air.constants(), 2);
+        assert_ne!(
+            inst.nullifier, inst3.nullifier,
+            "nullifier must vary with the slot"
+        );
+    }
+
+    // CLASS A-2 soundness: forge the public nullifier (leave the pad_seed/slot
+    // columns honest) -> the in-AIR `nullifier_out == public nullifier` fails.
+    #[test]
+    #[should_panic]
+    fn forged_nullifier_violates_constraints() {
+        let (air, trace, mut pv, _lay) = build();
+        pv[nullifier_pv_off()] += Val::ONE; // tamper the claimed nullifier
+        check_constraints(&air, &trace, &pv);
+    }
+
+    // CLASS A-2 soundness: corrupt the pinned DOMAIN input lane -> the
+    // domain-binding equality (null_lane(0) == NULLIFIER_DOMAIN) fails.
+    #[test]
+    #[should_panic]
+    fn nullifier_domain_lane_mismatch_violates_constraints() {
+        let (air, mut trace, pv, lay) = build();
+        let col = lay.nullifier_off; // input lane 0 (the DOMAIN tag)
         let w = lay.width;
         for r in 0..trace.values.len() / w {
             trace.values[r * w + col] += Val::ONE;

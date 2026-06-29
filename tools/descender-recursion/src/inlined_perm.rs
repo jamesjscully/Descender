@@ -499,19 +499,18 @@ mod tests {
         assert!(check_all_constraints(&PermAir, &m, &[], None).is_ok() == false);
     }
 
-    /// Cross-check: the inlined output's first 8 lanes equal the truncated Merkle-node
-    /// compression of `[left ‖ right]` (the `perm.rs::CompressAir` reference permutation).
+    /// Cross-check (q128): the inlined output's SQUEEZE (first `DIGEST_ELEMS` lanes) equals the
+    /// deployed permutation's first `DIGEST_ELEMS` lanes — the truncation the sponge-mode Merkle
+    /// node / leaf-hash squeezes out as the digest. (The old digest-8 form cross-checked a 2-to-1
+    /// truncated permutation; at q128 a 13-element digest no longer fits `2·d ≤ WIDTH`, so the node
+    /// is sponge-mode — see `merkle_air::tests::air_node_matches_real_sponge_compression`.)
     #[test]
-    fn inlined_output_matches_truncated_compression() {
+    fn inlined_output_squeeze_matches_deployed_permutation() {
         use descender_account_stark::DIGEST_ELEMS;
-        let _ = CompressAir::new; // touch the p3 byte-reference type so it stays wired
+        let _ = CompressAir::new; // keep the p3 byte-reference type wired
         let c = Constants::pinned();
         let perm = default_koalabear_poseidon2_16();
-        let mut input = [Val::ZERO; WIDTH];
-        for i in 0..DIGEST_ELEMS {
-            input[i] = Val::from_u32(100 + i as u32);
-            input[DIGEST_ELEMS + i] = Val::from_u32(200 + i as u32);
-        }
+        let input: [Val; WIDTH] = core::array::from_fn(|i| Val::from_u32(100 + i as u32));
         let cols = generate_perm_cols(input, &c);
         let out = perm_output(&cols);
         let mut expected = input;

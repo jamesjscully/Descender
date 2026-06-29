@@ -2,16 +2,20 @@
 
 > MIGRATION STATUS (2026-06-28): `ACTIVE_SUPPORT`.
 > This is a status/architecture map of the q128 implementation effort, not a normative spec.
-> Current normative authority starts at `../spec/README.md`. ADR-gated decisions (settlement
-> architecture, production merge) remain pending and are NOT decided here.
+> Current normative authority starts at `../spec/README.md`. Settlement and finality decisions
+> live in `../decisions/ADR-0009-native-sovereign-pq-rollup-settlement.md` and
+> `../decisions/ADR-0010-registry-lifecycle-consensus-wiring-and-finality.md`; production readiness
+> still remains external-review gated.
+> This detail note is subordinate to `../TRACKER.md`, which remains the top-level
+> implementation, proof, process, and adoption tracker.
 
 ## 0. Purpose & scope
 
 This note consolidates, for a maintainer/reviewer, the state of the quantum-128 (q128) re-parameterized
-build on the isolated `q128-reparam` worktree: what is implemented and tested, where each piece lives,
-the pinned KATs, the economic story, and the exact remaining gates. It claims only what the code and
-tests support; everything else is listed as a gate. Nothing here flips the external-review-gated
-production gate (ADR-0008) or decides the settlement architecture.
+build originally staged on the isolated `q128-reparam` worktree and merged into the active repo: what
+is implemented and tested, where each piece lives, the pinned KATs, the economic story, and the exact
+remaining gates. It claims only what the code and tests support; everything else is listed as a gate.
+Nothing here flips the external-review-gated production gate (ADR-0008).
 
 The original objective driving this work: *an economically viable quantum-128 level deployable standard
 (everything except external analysis).*
@@ -163,8 +167,9 @@ native speed. Under native settlement the measured per-block perm counts are thr
 3. **Consensus wiring** (deployment decisions). Wire `pad_seed_registry` into the live admission path;
    the lifecycle consume-once / admission registry into consensus; pin the reorg/free policy to the
    chosen finality profile (D2).
-4. **External review + production merge** — gated by ADR-0008. This is the "external analysis" the
-   objective explicitly EXCLUDES; the code remains on the `q128-reparam` worktree, not merged.
+4. **External review + production gate** — gated by ADR-0008. This is the "external analysis" the
+   objective explicitly EXCLUDES; the code has moved into the active repository, but the production
+   gate remains closed.
 
 ## 6. Where to start reading
 

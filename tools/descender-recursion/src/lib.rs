@@ -83,6 +83,8 @@ pub mod inlined_perm_octic; // OCTIC (OOD) mirror of the Poseidon2-16 perm — r
 pub mod merkle_air; // gadget 2 (proper) — binary Merkle path-verify AIR (inlined perm + fold wiring)
 pub mod fri_fold; // gadget 3 — FRI commit-phase fold reference (binary) landed
 pub mod fri_fold_air; // gadget 3 (proper) — FRI commit-phase binary fold AIR (deg-8 extension in-AIR)
+pub mod leaf_hash; // q128 leaf-row hash primitive (rate-7/digest-13 MyHash) — decouples LEAF_HASH_RATE from challenger::RATE / DIGEST_ELEMS
+pub mod fs_observe; // q128 FS commitment observation (DIGEST_ELEMS-wide commitment over rate-8 challenger) — fs_squeeze_betas_digest
 pub mod fri_chain_air; // gadget 3 (chaining) — multi-round FRI fold CHAINING transition AIR (per-layer log_height)
 pub mod fri_layer_air; // gadget 2/3 bridge — per-round FRI commit-phase LAYER Merkle open (leaf-hash + path + root) + final-poly check
 pub mod index_bus; // cross-gadget index bus (begin) — bind Merkle/FRI query index to gadget-1 sample_bits
@@ -93,6 +95,14 @@ pub mod leaf_constraint_air; // gadget 4 (proper, PART 2) — leaf C(zeta) MIRRO
 pub mod public_io; // gadget 5 — public-IO statement preservation landed
 pub mod public_io_air; // gadget 5 (proper) — public-IO statement preservation as Air<AB>
 pub mod recursive_air; // capstone (BEGIN) — monolithic verifier-AIR: index/challenge bus + FRI consumer in one window
+pub mod block_accumulator; // Phase-3 (BEGIN) — fold a block of per-account recursive-proof commitments into one provable O(1) chain_state_root
+pub mod accumulated_member; // Phase-3 (step 1) — fold IN-CIRCUIT-VERIFIED member roots into the block chain
+pub mod block_recursive_air; // Phase-3 TRUE single-proof O(1) — verify N members in-circuit + chain in one proof
+pub mod verifier_cost; // on-chain verification cost basis — MEASURE the aggregate-proof verifier Poseidon2 perm count
+pub mod settlement; // DEPLOYABLE verifier — native settlement/rollup O(1) block verify (prove_block/verify_block + transport)
+pub mod spend_block; // Phase-2→3 bridge — aggregate SPEND proofs into one O(1) chain_state_root (generic recursion)
+pub mod alpha_fold; // re-arithmetization — low-degree committed-accumulator alpha-batch fold (makes full-C(zeta) provable)
+pub mod spend_constraint_air; // spend recursive-verifier C(zeta) mirror — opened-cell residuals folded via alpha_fold
 
 /// Phase-1 milestone marker (kept until `recursive_air` lands). Asserts the
 /// re-exported leaf config is reachable so the crate's single-source-of-truth wiring
@@ -111,7 +121,7 @@ mod tests {
         assert!(phase1_target_present());
         // Pin the leaf params the recursive verifier-AIR must mirror; if the leaf
         // config changes, this is the first place that must be revisited.
-        assert_eq!(PROD_NUM_QUERIES, 56);
+        assert_eq!(PROD_NUM_QUERIES, 120); // quantum-128: raised 56 -> 120 (ADR-0008)
         assert_eq!(PROD_LOG_BLOWUP, 4);
     }
 }

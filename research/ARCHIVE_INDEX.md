@@ -147,6 +147,7 @@ kept now and what must be true before it can be removed or relocated.
 | `research/path2_account_stark_payload_injectivity_rejection_completeness_v1.md` | `ACTIVE_SUPPORT` | payload byte-model parser-injectivity + rejection-class completeness supporting `DIR-STARK-001`/`DIR-REJECT-001` |
 | `research/path2_lifecycle_finality_theorem_v1.md` | `ACTIVE_SUPPORT` | consume-once lifecycle theorem with profiled reorg/finality assumption supporting `DIR-LIFE-001` |
 | `research/path2_economic_deployment_architecture_v1.md` | `ACTIVE_SUPPORT` | economic deployment-architecture decision analysis (4.75 MB creation proof ⇒ PQ validity rollup + native STARK recursion) supporting `AGG-ROLLUP-001`/`ADOPT-ETH-ROLLUP-001` |
+| `research/path2_q128_build_status_and_architecture_v1.md` | `ACTIVE_SUPPORT` | consolidated q128 implementation status and architecture map supporting `AGG-ROLLUP-001` |
 | `research/path2_quantum128_parameterization_v1.md` | `ACTIVE_SUPPORT` | exact atomic quantum-128 parameter set (queries 120, rate 7/cap 9, digest 13) implementing `ADR-0008`, supporting `DIR-QROM-001`/`DIR-STARK-001`/`ADOPT-128-001` |
 | `research/slot_authorization_handle_v1_spec.md` | `ACTIVE_SUPPORT` | normalized spend-time authorization handle interface |
 | `research/account_creation_evidence_v1_spec.md` | `ACTIVE_SUPPORT` | current creation evidence envelope |

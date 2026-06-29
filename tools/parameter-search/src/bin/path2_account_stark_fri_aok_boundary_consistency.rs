@@ -291,7 +291,7 @@ fn main() -> Result<(), String> {
     )?;
     require_contains(
         &config,
-        "pub const PROD_NUM_QUERIES: usize = 56;",
+        "pub const PROD_NUM_QUERIES: usize = 120;",
         "FRI num_queries",
     )?;
     require_contains(

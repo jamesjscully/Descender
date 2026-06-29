@@ -25,17 +25,17 @@
     "corpus_id": "Descender.Path2.AccountStarkFriAokBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "account_stark_fri_aok_boundary_report_digest": "bcb747ec1676c7bec01592180f8da6ffef3da129dfa002a5bad51f1e910949bb",
-      "account_stark_fri_aok_boundary_report_recomputed_digest": "bcb747ec1676c7bec01592180f8da6ffef3da129dfa002a5bad51f1e910949bb",
-      "account_stark_fri_qrom_residual_report_digest": "f2278bb76f1c4db70f40bf6b780add418a9f7536a4ef810def0b37b8ea570ece",
-      "account_stark_residual_matrix_report_digest": "a3b96b19b30bfd2433d50cb046ab5ac710ceb3faeae033463d2279a1a24d31c6",
-      "fri_aok_boundary_report_fri_qrom_digest": "f2278bb76f1c4db70f40bf6b780add418a9f7536a4ef810def0b37b8ea570ece",
-      "residual_matrix_report_fri_aok_digest": "bcb747ec1676c7bec01592180f8da6ffef3da129dfa002a5bad51f1e910949bb"
+      "account_stark_fri_aok_boundary_report_digest": "f3b0efdd4358fdd06f07415cf9059034f1fbaf4ee732000bd8af4194e0d06a6c",
+      "account_stark_fri_aok_boundary_report_recomputed_digest": "f3b0efdd4358fdd06f07415cf9059034f1fbaf4ee732000bd8af4194e0d06a6c",
+      "account_stark_fri_qrom_residual_report_digest": "a275e34633ce69695d7c2617019f127c1a74d6de240fc6c86a156afe41781650",
+      "account_stark_residual_matrix_report_digest": "47ffde22e89efb3d8270fc63fd76637dcad4de14b9e06db5ad0b41a879c45266",
+      "fri_aok_boundary_report_fri_qrom_digest": "a275e34633ce69695d7c2617019f127c1a74d6de240fc6c86a156afe41781650",
+      "residual_matrix_report_fri_aok_digest": "f3b0efdd4358fdd06f07415cf9059034f1fbaf4ee732000bd8af4194e0d06a6c"
     },
     "fri_and_challenge_inputs": {
       "account_stark_config_source": "tools/descender-account-stark/src/config.rs",
       "challenge_field_pinned": true,
-      "fri_qrom_residual_report_digest": "f2278bb76f1c4db70f40bf6b780add418a9f7536a4ef810def0b37b8ea570ece",
+      "fri_qrom_residual_report_digest": "a275e34633ce69695d7c2617019f127c1a74d6de240fc6c86a156afe41781650",
       "fri_schedule_pinned": true,
       "proof_system": "Plonky3 HidingFriPcs over KoalaBear with Poseidon2-Merkle and DuplexChallenger"
     },
@@ -54,5 +54,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.AccountStarkFriAokBoundaryManifest.v1"
   },
-  "manifest_digest": "060fe1091632a41e86d4eae367bff6080083062d9787b5a79287dd9c6eb5c4c0"
+  "manifest_digest": "659b00bd128e30a35e2bc55a08bab1a6a8da1b3d4dc022a89a4518310ac46abe"
 }

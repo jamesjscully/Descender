@@ -116,6 +116,7 @@ dependencies = [
  "p3-uni-stark",
  "rand",
  "serde",
+ "sha2",
 ]
 
 [[package]]

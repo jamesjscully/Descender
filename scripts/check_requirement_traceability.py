@@ -37,7 +37,7 @@ NON_CLAIMS_CONTRACTS = [
     "Schnorr-style adaptor signatures",
     "threshold signing as one compact native Descender signature",
     "validator finality or bridge safety without explicit account/committee state",
-    "hard 128-bit security while the active path is still using the 124-bit Poseidon2/Merkle floor",
+    "deployment-ready hard 128-bit security before q128 KAT freeze, external review, and production-gate acceptance",
     "deployability based only on internal notes or prototype tests",
 ]
 PRODUCT_BAR_LINES = [
@@ -298,8 +298,8 @@ ACCOUNT_STARK_FRI_QROM_RESIDUAL_MARKERS = {
         "qrom_domain_vector_case_ids",
         '"qrom_domain_vector_case_count": 5',
         "checked-core spend transcript ledger; not a substitute",
-        '"conservative_johnson_bits": 128',
-        '"poseidon2_sponge_floor_bits": 124',
+        '"conservative_johnson_bits": 256',
+        '"poseidon2_sponge_floor_bits": 139',
         '"account_stark_transcript_qrom_theorem_instantiated": false',
         '"residual_pricing_complete": false',
         '"deployment_ready": false',
@@ -313,7 +313,7 @@ ACCOUNT_STARK_FRI_QROM_RESIDUAL_MARKERS = {
         "fri_qrom_checked_core_budget_import",
         "fri_qrom_open_theorem_flags_fail_closed",
         '"case_count": 5',
-        '"poseidon2_sponge_floor_bits": 124',
+        '"poseidon2_sponge_floor_bits": 139',
         '"account_stark_transcript_qrom_theorem_instantiated": false',
         '"residual_pricing_complete": false',
         '"deployment_ready": false',
@@ -2119,7 +2119,7 @@ SECURITY_LEVEL_SURFACE_CONTRACTS = [
         "Hard-128 profile decision",
         "`direct`",
         "`not_ready`",
-        "124-bit practical floor",
+        "q128 practical floor",
         {"ADOPT-128-001", "DIR-QROM-001", "DIR-REVIEW-001"},
     ),
 ]
