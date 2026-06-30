@@ -1,0 +1,182 @@
+{
+  "corpus": {
+    "audit_summary": {
+      "all_cases_have_evidence": true,
+      "all_cases_have_support_tests": true,
+      "all_support_tests_present": true,
+      "case_count": 8,
+      "case_ids": [
+        "lifecycle_transition_admit_spend_consume_once",
+        "lifecycle_transition_replay_rejected",
+        "lifecycle_transition_chain_persistence",
+        "lifecycle_transition_reorg_burn",
+        "lifecycle_transition_recovery_burn",
+        "lifecycle_transition_restore_anchor",
+        "lifecycle_transition_file_store_recovery",
+        "lifecycle_transition_d2_finality_window"
+      ],
+      "covers_admit": true,
+      "covers_burn": true,
+      "covers_d2_finality_window": true,
+      "covers_recovery": true,
+      "covers_reorg": true,
+      "covers_replay": true,
+      "covers_restore": true,
+      "covers_spend": true,
+      "deployment_ready": false,
+      "executable_test_count": 12,
+      "lifecycle_transition_profile_verified": false,
+      "local_successor_state_model_pinned": true,
+      "target_chain_finality_profile_instantiated": true,
+      "transition_vector_corpus_pinned": true
+    },
+    "case_count": 8,
+    "cases": [
+      {
+        "case_id": "lifecycle_transition_admit_spend_consume_once",
+        "evidence_present": true,
+        "kind": "lifecycle_transition_kat",
+        "named_break_if_missing": "slot_replay_or_rollback_break",
+        "profile_status": "local_successor_state_evidence_not_deployment_profile",
+        "support_tests": [
+          "path2_prevalidated_slot_consume_once_rejects_reauthorization",
+          "path2_direct_single_slot_spend_composes_admission_signature_and_consume_once"
+        ],
+        "transition_phases": [
+          "admit",
+          "spend",
+          "consume"
+        ]
+      },
+      {
+        "case_id": "lifecycle_transition_replay_rejected",
+        "evidence_present": true,
+        "kind": "lifecycle_transition_kat",
+        "named_break_if_missing": "slot_replay_or_rollback_break",
+        "profile_status": "local_replay_evidence_not_deployment_profile",
+        "support_tests": [
+          "lifecycle_manager_verify_and_consume_blocks_replay",
+          "spent_slot_ledger_blocks_stale_wallet_replay"
+        ],
+        "transition_phases": [
+          "spend",
+          "replay"
+        ]
+      },
+      {
+        "case_id": "lifecycle_transition_chain_persistence",
+        "evidence_present": true,
+        "kind": "lifecycle_transition_kat",
+        "named_break_if_missing": "slot_replay_or_rollback_break",
+        "profile_status": "local_file_store_evidence_not_deployment_profile",
+        "support_tests": [
+          "chain_state_file_stores_verify_record_and_persist_together"
+        ],
+        "transition_phases": [
+          "spend",
+          "persist",
+          "restore"
+        ]
+      },
+      {
+        "case_id": "lifecycle_transition_reorg_burn",
+        "evidence_present": true,
+        "kind": "lifecycle_transition_kat",
+        "named_break_if_missing": "slot_replay_or_rollback_break",
+        "profile_status": "local_reorg_burn_evidence_not_deployment_profile",
+        "support_tests": [
+          "spent_slot_ledger_records_reorg_burns"
+        ],
+        "transition_phases": [
+          "reorg",
+          "burn"
+        ]
+      },
+      {
+        "case_id": "lifecycle_transition_recovery_burn",
+        "evidence_present": true,
+        "kind": "lifecycle_transition_kat",
+        "named_break_if_missing": "slot_replay_or_rollback_break",
+        "profile_status": "local_recovery_burn_evidence_not_deployment_profile",
+        "support_tests": [
+          "lifecycle_manager_recovery_burns_reserved_slots"
+        ],
+        "transition_phases": [
+          "recovery",
+          "burn"
+        ]
+      },
+      {
+        "case_id": "lifecycle_transition_restore_anchor",
+        "evidence_present": true,
+        "kind": "lifecycle_transition_kat",
+        "named_break_if_missing": "slot_replay_or_rollback_break",
+        "profile_status": "local_restore_anchor_evidence_not_deployment_profile",
+        "support_tests": [
+          "lifecycle_restore_anchor_rejects_old_backup_snapshots"
+        ],
+        "transition_phases": [
+          "restore",
+          "reject_stale_snapshot"
+        ]
+      },
+      {
+        "case_id": "lifecycle_transition_file_store_recovery",
+        "evidence_present": true,
+        "kind": "lifecycle_transition_kat",
+        "named_break_if_missing": "slot_replay_or_rollback_break",
+        "profile_status": "local_recovery_persistence_evidence_not_deployment_profile",
+        "support_tests": [
+          "lifecycle_snapshot_roundtrips_and_recovers_by_burning_reservations",
+          "lifecycle_file_store_roundtrips_and_recovers_reserved_slots"
+        ],
+        "transition_phases": [
+          "restore",
+          "recovery",
+          "burn",
+          "persist"
+        ]
+      },
+      {
+        "case_id": "lifecycle_transition_d2_finality_window",
+        "evidence_present": true,
+        "kind": "lifecycle_transition_kat",
+        "named_break_if_missing": "slot_replay_or_rollback_break",
+        "profile_status": "selected_d2_finality_evidence_not_deployment_profile",
+        "support_tests": [
+          "path2_d2_finality_profile_reorg_frees_window_but_preserves_finalized"
+        ],
+        "transition_phases": [
+          "finalize",
+          "reorg",
+          "free_pending",
+          "preserve_finalized"
+        ]
+      }
+    ],
+    "corpus_id": "Descender.Path2.DirectLifecycleTransitionVectors.v1",
+    "corpus_version": 1,
+    "generator": {
+      "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_direct_lifecycle_transition_vectors",
+      "source": "tools/parameter-search/src/bin/path2_direct_lifecycle_transition_vectors.rs"
+    },
+    "lifecycle_boundary_report": {
+      "acceptance_hypothesis": "lifecycle_transition_consumes_authorization_once",
+      "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+      "deployment_ready": false,
+      "digest": "73a3b9de7658f6141309806a6a915b10ac14ca42aeca241937189f5c6702e76a",
+      "direct_obligation_id": "direct_obligation_consume_once",
+      "domain": "Descender.Path2.DirectLifecycleBoundaryReport.v1",
+      "lifecycle_transition_profile_verified": false,
+      "named_break": "slot_replay_or_rollback_break",
+      "recomputed_digest": "73a3b9de7658f6141309806a6a915b10ac14ca42aeca241937189f5c6702e76a",
+      "target_chain_finality_profile_id": "ADR-0010.D2.finalized-head-reorg-window.v1",
+      "target_chain_finality_profile_instantiated": true,
+      "theorem_target": "one_use_successor_state_theorem_v1"
+    },
+    "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
+    "schema": "Descender.Path2.DirectLifecycleTransitionVectors.v1",
+    "status": "digest_pinned_direct_lifecycle_transition_vectors"
+  },
+  "corpus_digest": "3dc3369b5c9a9636cd490ebab27b0817be1334bddb1d7478a5f1b355830db277"
+}

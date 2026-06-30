@@ -109,6 +109,139 @@ fn body_digest(corpus: &Value, label: &str) -> Result<String, String> {
     Ok(hex_encode(&Sha256::digest(corpus_json.as_bytes())))
 }
 
+pub fn path2_direct_lifecycle_transition_vector_corpus_evidence_v1() -> Result<Value, String> {
+    let lifecycle_report = path2_direct_lifecycle_boundary_report_v1();
+    validate_path2_direct_lifecycle_boundary_report_v1(&lifecycle_report)?;
+    let lifecycle_digest = path2_direct_lifecycle_boundary_report_v1_digest(&lifecycle_report);
+    if lifecycle_digest != lifecycle_report.digest {
+        return Err("direct lifecycle boundary report digest mismatch".to_string());
+    }
+
+    let corpus_file = load_json("formal/kat/path2_direct_lifecycle_transition_vectors_v1.json")?;
+    let corpus = at(&corpus_file, "/corpus")?;
+    let corpus_digest = body_digest(corpus, "direct lifecycle transition vector corpus")?;
+    if str_at(&corpus_file, "/corpus_digest")? != corpus_digest {
+        return Err("direct lifecycle transition vector corpus digest mismatch".to_string());
+    }
+    let case_ids = case_ids_at(corpus, "/cases")?;
+    if case_ids != lifecycle_report.transition_vector_case_ids {
+        return Err(
+            "direct lifecycle transition vector corpus case ids drifted from lifecycle report"
+                .to_string(),
+        );
+    }
+    if str_at(corpus, "/schema")? != "Descender.Path2.DirectLifecycleTransitionVectors.v1"
+        || str_at(corpus, "/status")? != "digest_pinned_direct_lifecycle_transition_vectors"
+        || str_at(corpus, "/lifecycle_boundary_report/digest")?
+            != hex_encode(&lifecycle_report.digest)
+        || str_at(corpus, "/lifecycle_boundary_report/recomputed_digest")?
+            != hex_encode(&lifecycle_digest)
+        || str_at(corpus, "/lifecycle_boundary_report/direct_obligation_id")?
+            != lifecycle_report.direct_obligation_id
+        || str_at(corpus, "/lifecycle_boundary_report/acceptance_hypothesis")?
+            != lifecycle_report.acceptance_hypothesis
+        || str_at(corpus, "/lifecycle_boundary_report/named_break")? != lifecycle_report.named_break
+        || !bool_at(
+            corpus,
+            "/lifecycle_boundary_report/target_chain_finality_profile_instantiated",
+        )?
+        || bool_at(
+            corpus,
+            "/lifecycle_boundary_report/lifecycle_transition_profile_verified",
+        )?
+        || bool_at(corpus, "/lifecycle_boundary_report/deployment_ready")?
+        || u64_at(corpus, "/case_count")?
+            != lifecycle_report.transition_vector_case_ids.len() as u64
+        || u64_at(corpus, "/audit_summary/case_count")?
+            != lifecycle_report.transition_vector_case_ids.len() as u64
+        || u64_at(corpus, "/audit_summary/executable_test_count")?
+            != lifecycle_report.executable_tests.len() as u64
+        || !bool_at(corpus, "/audit_summary/all_cases_have_support_tests")?
+        || !bool_at(corpus, "/audit_summary/all_support_tests_present")?
+        || !bool_at(corpus, "/audit_summary/all_cases_have_evidence")?
+        || !bool_at(corpus, "/audit_summary/covers_admit")?
+        || !bool_at(corpus, "/audit_summary/covers_spend")?
+        || !bool_at(corpus, "/audit_summary/covers_replay")?
+        || !bool_at(corpus, "/audit_summary/covers_burn")?
+        || !bool_at(corpus, "/audit_summary/covers_recovery")?
+        || !bool_at(corpus, "/audit_summary/covers_restore")?
+        || !bool_at(corpus, "/audit_summary/covers_reorg")?
+        || !bool_at(corpus, "/audit_summary/covers_d2_finality_window")?
+        || !bool_at(corpus, "/audit_summary/transition_vector_corpus_pinned")?
+        || bool_at(corpus, "/audit_summary/lifecycle_transition_profile_verified")?
+        || bool_at(corpus, "/audit_summary/deployment_ready")?
+    {
+        return Err(
+            "direct lifecycle transition vector corpus is not bound to current open lifecycle report"
+                .to_string(),
+        );
+    }
+
+    Ok(json!({
+        "schema": "Descender.Path2.DirectLifecycleTransitionVectorCorpusEvidence.v1",
+        "status": "digest_pinned_open_direct_lifecycle_transition_vector_corpus_evidence",
+        "corpus_path": "formal/kat/path2_direct_lifecycle_transition_vectors_v1.json",
+        "corpus_schema": str_at(corpus, "/schema")?,
+        "corpus_status": str_at(corpus, "/status")?,
+        "corpus_digest": str_at(&corpus_file, "/corpus_digest")?,
+        "corpus_recomputed_digest": corpus_digest,
+        "direct_lifecycle_boundary_report_digest": str_at(
+            corpus,
+            "/lifecycle_boundary_report/digest"
+        )?,
+        "direct_lifecycle_boundary_report_recomputed_digest": hex_encode(&lifecycle_digest),
+        "case_count": u64_at(corpus, "/case_count")?,
+        "case_ids": case_ids,
+        "audit_summary": {
+            "case_count": u64_at(corpus, "/audit_summary/case_count")?,
+            "executable_test_count": u64_at(
+                corpus,
+                "/audit_summary/executable_test_count"
+            )?,
+            "all_cases_have_support_tests": bool_at(
+                corpus,
+                "/audit_summary/all_cases_have_support_tests"
+            )?,
+            "all_support_tests_present": bool_at(
+                corpus,
+                "/audit_summary/all_support_tests_present"
+            )?,
+            "all_cases_have_evidence": bool_at(
+                corpus,
+                "/audit_summary/all_cases_have_evidence"
+            )?,
+            "covers_admit": bool_at(corpus, "/audit_summary/covers_admit")?,
+            "covers_spend": bool_at(corpus, "/audit_summary/covers_spend")?,
+            "covers_replay": bool_at(corpus, "/audit_summary/covers_replay")?,
+            "covers_burn": bool_at(corpus, "/audit_summary/covers_burn")?,
+            "covers_recovery": bool_at(corpus, "/audit_summary/covers_recovery")?,
+            "covers_restore": bool_at(corpus, "/audit_summary/covers_restore")?,
+            "covers_reorg": bool_at(corpus, "/audit_summary/covers_reorg")?,
+            "covers_d2_finality_window": bool_at(
+                corpus,
+                "/audit_summary/covers_d2_finality_window"
+            )?,
+            "local_successor_state_model_pinned": bool_at(
+                corpus,
+                "/audit_summary/local_successor_state_model_pinned"
+            )?,
+            "transition_vector_corpus_pinned": bool_at(
+                corpus,
+                "/audit_summary/transition_vector_corpus_pinned"
+            )?,
+            "target_chain_finality_profile_instantiated": bool_at(
+                corpus,
+                "/audit_summary/target_chain_finality_profile_instantiated"
+            )?,
+            "lifecycle_transition_profile_verified": bool_at(
+                corpus,
+                "/audit_summary/lifecycle_transition_profile_verified"
+            )?,
+            "deployment_ready": bool_at(corpus, "/audit_summary/deployment_ready")?
+        }
+    }))
+}
+
 pub fn path2_account_creation_accepted_proof_boundary_evidence_artifact_v1() -> Result<Value, String>
 {
     let proof_report = path2_account_creation_proof_boundary_report_v1();

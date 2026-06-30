@@ -1,8 +1,11 @@
-use descender_parameter_search::production_reference::{
-    PROFILE, path2_direct_lifecycle_boundary_report_v1,
-    path2_direct_lifecycle_boundary_report_v1_digest, path2_direct_theorem_boundary_report_v1,
-    path2_direct_theorem_boundary_report_v1_digest,
-    validate_path2_direct_lifecycle_boundary_report_v1,
+use descender_parameter_search::{
+    manifest_vector_evidence::path2_direct_lifecycle_transition_vector_corpus_evidence_v1,
+    production_reference::{
+        PROFILE, path2_direct_lifecycle_boundary_report_v1,
+        path2_direct_lifecycle_boundary_report_v1_digest, path2_direct_theorem_boundary_report_v1,
+        path2_direct_theorem_boundary_report_v1_digest,
+        validate_path2_direct_lifecycle_boundary_report_v1,
+    },
 };
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
@@ -36,6 +39,8 @@ fn manifest_body() -> Result<Value, String> {
             "direct theorem report is not bound to the current lifecycle report".to_string(),
         );
     }
+    let transition_vector_corpus_evidence =
+        path2_direct_lifecycle_transition_vector_corpus_evidence_v1()?;
 
     Ok(json!({
         "schema": "Descender.Path2.DirectLifecycleBoundaryManifest.v1",
@@ -87,6 +92,8 @@ fn manifest_body() -> Result<Value, String> {
             "coverage": {
                 "local_successor_state_model_pinned":
                     lifecycle_report.local_successor_state_model_pinned,
+                "transition_vector_corpus_pinned":
+                    lifecycle_report.transition_vector_corpus_pinned,
                 "consume_once_insert_after_public_checks":
                     lifecycle_report.consume_once_insert_after_public_checks,
                 "replay_rejected_by_consume_set":
@@ -112,7 +119,8 @@ fn manifest_body() -> Result<Value, String> {
                 "deployment_ready": lifecycle_report.deployment_ready,
                 "blocker": lifecycle_report.blocker
             },
-            "executable_tests": lifecycle_report.executable_tests
+            "executable_tests": lifecycle_report.executable_tests,
+            "transition_vector_corpus_evidence": transition_vector_corpus_evidence
         },
         "selected_finality_profile": {
             "target_chain_finality_profile_selected":

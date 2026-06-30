@@ -1,6 +1,10 @@
-use descender_parameter_search::production_reference::{
-    path2_direct_lifecycle_boundary_report_v1, path2_direct_lifecycle_boundary_report_v1_digest,
-    path2_direct_theorem_boundary_report_v1, validate_path2_direct_lifecycle_boundary_report_v1,
+use descender_parameter_search::{
+    manifest_vector_evidence::path2_direct_lifecycle_transition_vector_corpus_evidence_v1,
+    production_reference::{
+        path2_direct_lifecycle_boundary_report_v1,
+        path2_direct_lifecycle_boundary_report_v1_digest, path2_direct_theorem_boundary_report_v1,
+        validate_path2_direct_lifecycle_boundary_report_v1,
+    },
 };
 use serde_json::Value;
 use std::{
@@ -115,6 +119,8 @@ fn main() -> Result<(), String> {
     validate_path2_direct_lifecycle_boundary_report_v1(&report)?;
     let report_digest = hex_encode(&report.digest);
     let recomputed_digest = hex_encode(&path2_direct_lifecycle_boundary_report_v1_digest(&report));
+    let transition_vector_corpus_evidence =
+        path2_direct_lifecycle_transition_vector_corpus_evidence_v1()?;
 
     if str_at(&manifest, "/manifest/schema")?
         != "Descender.Path2.DirectLifecycleBoundaryManifest.v1"
@@ -228,6 +234,7 @@ fn main() -> Result<(), String> {
 
     for pointer in [
         "/manifest/local_successor_state_boundary/coverage/local_successor_state_model_pinned",
+        "/manifest/local_successor_state_boundary/coverage/transition_vector_corpus_pinned",
         "/manifest/local_successor_state_boundary/coverage/consume_once_insert_after_public_checks",
         "/manifest/local_successor_state_boundary/coverage/replay_rejected_by_consume_set",
         "/manifest/local_successor_state_boundary/coverage/spent_slot_ledger_rejects_stale_wallet_replay",
@@ -245,6 +252,45 @@ fn main() -> Result<(), String> {
         if !bool_at(&manifest, pointer)? {
             return Err(format!(
                 "direct lifecycle manifest lost required local flag {pointer}"
+            ));
+        }
+    }
+    if at(
+        &manifest,
+        "/manifest/local_successor_state_boundary/transition_vector_corpus_evidence",
+    )? != &transition_vector_corpus_evidence
+    {
+        return Err(
+            "direct lifecycle manifest lost transition vector corpus evidence".to_string(),
+        );
+    }
+    for pointer in [
+        "/manifest/local_successor_state_boundary/transition_vector_corpus_evidence/audit_summary/all_cases_have_support_tests",
+        "/manifest/local_successor_state_boundary/transition_vector_corpus_evidence/audit_summary/all_support_tests_present",
+        "/manifest/local_successor_state_boundary/transition_vector_corpus_evidence/audit_summary/all_cases_have_evidence",
+        "/manifest/local_successor_state_boundary/transition_vector_corpus_evidence/audit_summary/covers_admit",
+        "/manifest/local_successor_state_boundary/transition_vector_corpus_evidence/audit_summary/covers_spend",
+        "/manifest/local_successor_state_boundary/transition_vector_corpus_evidence/audit_summary/covers_replay",
+        "/manifest/local_successor_state_boundary/transition_vector_corpus_evidence/audit_summary/covers_burn",
+        "/manifest/local_successor_state_boundary/transition_vector_corpus_evidence/audit_summary/covers_recovery",
+        "/manifest/local_successor_state_boundary/transition_vector_corpus_evidence/audit_summary/covers_restore",
+        "/manifest/local_successor_state_boundary/transition_vector_corpus_evidence/audit_summary/covers_reorg",
+        "/manifest/local_successor_state_boundary/transition_vector_corpus_evidence/audit_summary/covers_d2_finality_window",
+        "/manifest/local_successor_state_boundary/transition_vector_corpus_evidence/audit_summary/transition_vector_corpus_pinned",
+    ] {
+        if !bool_at(&manifest, pointer)? {
+            return Err(format!(
+                "direct lifecycle manifest lost transition vector flag {pointer}"
+            ));
+        }
+    }
+    for pointer in [
+        "/manifest/local_successor_state_boundary/transition_vector_corpus_evidence/audit_summary/lifecycle_transition_profile_verified",
+        "/manifest/local_successor_state_boundary/transition_vector_corpus_evidence/audit_summary/deployment_ready",
+    ] {
+        if bool_at(&manifest, pointer)? {
+            return Err(format!(
+                "direct lifecycle manifest unexpectedly closes transition vector flag {pointer}"
             ));
         }
     }

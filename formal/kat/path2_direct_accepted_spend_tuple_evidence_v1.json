@@ -204,9 +204,9 @@
       "consume_once_state_before_digest": "f61980b7980643e1a8568a4051e21f374af7c99c8d3624932c56caf96fa4eb6a",
       "consumed_authorization_absent_before": true,
       "consumed_authorization_present_after": true,
-      "digest": "3e5f48265ed42202db15e840090b025b1ab18ed317689e9a96ccabdf33146e9b",
+      "digest": "2cd158c1a27309d98ad70d2ad7eef6838e7c6142cf1adcc908a0f2cb44d0988c",
       "direct_admission_namespace_record_digest": "d887a32e2da3a35c1c156f6b1ce77750f41c6b160a6e291694d1b1c50eb78abe",
-      "direct_lifecycle_boundary_report_digest": "35291c486ed1289096ff5946b4edd828c27a3f2834fcea8ed39823a6262536a9",
+      "direct_lifecycle_boundary_report_digest": "73a3b9de7658f6141309806a6a915b10ac14ca42aeca241937189f5c6702e76a",
       "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
       "every_accepted_tuple_field_has_evidence": true,
       "every_accepted_tuple_field_has_open_direct_obligation": true,
@@ -216,7 +216,7 @@
       "public_key_identity": "58f218aeb259309eeb545345a8f5c715987967b0ec724806d448394da578d0b0",
       "public_result_accepts_same_slot": true,
       "public_result_class_name": "accept_spend_slot",
-      "recomputed_digest": "3e5f48265ed42202db15e840090b025b1ab18ed317689e9a96ccabdf33146e9b",
+      "recomputed_digest": "2cd158c1a27309d98ad70d2ad7eef6838e7c6142cf1adcc908a0f2cb44d0988c",
       "replay_rejected_by_consume_once": true,
       "schema": "Descender.Path2.DirectAcceptedSpendTupleEvidence.v1",
       "selected_account_creation_payload_digest": "21795defadb54628226befbcb01ca0666d3c584c5a24e6ba05f4de8ec11cb6e0",
@@ -235,5 +235,5 @@
     "schema": "Descender.Path2.DirectAcceptedSpendTupleDeterministicKatEvidenceManifest.v1",
     "status": "digest_pinned_deterministic_kat_accepted_direct_spend_tuple_evidence"
   },
-  "manifest_digest": "96131fa219956d1a7517ed2bc7b2b441c4e532838f689ebb6d530546fd071653"
+  "manifest_digest": "311dc09d806aeb24040505ea6ab52ce45678fec3070aa5a9f97db722043c11de"
 }

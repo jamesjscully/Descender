@@ -6,6 +6,7 @@ use std::{
 use descender_parameter_search::manifest_vector_evidence::{
     path2_account_creation_proof_obligation_vector_corpus_evidence_v1,
     path2_account_creation_requirement_vector_corpus_evidence_v1,
+    path2_direct_lifecycle_transition_vector_corpus_evidence_v1,
     path2_direct_theorem_obligation_vector_corpus_evidence_v1,
 };
 use serde_json::Value;
@@ -373,6 +374,10 @@ fn check_consistency() -> Result<(), String> {
         &root,
         "formal/kat/path2_account_creation_proof_boundary_v1.json",
     )?;
+    let lifecycle = read_json(
+        &root,
+        "formal/kat/path2_direct_lifecycle_boundary_v1.json",
+    )?;
     let direct = read_json(&root, "formal/kat/path2_direct_theorem_boundary_v1.json")?;
     let accepted_proof_boundary = read_json(
         &root,
@@ -387,6 +392,7 @@ fn check_consistency() -> Result<(), String> {
         "formal/kat/path2_direct_accepted_composition_evidence_v1.json",
     )?;
     let proof_manifest = get(&proof, &["manifest"])?;
+    let lifecycle_manifest = get(&lifecycle, &["manifest"])?;
     let direct_manifest = get(&direct, &["manifest"])?;
     let accepted_proof_boundary_evidence =
         get(&accepted_proof_boundary, &["manifest", "evidence"])?;
@@ -399,6 +405,29 @@ fn check_consistency() -> Result<(), String> {
         "proof.manifest.account_creation_proof_boundary",
         get(direct_manifest, &["account_creation_proof_boundary"])?,
         "direct.manifest.account_creation_proof_boundary",
+    )?;
+    let lifecycle_transition_vector_corpus_evidence =
+        path2_direct_lifecycle_transition_vector_corpus_evidence_v1()?;
+    expect_eq(
+        get(
+            lifecycle_manifest,
+            &[
+                "local_successor_state_boundary",
+                "transition_vector_corpus_evidence",
+            ],
+        )?,
+        "lifecycle.manifest.local_successor_state_boundary.transition_vector_corpus_evidence",
+        &lifecycle_transition_vector_corpus_evidence,
+        "standalone lifecycle transition vector corpus evidence",
+    )?;
+    expect_eq(
+        get(
+            direct_manifest,
+            &["direct_lifecycle_boundary", "transition_vector_corpus_evidence"],
+        )?,
+        "direct.manifest.direct_lifecycle_boundary.transition_vector_corpus_evidence",
+        &lifecycle_transition_vector_corpus_evidence,
+        "standalone lifecycle transition vector corpus evidence",
     )?;
 
     expect_eq(

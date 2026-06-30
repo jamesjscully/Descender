@@ -807,6 +807,16 @@ fn main() -> Result<(), String> {
             ));
         }
     }
+    for pointer in [
+        "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/lifecycle_transition_profile_verified",
+        "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/deployment_ready",
+    ] {
+        if bool_at(direct_manifest, pointer)? {
+            return Err(format!(
+                "production preflight manifest bind unexpectedly closed {pointer}"
+            ));
+        }
+    }
     if !bool_at(
         direct_boundary,
         "/direct_obligation_vector_corpus_evidence/audit_summary/lifecycle_target_chain_finality_profile_instantiated",
@@ -815,6 +825,27 @@ fn main() -> Result<(), String> {
             "production preflight manifest bind lost D2 finality instantiation evidence"
                 .to_string(),
         );
+    }
+    for pointer in [
+        "/direct_lifecycle_boundary/coverage/transition_vector_corpus_pinned",
+        "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/all_cases_have_support_tests",
+        "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/all_support_tests_present",
+        "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/all_cases_have_evidence",
+        "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/covers_admit",
+        "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/covers_spend",
+        "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/covers_replay",
+        "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/covers_burn",
+        "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/covers_recovery",
+        "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/covers_restore",
+        "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/covers_reorg",
+        "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/covers_d2_finality_window",
+        "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/transition_vector_corpus_pinned",
+    ] {
+        if !bool_at(direct_manifest, pointer)? {
+            return Err(format!(
+                "production preflight manifest bind lost lifecycle transition evidence {pointer}"
+            ));
+        }
     }
     for pointer in [
         "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/direct_theorem_obligations_still_open",

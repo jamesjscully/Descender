@@ -23,11 +23,11 @@
     "corpus_id": "Descender.Path2.DirectLifecycleBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "direct_lifecycle_boundary_report_digest": "35291c486ed1289096ff5946b4edd828c27a3f2834fcea8ed39823a6262536a9",
-      "direct_lifecycle_boundary_report_recomputed_digest": "35291c486ed1289096ff5946b4edd828c27a3f2834fcea8ed39823a6262536a9",
-      "direct_theorem_boundary_report_digest": "34c635ff8f75475761831fe6bb2a963f69d36777d003f29836565f34f0e7edbc",
-      "direct_theorem_boundary_report_recomputed_digest": "34c635ff8f75475761831fe6bb2a963f69d36777d003f29836565f34f0e7edbc",
-      "direct_theorem_report_lifecycle_digest": "35291c486ed1289096ff5946b4edd828c27a3f2834fcea8ed39823a6262536a9"
+      "direct_lifecycle_boundary_report_digest": "73a3b9de7658f6141309806a6a915b10ac14ca42aeca241937189f5c6702e76a",
+      "direct_lifecycle_boundary_report_recomputed_digest": "73a3b9de7658f6141309806a6a915b10ac14ca42aeca241937189f5c6702e76a",
+      "direct_theorem_boundary_report_digest": "4770f0c0b2897221065db59fbddbc3c93020d662a15735f98cbccac0e9987f4c",
+      "direct_theorem_boundary_report_recomputed_digest": "4770f0c0b2897221065db59fbddbc3c93020d662a15735f98cbccac0e9987f4c",
+      "direct_theorem_report_lifecycle_digest": "73a3b9de7658f6141309806a6a915b10ac14ca42aeca241937189f5c6702e76a"
     },
     "frozen_status": "draft_lifecycle_boundary_manifest",
     "generator": {
@@ -50,7 +50,8 @@
         "snapshot_recovery_support_present": true,
         "spent_slot_ledger_rejects_stale_wallet_replay": true,
         "target_chain_finality_profile_instantiated": true,
-        "target_chain_finality_profile_selected": true
+        "target_chain_finality_profile_selected": true,
+        "transition_vector_corpus_pinned": true
       },
       "executable_tests": [
         "path2_prevalidated_slot_consume_once_rejects_reauthorization",
@@ -65,7 +66,49 @@
         "lifecycle_snapshot_roundtrips_and_recovers_by_burning_reservations",
         "lifecycle_file_store_roundtrips_and_recovers_reserved_slots",
         "path2_d2_finality_profile_reorg_frees_window_but_preserves_finalized"
-      ]
+      ],
+      "transition_vector_corpus_evidence": {
+        "audit_summary": {
+          "all_cases_have_evidence": true,
+          "all_cases_have_support_tests": true,
+          "all_support_tests_present": true,
+          "case_count": 8,
+          "covers_admit": true,
+          "covers_burn": true,
+          "covers_d2_finality_window": true,
+          "covers_recovery": true,
+          "covers_reorg": true,
+          "covers_replay": true,
+          "covers_restore": true,
+          "covers_spend": true,
+          "deployment_ready": false,
+          "executable_test_count": 12,
+          "lifecycle_transition_profile_verified": false,
+          "local_successor_state_model_pinned": true,
+          "target_chain_finality_profile_instantiated": true,
+          "transition_vector_corpus_pinned": true
+        },
+        "case_count": 8,
+        "case_ids": [
+          "lifecycle_transition_admit_spend_consume_once",
+          "lifecycle_transition_replay_rejected",
+          "lifecycle_transition_chain_persistence",
+          "lifecycle_transition_reorg_burn",
+          "lifecycle_transition_recovery_burn",
+          "lifecycle_transition_restore_anchor",
+          "lifecycle_transition_file_store_recovery",
+          "lifecycle_transition_d2_finality_window"
+        ],
+        "corpus_digest": "3dc3369b5c9a9636cd490ebab27b0817be1334bddb1d7478a5f1b355830db277",
+        "corpus_path": "formal/kat/path2_direct_lifecycle_transition_vectors_v1.json",
+        "corpus_recomputed_digest": "3dc3369b5c9a9636cd490ebab27b0817be1334bddb1d7478a5f1b355830db277",
+        "corpus_schema": "Descender.Path2.DirectLifecycleTransitionVectors.v1",
+        "corpus_status": "digest_pinned_direct_lifecycle_transition_vectors",
+        "direct_lifecycle_boundary_report_digest": "73a3b9de7658f6141309806a6a915b10ac14ca42aeca241937189f5c6702e76a",
+        "direct_lifecycle_boundary_report_recomputed_digest": "73a3b9de7658f6141309806a6a915b10ac14ca42aeca241937189f5c6702e76a",
+        "schema": "Descender.Path2.DirectLifecycleTransitionVectorCorpusEvidence.v1",
+        "status": "digest_pinned_open_direct_lifecycle_transition_vector_corpus_evidence"
+      }
     },
     "open_obligations": {
       "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
@@ -83,5 +126,5 @@
       "target_chain_finality_profile_selected": true
     }
   },
-  "manifest_digest": "fca1505c88344a8ce82a46837e70c2b0c285b2877647dd9fa755686a0d1e7c00"
+  "manifest_digest": "e3a6908c7b7cf722eaa0a3ba8098faf18bc51199eeaafdc51581a4de56049b9e"
 }

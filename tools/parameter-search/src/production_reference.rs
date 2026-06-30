@@ -10014,6 +10014,8 @@ pub struct Path2DirectLifecycleBoundaryReportV1 {
     pub target_chain_adapter_type: &'static str,
     pub chain_file_store_type: &'static str,
     pub executable_tests: &'static [&'static str],
+    pub transition_vector_case_ids: &'static [&'static str],
+    pub transition_vector_corpus_pinned: bool,
     pub local_successor_state_model_pinned: bool,
     pub consume_once_insert_after_public_checks: bool,
     pub replay_rejected_by_consume_set: bool,
@@ -11337,6 +11339,16 @@ pub const PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS: [&str; 12] = [
     "lifecycle_file_store_roundtrips_and_recovers_reserved_slots",
     "path2_d2_finality_profile_reorg_frees_window_but_preserves_finalized",
 ];
+pub const PATH2_DIRECT_LIFECYCLE_TRANSITION_VECTOR_CASE_IDS: [&str; 8] = [
+    "lifecycle_transition_admit_spend_consume_once",
+    "lifecycle_transition_replay_rejected",
+    "lifecycle_transition_chain_persistence",
+    "lifecycle_transition_reorg_burn",
+    "lifecycle_transition_recovery_burn",
+    "lifecycle_transition_restore_anchor",
+    "lifecycle_transition_file_store_recovery",
+    "lifecycle_transition_d2_finality_window",
+];
 
 pub const PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES: [&str; 9] = [
     "leaf_is_canonical_and_live",
@@ -11467,7 +11479,7 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         acceptance_hypothesis: "lifecycle_transition_consumes_authorization_once",
         supporting_surface: "consume-once lifecycle state transition",
         current_evidence:
-            "lifecycle model, consume-once verifier helper, accepted-tuple before/after state evidence, recovery regressions, and executable ADR-0010 D2 finalized-head reorg profile evidence exist; full lifecycle transition profile remains open",
+            "lifecycle model, consume-once verifier helper, accepted-tuple before/after state evidence, digest-pinned local transition vector corpus, recovery regressions, and executable ADR-0010 D2 finalized-head reorg profile evidence exist; target-chain lifecycle profile review remains open",
         required_closure:
             "composition theorem imports consume-once successor-state proof and target-chain lifecycle profile",
         named_break: "slot_replay_or_rollback_break",
@@ -13513,6 +13525,8 @@ pub fn path2_direct_lifecycle_boundary_report_v1() -> Path2DirectLifecycleBounda
         target_chain_adapter_type: "ProductionSelectedProjectionTargetChainDbAdapter",
         chain_file_store_type: "ProductionChainStateFileStores",
         executable_tests: &PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS,
+        transition_vector_case_ids: &PATH2_DIRECT_LIFECYCLE_TRANSITION_VECTOR_CASE_IDS,
+        transition_vector_corpus_pinned: true,
         local_successor_state_model_pinned: true,
         consume_once_insert_after_public_checks: true,
         replay_rejected_by_consume_set: true,
@@ -13554,6 +13568,7 @@ pub fn validate_path2_direct_lifecycle_boundary_report_v1(
         return Err("Path 2 direct lifecycle boundary report digest mismatch".to_string());
     }
     if !report.local_successor_state_model_pinned
+        || !report.transition_vector_corpus_pinned
         || !report.consume_once_insert_after_public_checks
         || !report.replay_rejected_by_consume_set
         || !report.spent_slot_ledger_rejects_stale_wallet_replay
@@ -70559,6 +70574,15 @@ fn path2_direct_lifecycle_boundary_report_v1_frame(
         append_u64(&mut frame, b"executable_test_index", index as u64);
         append_frame(&mut frame, b"executable_test", test_name.as_bytes());
     }
+    for (index, case_id) in report.transition_vector_case_ids.iter().enumerate() {
+        append_u64(&mut frame, b"transition_vector_case_index", index as u64);
+        append_frame(&mut frame, b"transition_vector_case_id", case_id.as_bytes());
+    }
+    append_u64(
+        &mut frame,
+        b"transition_vector_corpus_pinned",
+        u64::from(report.transition_vector_corpus_pinned),
+    );
     append_u64(
         &mut frame,
         b"local_successor_state_model_pinned",
@@ -114223,6 +114247,12 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS.as_ref()
         );
         assert_eq!(report.executable_tests.len(), 12);
+        assert_eq!(
+            report.transition_vector_case_ids,
+            PATH2_DIRECT_LIFECYCLE_TRANSITION_VECTOR_CASE_IDS.as_ref()
+        );
+        assert_eq!(report.transition_vector_case_ids.len(), 8);
+        assert!(report.transition_vector_corpus_pinned);
         assert!(report
             .executable_tests
             .contains(&"path2_prevalidated_slot_consume_once_rejects_reauthorization"));

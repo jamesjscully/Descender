@@ -230,9 +230,10 @@ deployment readiness false. The lifecycle report pins the local
 consume-once successor-state model, replay rejection, spent-slot ledger,
 reorg-burn support, restore-anchor support, recovery-burn support,
 snapshot-recovery support, file-store recovery support, and
-lifecycle/spent-record persistence evidence, plus executable ADR-0010 D2
-finalized-head finality/reorg profile evidence, while keeping lifecycle
-transition verification false. A
+lifecycle/spent-record persistence evidence. The lifecycle transition vector
+corpus now digest-pins local admit/spend/consume, replay, persistence,
+reorg-burn, recovery-burn, restore-anchor, file-store recovery, and ADR-0010 D2
+finality-window cases, while keeping lifecycle transition verification false. A
 separate boundary manifest consistency gate checks that
 the direct theorem manifest embeds the same proof-boundary digest and
 field-group object as the standalone proof-boundary manifest. This report and
