@@ -428,3 +428,22 @@ authenticated-row level:
 - `spend_block::creation_spend_binding_block_rejects_wrong_med2_or_key` proves the equality checks
   are load-bearing: the generic block aggregator accepts a consistently hashed but semantically
   mismatched row, while `SpendBindingBlockAir` rejects it.
+
+## Full-spend binding aggregate proof fixture (2026-06-30)
+
+The spend-side capstones are now composed in one aggregate member fixture:
+- `spend_block::cfg_creation_spend_binding_full_spend_settlement` starts from the authenticated
+  creation/spend binding member config and enables `deep_c_full_spend`.
+- `spend_block::creation_spend_binding_full_spend_window_packs_real_opening` packs one real
+  production spend opening from `generate_spend_trace` into the same recursive member window that
+  authenticates the creation/spend binding row, and checks the honest full spend fold is zero.
+- `spend_block::proves_creation_spend_binding_full_spend_block_q128` is the production-q128 aggregate
+  proof fixture: `SpendBindingBlockAir` folds two combined members to one `chain_state_root`, so the
+  single aggregate proof attests both MED-2/key equality over authenticated rows and the full spend
+  C(zeta) mirror per member.
+
+The q128 aggregate proof fixture is ignored by default for the same reason as the full recursive spend
+evaluator checks: replaying the production spend mirror inside the aggregate AIR is slow. It is now an
+explicit opt-in release/profiling gate rather than missing engineering surface. Remaining non-review
+work for this row is freezing the aggregate statement/DA format and quantifying the outer recursion
+soundness budget.

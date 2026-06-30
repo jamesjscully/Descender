@@ -236,6 +236,20 @@ pub fn cfg_creation_spend_binding_settlement(levels: usize) -> RecursiveConfig {
     }
 }
 
+/// Member config for the full spend capstone plus authenticated creation/spend binding rows.
+/// The recursive window authenticates the same binding row as
+/// [`cfg_creation_spend_binding_settlement`], and also carries the production spend `C(zeta)` mirror
+/// through `RecursiveConfig::deep_c_full_spend`.
+pub fn cfg_creation_spend_binding_full_spend_settlement(
+    levels: usize,
+    deep_log_degree: usize,
+) -> RecursiveConfig {
+    let mut cfg = cfg_creation_spend_binding_settlement(levels);
+    cfg.deep_log_degree = Some(deep_log_degree);
+    cfg.deep_c_full_spend = true;
+    cfg
+}
+
 fn binding_member_window(
     cfg: &RecursiveConfig,
     levels: usize,
@@ -399,7 +413,8 @@ mod tests {
     use crate::block_recursive_air::{
         build_trace, cfg_merkle_settlement, n_cols, trace_root, BlockRecursiveAir,
     };
-    use descender_account_stark::spend_air::SpendWitness;
+    use descender_account_stark::spend_air::{generate_spend_trace, SpendWitness};
+    use descender_account_stark::Challenge;
     use p3_air::check_all_constraints;
     use p3_koala_bear::{
         KOALABEAR_POSEIDON2_RC_16_EXTERNAL_FINAL, KOALABEAR_POSEIDON2_RC_16_EXTERNAL_INITIAL,
@@ -437,6 +452,176 @@ mod tests {
                 (i as u8).wrapping_mul(7).wrapping_add(seed as u8)
             }),
         }
+    }
+
+    fn ext(seed: u32) -> Challenge {
+        use p3_field::BasedVectorSpace;
+        Challenge::from_basis_coefficients_fn(|i| {
+            Val::from_u32(seed.wrapping_mul(40503).wrapping_add(i as u32 + 1))
+        })
+    }
+
+    fn lifted_spend_opening(
+        air: &SpendAir,
+        witness: &SpendWitness,
+    ) -> (Vec<Challenge>, Vec<Challenge>) {
+        let (trace, public_values, _frame_digest) = generate_spend_trace(air, witness);
+        let width = air.trace_width();
+        assert_eq!(
+            width,
+            crate::spend_constraint_air::production_trace_width(),
+            "production spend width drift"
+        );
+        assert_eq!(
+            public_values.len(),
+            crate::spend_constraint_air::production_public_count(),
+            "production spend public width drift"
+        );
+        let cells: Vec<Challenge> = trace.values[..width]
+            .iter()
+            .map(|&v| Challenge::from(v))
+            .collect();
+        let pubvals: Vec<Challenge> = public_values.iter().map(|&v| Challenge::from(v)).collect();
+        (cells, pubvals)
+    }
+
+    fn binding_full_spend_member_window(
+        cfg: &RecursiveConfig,
+        levels: usize,
+        member: u32,
+        binding: &CreationSpendBinding,
+        cells: &[Challenge],
+        pubvals: &[Challenge],
+        alpha: Challenge,
+        zeta: Challenge,
+        c_committed: Challenge,
+    ) -> Vec<Val> {
+        use crate::challenger::RATE;
+        use crate::merkle::compressor;
+        use crate::recursive_air::{pack_window, WindowInputs};
+        use descender_account_stark::WIDTH;
+        use p3_symmetric::PseudoCompressionFunction;
+
+        assert_eq!(
+            cfg.leaf_row_len, BINDING_LEAF_ROW_LEN,
+            "full-spend binding cfg must carry the binding leaf-row width"
+        );
+        assert!(
+            cfg.deep_c_full_spend,
+            "full-spend binding cfg must enable deep_c_full_spend"
+        );
+        let d = |seed: u32| -> Digest {
+            core::array::from_fn(|i| {
+                Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32 + 1))
+            })
+        };
+        let leaf = binding_leaf_digest(binding);
+        let leaf_row = binding_leaf_row(binding);
+        let leaf_salt = binding_leaf_salt();
+        let c = compressor();
+        let leaf_count = 1usize << levels;
+        let idx = (member as usize) % leaf_count;
+        let leaves: Vec<Digest> = (0..leaf_count as u32)
+            .map(|x| {
+                if x as usize == idx {
+                    leaf
+                } else {
+                    d(x + member * 1000 + 1)
+                }
+            })
+            .collect();
+        let mut levels_vec = vec![leaves.clone()];
+        let mut cur = leaves;
+        while cur.len() > 1 {
+            cur = cur
+                .chunks_exact(2)
+                .map(|p| c.compress([p[0], p[1]]))
+                .collect();
+            levels_vec.push(cur.clone());
+        }
+        let mut sibs = Vec::new();
+        let mut k = idx;
+        for level in &levels_vec[..levels_vec.len() - 1] {
+            sibs.push(level[k ^ 1]);
+            k >>= 1;
+        }
+        let inp = WindowInputs {
+            draw_out: Val::from_u32(idx as u32),
+            e0: ext(1),
+            e1: ext(2),
+            beta: ext(3),
+            descent: &[],
+            merkle_leaf: leaf,
+            merkle_siblings: &sibs,
+            deep_zeta: zeta,
+            deep_q: Challenge::ZERO,
+            deep_alpha: alpha,
+            fs_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
+            public_io: &[],
+            fs_beta_blocks: &[],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &leaf_row,
+            leaf_salt,
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: cells,
+            sc_public_values: pubvals,
+            sc_c_committed: c_committed,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
+        };
+        pack_window(cfg, &inp)
+    }
+
+    fn full_spend_binding_window_for_seed(
+        cfg: &RecursiveConfig,
+        levels: usize,
+        member: u32,
+        seed: u32,
+        alpha: Challenge,
+        zeta: Challenge,
+        c_committed: Challenge,
+    ) -> (
+        Vec<Val>,
+        CreationSpendBinding,
+        Vec<Challenge>,
+        Vec<Challenge>,
+    ) {
+        let a = spend_air();
+        let witness = spend_witness(seed);
+        let binding = binding_for_seed(&a, seed);
+        let (cells, pubvals) = lifted_spend_opening(&a, &witness);
+        let row = binding_full_spend_member_window(
+            cfg,
+            levels,
+            member,
+            &binding,
+            &cells,
+            &pubvals,
+            alpha,
+            zeta,
+            c_committed,
+        );
+        (row, binding, cells, pubvals)
     }
 
     /// `spend_leaf_digest` is injective over distinct packed witnesses and canonical.
@@ -525,6 +710,127 @@ mod tests {
                 "binding block accepted a mismatched {label} row"
             );
         }
+    }
+
+    /// FAST PACKING CAPSTONE: one recursive member window simultaneously authenticates the
+    /// creation/spend binding row and carries a real production spend opening for the full
+    /// `deep_c_full_spend` mirror. The full recursive evaluator/prover checks are intentionally kept
+    /// in ignored tests because replaying the production spend mirror inside `RecursiveAir` is slow.
+    #[test]
+    fn creation_spend_binding_full_spend_window_packs_real_opening() {
+        let levels = 1usize;
+        let cfg = cfg_creation_spend_binding_full_spend_settlement(levels, 1);
+        let alpha = ext(221);
+        let zeta = ext(231);
+        let c_committed = ext(19);
+        let (row, binding, cells, pubvals) =
+            full_spend_binding_window_for_seed(&cfg, levels, 0, 17, alpha, zeta, c_committed);
+
+        let row_base = crate::recursive_air::window_leaf_row_col(&cfg);
+        assert_eq!(
+            &row[row_base..row_base + BINDING_LEAF_ROW_LEN],
+            &binding_leaf_row(&binding),
+            "authenticated binding leaf row not packed into recursive window"
+        );
+        assert_eq!(
+            crate::spend_constraint_air::production_c_partial(&cells, &pubvals, alpha),
+            Challenge::ZERO,
+            "honest production spend opening must have zero full C_partial"
+        );
+    }
+
+    /// SLOW CAPSTONE: a production-q128 aggregate proof whose member windows combine the authenticated
+    /// creation/spend binding row (MED-2 + checked-core key equality) with the production
+    /// `deep_c_full_spend` mirror. This is the spend-side analogue of the full-C(zeta) aggregate rung:
+    /// one `chain_state_root` proof attests the paired binding rows and the full spend relation mirror
+    /// for each member. Ignored by default because proving the full spend mirror inside the aggregate
+    /// is minute-scale or worse in debug/local CI.
+    #[test]
+    #[ignore = "slow: production q128 aggregate proof with full spend C(zeta) mirror"]
+    fn proves_creation_spend_binding_full_spend_block_q128() {
+        use descender_account_stark::{
+            MyCompress, MyHash, Perm, PROD_LOG_BLOWUP, PROD_NUM_QUERIES, PROD_QUERY_POW_BITS,
+        };
+        use p3_challenger::DuplexChallenger;
+        use p3_commit::ExtensionMmcs;
+        use p3_dft::Radix2DitParallel;
+        use p3_field::Field;
+        use p3_fri::{FriParameters, TwoAdicFriPcs};
+        use p3_koala_bear::default_koalabear_poseidon2_16;
+        use p3_merkle_tree::MerkleTreeMmcs;
+        use p3_uni_stark::{prove, verify, StarkConfig};
+
+        type ValMmcs = MerkleTreeMmcs<
+            <Val as Field>::Packing,
+            <Val as Field>::Packing,
+            MyHash,
+            MyCompress,
+            2,
+            DIGEST_ELEMS,
+        >;
+        type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
+        type DftT = Radix2DitParallel<Val>;
+        type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
+
+        let perm: Perm = default_koalabear_poseidon2_16();
+        let val_mmcs = ValMmcs::new(
+            MyHash::new(perm.clone()),
+            MyCompress::new(MyHash::new(perm.clone())),
+            0,
+        );
+        let challenge_mmcs = ChallengeMmcs::new(val_mmcs.clone());
+        let fri_params = FriParameters {
+            log_blowup: PROD_LOG_BLOWUP,
+            log_final_poly_len: 0,
+            max_log_arity: 1,
+            num_queries: PROD_NUM_QUERIES,
+            commit_proof_of_work_bits: 0,
+            query_proof_of_work_bits: PROD_QUERY_POW_BITS,
+            mmcs: challenge_mmcs,
+        };
+        let pcs = Pcs::new(DftT::default(), val_mmcs, fri_params);
+        let config = OuterConfig::new(pcs, MyChallenger::new(perm.clone()));
+
+        let levels = 1usize;
+        let cfg = cfg_creation_spend_binding_full_spend_settlement(levels, 1);
+        let alpha = ext(311);
+        let zeta = ext(331);
+        let c_committed = ext(37);
+        let ws: Vec<Vec<Val>> = (0..2u32)
+            .map(|member| {
+                full_spend_binding_window_for_seed(
+                    &cfg,
+                    levels,
+                    member,
+                    member + 41,
+                    alpha,
+                    zeta,
+                    c_committed,
+                )
+                .0
+            })
+            .collect();
+        let n = ws.len();
+        let flat = build_trace(&cfg, &ws);
+        let root = trace_root(&cfg, n, &flat);
+        let trace = RowMajorMatrix::new(flat, n_cols(&cfg));
+        let proof = prove(
+            &config,
+            &SpendBindingBlockAir { cfg: cfg.clone() },
+            trace,
+            &root.to_vec(),
+        );
+        verify(
+            &config,
+            &SpendBindingBlockAir { cfg },
+            &proof,
+            &root.to_vec(),
+        )
+        .expect(
+            "creation/spend binding full-spend block must prove+verify at production q128 knobs",
+        );
     }
 
     /// O(1) SPEND BLOCK: a block of real spend witnesses aggregates to ONE chain_state_root, with
