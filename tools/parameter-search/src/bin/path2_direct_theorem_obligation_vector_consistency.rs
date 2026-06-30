@@ -564,9 +564,17 @@ fn main() -> Result<(), String> {
         );
     }
 
+    let open_direct_obligation_count =
+        direct_report.obligation_rows.iter().filter(|row| row.open).count() as u64;
+    let closed_direct_obligation_count =
+        direct_report.obligation_rows.iter().filter(|row| !row.open).count() as u64;
     if u64_at(corpus, "/case_count")? != direct_report.obligation_count as u64
         || u64_at(corpus, "/audit_summary/direct_obligation_count")?
             != direct_report.obligation_count as u64
+        || u64_at(corpus, "/audit_summary/open_direct_obligation_count")?
+            != open_direct_obligation_count
+        || u64_at(corpus, "/audit_summary/closed_direct_obligation_count")?
+            != closed_direct_obligation_count
         || u64_at(
             corpus,
             "/audit_summary/direct_obligation_audit_vector_case_count",
@@ -587,18 +595,19 @@ fn main() -> Result<(), String> {
     )? || !bool_at(
         corpus,
         "/direct_theorem_report/every_open_obligation_blocks_deployment",
-    )? || !bool_at(corpus, "/audit_summary/all_cases_open")?
+    )? || bool_at(corpus, "/audit_summary/all_cases_open")?
         || !bool_at(corpus, "/audit_summary/all_cases_have_named_break")?
         || !bool_at(corpus, "/audit_summary/all_open_cases_block_deployment")?
+        || open_direct_obligation_count != 8
+        || closed_direct_obligation_count != 1
     {
         return Err(
-            "direct theorem obligation vector corpus lost fail-closed row invariants".to_string(),
+            "direct theorem obligation vector corpus lost partial-close row invariants".to_string(),
         );
     }
     for pointer in [
         "/direct_theorem_report/composition_theorem_instantiated",
         "/direct_theorem_report/account_creation_proof_boundary_verified",
-        "/direct_theorem_report/lifecycle_transition_profile_verified",
         "/direct_theorem_report/qrom_and_action_bounds_linked_to_theorem",
         "/direct_theorem_report/deployment_ready",
         "/qrom_action_boundary_report/theorem_imports_budget",
@@ -609,7 +618,6 @@ fn main() -> Result<(), String> {
         "/account_creation_proof_boundary_report/deployment_ready",
         "/audit_summary/composition_theorem_instantiated",
         "/audit_summary/account_creation_proof_boundary_verified",
-        "/audit_summary/lifecycle_transition_profile_verified",
         "/audit_summary/qrom_and_action_bounds_linked_to_theorem",
         "/audit_summary/proof_boundary_deployment_ready",
         "/audit_summary/qrom_theorem_imports_budget",
@@ -623,10 +631,12 @@ fn main() -> Result<(), String> {
         }
     }
     for pointer in [
+        "/direct_theorem_report/lifecycle_transition_profile_verified",
         "/lifecycle_boundary_report/target_chain_finality_profile_instantiated",
         "/lifecycle_boundary_report/target_chain_lifecycle_profile_review_pinned",
         "/lifecycle_boundary_report/target_chain_lifecycle_profile_verification_pinned",
         "/lifecycle_boundary_report/lifecycle_transition_profile_verified",
+        "/audit_summary/lifecycle_transition_profile_verified",
         "/audit_summary/lifecycle_target_chain_finality_profile_instantiated",
         "/audit_summary/lifecycle_target_chain_profile_review_pinned",
         "/audit_summary/lifecycle_target_chain_profile_verification_pinned",
@@ -858,9 +868,14 @@ fn main() -> Result<(), String> {
                 ));
             }
         }
-        if case.get("open").and_then(Value::as_bool) != Some(true) || !row.open {
+        if case.get("open").and_then(Value::as_bool) != Some(row.open) {
             return Err(format!(
-                "direct theorem obligation case {case_id} unexpectedly closed"
+                "direct theorem obligation case {case_id} open flag drifted"
+            ));
+        }
+        if !row.open && case_id != "direct_obligation_consume_once" {
+            return Err(format!(
+                "direct theorem obligation case {case_id} closed without lifecycle import"
             ));
         }
     }

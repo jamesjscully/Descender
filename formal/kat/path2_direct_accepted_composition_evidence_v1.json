@@ -53,8 +53,8 @@
       "direct_accepted_spend_tuple_evidence_artifact": {
         "account_creation_proof_boundary_report_digest": "7203fd6071e952dce7edfdfb0f2110721942f421a8e62f60c4a1796e9fc7b50d",
         "account_creation_proof_boundary_report_recomputed_digest": "7203fd6071e952dce7edfdfb0f2110721942f421a8e62f60c4a1796e9fc7b50d",
-        "artifact_manifest_digest": "9a0884557c1a3a0579be0a68ac8a4a1bd14b4c139d36c2c0cb0d35b6a8be124e",
-        "artifact_manifest_recomputed_digest": "9a0884557c1a3a0579be0a68ac8a4a1bd14b4c139d36c2c0cb0d35b6a8be124e",
+        "artifact_manifest_digest": "cbe2f10f9f432964f7cda908ec937efe181d027de29fe132129a7a21a82d52e8",
+        "artifact_manifest_recomputed_digest": "cbe2f10f9f432964f7cda908ec937efe181d027de29fe132129a7a21a82d52e8",
         "artifact_path": "formal/kat/path2_direct_accepted_spend_tuple_evidence_v1.json",
         "artifact_schema": "Descender.Path2.DirectAcceptedSpendTupleDeterministicKatEvidenceManifest.v1",
         "artifact_status": "digest_pinned_deterministic_kat_accepted_direct_spend_tuple_evidence",
@@ -74,12 +74,14 @@
             "direct_admission_namespace_record",
             "consume_once_state_before_and_after_spend"
           ],
-          "accepted_tuple_field_open_obligation_count": 11,
+          "accepted_tuple_field_imported_closure_count": 1,
+          "accepted_tuple_field_open_obligation_count": 10,
           "consume_once_inserted_exactly_one_authorization": true,
           "consumed_authorization_absent_before": true,
           "consumed_authorization_present_after": true,
           "every_accepted_tuple_field_has_evidence": true,
-          "every_accepted_tuple_field_has_open_direct_obligation": true,
+          "every_accepted_tuple_field_has_open_direct_obligation": false,
+          "every_accepted_tuple_field_has_open_or_imported_direct_obligation": true,
           "public_result_accepts_same_slot": true,
           "replay_rejected_by_consume_once": true,
           "state_namespace_record_present": true,
@@ -96,10 +98,10 @@
         "direct_lifecycle_boundary_report_recomputed_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
         "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
         "direct_qrom_action_boundary_report_recomputed_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
-        "direct_theorem_boundary_report_digest": "4af8f2371dd8cb5ccc4e2bc5ee9d588cfa672c9481658ec7d85a253b55a7f8ea",
-        "direct_theorem_boundary_report_recomputed_digest": "4af8f2371dd8cb5ccc4e2bc5ee9d588cfa672c9481658ec7d85a253b55a7f8ea",
-        "evidence_digest": "3f385c276208bfe12020f8c4e5f9c4e7ae52279f2bf07db84e1a56e611b2f168",
-        "evidence_recomputed_digest": "3f385c276208bfe12020f8c4e5f9c4e7ae52279f2bf07db84e1a56e611b2f168",
+        "direct_theorem_boundary_report_digest": "a76cadf7fb4455b2d9979fb9a3e2027001f0be4e77b482e195516f3476899a25",
+        "direct_theorem_boundary_report_recomputed_digest": "a76cadf7fb4455b2d9979fb9a3e2027001f0be4e77b482e195516f3476899a25",
+        "evidence_digest": "37e3d6acb45bcd45ba4bacb4868992f9b722aca57872e3db0cf9b404c1efe002",
+        "evidence_recomputed_digest": "37e3d6acb45bcd45ba4bacb4868992f9b722aca57872e3db0cf9b404c1efe002",
         "evidence_schema": "Descender.Path2.DirectAcceptedSpendTupleEvidence.v1",
         "schema": "Descender.Path2.DirectAcceptedSpendTupleEvidenceArtifact.v1",
         "status": "digest_pinned_accepted_direct_spend_tuple_evidence_artifact"
@@ -121,6 +123,7 @@
           "accepted_path_check": "creation_evidence_matches_direct_tuple && direct_spend_tuple_accepts",
           "accepted_path_evidence_present": true,
           "accepted_path_evidence_source": "accepted composition leaf digest and direct verifier accepted tuple",
+          "closed_by_imported_boundary": false,
           "direct_obligation_id": "direct_obligation_leaf_canonical_live",
           "separate_rejection_evidence_required": false,
           "theorem_obligation_still_open": true
@@ -130,6 +133,7 @@
           "accepted_path_check": "creation_evidence_matches_direct_tuple && proof_boundary_digest_matches_direct_theorem",
           "accepted_path_evidence_present": true,
           "accepted_path_evidence_source": "accepted account-creation proof-boundary evidence and direct tuple digest",
+          "closed_by_imported_boundary": false,
           "direct_obligation_id": "direct_obligation_evidence_leaf_bindings",
           "separate_rejection_evidence_required": false,
           "theorem_obligation_still_open": true
@@ -139,6 +143,7 @@
           "accepted_path_check": "direct_admission_namespace_matches_authorization && direct_spend_tuple_accepts",
           "accepted_path_evidence_present": true,
           "accepted_path_evidence_source": "accepted tuple slot_authorization_digest and admission namespace digest",
+          "closed_by_imported_boundary": false,
           "direct_obligation_id": "direct_obligation_slot_authorization_digest",
           "separate_rejection_evidence_required": false,
           "theorem_obligation_still_open": true
@@ -148,6 +153,7 @@
           "accepted_path_check": "verifier_boundary_accepts_creation && direct_spend_tuple_accepts",
           "accepted_path_evidence_present": true,
           "accepted_path_evidence_source": "accepted composition orders account-creation boundary acceptance before direct spend tuple verification",
+          "closed_by_imported_boundary": false,
           "direct_obligation_id": "direct_obligation_creation_before_challenge",
           "separate_rejection_evidence_required": false,
           "theorem_obligation_still_open": true
@@ -157,6 +163,7 @@
           "accepted_path_check": "direct_admission_namespace_matches_authorization",
           "accepted_path_evidence_present": true,
           "accepted_path_evidence_source": "direct admission namespace record digest",
+          "closed_by_imported_boundary": false,
           "direct_obligation_id": "direct_obligation_admission_namespace",
           "separate_rejection_evidence_required": false,
           "theorem_obligation_still_open": true
@@ -166,6 +173,7 @@
           "accepted_path_check": "direct_spend_tuple_accepts && public_result_accepts_same_slot",
           "accepted_path_evidence_present": true,
           "accepted_path_evidence_source": "direct spend tuple digest and public result wrapper acceptance",
+          "closed_by_imported_boundary": false,
           "direct_obligation_id": "direct_obligation_checked_core_frame_binding",
           "separate_rejection_evidence_required": false,
           "theorem_obligation_still_open": true
@@ -175,6 +183,7 @@
           "accepted_path_check": "direct_spend_tuple_accepts && qrom_action_digest_matches_direct_theorem",
           "accepted_path_evidence_present": true,
           "accepted_path_evidence_source": "accepted direct spend tuple and QROM/action boundary digest",
+          "closed_by_imported_boundary": false,
           "direct_obligation_id": "direct_obligation_checked_core_acceptance",
           "separate_rejection_evidence_required": false,
           "theorem_obligation_still_open": true
@@ -184,15 +193,17 @@
           "accepted_path_check": "consume_once_transition_matches_tuple && lifecycle_digest_matches_direct_theorem",
           "accepted_path_evidence_present": true,
           "accepted_path_evidence_source": "consume-once before/after state digests",
+          "closed_by_imported_boundary": true,
           "direct_obligation_id": "direct_obligation_consume_once",
           "separate_rejection_evidence_required": false,
-          "theorem_obligation_still_open": true
+          "theorem_obligation_still_open": false
         },
         {
           "acceptance_hypothesis": "rejection_is_deterministic_public_and_state_preserving",
           "accepted_path_check": "not a happy-path composition property; covered by direct rejection KAT gates",
           "accepted_path_evidence_present": false,
           "accepted_path_evidence_source": "direct public rejection KAT suite",
+          "closed_by_imported_boundary": false,
           "direct_obligation_id": "direct_obligation_public_rejection",
           "separate_rejection_evidence_required": true,
           "theorem_obligation_still_open": true
@@ -211,14 +222,14 @@
       "consume_once_transition_matches_tuple": true,
       "creation_evidence_matches_direct_tuple": true,
       "deployment_ready": false,
-      "digest": "153409124c4e73b2156a98e04ea3219ae6785084149dca879356dfa8383af6c1",
-      "direct_accepted_spend_tuple_evidence_digest": "3f385c276208bfe12020f8c4e5f9c4e7ae52279f2bf07db84e1a56e611b2f168",
+      "digest": "8f2feb68160a0ef11e7b80e1ce867d027290e6e68db09ea8682d40f2b8cd6f0e",
+      "direct_accepted_spend_tuple_evidence_digest": "37e3d6acb45bcd45ba4bacb4868992f9b722aca57872e3db0cf9b404c1efe002",
       "direct_admission_namespace_matches_authorization": true,
       "direct_admission_namespace_record_digest": "d887a32e2da3a35c1c156f6b1ce77750f41c6b160a6e291694d1b1c50eb78abe",
       "direct_lifecycle_boundary_report_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
       "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
       "direct_spend_tuple_accepts": true,
-      "direct_theorem_boundary_report_digest": "4af8f2371dd8cb5ccc4e2bc5ee9d588cfa672c9481658ec7d85a253b55a7f8ea",
+      "direct_theorem_boundary_report_digest": "a76cadf7fb4455b2d9979fb9a3e2027001f0be4e77b482e195516f3476899a25",
       "direct_theorem_obligations_still_open": true,
       "every_positive_acceptance_hypothesis_has_accepted_path_evidence": true,
       "lifecycle_digest_matches_direct_theorem": true,
@@ -232,7 +243,7 @@
       "public_rejection_hypothesis_deferred_to_rejection_kats": true,
       "public_result_accepts_same_slot": true,
       "qrom_action_digest_matches_direct_theorem": true,
-      "recomputed_digest": "153409124c4e73b2156a98e04ea3219ae6785084149dca879356dfa8383af6c1",
+      "recomputed_digest": "8f2feb68160a0ef11e7b80e1ce867d027290e6e68db09ea8682d40f2b8cd6f0e",
       "schema": "Descender.Path2.DirectAcceptedCompositionEvidence.v1",
       "selected_account_creation_payload_digest": "21795defadb54628226befbcb01ca0666d3c584c5a24e6ba05f4de8ec11cb6e0",
       "slot_authorization_digest": "9f9513ef2b1b8a9aa179ff43fd8a1e412b0affc26c5f01e4d753d2eacc2a3f14",
@@ -249,5 +260,5 @@
     "schema": "Descender.Path2.DirectAcceptedCompositionDeterministicKatEvidenceManifest.v1",
     "status": "digest_pinned_deterministic_kat_accepted_direct_composition_evidence"
   },
-  "manifest_digest": "cbd7d43c49e82268f98ca3237a41b33e7af24d4e491ba11832219d621a2b211d"
+  "manifest_digest": "d7868da180e2ee5d1b6118b84ef7a02348fd7f889e8fb786255c80dc9fa1282d"
 }

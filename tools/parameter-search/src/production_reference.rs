@@ -9836,6 +9836,7 @@ pub struct Path2DirectAcceptedTupleFieldEvidenceRowV1 {
     pub imported_boundary_report: &'static str,
     pub separate_closure_required: bool,
     pub all_referenced_direct_obligations_still_open: bool,
+    pub closed_by_imported_boundary: bool,
     pub blocker: &'static str,
 }
 
@@ -9852,8 +9853,10 @@ pub struct Path2DirectAcceptedSpendTupleEvidenceV1 {
     pub accepted_tuple_field_evidence_count: usize,
     pub accepted_tuple_field_evidence_present_count: usize,
     pub accepted_tuple_field_open_obligation_count: usize,
+    pub accepted_tuple_field_imported_closure_count: usize,
     pub every_accepted_tuple_field_has_evidence: bool,
     pub every_accepted_tuple_field_has_open_direct_obligation: bool,
+    pub every_accepted_tuple_field_has_open_or_imported_direct_obligation: bool,
     pub direct_qrom_action_boundary_report_digest: [u8; DIGEST_BYTES],
     pub direct_lifecycle_boundary_report_digest: [u8; DIGEST_BYTES],
     pub account_creation_proof_boundary_report_digest: [u8; DIGEST_BYTES],
@@ -9900,6 +9903,7 @@ pub struct Path2DirectAcceptedCompositionHypothesisEvidenceRowV1 {
     pub accepted_path_evidence_present: bool,
     pub separate_rejection_evidence_required: bool,
     pub theorem_obligation_still_open: bool,
+    pub closed_by_imported_boundary: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
@@ -11506,12 +11510,12 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         acceptance_hypothesis: "lifecycle_transition_consumes_authorization_once",
         supporting_surface: "consume-once lifecycle state transition",
         current_evidence:
-            "lifecycle model, consume-once verifier helper, accepted-tuple before/after state evidence, digest-pinned local transition vector corpus, recovery regressions, executable ADR-0010 D2 finalized-head reorg profile evidence, digest-pinned D2 safe-default lifecycle profile review, and digest-pinned D2 lifecycle profile verification exist; final theorem import and deployment readiness remain open",
+            "lifecycle model, consume-once verifier helper, accepted-tuple before/after state evidence, digest-pinned local transition vector corpus, recovery regressions, executable ADR-0010 D2 finalized-head reorg profile evidence, digest-pinned D2 safe-default lifecycle profile review, and digest-pinned D2 lifecycle profile verification are imported by the direct theorem boundary; broader deployment-profile readiness remains open",
         required_closure:
-            "composition theorem imports consume-once successor-state proof and target-chain lifecycle profile",
+            "closed by importing the consume-once successor-state proof and D2 target-chain lifecycle profile into the direct theorem boundary",
         named_break: "slot_replay_or_rollback_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
-        open: true,
+        open: false,
     },
     Path2DirectTheoremObligationRowV1 {
         obligation_id: "direct_obligation_public_rejection",
@@ -11618,7 +11622,7 @@ pub const PATH2_DIRECT_THEOREM_CLOSURE_DEPENDENCY_ROWS:
         support_surface: "consume-once lifecycle state transition",
         named_break: "slot_replay_or_rollback_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
-        open: true,
+        open: false,
     },
     Path2DirectTheoremClosureDependencyRowV1 {
         dependency_id: "direct_dependency_public_rejection",
@@ -13658,6 +13662,7 @@ fn path2_direct_theorem_closure_dependency_has_open_obligation_v1(
             && obligation.supporting_surface == row.support_surface
             && obligation.named_break == row.named_break
             && obligation.open
+            && row.open
     })
 }
 
@@ -13695,13 +13700,28 @@ fn path2_direct_theorem_closure_dependency_support_open_v1(
                 && !qrom_action_report.deployment_ready
         }
         "direct_dependency_consume_once" => {
-            !direct_report.lifecycle_transition_profile_verified
+            row.open
+                && !direct_report.lifecycle_transition_profile_verified
                 && (!lifecycle_report.target_chain_finality_profile_instantiated
-                    || !lifecycle_report.lifecycle_transition_profile_verified
-                    || !lifecycle_report.deployment_ready)
+                    || !lifecycle_report.lifecycle_transition_profile_verified)
         }
         _ => false,
     }
+}
+
+fn path2_direct_theorem_closed_lifecycle_dependency_imported_v1(
+    row: &Path2DirectTheoremClosureDependencyRowV1,
+    direct_report: &Path2DirectTheoremBoundaryReportV1,
+    lifecycle_report: &Path2DirectLifecycleBoundaryReportV1,
+) -> bool {
+    row.dependency_id == "direct_dependency_consume_once"
+        && !row.open
+        && direct_report.lifecycle_transition_profile_verified
+        && lifecycle_report.target_chain_finality_profile_instantiated
+        && lifecycle_report.lifecycle_transition_profile_verified
+        && lifecycle_report.target_chain_lifecycle_profile_review_pinned
+        && lifecycle_report.target_chain_lifecycle_profile_verification_pinned
+        && !lifecycle_report.deployment_ready
 }
 
 fn path2_direct_theorem_closure_dependency_evidence_rows_v1(
@@ -13750,6 +13770,13 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
         path2_account_creation_proof_boundary_report_v1();
     let obligation_rows = &PATH2_DIRECT_THEOREM_OBLIGATION_ROWS;
     let closure_dependency_rows = &PATH2_DIRECT_THEOREM_CLOSURE_DEPENDENCY_ROWS;
+    let lifecycle_transition_profile_verified =
+        direct_lifecycle_boundary_report.target_chain_finality_profile_instantiated
+            && direct_lifecycle_boundary_report.lifecycle_transition_profile_verified
+            && direct_lifecycle_boundary_report.target_chain_lifecycle_profile_review_pinned
+            && direct_lifecycle_boundary_report
+                .target_chain_lifecycle_profile_verification_pinned
+            && !direct_lifecycle_boundary_report.deployment_ready;
     let mut report = Path2DirectTheoremBoundaryReportV1 {
         digest: [0_u8; DIGEST_BYTES],
         domain: PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN,
@@ -13802,17 +13829,17 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
         named_break_classes_pinned: true,
         composition_theorem_instantiated: false,
         account_creation_proof_boundary_verified: false,
-        lifecycle_transition_profile_verified: false,
+        lifecycle_transition_profile_verified,
         qrom_and_action_bounds_linked_to_theorem: false,
         deployment_ready: false,
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
     };
     report.every_closure_dependency_has_open_obligation =
-        closure_dependency_rows.iter().all(|row| {
+        closure_dependency_rows.iter().filter(|row| row.open).all(|row| {
             path2_direct_theorem_closure_dependency_has_open_obligation_v1(row, obligation_rows)
         });
     report.every_closure_dependency_has_open_support_surface =
-        closure_dependency_rows.iter().all(|row| {
+        closure_dependency_rows.iter().filter(|row| row.open).all(|row| {
             path2_direct_theorem_closure_dependency_support_open_v1(
                 row,
                 &report,
@@ -13849,13 +13876,21 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
     report.every_closure_dependency_has_evidence =
         report.closure_dependency_evidence_count == report.closure_dependency_count
             && report.closure_dependency_open_obligation_evidence_count
-                == report.closure_dependency_count
+                == closure_dependency_rows.iter().filter(|row| row.open).count()
             && report.closure_dependency_open_support_evidence_count
-                == report.closure_dependency_count
+                == closure_dependency_rows.iter().filter(|row| row.open).count()
             && report.closure_dependency_evidence_rows.iter().all(|row| {
-                row.closure_dependency_open
-                    && row.blocks_deployment
-                    && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
+                if row.closure_dependency_open {
+                    row.direct_obligation_still_open
+                        && row.source_support_still_open
+                        && row.blocks_deployment
+                        && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
+                } else {
+                    !row.direct_obligation_still_open
+                        && !row.source_support_still_open
+                        && !row.blocks_deployment
+                        && row.dependency_id == "direct_dependency_consume_once"
+                }
             });
     report.digest = path2_direct_theorem_boundary_report_v1_digest(&report);
     report
@@ -13895,6 +13930,8 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
             "Path 2 direct theorem boundary proof-boundary digest mismatch".to_string(),
         );
     }
+    let expected_open_closure_dependency_count =
+        report.closure_dependency_rows.iter().filter(|row| row.open).count();
     if report.theorem_target != PATH2_DIRECT_THEOREM_TARGET
         || report.theorem_conclusion != PATH2_DIRECT_THEOREM_CONCLUSION
     {
@@ -13937,9 +13974,9 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
         || report.closure_dependency_evidence_count
             != report.closure_dependency_evidence_rows.len()
         || report.closure_dependency_open_obligation_evidence_count
-            != report.closure_dependency_rows.len()
+            != expected_open_closure_dependency_count
         || report.closure_dependency_open_support_evidence_count
-            != report.closure_dependency_rows.len()
+            != expected_open_closure_dependency_count
         || report.obligation_rows.len() != report.obligation_audit_vector_case_ids.len()
         || !report
             .closure_dependency_rows
@@ -13973,26 +14010,40 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
                     || row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION)
         })
         || !report.closure_dependency_rows.iter().all(|row| {
-            row.open
-                && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
-                && path2_direct_theorem_closure_dependency_has_open_obligation_v1(
-                    row,
-                    report.obligation_rows,
-                )
-                && path2_direct_theorem_closure_dependency_support_open_v1(
+            if row.open {
+                row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
+                    && path2_direct_theorem_closure_dependency_has_open_obligation_v1(
+                        row,
+                        report.obligation_rows,
+                    )
+                    && path2_direct_theorem_closure_dependency_support_open_v1(
+                        row,
+                        report,
+                        &direct_qrom_action_boundary_report,
+                        &direct_lifecycle_boundary_report,
+                        &account_creation_proof_boundary_report,
+                    )
+            } else {
+                path2_direct_theorem_closed_lifecycle_dependency_imported_v1(
                     row,
                     report,
-                    &direct_qrom_action_boundary_report,
                     &direct_lifecycle_boundary_report,
-                    &account_creation_proof_boundary_report,
                 )
+            }
         })
         || !report.closure_dependency_evidence_rows.iter().all(|row| {
-            row.direct_obligation_still_open
-                && row.source_support_still_open
-                && row.closure_dependency_open
-                && row.blocks_deployment
-                && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
+            if row.closure_dependency_open {
+                row.direct_obligation_still_open
+                    && row.source_support_still_open
+                    && row.blocks_deployment
+                    && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
+            } else {
+                !row.direct_obligation_still_open
+                    && !row.source_support_still_open
+                    && !row.blocks_deployment
+                    && row.dependency_id == "direct_dependency_consume_once"
+                    && row.source_report == "Path2DirectLifecycleBoundaryReportV1"
+            }
         })
     {
         return Err(
@@ -14008,7 +14059,7 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
         || !report.named_break_classes_pinned
         || report.composition_theorem_instantiated
         || report.account_creation_proof_boundary_verified
-        || report.lifecycle_transition_profile_verified
+        || !report.lifecycle_transition_profile_verified
         || report.qrom_and_action_bounds_linked_to_theorem
         || report.deployment_ready
         || report.blocker != PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
@@ -66628,6 +66679,19 @@ fn path2_direct_referenced_obligations_still_open_v1(obligation_ids: &[&str]) ->
         })
 }
 
+fn path2_direct_referenced_obligations_closed_by_import_v1(obligation_ids: &[&str]) -> bool {
+    !obligation_ids.is_empty()
+        && obligation_ids.iter().all(|obligation_id| {
+            *obligation_id == "direct_obligation_consume_once"
+                && PATH2_DIRECT_THEOREM_OBLIGATION_ROWS.iter().any(|row| {
+                    row.obligation_id == *obligation_id
+                        && !row.open
+                        && row.acceptance_hypothesis
+                            == "lifecycle_transition_consumes_authorization_once"
+                })
+        })
+}
+
 fn path2_direct_accepted_tuple_field_evidence_rows_v1(
     evidence: &Path2DirectAcceptedSpendTupleEvidenceV1,
 ) -> Vec<Path2DirectAcceptedTupleFieldEvidenceRowV1> {
@@ -66646,9 +66710,15 @@ fn path2_direct_accepted_tuple_field_evidence_rows_v1(
                 accepted_path_check,
                 accepted_path_evidence_present,
                 imported_boundary_report,
-                separate_closure_required: true,
+                separate_closure_required: !path2_direct_referenced_obligations_closed_by_import_v1(
+                    direct_obligation_ids,
+                ),
                 all_referenced_direct_obligations_still_open:
                     path2_direct_referenced_obligations_still_open_v1(direct_obligation_ids),
+                closed_by_imported_boundary:
+                    path2_direct_referenced_obligations_closed_by_import_v1(
+                        direct_obligation_ids,
+                    ),
                 blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
             }
         };
@@ -66899,8 +66969,10 @@ pub fn path2_direct_accepted_spend_tuple_evidence_v1(
         accepted_tuple_field_evidence_count: 0,
         accepted_tuple_field_evidence_present_count: 0,
         accepted_tuple_field_open_obligation_count: 0,
+        accepted_tuple_field_imported_closure_count: 0,
         every_accepted_tuple_field_has_evidence: false,
         every_accepted_tuple_field_has_open_direct_obligation: false,
+        every_accepted_tuple_field_has_open_or_imported_direct_obligation: false,
         direct_qrom_action_boundary_report_digest: direct_qrom_action_boundary_report.digest,
         direct_lifecycle_boundary_report_digest: direct_lifecycle_boundary_report.digest,
         account_creation_proof_boundary_report_digest:
@@ -66954,6 +67026,11 @@ pub fn path2_direct_accepted_spend_tuple_evidence_v1(
         .iter()
         .filter(|row| row.all_referenced_direct_obligations_still_open)
         .count();
+    tuple_evidence.accepted_tuple_field_imported_closure_count = tuple_evidence
+        .accepted_tuple_field_evidence_rows
+        .iter()
+        .filter(|row| row.closed_by_imported_boundary)
+        .count();
     tuple_evidence.every_accepted_tuple_field_has_evidence =
         tuple_evidence.accepted_tuple_field_evidence_count
             == PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
@@ -66977,6 +67054,24 @@ pub fn path2_direct_accepted_spend_tuple_evidence_v1(
                     row.separate_closure_required
                         && row.all_referenced_direct_obligations_still_open
                         && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
+                });
+    tuple_evidence.every_accepted_tuple_field_has_open_or_imported_direct_obligation =
+        tuple_evidence.accepted_tuple_field_evidence_count
+            == PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
+            && tuple_evidence.accepted_tuple_field_open_obligation_count
+                + tuple_evidence.accepted_tuple_field_imported_closure_count
+                == PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
+            && tuple_evidence
+                .accepted_tuple_field_evidence_rows
+                .iter()
+                .all(|row| {
+                    (row.separate_closure_required
+                        && row.all_referenced_direct_obligations_still_open
+                        && !row.closed_by_imported_boundary)
+                        || (!row.separate_closure_required
+                            && !row.all_referenced_direct_obligations_still_open
+                            && row.closed_by_imported_boundary
+                            && row.imported_boundary_report == "Path2DirectLifecycleBoundaryReportV1")
                 });
     tuple_evidence.digest =
         path2_direct_accepted_spend_tuple_evidence_v1_digest(&tuple_evidence);
@@ -67208,6 +67303,10 @@ fn path2_direct_accepted_composition_hypothesis_evidence_rows_v1(
                         direct_obligation_id,
                         acceptance_hypothesis,
                     ),
+                closed_by_imported_boundary:
+                    path2_direct_referenced_obligations_closed_by_import_v1(&[
+                        direct_obligation_id,
+                    ]),
             }
         };
 
@@ -67349,7 +67448,7 @@ fn path2_direct_accepted_composition_evidence_unpooled_v1(
         tuple_evidence.public_result_class_name == PATH2_PUBLIC_RESULT_ACCEPT_SPEND_SLOT;
     let public_result_accepts_same_slot = tuple_evidence.public_result_accepts_same_slot;
     let direct_theorem_obligations_still_open =
-        direct_report.obligation_rows.iter().all(|row| row.open);
+        direct_report.obligation_rows.iter().any(|row| row.open);
 
     if !creation_evidence_matches_direct_tuple
         || !proof_boundary_digest_matches_direct_theorem
@@ -67435,7 +67534,10 @@ fn path2_direct_accepted_composition_evidence_unpooled_v1(
                 .accepted_hypothesis_evidence_rows
                 .iter()
                 .filter(|row| !row.separate_rejection_evidence_required)
-                .all(|row| row.accepted_path_evidence_present && row.theorem_obligation_still_open);
+                .all(|row| {
+                    row.accepted_path_evidence_present
+                        && (row.theorem_obligation_still_open || row.closed_by_imported_boundary)
+                });
     evidence.public_rejection_hypothesis_deferred_to_rejection_kats = evidence
         .accepted_hypothesis_evidence_rows
         .iter()
@@ -67786,8 +67888,8 @@ pub fn validate_path2_direct_accepted_spend_tuple_evidence_v1(
             evidence.every_accepted_tuple_field_has_evidence,
         ),
         (
-            "every_accepted_tuple_field_has_open_direct_obligation",
-            evidence.every_accepted_tuple_field_has_open_direct_obligation,
+            "every_accepted_tuple_field_has_open_or_imported_direct_obligation",
+            evidence.every_accepted_tuple_field_has_open_or_imported_direct_obligation,
         ),
     ];
     if let Some((name, _)) = required_true.iter().find(|(_, value)| !*value) {
@@ -67805,9 +67907,11 @@ pub fn validate_path2_direct_accepted_spend_tuple_evidence_v1(
         || evidence.accepted_tuple_field_evidence_present_count
             != PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
         || evidence.accepted_tuple_field_open_obligation_count
-            != PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
+            != PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len() - 1
+        || evidence.accepted_tuple_field_imported_closure_count != 1
         || !evidence.every_accepted_tuple_field_has_evidence
-        || !evidence.every_accepted_tuple_field_has_open_direct_obligation
+        || evidence.every_accepted_tuple_field_has_open_direct_obligation
+        || !evidence.every_accepted_tuple_field_has_open_or_imported_direct_obligation
     {
         return Err(
             "Path 2 direct accepted spend tuple evidence lost field evidence rows".to_string(),
@@ -67869,7 +67973,7 @@ pub fn validate_path2_direct_accepted_composition_evidence_v1(
         return Err("Path 2 direct accepted composition evidence authority mismatch".to_string());
     }
 
-    let direct_obligations_still_open = direct_report.obligation_rows.iter().all(|row| row.open);
+    let direct_obligations_still_open = direct_report.obligation_rows.iter().any(|row| row.open);
     let proof_family_obligations_still_open =
         proof_report.proof_obligation_rows.iter().all(|row| row.open);
     if evidence.direct_theorem_obligations_still_open != direct_obligations_still_open
@@ -71335,6 +71439,11 @@ pub fn path2_direct_accepted_spend_tuple_evidence_v1_frame(
             b"all_referenced_direct_obligations_still_open",
             u64::from(row.all_referenced_direct_obligations_still_open),
         );
+        append_u64(
+            &mut frame,
+            b"closed_by_imported_boundary",
+            u64::from(row.closed_by_imported_boundary),
+        );
         append_frame(&mut frame, b"blocker", row.blocker.as_bytes());
     }
     append_u64(
@@ -71354,6 +71463,11 @@ pub fn path2_direct_accepted_spend_tuple_evidence_v1_frame(
     );
     append_u64(
         &mut frame,
+        b"accepted_tuple_field_imported_closure_count",
+        evidence.accepted_tuple_field_imported_closure_count as u64,
+    );
+    append_u64(
+        &mut frame,
         b"every_accepted_tuple_field_has_evidence",
         u64::from(evidence.every_accepted_tuple_field_has_evidence),
     );
@@ -71361,6 +71475,11 @@ pub fn path2_direct_accepted_spend_tuple_evidence_v1_frame(
         &mut frame,
         b"every_accepted_tuple_field_has_open_direct_obligation",
         u64::from(evidence.every_accepted_tuple_field_has_open_direct_obligation),
+    );
+    append_u64(
+        &mut frame,
+        b"every_accepted_tuple_field_has_open_or_imported_direct_obligation",
+        u64::from(evidence.every_accepted_tuple_field_has_open_or_imported_direct_obligation),
     );
     append_frame(
         &mut frame,
@@ -71683,6 +71802,11 @@ pub fn path2_direct_accepted_composition_evidence_v1_frame(
             &mut frame,
             b"theorem_obligation_still_open",
             u64::from(row.theorem_obligation_still_open),
+        );
+        append_u64(
+            &mut frame,
+            b"closed_by_imported_boundary",
+            u64::from(row.closed_by_imported_boundary),
         );
     }
     append_u64(
@@ -114635,7 +114759,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         {
             assert_eq!(row.acceptance_hypothesis, *hypothesis);
             assert_eq!(row.obligation_id, *expected_case_id);
-            assert!(row.open);
+            assert_eq!(
+                row.open,
+                row.obligation_id != "direct_obligation_consume_once"
+            );
             assert_eq!(
                 row.blocker,
                 PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
@@ -114652,7 +114779,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.named_break_classes_pinned);
         assert!(!report.composition_theorem_instantiated);
         assert!(!report.account_creation_proof_boundary_verified);
-        assert!(!report.lifecycle_transition_profile_verified);
+        assert!(report.lifecycle_transition_profile_verified);
         assert!(!report.qrom_and_action_bounds_linked_to_theorem);
         assert!(!report.deployment_ready);
         assert_eq!(

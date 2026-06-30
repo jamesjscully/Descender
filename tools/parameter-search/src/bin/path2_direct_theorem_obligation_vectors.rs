@@ -236,6 +236,10 @@ fn manifest_body() -> Result<Value, String> {
             "direct_obligation_audit_vector_case_count":
                 direct_report.obligation_audit_vector_case_count,
             "direct_named_break_classes": direct_report.named_break_classes,
+            "open_direct_obligation_count":
+                direct_report.obligation_rows.iter().filter(|row| row.open).count(),
+            "closed_direct_obligation_count":
+                direct_report.obligation_rows.iter().filter(|row| !row.open).count(),
             "all_cases_open": direct_report.obligation_rows.iter().all(|row| row.open),
             "all_cases_have_named_break": direct_report.every_obligation_has_named_break,
             "all_open_cases_block_deployment":

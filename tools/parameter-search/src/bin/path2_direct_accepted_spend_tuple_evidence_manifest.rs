@@ -42,9 +42,11 @@ mod enabled {
             || !evidence.tuple_fields_match_theorem_boundary
             || evidence.accepted_tuple_field_evidence_count != 11
             || evidence.accepted_tuple_field_evidence_present_count != 11
-            || evidence.accepted_tuple_field_open_obligation_count != 11
+            || evidence.accepted_tuple_field_open_obligation_count != 10
+            || evidence.accepted_tuple_field_imported_closure_count != 1
             || !evidence.every_accepted_tuple_field_has_evidence
-            || !evidence.every_accepted_tuple_field_has_open_direct_obligation
+            || evidence.every_accepted_tuple_field_has_open_direct_obligation
+            || !evidence.every_accepted_tuple_field_has_open_or_imported_direct_obligation
             || !kat.replay_rejected_by_consume_once
         {
             return Err("direct accepted spend tuple evidence lost acceptance flags".to_string());
@@ -86,10 +88,14 @@ mod enabled {
                     evidence.accepted_tuple_field_evidence_present_count,
                 "accepted_tuple_field_open_obligation_count":
                     evidence.accepted_tuple_field_open_obligation_count,
+                "accepted_tuple_field_imported_closure_count":
+                    evidence.accepted_tuple_field_imported_closure_count,
                 "every_accepted_tuple_field_has_evidence":
                     evidence.every_accepted_tuple_field_has_evidence,
                 "every_accepted_tuple_field_has_open_direct_obligation":
                     evidence.every_accepted_tuple_field_has_open_direct_obligation,
+                "every_accepted_tuple_field_has_open_or_imported_direct_obligation":
+                    evidence.every_accepted_tuple_field_has_open_or_imported_direct_obligation,
                 "acceptance_hypotheses": evidence.acceptance_hypotheses,
                 "acceptance_hypothesis_count": evidence.acceptance_hypotheses.len(),
                 "direct_qrom_action_boundary_report_digest": hex_encode(

@@ -272,9 +272,14 @@ mod enabled {
                 body,
                 "/evidence/accepted_tuple_field_open_obligation_count",
             )? != evidence.accepted_tuple_field_open_obligation_count as u64
+            || u64_at(
+                body,
+                "/evidence/accepted_tuple_field_imported_closure_count",
+            )? != evidence.accepted_tuple_field_imported_closure_count as u64
             || evidence.accepted_tuple_field_evidence_count != 11
             || evidence.accepted_tuple_field_evidence_present_count != 11
-            || evidence.accepted_tuple_field_open_obligation_count != 11
+            || evidence.accepted_tuple_field_open_obligation_count != 10
+            || evidence.accepted_tuple_field_imported_closure_count != 1
             || at(body, "/evidence/accepted_tuple_field_evidence_rows")?
                 != &expected_field_rows
         {
@@ -293,7 +298,7 @@ mod enabled {
             "/evidence/public_result_accepts_same_slot",
             "/evidence/tuple_fields_match_theorem_boundary",
             "/evidence/every_accepted_tuple_field_has_evidence",
-            "/evidence/every_accepted_tuple_field_has_open_direct_obligation",
+            "/evidence/every_accepted_tuple_field_has_open_or_imported_direct_obligation",
             "/evidence/replay_rejected_by_consume_once",
         ] {
             if !bool_at(body, pointer)? {
@@ -301,6 +306,15 @@ mod enabled {
                     "direct accepted spend tuple manifest unexpectedly lost true flag {pointer}"
                 ));
             }
+        }
+        if bool_at(
+            body,
+            "/evidence/every_accepted_tuple_field_has_open_direct_obligation",
+        )? {
+            return Err(
+                "direct accepted spend tuple manifest unexpectedly kept all-open tuple-field flag"
+                    .to_string(),
+            );
         }
         if !kat.replay_rejected_by_consume_once {
             return Err(

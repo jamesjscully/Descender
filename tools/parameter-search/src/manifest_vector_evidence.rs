@@ -865,7 +865,11 @@ pub fn path2_direct_accepted_spend_tuple_evidence_artifact_v1() -> Result<Value,
         || u64_at(
             artifact,
             "/evidence/accepted_tuple_field_open_obligation_count",
-        )? != direct_report.accepted_tuple_fields.len() as u64
+        )? != direct_report.accepted_tuple_fields.len() as u64 - 1
+        || u64_at(
+            artifact,
+            "/evidence/accepted_tuple_field_imported_closure_count",
+        )? != 1
         || u64_at(artifact, "/evidence/acceptance_hypothesis_count")?
             != direct_report.acceptance_hypotheses.len() as u64
         || str_at(
@@ -895,9 +899,13 @@ pub fn path2_direct_accepted_spend_tuple_evidence_artifact_v1() -> Result<Value,
             artifact,
             "/evidence/every_accepted_tuple_field_has_evidence",
         )?
-        || !bool_at(
+        || bool_at(
             artifact,
             "/evidence/every_accepted_tuple_field_has_open_direct_obligation",
+        )?
+        || !bool_at(
+            artifact,
+            "/evidence/every_accepted_tuple_field_has_open_or_imported_direct_obligation",
         )?
         || !bool_at(artifact, "/evidence/replay_rejected_by_consume_once")?
     {
@@ -995,6 +1003,10 @@ pub fn path2_direct_accepted_spend_tuple_evidence_artifact_v1() -> Result<Value,
                 artifact,
                 "/evidence/accepted_tuple_field_open_obligation_count"
             )?,
+            "accepted_tuple_field_imported_closure_count": u64_at(
+                artifact,
+                "/evidence/accepted_tuple_field_imported_closure_count"
+            )?,
             "every_accepted_tuple_field_has_evidence": bool_at(
                 artifact,
                 "/evidence/every_accepted_tuple_field_has_evidence"
@@ -1002,6 +1014,10 @@ pub fn path2_direct_accepted_spend_tuple_evidence_artifact_v1() -> Result<Value,
             "every_accepted_tuple_field_has_open_direct_obligation": bool_at(
                 artifact,
                 "/evidence/every_accepted_tuple_field_has_open_direct_obligation"
+            )?,
+            "every_accepted_tuple_field_has_open_or_imported_direct_obligation": bool_at(
+                artifact,
+                "/evidence/every_accepted_tuple_field_has_open_or_imported_direct_obligation"
             )?,
             "replay_rejected_by_consume_once": bool_at(
                 artifact,
@@ -1710,7 +1726,19 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
         )? != direct_report.obligation_audit_vector_case_count as u64
         || at(corpus, "/audit_summary/direct_named_break_classes")?
             != &json!(direct_report.named_break_classes)
-        || !bool_at(corpus, "/audit_summary/all_cases_open")?
+        || u64_at(corpus, "/audit_summary/open_direct_obligation_count")?
+            != direct_report
+                .obligation_rows
+                .iter()
+                .filter(|row| row.open)
+                .count() as u64
+        || u64_at(corpus, "/audit_summary/closed_direct_obligation_count")?
+            != direct_report
+                .obligation_rows
+                .iter()
+                .filter(|row| !row.open)
+                .count() as u64
+        || bool_at(corpus, "/audit_summary/all_cases_open")?
         || !bool_at(corpus, "/audit_summary/all_cases_have_named_break")?
         || !bool_at(corpus, "/audit_summary/all_open_cases_block_deployment")?
         || bool_at(corpus, "/audit_summary/composition_theorem_instantiated")?
@@ -1733,7 +1761,7 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
             corpus,
             "/audit_summary/lifecycle_target_chain_profile_verification_pinned",
         )?
-        || bool_at(
+        || !bool_at(
             corpus,
             "/audit_summary/lifecycle_transition_profile_verified",
         )?
@@ -1792,6 +1820,14 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
             "direct_named_break_classes": at(
                 corpus,
                 "/audit_summary/direct_named_break_classes"
+            )?,
+            "open_direct_obligation_count": u64_at(
+                corpus,
+                "/audit_summary/open_direct_obligation_count"
+            )?,
+            "closed_direct_obligation_count": u64_at(
+                corpus,
+                "/audit_summary/closed_direct_obligation_count"
             )?,
             "all_cases_open": bool_at(corpus, "/audit_summary/all_cases_open")?,
             "all_cases_have_named_break": bool_at(

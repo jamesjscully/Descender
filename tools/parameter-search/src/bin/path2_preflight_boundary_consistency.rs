@@ -779,6 +779,7 @@ fn main() -> Result<(), String> {
         "/direct_accepted_composition_evidence_artifact/audit_summary/proof_family_obligations_still_open",
         "/direct_accepted_composition_evidence_artifact/audit_summary/verifier_boundary_accepts_creation",
         "/direct_accepted_composition_evidence_artifact/audit_summary/direct_spend_tuple_accepts",
+        "/direct_obligation_vector_corpus_evidence/audit_summary/lifecycle_transition_profile_verified",
         "/coverage/every_closure_dependency_has_open_obligation",
         "/coverage/every_closure_dependency_has_open_support_surface",
         "/coverage/every_open_closure_dependency_blocks_deployment",
@@ -799,7 +800,6 @@ fn main() -> Result<(), String> {
         "/direct_obligation_vector_corpus_evidence/audit_summary/proof_boundary_deployment_ready",
         "/direct_obligation_vector_corpus_evidence/audit_summary/qrom_theorem_imports_budget",
         "/direct_obligation_vector_corpus_evidence/audit_summary/qrom_external_review_complete",
-        "/direct_obligation_vector_corpus_evidence/audit_summary/lifecycle_transition_profile_verified",
         "/direct_obligation_vector_corpus_evidence/audit_summary/qrom_and_action_bounds_linked_to_theorem",
         "/direct_obligation_vector_corpus_evidence/audit_summary/deployment_ready",
     ] {
@@ -998,10 +998,12 @@ fn main() -> Result<(), String> {
     if direct_report.deployment_ready
         || direct_report.composition_theorem_instantiated
         || direct_report.account_creation_proof_boundary_verified
-        || direct_report.lifecycle_transition_profile_verified
         || direct_report.qrom_and_action_bounds_linked_to_theorem
     {
         return Err("direct theorem boundary unexpectedly reports closed obligations".to_string());
+    }
+    if !direct_report.lifecycle_transition_profile_verified {
+        return Err("direct theorem boundary has not imported verified lifecycle profile".to_string());
     }
     if qrom_action_report.deployment_ready
         || qrom_action_report.theorem_imports_budget
@@ -1120,7 +1122,7 @@ fn main() -> Result<(), String> {
 
     for pointer in [
         "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/every_accepted_tuple_field_has_evidence",
-        "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/every_accepted_tuple_field_has_open_direct_obligation",
+        "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/every_accepted_tuple_field_has_open_or_imported_direct_obligation",
         "/direct_accepted_composition_evidence_artifact/audit_summary/every_positive_acceptance_hypothesis_has_accepted_path_evidence",
         "/direct_accepted_composition_evidence_artifact/audit_summary/public_rejection_hypothesis_deferred_to_rejection_kats",
     ] {
@@ -1141,7 +1143,11 @@ fn main() -> Result<(), String> {
         ),
         (
             "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/accepted_tuple_field_open_obligation_count",
-            11,
+            10,
+        ),
+        (
+            "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/accepted_tuple_field_imported_closure_count",
+            1,
         ),
         (
             "/direct_accepted_composition_evidence_artifact/audit_summary/accepted_hypothesis_evidence_count",
@@ -1157,6 +1163,15 @@ fn main() -> Result<(), String> {
                 "production preflight manifest lost accepted direct evidence count {pointer}"
             ));
         }
+    }
+    if bool_at(
+        direct_boundary,
+        "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/every_accepted_tuple_field_has_open_direct_obligation",
+    )? {
+        return Err(
+            "production preflight manifest unexpectedly kept all-open tuple field flag"
+                .to_string(),
+        );
     }
     if at(
         direct_boundary,
@@ -1209,9 +1224,23 @@ fn main() -> Result<(), String> {
     }
 
     if !direct_report.composition_theorem_instantiated
-        && !direct_report.obligation_rows.iter().all(|row| {
-            row.open && row.blocker == direct_report.blocker && contains(blockers, row.blocker)
-        })
+        && (!direct_report.obligation_rows.iter().any(|row| row.open)
+            || !direct_report
+                .obligation_rows
+                .iter()
+                .filter(|row| row.open)
+                .all(|row| {
+                    row.blocker == direct_report.blocker && contains(blockers, row.blocker)
+                })
+            || !direct_report
+                .obligation_rows
+                .iter()
+                .filter(|row| !row.open)
+                .all(|row| {
+                    row.obligation_id == "direct_obligation_consume_once"
+                        && row.acceptance_hypothesis
+                            == "lifecycle_transition_consumes_authorization_once"
+                }))
     {
         return Err(
             "direct composition theorem flag is not backed by all open direct obligations"
@@ -1226,9 +1255,9 @@ fn main() -> Result<(), String> {
         || direct_report.closure_dependency_evidence_count
             != direct_report.closure_dependency_rows.len()
         || direct_report.closure_dependency_open_obligation_evidence_count
-            != direct_report.closure_dependency_rows.len()
+            != direct_report.closure_dependency_rows.iter().filter(|row| row.open).count()
         || direct_report.closure_dependency_open_support_evidence_count
-            != direct_report.closure_dependency_rows.len()
+            != direct_report.closure_dependency_rows.iter().filter(|row| row.open).count()
         || direct_report.closure_dependency_count != direct_report.obligation_rows.len()
     {
         return Err("direct theorem boundary lost closure-dependency blocker coverage".to_string());
@@ -1254,19 +1283,20 @@ fn main() -> Result<(), String> {
             );
         }
     }
-    if !direct_report.lifecycle_transition_profile_verified {
-        require_open_direct_obligation(
-            &direct_report,
-            blockers,
-            "lifecycle_transition_profile_verified",
-            "direct_obligation_consume_once",
-            "lifecycle_transition_consumes_authorization_once",
-            "consume-once lifecycle state transition",
-            "target-chain lifecycle profile",
-        )?;
-        if !contains(blockers, lifecycle_report.blocker) {
+    if direct_report.lifecycle_transition_profile_verified {
+        let consume_once_row = direct_report
+            .obligation_rows
+            .iter()
+            .find(|row| row.obligation_id == "direct_obligation_consume_once")
+            .ok_or_else(|| "direct theorem boundary lost consume-once row".to_string())?;
+        if consume_once_row.open
+            || !lifecycle_report.target_chain_finality_profile_instantiated
+            || !lifecycle_report.lifecycle_transition_profile_verified
+            || lifecycle_report.deployment_ready
+        {
             return Err(
-                "direct lifecycle closure flag is open but lifecycle blocker is absent".to_string(),
+                "direct lifecycle import is not backed by verified non-deployable lifecycle boundary"
+                    .to_string(),
             );
         }
     }

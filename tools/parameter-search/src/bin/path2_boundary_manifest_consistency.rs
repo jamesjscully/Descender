@@ -646,7 +646,7 @@ fn check_consistency() -> Result<(), String> {
             "coverage",
             "closure_dependency_open_obligation_evidence_count",
         ],
-        9,
+        8,
     )?;
     expect_u64(
         direct_manifest,
@@ -655,7 +655,7 @@ fn check_consistency() -> Result<(), String> {
             "coverage",
             "closure_dependency_open_support_evidence_count",
         ],
-        9,
+        8,
     )?;
     expect_bool(
         direct_manifest,
@@ -1514,7 +1514,7 @@ fn check_consistency() -> Result<(), String> {
             "audit_summary",
             "all_cases_open",
         ],
-        true,
+        false,
     )?;
     expect_bool(
         direct_manifest,
@@ -1659,7 +1659,7 @@ fn check_consistency() -> Result<(), String> {
             "audit_summary",
             "lifecycle_transition_profile_verified",
         ],
-        false,
+        true,
     )?;
     expect_bool(
         direct_manifest,
@@ -1794,7 +1794,8 @@ fn check_consistency() -> Result<(), String> {
     for (field, expected) in [
         ("accepted_tuple_field_evidence_count", 11),
         ("accepted_tuple_field_evidence_present_count", 11),
-        ("accepted_tuple_field_open_obligation_count", 11),
+        ("accepted_tuple_field_open_obligation_count", 10),
+        ("accepted_tuple_field_imported_closure_count", 1),
     ] {
         expect_u64(
             direct_manifest,
@@ -1831,7 +1832,7 @@ fn check_consistency() -> Result<(), String> {
     )?;
     for flag in [
         "every_accepted_tuple_field_has_evidence",
-        "every_accepted_tuple_field_has_open_direct_obligation",
+        "every_accepted_tuple_field_has_open_or_imported_direct_obligation",
     ] {
         expect_bool(
             direct_manifest,
@@ -1844,6 +1845,16 @@ fn check_consistency() -> Result<(), String> {
             true,
         )?;
     }
+    expect_bool(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "direct_accepted_spend_tuple_evidence_artifact",
+            "audit_summary",
+            "every_accepted_tuple_field_has_open_direct_obligation",
+        ],
+        false,
+    )?;
     for flag in [
         "creation_evidence_matches_direct_tuple",
         "proof_boundary_digest_matches_direct_theorem",
