@@ -15,16 +15,19 @@
       "state_namespace_validator": "validate_path2_direct_slot_authorization_state_namespace",
       "support_file": "research/path2_one_use_successor_state_theorem.md",
       "target_chain_adapter_type": "ProductionSelectedProjectionTargetChainDbAdapter",
+      "target_chain_finality_profile_authority": "decisions/ADR-0010-registry-lifecycle-consensus-wiring-and-finality.md",
+      "target_chain_finality_profile_id": "ADR-0010.D2.finalized-head-reorg-window.v1",
+      "target_chain_finality_profile_rule": "permanence boundary equals chain FINALIZED head; admissions and consumptions in [finalized, head] are reorg-freeable by reorg_to(new_head)",
       "theorem_target": "one_use_successor_state_theorem_v1"
     },
     "corpus_id": "Descender.Path2.DirectLifecycleBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "direct_lifecycle_boundary_report_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
-      "direct_lifecycle_boundary_report_recomputed_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
-      "direct_theorem_boundary_report_digest": "cb602ed8b6bd20cf9a88397ab6f422f418c2d1ed5aacdf7ff672a8a73f18d189",
-      "direct_theorem_boundary_report_recomputed_digest": "cb602ed8b6bd20cf9a88397ab6f422f418c2d1ed5aacdf7ff672a8a73f18d189",
-      "direct_theorem_report_lifecycle_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb"
+      "direct_lifecycle_boundary_report_digest": "e981f1ffbf41a3795982c1437bede6d555f881ef95b4c799f4c8bec52a9b0d8d",
+      "direct_lifecycle_boundary_report_recomputed_digest": "e981f1ffbf41a3795982c1437bede6d555f881ef95b4c799f4c8bec52a9b0d8d",
+      "direct_theorem_boundary_report_digest": "cd633bba145972a56c67e2823b8d9850e108fc9918255151873767ca63e62a61",
+      "direct_theorem_boundary_report_recomputed_digest": "cd633bba145972a56c67e2823b8d9850e108fc9918255151873767ca63e62a61",
+      "direct_theorem_report_lifecycle_digest": "e981f1ffbf41a3795982c1437bede6d555f881ef95b4c799f4c8bec52a9b0d8d"
     },
     "frozen_status": "draft_lifecycle_boundary_manifest",
     "generator": {
@@ -43,7 +46,8 @@
         "replay_rejected_by_consume_set": true,
         "restore_anchor_support_present": true,
         "spent_slot_ledger_rejects_stale_wallet_replay": true,
-        "target_chain_finality_profile_instantiated": false
+        "target_chain_finality_profile_instantiated": false,
+        "target_chain_finality_profile_selected": true
       },
       "executable_tests": [
         "path2_prevalidated_slot_consume_once_rejects_reauthorization",
@@ -63,7 +67,14 @@
       "target_chain_finality_profile_instantiated": false
     },
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
-    "schema": "Descender.Path2.DirectLifecycleBoundaryManifest.v1"
+    "schema": "Descender.Path2.DirectLifecycleBoundaryManifest.v1",
+    "selected_finality_profile": {
+      "status": "selected_by_adr_not_instantiated_as_verified_deployment_profile",
+      "target_chain_finality_profile_authority": "decisions/ADR-0010-registry-lifecycle-consensus-wiring-and-finality.md",
+      "target_chain_finality_profile_id": "ADR-0010.D2.finalized-head-reorg-window.v1",
+      "target_chain_finality_profile_rule": "permanence boundary equals chain FINALIZED head; admissions and consumptions in [finalized, head] are reorg-freeable by reorg_to(new_head)",
+      "target_chain_finality_profile_selected": true
+    }
   },
-  "manifest_digest": "c3f631b9df61a70edf7aa1456254628bae1de648683c1e2aded71b30570dd018"
+  "manifest_digest": "04c473404c255a40c42d9ea692cb1a73ff527df59cfa0020c10feab97b2332c0"
 }

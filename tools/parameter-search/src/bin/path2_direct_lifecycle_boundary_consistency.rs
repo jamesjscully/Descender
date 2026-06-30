@@ -1,8 +1,6 @@
 use descender_parameter_search::production_reference::{
-    path2_direct_lifecycle_boundary_report_v1,
-    path2_direct_lifecycle_boundary_report_v1_digest,
-    path2_direct_theorem_boundary_report_v1,
-    validate_path2_direct_lifecycle_boundary_report_v1,
+    path2_direct_lifecycle_boundary_report_v1, path2_direct_lifecycle_boundary_report_v1_digest,
+    path2_direct_theorem_boundary_report_v1, validate_path2_direct_lifecycle_boundary_report_v1,
 };
 use serde_json::Value;
 use std::{
@@ -106,6 +104,11 @@ fn main() -> Result<(), String> {
     let manifest = load_json(&root, "formal/kat/path2_direct_lifecycle_boundary_v1.json")?;
     let source = load_text(&root, "tools/parameter-search/src/production_reference.rs")?;
     let support_doc = load_text(&root, "research/path2_one_use_successor_state_theorem.md")?;
+    let adr0010_doc = load_text(
+        &root,
+        "decisions/ADR-0010-registry-lifecycle-consensus-wiring-and-finality.md",
+    )?;
+    let deployment_profiles_doc = load_text(&root, "spec/deployment_profiles.md")?;
 
     let report = path2_direct_lifecycle_boundary_report_v1();
     let direct_report = path2_direct_theorem_boundary_report_v1();
@@ -146,14 +149,21 @@ fn main() -> Result<(), String> {
         return Err("direct theorem report is not bound to lifecycle report".to_string());
     }
     if report.spent_slot_ledger_type != "ProductionSpentSlotLedger" {
-        return Err("direct lifecycle report drifted from production spent-slot ledger".to_string());
+        return Err(
+            "direct lifecycle report drifted from production spent-slot ledger".to_string(),
+        );
     }
     if report.chain_file_store_type != "ProductionChainStateFileStores" {
-        return Err("direct lifecycle report drifted from production chain file stores".to_string());
+        return Err(
+            "direct lifecycle report drifted from production chain file stores".to_string(),
+        );
     }
 
     for (pointer, expected) in [
-        ("/manifest/authority_snapshot/support_file", report.support_file),
+        (
+            "/manifest/authority_snapshot/support_file",
+            report.support_file,
+        ),
         (
             "/manifest/authority_snapshot/theorem_target",
             report.theorem_target,
@@ -166,7 +176,10 @@ fn main() -> Result<(), String> {
             "/manifest/authority_snapshot/acceptance_hypothesis",
             report.acceptance_hypothesis,
         ),
-        ("/manifest/authority_snapshot/named_break", report.named_break),
+        (
+            "/manifest/authority_snapshot/named_break",
+            report.named_break,
+        ),
         (
             "/manifest/authority_snapshot/consume_once_validator",
             report.consume_once_validator,
@@ -195,6 +208,18 @@ fn main() -> Result<(), String> {
             "/manifest/authority_snapshot/chain_file_store_type",
             report.chain_file_store_type,
         ),
+        (
+            "/manifest/authority_snapshot/target_chain_finality_profile_id",
+            report.target_chain_finality_profile_id,
+        ),
+        (
+            "/manifest/authority_snapshot/target_chain_finality_profile_authority",
+            report.target_chain_finality_profile_authority,
+        ),
+        (
+            "/manifest/authority_snapshot/target_chain_finality_profile_rule",
+            report.target_chain_finality_profile_rule,
+        ),
     ] {
         if str_at(&manifest, pointer)? != expected {
             return Err(format!("direct lifecycle manifest drifted at {pointer}"));
@@ -209,9 +234,37 @@ fn main() -> Result<(), String> {
         "/manifest/local_successor_state_boundary/coverage/chain_state_persists_lifecycle_and_spent_record",
         "/manifest/local_successor_state_boundary/coverage/reorg_burn_support_present",
         "/manifest/local_successor_state_boundary/coverage/restore_anchor_support_present",
+        "/manifest/local_successor_state_boundary/coverage/target_chain_finality_profile_selected",
+        "/manifest/selected_finality_profile/target_chain_finality_profile_selected",
     ] {
         if !bool_at(&manifest, pointer)? {
-            return Err(format!("direct lifecycle manifest lost required local flag {pointer}"));
+            return Err(format!(
+                "direct lifecycle manifest lost required local flag {pointer}"
+            ));
+        }
+    }
+    for (pointer, expected) in [
+        (
+            "/manifest/selected_finality_profile/target_chain_finality_profile_id",
+            report.target_chain_finality_profile_id,
+        ),
+        (
+            "/manifest/selected_finality_profile/target_chain_finality_profile_authority",
+            report.target_chain_finality_profile_authority,
+        ),
+        (
+            "/manifest/selected_finality_profile/target_chain_finality_profile_rule",
+            report.target_chain_finality_profile_rule,
+        ),
+        (
+            "/manifest/selected_finality_profile/status",
+            "selected_by_adr_not_instantiated_as_verified_deployment_profile",
+        ),
+    ] {
+        if str_at(&manifest, pointer)? != expected {
+            return Err(format!(
+                "direct lifecycle selected finality profile drifted at {pointer}"
+            ));
         }
     }
     for pointer in [
@@ -220,7 +273,9 @@ fn main() -> Result<(), String> {
         "/manifest/open_obligations/deployment_ready",
     ] {
         if bool_at(&manifest, pointer)? {
-            return Err(format!("direct lifecycle manifest unexpectedly closes {pointer}"));
+            return Err(format!(
+                "direct lifecycle manifest unexpectedly closes {pointer}"
+            ));
         }
     }
 
@@ -228,13 +283,52 @@ fn main() -> Result<(), String> {
         ("slot_replay_or_rollback_break", "lifecycle break class"),
         ("Valid Predecessor State", "predecessor-state section"),
         ("Valid Successor State", "successor-state section"),
-        ("verify_path2_direct_single_slot_spend_authorization", "direct spend hook"),
-        ("verify_path2_prevalidated_slot_consume_once", "consume-once hook"),
-        ("Path 2 slot authorization already consumed", "consume-once rejection"),
+        (
+            "verify_path2_direct_single_slot_spend_authorization",
+            "direct spend hook",
+        ),
+        (
+            "verify_path2_prevalidated_slot_consume_once",
+            "consume-once hook",
+        ),
+        (
+            "Path 2 slot authorization already consumed",
+            "consume-once rejection",
+        ),
         ("global consensus finality", "open finality non-claim"),
-        ("reorg/finality policy", "deployment lifecycle policy boundary"),
+        (
+            "reorg/finality policy",
+            "deployment lifecycle policy boundary",
+        ),
     ] {
         require_contains(&support_doc, needle, label)?;
+    }
+    for (needle, label) in [
+        ("FINALIZED head", "D2 finality boundary"),
+        ("[finalized, head]", "D2 reorg-able window"),
+        ("reorg_to(new_head)", "D2 reorg-freeing rule"),
+        (
+            "permanence boundary equals finalized head",
+            "D2 permanence boundary",
+        ),
+    ] {
+        require_contains(&adr0010_doc, needle, label)?;
+    }
+    for (needle, label) in [
+        (
+            "It does not change the generic direct-mode theorem",
+            "deployment-profile non-claim",
+        ),
+        (
+            "A profile becomes adoption evidence only when the corresponding",
+            "deployment-profile readiness rule",
+        ),
+        (
+            "finality depth or finality source",
+            "deployment finality requirement",
+        ),
+    ] {
+        require_contains(&deployment_profiles_doc, needle, label)?;
     }
 
     let consume_once = function_window(&source, "verify_path2_prevalidated_slot_consume_once")?;
@@ -249,8 +343,10 @@ fn main() -> Result<(), String> {
         "Path 2 slot authorization already consumed",
         "consume-once validator",
     )?;
-    let direct_spend =
-        function_window(&source, "verify_path2_direct_single_slot_spend_authorization")?;
+    let direct_spend = function_window(
+        &source,
+        "verify_path2_direct_single_slot_spend_authorization",
+    )?;
     for needle in [
         "validate_path2_direct_slot_authorization_state_namespace",
         "verify_path2_checked_core_authorization",
@@ -265,8 +361,7 @@ fn main() -> Result<(), String> {
         "verify_path2_prevalidated_slot_consume_once",
         "direct spend lifecycle composition",
     )?;
-    let chain_store =
-        function_window(&source, "verify_consume_record_and_save").unwrap_or("");
+    let chain_store = function_window(&source, "verify_consume_record_and_save").unwrap_or("");
     require_contains(
         chain_store,
         "spent_ledger_store.save_ledger(&ledger)",
@@ -279,7 +374,11 @@ fn main() -> Result<(), String> {
     )?;
 
     for test_name in report.executable_tests {
-        require_contains(&source, &format!("fn {test_name}"), "lifecycle executable test")?;
+        require_contains(
+            &source,
+            &format!("fn {test_name}"),
+            "lifecycle executable test",
+        )?;
     }
     for needle in [
         "slot is already in spent ledger",

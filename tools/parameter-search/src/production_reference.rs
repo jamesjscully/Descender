@@ -10021,6 +10021,10 @@ pub struct Path2DirectLifecycleBoundaryReportV1 {
     pub chain_state_persists_lifecycle_and_spent_record: bool,
     pub reorg_burn_support_present: bool,
     pub restore_anchor_support_present: bool,
+    pub target_chain_finality_profile_selected: bool,
+    pub target_chain_finality_profile_id: &'static str,
+    pub target_chain_finality_profile_authority: &'static str,
+    pub target_chain_finality_profile_rule: &'static str,
     pub target_chain_finality_profile_instantiated: bool,
     pub lifecycle_transition_profile_verified: bool,
     pub deployment_ready: bool,
@@ -11225,6 +11229,12 @@ pub const PATH2_DIRECT_LIFECYCLE_SUPPORT_FILE: &str =
     "research/path2_one_use_successor_state_theorem.md";
 pub const PATH2_DIRECT_LIFECYCLE_THEOREM_TARGET: &str =
     "one_use_successor_state_theorem_v1";
+pub const PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_ID: &str =
+    "ADR-0010.D2.finalized-head-reorg-window.v1";
+pub const PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_AUTHORITY: &str =
+    "decisions/ADR-0010-registry-lifecycle-consensus-wiring-and-finality.md";
+pub const PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_RULE: &str =
+    "permanence boundary equals chain FINALIZED head; admissions and consumptions in [finalized, head] are reorg-freeable by reorg_to(new_head)";
 pub const PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS: [&str; 8] = [
     "path2_prevalidated_slot_consume_once_rejects_reauthorization",
     "path2_direct_single_slot_spend_composes_admission_signature_and_consume_once",
@@ -13418,6 +13428,11 @@ pub fn path2_direct_lifecycle_boundary_report_v1() -> Path2DirectLifecycleBounda
         chain_state_persists_lifecycle_and_spent_record: true,
         reorg_burn_support_present: true,
         restore_anchor_support_present: true,
+        target_chain_finality_profile_selected: true,
+        target_chain_finality_profile_id: PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_ID,
+        target_chain_finality_profile_authority:
+            PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_AUTHORITY,
+        target_chain_finality_profile_rule: PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_RULE,
         target_chain_finality_profile_instantiated: false,
         lifecycle_transition_profile_verified: false,
         deployment_ready: false,
@@ -13450,6 +13465,11 @@ pub fn validate_path2_direct_lifecycle_boundary_report_v1(
         || !report.chain_state_persists_lifecycle_and_spent_record
         || !report.reorg_burn_support_present
         || !report.restore_anchor_support_present
+        || !report.target_chain_finality_profile_selected
+        || report.target_chain_finality_profile_id != PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_ID
+        || report.target_chain_finality_profile_authority
+            != PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_AUTHORITY
+        || report.target_chain_finality_profile_rule != PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_RULE
         || report.target_chain_finality_profile_instantiated
         || report.lifecycle_transition_profile_verified
         || report.deployment_ready
@@ -70478,6 +70498,26 @@ fn path2_direct_lifecycle_boundary_report_v1_frame(
     );
     append_u64(
         &mut frame,
+        b"target_chain_finality_profile_selected",
+        u64::from(report.target_chain_finality_profile_selected),
+    );
+    append_frame(
+        &mut frame,
+        b"target_chain_finality_profile_id",
+        report.target_chain_finality_profile_id.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"target_chain_finality_profile_authority",
+        report.target_chain_finality_profile_authority.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"target_chain_finality_profile_rule",
+        report.target_chain_finality_profile_rule.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
         b"target_chain_finality_profile_instantiated",
         u64::from(report.target_chain_finality_profile_instantiated),
     );
@@ -114083,6 +114123,19 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.chain_state_persists_lifecycle_and_spent_record);
         assert!(report.reorg_burn_support_present);
         assert!(report.restore_anchor_support_present);
+        assert!(report.target_chain_finality_profile_selected);
+        assert_eq!(
+            report.target_chain_finality_profile_id,
+            PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_ID
+        );
+        assert_eq!(
+            report.target_chain_finality_profile_authority,
+            PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_AUTHORITY
+        );
+        assert_eq!(
+            report.target_chain_finality_profile_rule,
+            PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_RULE
+        );
         assert!(!report.target_chain_finality_profile_instantiated);
         assert!(!report.lifecycle_transition_profile_verified);
         assert!(!report.deployment_ready);

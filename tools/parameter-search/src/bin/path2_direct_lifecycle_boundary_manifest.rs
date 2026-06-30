@@ -62,6 +62,12 @@ fn manifest_body() -> Result<Value, String> {
             "spent_slot_ledger_type": lifecycle_report.spent_slot_ledger_type,
             "target_chain_adapter_type": lifecycle_report.target_chain_adapter_type,
             "chain_file_store_type": lifecycle_report.chain_file_store_type,
+            "target_chain_finality_profile_id":
+                lifecycle_report.target_chain_finality_profile_id,
+            "target_chain_finality_profile_authority":
+                lifecycle_report.target_chain_finality_profile_authority,
+            "target_chain_finality_profile_rule":
+                lifecycle_report.target_chain_finality_profile_rule,
             "direct_theorem_blocker": lifecycle_report.blocker
         },
         "digests": {
@@ -91,6 +97,8 @@ fn manifest_body() -> Result<Value, String> {
                     lifecycle_report.chain_state_persists_lifecycle_and_spent_record,
                 "reorg_burn_support_present": lifecycle_report.reorg_burn_support_present,
                 "restore_anchor_support_present": lifecycle_report.restore_anchor_support_present,
+                "target_chain_finality_profile_selected":
+                    lifecycle_report.target_chain_finality_profile_selected,
                 "target_chain_finality_profile_instantiated":
                     lifecycle_report.target_chain_finality_profile_instantiated,
                 "lifecycle_transition_profile_verified":
@@ -99,6 +107,18 @@ fn manifest_body() -> Result<Value, String> {
                 "blocker": lifecycle_report.blocker
             },
             "executable_tests": lifecycle_report.executable_tests
+        },
+        "selected_finality_profile": {
+            "target_chain_finality_profile_selected":
+                lifecycle_report.target_chain_finality_profile_selected,
+            "target_chain_finality_profile_id":
+                lifecycle_report.target_chain_finality_profile_id,
+            "target_chain_finality_profile_authority":
+                lifecycle_report.target_chain_finality_profile_authority,
+            "target_chain_finality_profile_rule":
+                lifecycle_report.target_chain_finality_profile_rule,
+            "status":
+                "selected_by_adr_not_instantiated_as_verified_deployment_profile"
         },
         "open_obligations": {
             "target_chain_finality_profile_instantiated":
