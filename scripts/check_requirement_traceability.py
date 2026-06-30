@@ -875,7 +875,7 @@ DIRECT_LIFECYCLE_BOUNDARY_MARKERS = {
         "ProductionSpentSlotLedger",
         "ProductionChainStateFileStores",
         '"local_successor_state_model_pinned": true',
-        '"target_chain_finality_profile_instantiated": false',
+        '"target_chain_finality_profile_instantiated": true',
         '"lifecycle_transition_profile_verified": false',
         '"deployment_ready": false',
     ],
@@ -1663,7 +1663,7 @@ CAPABILITY_MATRIX_CONTRACTS = [
         "One-use authorization lifecycle",
         "`direct`",
         "live slot registry",
-        "target-chain reorg/finality profile still open",
+        "full lifecycle transition KATs remain open",
         {"SPEC-LIFE-001", "DIR-LIFE-001"},
     ),
     (
@@ -1934,7 +1934,7 @@ DIRECT_IMPLEMENTATION_SURFACE_CONTRACTS = [
         "Consume-once lifecycle transition",
         "`direct`",
         "`not_ready`",
-        "target-chain reorg/finality profile",
+        "remaining lifecycle KATs",
         {"DIR-LIFE-001", "SPEC-LIFE-001", "ADOPT-HW-STATE-001"},
     ),
     (

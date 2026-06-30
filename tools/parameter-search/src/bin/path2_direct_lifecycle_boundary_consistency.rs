@@ -235,7 +235,9 @@ fn main() -> Result<(), String> {
         "/manifest/local_successor_state_boundary/coverage/reorg_burn_support_present",
         "/manifest/local_successor_state_boundary/coverage/restore_anchor_support_present",
         "/manifest/local_successor_state_boundary/coverage/target_chain_finality_profile_selected",
+        "/manifest/local_successor_state_boundary/coverage/target_chain_finality_profile_instantiated",
         "/manifest/selected_finality_profile/target_chain_finality_profile_selected",
+        "/manifest/selected_finality_profile/target_chain_finality_profile_instantiated",
     ] {
         if !bool_at(&manifest, pointer)? {
             return Err(format!(
@@ -258,7 +260,7 @@ fn main() -> Result<(), String> {
         ),
         (
             "/manifest/selected_finality_profile/status",
-            "selected_by_adr_not_instantiated_as_verified_deployment_profile",
+            "selected_and_instantiated_by_executable_d2_reorg_model_not_verified_deployment_profile",
         ),
     ] {
         if str_at(&manifest, pointer)? != expected {
@@ -268,7 +270,6 @@ fn main() -> Result<(), String> {
         }
     }
     for pointer in [
-        "/manifest/open_obligations/target_chain_finality_profile_instantiated",
         "/manifest/open_obligations/lifecycle_transition_profile_verified",
         "/manifest/open_obligations/deployment_ready",
     ] {
@@ -385,6 +386,9 @@ fn main() -> Result<(), String> {
         "revealed valid signature burns slot across reorg",
         "snapshot sequence is older than restore anchor",
         "chain_state_file_stores_verify_record_and_persist_together",
+        "Path2D2FinalityProfileState",
+        "D2 finality profile rejects reorg below finalized head",
+        "path2_d2_finality_profile_reorg_frees_window_but_preserves_finalized",
     ] {
         require_contains(&source, needle, "lifecycle regression evidence")?;
     }

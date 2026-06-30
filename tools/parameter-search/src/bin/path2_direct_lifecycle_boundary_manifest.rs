@@ -111,6 +111,8 @@ fn manifest_body() -> Result<Value, String> {
         "selected_finality_profile": {
             "target_chain_finality_profile_selected":
                 lifecycle_report.target_chain_finality_profile_selected,
+            "target_chain_finality_profile_instantiated":
+                lifecycle_report.target_chain_finality_profile_instantiated,
             "target_chain_finality_profile_id":
                 lifecycle_report.target_chain_finality_profile_id,
             "target_chain_finality_profile_authority":
@@ -118,11 +120,9 @@ fn manifest_body() -> Result<Value, String> {
             "target_chain_finality_profile_rule":
                 lifecycle_report.target_chain_finality_profile_rule,
             "status":
-                "selected_by_adr_not_instantiated_as_verified_deployment_profile"
+                "selected_and_instantiated_by_executable_d2_reorg_model_not_verified_deployment_profile"
         },
         "open_obligations": {
-            "target_chain_finality_profile_instantiated":
-                lifecycle_report.target_chain_finality_profile_instantiated,
             "lifecycle_transition_profile_verified":
                 lifecycle_report.lifecycle_transition_profile_verified,
             "deployment_ready": lifecycle_report.deployment_ready,

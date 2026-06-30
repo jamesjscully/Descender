@@ -23,11 +23,11 @@
     "corpus_id": "Descender.Path2.DirectLifecycleBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "direct_lifecycle_boundary_report_digest": "e981f1ffbf41a3795982c1437bede6d555f881ef95b4c799f4c8bec52a9b0d8d",
-      "direct_lifecycle_boundary_report_recomputed_digest": "e981f1ffbf41a3795982c1437bede6d555f881ef95b4c799f4c8bec52a9b0d8d",
-      "direct_theorem_boundary_report_digest": "cd633bba145972a56c67e2823b8d9850e108fc9918255151873767ca63e62a61",
-      "direct_theorem_boundary_report_recomputed_digest": "cd633bba145972a56c67e2823b8d9850e108fc9918255151873767ca63e62a61",
-      "direct_theorem_report_lifecycle_digest": "e981f1ffbf41a3795982c1437bede6d555f881ef95b4c799f4c8bec52a9b0d8d"
+      "direct_lifecycle_boundary_report_digest": "ad5a3b4158db62fe4513b3f8b59a24e7ef475f3ab4f9eba9e3679e9300958d0f",
+      "direct_lifecycle_boundary_report_recomputed_digest": "ad5a3b4158db62fe4513b3f8b59a24e7ef475f3ab4f9eba9e3679e9300958d0f",
+      "direct_theorem_boundary_report_digest": "b94f986fdf0bdea2175a80dda7edd355493366201ba1e73c7558f47dadfa6fbf",
+      "direct_theorem_boundary_report_recomputed_digest": "b94f986fdf0bdea2175a80dda7edd355493366201ba1e73c7558f47dadfa6fbf",
+      "direct_theorem_report_lifecycle_digest": "ad5a3b4158db62fe4513b3f8b59a24e7ef475f3ab4f9eba9e3679e9300958d0f"
     },
     "frozen_status": "draft_lifecycle_boundary_manifest",
     "generator": {
@@ -46,7 +46,7 @@
         "replay_rejected_by_consume_set": true,
         "restore_anchor_support_present": true,
         "spent_slot_ledger_rejects_stale_wallet_replay": true,
-        "target_chain_finality_profile_instantiated": false,
+        "target_chain_finality_profile_instantiated": true,
         "target_chain_finality_profile_selected": true
       },
       "executable_tests": [
@@ -57,24 +57,25 @@
         "spent_slot_ledger_blocks_stale_wallet_replay",
         "spent_slot_ledger_records_reorg_burns",
         "chain_state_file_stores_verify_record_and_persist_together",
-        "lifecycle_restore_anchor_rejects_old_backup_snapshots"
+        "lifecycle_restore_anchor_rejects_old_backup_snapshots",
+        "path2_d2_finality_profile_reorg_frees_window_but_preserves_finalized"
       ]
     },
     "open_obligations": {
       "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
       "deployment_ready": false,
-      "lifecycle_transition_profile_verified": false,
-      "target_chain_finality_profile_instantiated": false
+      "lifecycle_transition_profile_verified": false
     },
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.DirectLifecycleBoundaryManifest.v1",
     "selected_finality_profile": {
-      "status": "selected_by_adr_not_instantiated_as_verified_deployment_profile",
+      "status": "selected_and_instantiated_by_executable_d2_reorg_model_not_verified_deployment_profile",
       "target_chain_finality_profile_authority": "decisions/ADR-0010-registry-lifecycle-consensus-wiring-and-finality.md",
       "target_chain_finality_profile_id": "ADR-0010.D2.finalized-head-reorg-window.v1",
+      "target_chain_finality_profile_instantiated": true,
       "target_chain_finality_profile_rule": "permanence boundary equals chain FINALIZED head; admissions and consumptions in [finalized, head] are reorg-freeable by reorg_to(new_head)",
       "target_chain_finality_profile_selected": true
     }
   },
-  "manifest_digest": "04c473404c255a40c42d9ea692cb1a73ff527df59cfa0020c10feab97b2332c0"
+  "manifest_digest": "13969c655a7ada33bbbd1b854740109527d1f0459c5d55d3085656e3aa9f337d"
 }

@@ -1249,7 +1249,7 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
         || bool_at(corpus, "/audit_summary/proof_boundary_deployment_ready")?
         || bool_at(corpus, "/audit_summary/qrom_theorem_imports_budget")?
         || bool_at(corpus, "/audit_summary/qrom_external_review_complete")?
-        || bool_at(
+        || !bool_at(
             corpus,
             "/audit_summary/lifecycle_target_chain_finality_profile_instantiated",
         )?

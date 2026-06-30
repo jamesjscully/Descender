@@ -1557,7 +1557,7 @@ fn check_consistency() -> Result<(), String> {
             "audit_summary",
             "lifecycle_target_chain_finality_profile_instantiated",
         ],
-        false,
+        true,
     )?;
     expect_bool(
         direct_manifest,

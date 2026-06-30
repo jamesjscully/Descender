@@ -606,7 +606,6 @@ fn main() -> Result<(), String> {
         "/qrom_action_boundary_report/external_qrom_review_complete",
         "/qrom_action_boundary_report/qrom_and_action_bounds_linked_to_theorem",
         "/qrom_action_boundary_report/deployment_ready",
-        "/lifecycle_boundary_report/target_chain_finality_profile_instantiated",
         "/lifecycle_boundary_report/lifecycle_transition_profile_verified",
         "/lifecycle_boundary_report/deployment_ready",
         "/account_creation_proof_boundary_report/deployment_ready",
@@ -617,12 +616,21 @@ fn main() -> Result<(), String> {
         "/audit_summary/proof_boundary_deployment_ready",
         "/audit_summary/qrom_theorem_imports_budget",
         "/audit_summary/qrom_external_review_complete",
-        "/audit_summary/lifecycle_target_chain_finality_profile_instantiated",
         "/audit_summary/deployment_ready",
     ] {
         if bool_at(corpus, pointer)? {
             return Err(format!(
                 "direct theorem obligation vector corpus unexpectedly closes {pointer}"
+            ));
+        }
+    }
+    for pointer in [
+        "/lifecycle_boundary_report/target_chain_finality_profile_instantiated",
+        "/audit_summary/lifecycle_target_chain_finality_profile_instantiated",
+    ] {
+        if !bool_at(corpus, pointer)? {
+            return Err(format!(
+                "direct theorem obligation vector corpus lost D2 finality evidence {pointer}"
             ));
         }
     }

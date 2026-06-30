@@ -229,8 +229,9 @@ theorem import, external review, theorem-linked QROM/action closure, and
 deployment readiness false. The lifecycle report pins the local
 consume-once successor-state model, replay rejection, spent-slot ledger,
 reorg-burn support, restore-anchor support, and lifecycle/spent-record
-persistence evidence, while keeping target-chain finality/reorg profile
-instantiation false. A separate boundary manifest consistency gate checks that
+persistence evidence, plus executable ADR-0010 D2 finalized-head finality/reorg
+profile evidence, while keeping lifecycle transition verification false. A
+separate boundary manifest consistency gate checks that
 the direct theorem manifest embeds the same proof-boundary digest and
 field-group object as the standalone proof-boundary manifest. This report and
 manifest are not the proof; they are mechanical guards that prevent deployment

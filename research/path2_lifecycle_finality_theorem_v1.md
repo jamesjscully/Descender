@@ -11,8 +11,10 @@ Status: consume-once lifecycle theorem with profiled reorg/finality assumption.
 
 ## Obligation and the proof/deployment split
 
-`DIR-LIFE-001` keeps the target-chain finality profile false. Per the risk
-ordering, lifecycle/finality is **lower proof-family-collapse risk** — it becomes
+`DIR-LIFE-001` now pins the ADR-0010 D2 finality profile as executable evidence:
+records at or below the finalized head survive, while records in the reorg-able
+window are freed by `reorg_to(new_head)`. Per the risk ordering,
+lifecycle/finality is **lower proof-family-collapse risk** — it becomes
 proof-critical only if reorg/replay semantics can invalidate the consume-once
 assumption used by the direct theorem. So the obligation factors:
 
@@ -24,8 +26,11 @@ assumption used by the direct theorem. So the obligation factors:
 ```
 
 This document closes the first at paper level (composing the existing
-successor-state theorem) and specifies the second as a per-profile deployment
-decision (`SPEC-DEPLOY-001`), which is not a theorem.
+successor-state theorem) and identifies the second as a per-profile deployment
+decision (`SPEC-DEPLOY-001`). The D2 finalized-head rule is now instantiated by
+`Path2D2FinalityProfileState` and the
+`path2_d2_finality_profile_reorg_frees_window_but_preserves_finalized`
+regression, but the full lifecycle transition profile is not yet verified.
 
 ## Lemma C — Local consume-once
 
@@ -96,11 +101,13 @@ theorem to discharge here.
   spend was released. A profile that relaxes the default owns the residual.
 - **Recovery resurrects a consumed digest.** `slot_replay_or_rollback_break` per
   the break mapping; account recovery must not resurrect consumed digests.
-- **Honest residual.** (1) Per-target-chain `A_finality(profile)` instantiation
-  (`SPEC-DEPLOY-001` — a deployment decision per chain; James's/product call).
-  (2) Executable admit→spend→replay→reorg→restore evidence (`DIR-LIFE-001` tests).
-  (3) External review. No flag flipped; `Path2DirectLifecycleBoundaryReportV1`
-  keeps the target-chain finality profile false.
+- **Honest residual.** (1) Broader executable
+  admit→spend→replay→burn→recovery→restore evidence (`DIR-LIFE-001` tests).
+  (2) Deployment profile review for any chain that relaxes the D2 safe default.
+  (3) External review. `Path2DirectLifecycleBoundaryReportV1` sets
+  `target_chain_finality_profile_instantiated = true` for the D2 finalized-head
+  rule, while keeping `lifecycle_transition_profile_verified` and
+  `deployment_ready` false.
 
 ## What This Closes And Hands Off
 
@@ -108,5 +115,6 @@ theorem to discharge here.
   composition charging reorg/finality as a named profiled assumption, so the
   direct theorem's consume-once hypothesis carries no hidden proof gap — the
   `R_namespace`/lifecycle factor of `R_create` reduces to `A_finality(profile)`.
-- **Hands off (deployment decision):** the per-target-chain finality profile
-  (`SPEC-DEPLOY-001`); the reorg/restore executable evidence; external review.
+- **Hands off (deployment decision):** full lifecycle transition KATs and
+  profile review (`SPEC-DEPLOY-001`); recovery/restore executable evidence;
+  external review.

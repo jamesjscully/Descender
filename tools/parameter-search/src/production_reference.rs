@@ -10031,6 +10031,91 @@ pub struct Path2DirectLifecycleBoundaryReportV1 {
     pub blocker: &'static str,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Path2D2FinalityRecordKind {
+    Admission,
+    Consumption,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Path2D2FinalityProfileState {
+    finalized_head: u64,
+    head: u64,
+    records: BTreeMap<(Path2D2FinalityRecordKind, [u8; DIGEST_BYTES]), u64>,
+}
+
+impl Path2D2FinalityProfileState {
+    pub fn new() -> Self {
+        Self {
+            finalized_head: 0,
+            head: 0,
+            records: BTreeMap::new(),
+        }
+    }
+
+    pub fn finalized_head(&self) -> u64 {
+        self.finalized_head
+    }
+
+    pub fn head(&self) -> u64 {
+        self.head
+    }
+
+    pub fn contains(&self, kind: Path2D2FinalityRecordKind, key: &[u8; DIGEST_BYTES]) -> bool {
+        self.records.contains_key(&(kind, *key))
+    }
+
+    pub fn record_at_height(
+        &mut self,
+        kind: Path2D2FinalityRecordKind,
+        key: [u8; DIGEST_BYTES],
+        height: u64,
+    ) -> Result<(), String> {
+        if height < self.finalized_head {
+            return Err("D2 finality profile rejects records below finalized head".to_string());
+        }
+        if height < self.head {
+            return Err("D2 finality profile rejects non-canonical height rollback".to_string());
+        }
+        if self.records.contains_key(&(kind, key)) {
+            return Err("D2 finality profile rejects duplicate live record".to_string());
+        }
+        self.records.insert((kind, key), height);
+        self.head = height;
+        Ok(())
+    }
+
+    pub fn finalize_to(&mut self, finalized_head: u64) -> Result<(), String> {
+        if finalized_head < self.finalized_head {
+            return Err("D2 finality profile rejects finalized-head rollback".to_string());
+        }
+        if finalized_head > self.head {
+            return Err("D2 finality profile cannot finalize beyond head".to_string());
+        }
+        self.finalized_head = finalized_head;
+        Ok(())
+    }
+
+    pub fn reorg_to(&mut self, new_head: u64) -> Result<usize, String> {
+        if new_head < self.finalized_head {
+            return Err("D2 finality profile rejects reorg below finalized head".to_string());
+        }
+        if new_head > self.head {
+            return Err("D2 finality profile cannot reorg above current head".to_string());
+        }
+        let before = self.records.len();
+        self.records.retain(|_, height| *height <= new_head);
+        self.head = new_head;
+        Ok(before - self.records.len())
+    }
+}
+
+impl Default for Path2D2FinalityProfileState {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Path2DirectTheoremBoundaryReportV1 {
     pub digest: [u8; DIGEST_BYTES],
@@ -11235,7 +11320,7 @@ pub const PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_AUTHORITY: &str =
     "decisions/ADR-0010-registry-lifecycle-consensus-wiring-and-finality.md";
 pub const PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_RULE: &str =
     "permanence boundary equals chain FINALIZED head; admissions and consumptions in [finalized, head] are reorg-freeable by reorg_to(new_head)";
-pub const PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS: [&str; 8] = [
+pub const PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS: [&str; 9] = [
     "path2_prevalidated_slot_consume_once_rejects_reauthorization",
     "path2_direct_single_slot_spend_composes_admission_signature_and_consume_once",
     "path2_direct_single_slot_spend_rejects_leaf_slot_rebinding",
@@ -11244,6 +11329,7 @@ pub const PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS: [&str; 8] = [
     "spent_slot_ledger_records_reorg_burns",
     "chain_state_file_stores_verify_record_and_persist_together",
     "lifecycle_restore_anchor_rejects_old_backup_snapshots",
+    "path2_d2_finality_profile_reorg_frees_window_but_preserves_finalized",
 ];
 
 pub const PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES: [&str; 9] = [
@@ -11375,7 +11461,7 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         acceptance_hypothesis: "lifecycle_transition_consumes_authorization_once",
         supporting_surface: "consume-once lifecycle state transition",
         current_evidence:
-            "lifecycle model, consume-once verifier helper, and accepted-tuple before/after state evidence exist; target-chain finality/reorg profile remains open",
+            "lifecycle model, consume-once verifier helper, accepted-tuple before/after state evidence, and executable ADR-0010 D2 finalized-head reorg profile evidence exist; full lifecycle transition profile remains open",
         required_closure:
             "composition theorem imports consume-once successor-state proof and target-chain lifecycle profile",
         named_break: "slot_replay_or_rollback_break",
@@ -13433,7 +13519,7 @@ pub fn path2_direct_lifecycle_boundary_report_v1() -> Path2DirectLifecycleBounda
         target_chain_finality_profile_authority:
             PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_AUTHORITY,
         target_chain_finality_profile_rule: PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_RULE,
-        target_chain_finality_profile_instantiated: false,
+        target_chain_finality_profile_instantiated: true,
         lifecycle_transition_profile_verified: false,
         deployment_ready: false,
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
@@ -13470,7 +13556,7 @@ pub fn validate_path2_direct_lifecycle_boundary_report_v1(
         || report.target_chain_finality_profile_authority
             != PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_AUTHORITY
         || report.target_chain_finality_profile_rule != PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_RULE
-        || report.target_chain_finality_profile_instantiated
+        || !report.target_chain_finality_profile_instantiated
         || report.lifecycle_transition_profile_verified
         || report.deployment_ready
     {
@@ -13529,9 +13615,9 @@ fn path2_direct_theorem_closure_dependency_support_open_v1(
         }
         "direct_dependency_consume_once" => {
             !direct_report.lifecycle_transition_profile_verified
-                && !lifecycle_report.target_chain_finality_profile_instantiated
-                && !lifecycle_report.lifecycle_transition_profile_verified
-                && !lifecycle_report.deployment_ready
+                && (!lifecycle_report.target_chain_finality_profile_instantiated
+                    || !lifecycle_report.lifecycle_transition_profile_verified
+                    || !lifecycle_report.deployment_ready)
         }
         _ => false,
     }
@@ -114109,13 +114195,16 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.executable_tests,
             PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS.as_ref()
         );
-        assert_eq!(report.executable_tests.len(), 8);
+        assert_eq!(report.executable_tests.len(), 9);
         assert!(report
             .executable_tests
             .contains(&"path2_prevalidated_slot_consume_once_rejects_reauthorization"));
         assert!(report
             .executable_tests
             .contains(&"chain_state_file_stores_verify_record_and_persist_together"));
+        assert!(report.executable_tests.contains(
+            &"path2_d2_finality_profile_reorg_frees_window_but_preserves_finalized"
+        ));
         assert!(report.local_successor_state_model_pinned);
         assert!(report.consume_once_insert_after_public_checks);
         assert!(report.replay_rejected_by_consume_set);
@@ -114136,7 +114225,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.target_chain_finality_profile_rule,
             PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_RULE
         );
-        assert!(!report.target_chain_finality_profile_instantiated);
+        assert!(report.target_chain_finality_profile_instantiated);
         assert!(!report.lifecycle_transition_profile_verified);
         assert!(!report.deployment_ready);
         assert_eq!(
@@ -114155,6 +114244,60 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert_eq!(
             validate_path2_direct_lifecycle_boundary_report_v1(&malformed).unwrap_err(),
             "Path 2 direct lifecycle boundary report mismatch"
+        );
+    }
+
+    #[test]
+    fn path2_d2_finality_profile_reorg_frees_window_but_preserves_finalized() {
+        let finalized_admission = test_digest("d2-finalized-admission");
+        let pending_admission = test_digest("d2-pending-admission");
+        let pending_consumption = test_digest("d2-pending-consumption");
+
+        let mut profile = Path2D2FinalityProfileState::new();
+        profile
+            .record_at_height(Path2D2FinalityRecordKind::Admission, finalized_admission, 1)
+            .unwrap();
+        profile.finalize_to(1).unwrap();
+        profile
+            .record_at_height(Path2D2FinalityRecordKind::Admission, pending_admission, 2)
+            .unwrap();
+        profile
+            .record_at_height(Path2D2FinalityRecordKind::Consumption, pending_consumption, 3)
+            .unwrap();
+
+        assert_eq!(profile.finalized_head(), 1);
+        assert_eq!(profile.head(), 3);
+        assert!(profile.contains(Path2D2FinalityRecordKind::Admission, &finalized_admission));
+        assert!(profile.contains(Path2D2FinalityRecordKind::Admission, &pending_admission));
+        assert!(profile.contains(Path2D2FinalityRecordKind::Consumption, &pending_consumption));
+        assert_eq!(
+            profile
+                .record_at_height(Path2D2FinalityRecordKind::Admission, finalized_admission, 3)
+                .unwrap_err(),
+            "D2 finality profile rejects duplicate live record"
+        );
+
+        assert_eq!(profile.reorg_to(1).unwrap(), 2);
+        assert_eq!(profile.head(), 1);
+        assert!(profile.contains(Path2D2FinalityRecordKind::Admission, &finalized_admission));
+        assert!(!profile.contains(Path2D2FinalityRecordKind::Admission, &pending_admission));
+        assert!(!profile.contains(Path2D2FinalityRecordKind::Consumption, &pending_consumption));
+        assert_eq!(
+            profile.reorg_to(0).unwrap_err(),
+            "D2 finality profile rejects reorg below finalized head"
+        );
+
+        profile
+            .record_at_height(Path2D2FinalityRecordKind::Admission, pending_admission, 2)
+            .unwrap();
+        profile
+            .record_at_height(Path2D2FinalityRecordKind::Consumption, pending_consumption, 2)
+            .unwrap();
+        assert_eq!(
+            profile
+                .record_at_height(Path2D2FinalityRecordKind::Admission, finalized_admission, 2)
+                .unwrap_err(),
+            "D2 finality profile rejects duplicate live record"
         );
     }
 

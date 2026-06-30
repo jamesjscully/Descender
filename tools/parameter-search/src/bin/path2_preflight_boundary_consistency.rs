@@ -797,7 +797,6 @@ fn main() -> Result<(), String> {
         "/direct_obligation_vector_corpus_evidence/audit_summary/proof_boundary_deployment_ready",
         "/direct_obligation_vector_corpus_evidence/audit_summary/qrom_theorem_imports_budget",
         "/direct_obligation_vector_corpus_evidence/audit_summary/qrom_external_review_complete",
-        "/direct_obligation_vector_corpus_evidence/audit_summary/lifecycle_target_chain_finality_profile_instantiated",
         "/direct_obligation_vector_corpus_evidence/audit_summary/lifecycle_transition_profile_verified",
         "/direct_obligation_vector_corpus_evidence/audit_summary/qrom_and_action_bounds_linked_to_theorem",
         "/direct_obligation_vector_corpus_evidence/audit_summary/deployment_ready",
@@ -807,6 +806,15 @@ fn main() -> Result<(), String> {
                 "production preflight manifest bind unexpectedly closed {pointer}"
             ));
         }
+    }
+    if !bool_at(
+        direct_boundary,
+        "/direct_obligation_vector_corpus_evidence/audit_summary/lifecycle_target_chain_finality_profile_instantiated",
+    )? {
+        return Err(
+            "production preflight manifest bind lost D2 finality instantiation evidence"
+                .to_string(),
+        );
     }
     for pointer in [
         "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/direct_theorem_obligations_still_open",
@@ -956,13 +964,13 @@ fn main() -> Result<(), String> {
     {
         return Err("direct QROM/action boundary is missing budget evidence".to_string());
     }
-    if lifecycle_report.deployment_ready
-        || lifecycle_report.target_chain_finality_profile_instantiated
-        || lifecycle_report.lifecycle_transition_profile_verified
-    {
+    if lifecycle_report.deployment_ready || lifecycle_report.lifecycle_transition_profile_verified {
         return Err(
             "direct lifecycle boundary unexpectedly reports closed obligations".to_string(),
         );
+    }
+    if !lifecycle_report.target_chain_finality_profile_instantiated {
+        return Err("direct lifecycle boundary lost D2 finality instantiation".to_string());
     }
     if !lifecycle_report.local_successor_state_model_pinned
         || !lifecycle_report.consume_once_insert_after_public_checks
