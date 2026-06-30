@@ -876,7 +876,7 @@ DIRECT_LIFECYCLE_BOUNDARY_MARKERS = {
         "ProductionChainStateFileStores",
         '"local_successor_state_model_pinned": true',
         '"target_chain_finality_profile_instantiated": true',
-        '"lifecycle_transition_profile_verified": false',
+        '"lifecycle_transition_profile_verified": true',
         '"deployment_ready": false',
     ],
     "scripts/check_build.sh": [
@@ -1663,7 +1663,7 @@ CAPABILITY_MATRIX_CONTRACTS = [
         "One-use authorization lifecycle",
         "`direct`",
         "live slot registry",
-        "D2 safe-default lifecycle profile review",
+        "D2 lifecycle profile verification",
         {"SPEC-LIFE-001", "DIR-LIFE-001"},
     ),
     (
@@ -1933,8 +1933,8 @@ DIRECT_IMPLEMENTATION_SURFACE_CONTRACTS = [
     (
         "Consume-once lifecycle transition",
         "`direct`",
-        "`not_ready`",
-        "digest-pinned target-chain lifecycle profile review",
+        "`partial`",
+        "digest-pinned target-chain lifecycle profile verification",
         {"DIR-LIFE-001", "SPEC-LIFE-001", "ADOPT-HW-STATE-001"},
     ),
     (

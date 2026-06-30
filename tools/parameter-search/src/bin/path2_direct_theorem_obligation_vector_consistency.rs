@@ -605,7 +605,6 @@ fn main() -> Result<(), String> {
         "/qrom_action_boundary_report/external_qrom_review_complete",
         "/qrom_action_boundary_report/qrom_and_action_bounds_linked_to_theorem",
         "/qrom_action_boundary_report/deployment_ready",
-        "/lifecycle_boundary_report/lifecycle_transition_profile_verified",
         "/lifecycle_boundary_report/deployment_ready",
         "/account_creation_proof_boundary_report/deployment_ready",
         "/audit_summary/composition_theorem_instantiated",
@@ -626,8 +625,11 @@ fn main() -> Result<(), String> {
     for pointer in [
         "/lifecycle_boundary_report/target_chain_finality_profile_instantiated",
         "/lifecycle_boundary_report/target_chain_lifecycle_profile_review_pinned",
+        "/lifecycle_boundary_report/target_chain_lifecycle_profile_verification_pinned",
+        "/lifecycle_boundary_report/lifecycle_transition_profile_verified",
         "/audit_summary/lifecycle_target_chain_finality_profile_instantiated",
         "/audit_summary/lifecycle_target_chain_profile_review_pinned",
+        "/audit_summary/lifecycle_target_chain_profile_verification_pinned",
     ] {
         if !bool_at(corpus, pointer)? {
             return Err(format!(

@@ -810,11 +810,11 @@ fn main() -> Result<(), String> {
         }
     }
     for pointer in [
-        "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/lifecycle_transition_profile_verified",
         "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/deployment_ready",
-        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/lifecycle_transition_profile_verified",
         "/direct_lifecycle_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/adoption_evidence_ready",
         "/direct_lifecycle_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/deployment_ready",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/adoption_evidence_ready",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/deployment_ready",
     ] {
         if bool_at(direct_manifest, pointer)? {
             return Err(format!(
@@ -834,6 +834,8 @@ fn main() -> Result<(), String> {
     for pointer in [
         "/direct_lifecycle_boundary/coverage/transition_vector_corpus_pinned",
         "/direct_lifecycle_boundary/coverage/target_chain_lifecycle_profile_review_pinned",
+        "/direct_lifecycle_boundary/coverage/target_chain_lifecycle_profile_verification_pinned",
+        "/direct_lifecycle_boundary/coverage/lifecycle_transition_profile_verified",
         "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/all_cases_have_support_tests",
         "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/all_support_tests_present",
         "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/all_cases_have_evidence",
@@ -846,6 +848,7 @@ fn main() -> Result<(), String> {
         "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/covers_reorg",
         "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/covers_d2_finality_window",
         "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/transition_vector_corpus_pinned",
+        "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/lifecycle_transition_profile_verified",
         "/direct_lifecycle_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/all_requirements_have_authority",
         "/direct_lifecycle_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/all_requirements_reviewed",
         "/direct_lifecycle_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/all_reviewed_requirements_have_evidence_surface",
@@ -853,6 +856,17 @@ fn main() -> Result<(), String> {
         "/direct_lifecycle_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/d2_safe_default_profile_reviewed",
         "/direct_lifecycle_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/target_chain_finality_profile_instantiated",
         "/direct_lifecycle_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/target_chain_lifecycle_profile_review_pinned",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/lifecycle_transition_profile_verified",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/all_requirements_reviewed",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/all_review_requirements_verified",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/all_requirements_have_executable_evidence",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/all_support_tests_present",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/all_residuals_non_deployment_claims",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/d2_safe_default_profile_verified",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/target_chain_finality_profile_instantiated",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/target_chain_lifecycle_profile_review_pinned",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/target_chain_lifecycle_profile_verification_pinned",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/lifecycle_transition_profile_verified",
     ] {
         if !bool_at(direct_manifest, pointer)? {
             return Err(format!(
@@ -1008,9 +1022,11 @@ fn main() -> Result<(), String> {
     {
         return Err("direct QROM/action boundary is missing budget evidence".to_string());
     }
-    if lifecycle_report.deployment_ready || lifecycle_report.lifecycle_transition_profile_verified {
+    if lifecycle_report.deployment_ready || !lifecycle_report.lifecycle_transition_profile_verified
+    {
         return Err(
-            "direct lifecycle boundary unexpectedly reports closed obligations".to_string(),
+            "direct lifecycle boundary lost verified profile or unexpectedly became deployable"
+                .to_string(),
         );
     }
     if !lifecycle_report.target_chain_finality_profile_instantiated {
@@ -1026,6 +1042,8 @@ fn main() -> Result<(), String> {
         || !lifecycle_report.recovery_burn_support_present
         || !lifecycle_report.snapshot_recovery_support_present
         || !lifecycle_report.file_store_recovery_support_present
+        || !lifecycle_report.target_chain_lifecycle_profile_review_pinned
+        || !lifecycle_report.target_chain_lifecycle_profile_verification_pinned
     {
         return Err(
             "direct lifecycle boundary is missing local successor-state evidence".to_string(),

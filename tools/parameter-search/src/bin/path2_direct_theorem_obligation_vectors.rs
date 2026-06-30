@@ -188,6 +188,8 @@ fn manifest_body() -> Result<Value, String> {
                 lifecycle_report.target_chain_finality_profile_instantiated,
             "target_chain_lifecycle_profile_review_pinned":
                 lifecycle_report.target_chain_lifecycle_profile_review_pinned,
+            "target_chain_lifecycle_profile_verification_pinned":
+                lifecycle_report.target_chain_lifecycle_profile_verification_pinned,
             "lifecycle_transition_profile_verified":
                 lifecycle_report.lifecycle_transition_profile_verified,
             "deployment_ready": lifecycle_report.deployment_ready,
@@ -254,6 +256,8 @@ fn manifest_body() -> Result<Value, String> {
                 lifecycle_report.target_chain_finality_profile_instantiated,
             "lifecycle_target_chain_profile_review_pinned":
                 lifecycle_report.target_chain_lifecycle_profile_review_pinned,
+            "lifecycle_target_chain_profile_verification_pinned":
+                lifecycle_report.target_chain_lifecycle_profile_verification_pinned,
             "deployment_ready": direct_report.deployment_ready
         },
         "case_count": cases.len(),

@@ -204,9 +204,9 @@
       "consume_once_state_before_digest": "f61980b7980643e1a8568a4051e21f374af7c99c8d3624932c56caf96fa4eb6a",
       "consumed_authorization_absent_before": true,
       "consumed_authorization_present_after": true,
-      "digest": "8b9ed8d9f5237d9efa5ea9921ffc6168e05a14c7cfcabd1fae7a8eed29e686e6",
+      "digest": "3f385c276208bfe12020f8c4e5f9c4e7ae52279f2bf07db84e1a56e611b2f168",
       "direct_admission_namespace_record_digest": "d887a32e2da3a35c1c156f6b1ce77750f41c6b160a6e291694d1b1c50eb78abe",
-      "direct_lifecycle_boundary_report_digest": "de8497b1fb9a21c9c91c3511f910b109693efdcff5d589fc7834e60791bbaf0c",
+      "direct_lifecycle_boundary_report_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
       "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
       "every_accepted_tuple_field_has_evidence": true,
       "every_accepted_tuple_field_has_open_direct_obligation": true,
@@ -216,7 +216,7 @@
       "public_key_identity": "58f218aeb259309eeb545345a8f5c715987967b0ec724806d448394da578d0b0",
       "public_result_accepts_same_slot": true,
       "public_result_class_name": "accept_spend_slot",
-      "recomputed_digest": "8b9ed8d9f5237d9efa5ea9921ffc6168e05a14c7cfcabd1fae7a8eed29e686e6",
+      "recomputed_digest": "3f385c276208bfe12020f8c4e5f9c4e7ae52279f2bf07db84e1a56e611b2f168",
       "replay_rejected_by_consume_once": true,
       "schema": "Descender.Path2.DirectAcceptedSpendTupleEvidence.v1",
       "selected_account_creation_payload_digest": "21795defadb54628226befbcb01ca0666d3c584c5a24e6ba05f4de8ec11cb6e0",
@@ -235,5 +235,5 @@
     "schema": "Descender.Path2.DirectAcceptedSpendTupleDeterministicKatEvidenceManifest.v1",
     "status": "digest_pinned_deterministic_kat_accepted_direct_spend_tuple_evidence"
   },
-  "manifest_digest": "dc120854ed5c6504d5b18e31687c3ae1dc7c0cd7b23f7b660d3df6e454ed4ea1"
+  "manifest_digest": "9a0884557c1a3a0579be0a68ac8a4a1bd14b4c139d36c2c0cb0d35b6a8be124e"
 }

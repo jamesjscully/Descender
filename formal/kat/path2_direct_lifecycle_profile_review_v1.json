@@ -8,7 +8,7 @@
       "all_reviewed_requirements_have_evidence_surface": true,
       "d2_safe_default_profile_reviewed": true,
       "deployment_ready": false,
-      "lifecycle_transition_profile_verified": false,
+      "lifecycle_transition_profile_verified": true,
       "requirement_count": 7,
       "requirement_ids": [
         "profile_finality_source",
@@ -124,9 +124,9 @@
       "artifact_path": "formal/kat/path2_direct_lifecycle_profile_review_v1.json",
       "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
       "deployment_ready": false,
-      "lifecycle_boundary_report_digest": "de8497b1fb9a21c9c91c3511f910b109693efdcff5d589fc7834e60791bbaf0c",
-      "lifecycle_boundary_report_recomputed_digest": "de8497b1fb9a21c9c91c3511f910b109693efdcff5d589fc7834e60791bbaf0c",
-      "lifecycle_transition_profile_verified": false,
+      "lifecycle_boundary_report_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
+      "lifecycle_boundary_report_recomputed_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
+      "lifecycle_transition_profile_verified": true,
       "normative_sources": [
         "spec/lifecycle_model.md",
         "spec/deployment_profiles.md",
@@ -147,5 +147,5 @@
     "schema": "Descender.Path2.DirectLifecycleProfileReview.v1",
     "status": "digest_pinned_target_chain_lifecycle_profile_review_not_deployment_ready"
   },
-  "review_digest": "fd265dbb5bf181cb05e204034e0de29d8751f9b825821a3271d3b1b750d0342f"
+  "review_digest": "7cecaef9f3c0f942869c33869b84b79241d02d243e48cfaf4745906493f8a67f"
 }

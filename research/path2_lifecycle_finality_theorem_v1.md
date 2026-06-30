@@ -102,17 +102,22 @@ theorem to discharge here.
 - **Recovery resurrects a consumed digest.** `slot_replay_or_rollback_break` per
   the break mapping; account recovery must not resurrect consumed digests.
 - **Honest residual.** (1) The target-chain lifecycle profile review for the D2
-  safe default is now digest-pinned by
+  safe default is digest-pinned by
   `formal/kat/path2_direct_lifecycle_profile_review_v1.json`, tying the local
   transition corpus to the finality, pending-release, drop/reorg,
   recovery-burn, restore-anchor, and persist-before-release lifecycle
-  requirements without claiming adoption evidence. (2) Concrete deployment
-  profile verification remains open for any target chain, and a new profile is
-  required for any chain that relaxes the D2 safe default. (3) External review.
-  `Path2DirectLifecycleBoundaryReportV1` sets
-  `target_chain_finality_profile_instantiated = true` for the D2 finalized-head
-  rule, while keeping `lifecycle_transition_profile_verified` and
-  `deployment_ready` false.
+  requirements without claiming adoption evidence. (2) The D2 safe-default
+  target-chain lifecycle profile verification is digest-pinned by
+  `formal/kat/path2_direct_lifecycle_profile_verification_v1.json`, checking
+  those requirements against the production-reference hooks and named tests.
+  This is the D2 safe-default target-chain lifecycle profile verification for
+  the lifecycle slice, not a deployment-ready adoption claim.
+  (3) Broader deployment readiness remains open for any target chain, and a new
+  profile is required for any chain that relaxes the D2 safe default. (4)
+  External review. `Path2DirectLifecycleBoundaryReportV1` sets
+  `target_chain_finality_profile_instantiated = true` and
+  `lifecycle_transition_profile_verified = true` for the D2 finalized-head rule,
+  while keeping `deployment_ready` false.
 
 ## What This Closes And Hands Off
 
@@ -120,6 +125,7 @@ theorem to discharge here.
   composition charging reorg/finality as a named profiled assumption, so the
   direct theorem's consume-once hypothesis carries no hidden proof gap — the
   `R_namespace`/lifecycle factor of `R_create` reduces to `A_finality(profile)`.
-- **Hands off (deployment decision):** concrete deployment-profile verification
+- **Hands off (deployment decision):** broader deployment-profile readiness
   (`SPEC-DEPLOY-001`), including target-chain client mapping, wallet/HSM
-  recovery/restore operations, resource limits, and external review.
+  recovery/restore operations, resource limits, gas/DA evidence, and external
+  review.

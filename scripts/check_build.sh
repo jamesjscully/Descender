@@ -101,12 +101,13 @@ proof_obligation_vectors_tmp="$(mktemp)"
 direct_qrom_action_manifest_tmp="$(mktemp)"
 direct_lifecycle_transition_vectors_tmp="$(mktemp)"
 direct_lifecycle_profile_review_tmp="$(mktemp)"
+direct_lifecycle_profile_verification_tmp="$(mktemp)"
 direct_lifecycle_manifest_tmp="$(mktemp)"
 direct_theorem_manifest_tmp="$(mktemp)"
 direct_obligation_vectors_tmp="$(mktemp)"
 direct_accepted_spend_tuple_manifest_tmp="$(mktemp)"
 direct_accepted_composition_manifest_tmp="$(mktemp)"
-trap 'rm -f "$payload_byte_model_manifest_tmp" "$payload_kat_manifest_tmp" "$payload_kat_vectors_tmp" "$frame_kat_manifest_tmp" "$frame_kat_vectors_tmp" "$fri_qrom_residual_manifest_tmp" "$fri_qrom_domain_vectors_tmp" "$fri_aok_boundary_manifest_tmp" "$sampler_timing_manifest_tmp" "$no_export_boundary_manifest_tmp" "$no_export_vectors_tmp" "$proof_boundary_manifest_tmp" "$accepted_proof_boundary_manifest_tmp" "$proof_obligation_vectors_tmp" "$direct_qrom_action_manifest_tmp" "$direct_lifecycle_transition_vectors_tmp" "$direct_lifecycle_profile_review_tmp" "$direct_lifecycle_manifest_tmp" "$direct_theorem_manifest_tmp" "$direct_obligation_vectors_tmp" "$direct_accepted_spend_tuple_manifest_tmp" "$direct_accepted_composition_manifest_tmp"' EXIT
+trap 'rm -f "$payload_byte_model_manifest_tmp" "$payload_kat_manifest_tmp" "$payload_kat_vectors_tmp" "$frame_kat_manifest_tmp" "$frame_kat_vectors_tmp" "$fri_qrom_residual_manifest_tmp" "$fri_qrom_domain_vectors_tmp" "$fri_aok_boundary_manifest_tmp" "$sampler_timing_manifest_tmp" "$no_export_boundary_manifest_tmp" "$no_export_vectors_tmp" "$proof_boundary_manifest_tmp" "$accepted_proof_boundary_manifest_tmp" "$proof_obligation_vectors_tmp" "$direct_qrom_action_manifest_tmp" "$direct_lifecycle_transition_vectors_tmp" "$direct_lifecycle_profile_review_tmp" "$direct_lifecycle_profile_verification_tmp" "$direct_lifecycle_manifest_tmp" "$direct_theorem_manifest_tmp" "$direct_obligation_vectors_tmp" "$direct_accepted_spend_tuple_manifest_tmp" "$direct_accepted_composition_manifest_tmp"' EXIT
 
 echo "== account STARK payload byte model manifest check =="
 cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_stark_payload_byte_model_manifest > "$payload_byte_model_manifest_tmp"
@@ -200,6 +201,13 @@ diff -u formal/kat/path2_direct_lifecycle_profile_review_v1.json "$direct_lifecy
 
 echo "== direct lifecycle profile review consistency check =="
 cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_direct_lifecycle_profile_review_consistency
+
+echo "== direct lifecycle profile verification check =="
+cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_direct_lifecycle_profile_verification > "$direct_lifecycle_profile_verification_tmp"
+diff -u formal/kat/path2_direct_lifecycle_profile_verification_v1.json "$direct_lifecycle_profile_verification_tmp"
+
+echo "== direct lifecycle profile verification consistency check =="
+cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_direct_lifecycle_profile_verification_consistency
 
 echo "== direct lifecycle boundary manifest check =="
 cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_direct_lifecycle_boundary_manifest > "$direct_lifecycle_manifest_tmp"

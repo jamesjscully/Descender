@@ -25,7 +25,7 @@
       "covers_spend": true,
       "deployment_ready": false,
       "executable_test_count": 12,
-      "lifecycle_transition_profile_verified": false,
+      "lifecycle_transition_profile_verified": true,
       "local_successor_state_model_pinned": true,
       "target_chain_finality_profile_instantiated": true,
       "transition_vector_corpus_pinned": true
@@ -164,12 +164,12 @@
       "acceptance_hypothesis": "lifecycle_transition_consumes_authorization_once",
       "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
       "deployment_ready": false,
-      "digest": "de8497b1fb9a21c9c91c3511f910b109693efdcff5d589fc7834e60791bbaf0c",
+      "digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
       "direct_obligation_id": "direct_obligation_consume_once",
       "domain": "Descender.Path2.DirectLifecycleBoundaryReport.v1",
-      "lifecycle_transition_profile_verified": false,
+      "lifecycle_transition_profile_verified": true,
       "named_break": "slot_replay_or_rollback_break",
-      "recomputed_digest": "de8497b1fb9a21c9c91c3511f910b109693efdcff5d589fc7834e60791bbaf0c",
+      "recomputed_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
       "target_chain_finality_profile_id": "ADR-0010.D2.finalized-head-reorg-window.v1",
       "target_chain_finality_profile_instantiated": true,
       "theorem_target": "one_use_successor_state_theorem_v1"
@@ -178,5 +178,5 @@
     "schema": "Descender.Path2.DirectLifecycleTransitionVectors.v1",
     "status": "digest_pinned_direct_lifecycle_transition_vectors"
   },
-  "corpus_digest": "3ef3033ac00f4987b17ee583acddc64847549faeeb7ddb10894b724b40163b17"
+  "corpus_digest": "6ab3533156615158bdd3293b3c892217b166c43b822fd6368d7d3428b96f3476"
 }

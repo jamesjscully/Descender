@@ -110,8 +110,10 @@ fn main() -> Result<(), String> {
         || str_at(corpus, "/lifecycle_boundary_report/acceptance_hypothesis")?
             != report.acceptance_hypothesis
         || str_at(corpus, "/lifecycle_boundary_report/named_break")? != report.named_break
-        || str_at(corpus, "/lifecycle_boundary_report/target_chain_finality_profile_id")?
-            != report.target_chain_finality_profile_id
+        || str_at(
+            corpus,
+            "/lifecycle_boundary_report/target_chain_finality_profile_id",
+        )? != report.target_chain_finality_profile_id
         || str_at(corpus, "/lifecycle_boundary_report/blocker")? != report.blocker
     {
         return Err(
@@ -121,7 +123,7 @@ fn main() -> Result<(), String> {
     if !bool_at(
         corpus,
         "/lifecycle_boundary_report/target_chain_finality_profile_instantiated",
-    )? || bool_at(
+    )? || !bool_at(
         corpus,
         "/lifecycle_boundary_report/lifecycle_transition_profile_verified",
     )? || bool_at(corpus, "/lifecycle_boundary_report/deployment_ready")?
@@ -163,6 +165,7 @@ fn main() -> Result<(), String> {
         "/audit_summary/local_successor_state_model_pinned",
         "/audit_summary/transition_vector_corpus_pinned",
         "/audit_summary/target_chain_finality_profile_instantiated",
+        "/audit_summary/lifecycle_transition_profile_verified",
     ] {
         if !bool_at(corpus, pointer)? {
             return Err(format!(
@@ -170,10 +173,7 @@ fn main() -> Result<(), String> {
             ));
         }
     }
-    for pointer in [
-        "/audit_summary/lifecycle_transition_profile_verified",
-        "/audit_summary/deployment_ready",
-    ] {
+    for pointer in ["/audit_summary/deployment_ready"] {
         if bool_at(corpus, pointer)? {
             return Err(format!(
                 "lifecycle transition vector corpus unexpectedly closes {pointer}"
@@ -181,7 +181,11 @@ fn main() -> Result<(), String> {
         }
     }
 
-    let report_tests = report.executable_tests.iter().copied().collect::<BTreeSet<_>>();
+    let report_tests = report
+        .executable_tests
+        .iter()
+        .copied()
+        .collect::<BTreeSet<_>>();
     let cases = at(corpus, "/cases")?
         .as_array()
         .ok_or_else(|| "lifecycle transition corpus cases are not an array".to_string())?;
@@ -222,7 +226,9 @@ fn main() -> Result<(), String> {
             covered_phases.insert(phase);
         }
     }
-    for phase in ["admit", "spend", "replay", "burn", "recovery", "restore", "reorg"] {
+    for phase in [
+        "admit", "spend", "replay", "burn", "recovery", "restore", "reorg",
+    ] {
         if !covered_phases.contains(phase) {
             return Err(format!(
                 "lifecycle transition vector corpus does not cover phase {phase}"

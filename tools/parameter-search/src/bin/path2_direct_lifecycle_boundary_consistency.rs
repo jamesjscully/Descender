@@ -1,6 +1,7 @@
 use descender_parameter_search::{
     manifest_vector_evidence::{
         path2_direct_lifecycle_profile_review_evidence_v1,
+        path2_direct_lifecycle_profile_verification_evidence_v1,
         path2_direct_lifecycle_transition_vector_corpus_evidence_v1,
     },
     production_reference::{
@@ -125,6 +126,8 @@ fn main() -> Result<(), String> {
     let transition_vector_corpus_evidence =
         path2_direct_lifecycle_transition_vector_corpus_evidence_v1()?;
     let lifecycle_profile_review_evidence = path2_direct_lifecycle_profile_review_evidence_v1()?;
+    let lifecycle_profile_verification_evidence =
+        path2_direct_lifecycle_profile_verification_evidence_v1()?;
 
     if str_at(&manifest, "/manifest/schema")?
         != "Descender.Path2.DirectLifecycleBoundaryManifest.v1"
@@ -238,6 +241,14 @@ fn main() -> Result<(), String> {
             "/manifest/authority_snapshot/target_chain_lifecycle_profile_review_artifact",
             report.target_chain_lifecycle_profile_review_artifact,
         ),
+        (
+            "/manifest/authority_snapshot/target_chain_lifecycle_profile_verification_id",
+            report.target_chain_lifecycle_profile_verification_id,
+        ),
+        (
+            "/manifest/authority_snapshot/target_chain_lifecycle_profile_verification_artifact",
+            report.target_chain_lifecycle_profile_verification_artifact,
+        ),
     ] {
         if str_at(&manifest, pointer)? != expected {
             return Err(format!("direct lifecycle manifest drifted at {pointer}"));
@@ -248,6 +259,7 @@ fn main() -> Result<(), String> {
         "/manifest/local_successor_state_boundary/coverage/local_successor_state_model_pinned",
         "/manifest/local_successor_state_boundary/coverage/transition_vector_corpus_pinned",
         "/manifest/local_successor_state_boundary/coverage/target_chain_lifecycle_profile_review_pinned",
+        "/manifest/local_successor_state_boundary/coverage/target_chain_lifecycle_profile_verification_pinned",
         "/manifest/local_successor_state_boundary/coverage/consume_once_insert_after_public_checks",
         "/manifest/local_successor_state_boundary/coverage/replay_rejected_by_consume_set",
         "/manifest/local_successor_state_boundary/coverage/spent_slot_ledger_rejects_stale_wallet_replay",
@@ -259,8 +271,10 @@ fn main() -> Result<(), String> {
         "/manifest/local_successor_state_boundary/coverage/file_store_recovery_support_present",
         "/manifest/local_successor_state_boundary/coverage/target_chain_finality_profile_selected",
         "/manifest/local_successor_state_boundary/coverage/target_chain_finality_profile_instantiated",
+        "/manifest/local_successor_state_boundary/coverage/lifecycle_transition_profile_verified",
         "/manifest/selected_finality_profile/target_chain_finality_profile_selected",
         "/manifest/selected_finality_profile/target_chain_finality_profile_instantiated",
+        "/manifest/selected_finality_profile/target_chain_lifecycle_profile_verification_pinned",
     ] {
         if !bool_at(&manifest, pointer)? {
             return Err(format!(
@@ -282,6 +296,16 @@ fn main() -> Result<(), String> {
     {
         return Err(
             "direct lifecycle manifest lost target-chain lifecycle profile review evidence"
+                .to_string(),
+        );
+    }
+    if at(
+        &manifest,
+        "/manifest/local_successor_state_boundary/target_chain_lifecycle_profile_verification_evidence",
+    )? != &lifecycle_profile_verification_evidence
+    {
+        return Err(
+            "direct lifecycle manifest lost target-chain lifecycle profile verification evidence"
                 .to_string(),
         );
     }
@@ -309,6 +333,14 @@ fn main() -> Result<(), String> {
         "/manifest/local_successor_state_boundary/transition_vector_corpus_evidence/audit_summary/lifecycle_transition_profile_verified",
         "/manifest/local_successor_state_boundary/transition_vector_corpus_evidence/audit_summary/deployment_ready",
     ] {
+        if pointer.ends_with("lifecycle_transition_profile_verified") {
+            if !bool_at(&manifest, pointer)? {
+                return Err(format!(
+                    "direct lifecycle manifest lost verified transition vector flag {pointer}"
+                ));
+            }
+            continue;
+        }
         if bool_at(&manifest, pointer)? {
             return Err(format!(
                 "direct lifecycle manifest unexpectedly closes transition vector flag {pointer}"
@@ -323,6 +355,7 @@ fn main() -> Result<(), String> {
         "/manifest/local_successor_state_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/d2_safe_default_profile_reviewed",
         "/manifest/local_successor_state_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/target_chain_finality_profile_instantiated",
         "/manifest/local_successor_state_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/target_chain_lifecycle_profile_review_pinned",
+        "/manifest/local_successor_state_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/lifecycle_transition_profile_verified",
     ] {
         if !bool_at(&manifest, pointer)? {
             return Err(format!(
@@ -331,13 +364,40 @@ fn main() -> Result<(), String> {
         }
     }
     for pointer in [
-        "/manifest/local_successor_state_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/lifecycle_transition_profile_verified",
         "/manifest/local_successor_state_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/adoption_evidence_ready",
         "/manifest/local_successor_state_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/deployment_ready",
     ] {
         if bool_at(&manifest, pointer)? {
             return Err(format!(
                 "direct lifecycle manifest unexpectedly closes profile review flag {pointer}"
+            ));
+        }
+    }
+    for pointer in [
+        "/manifest/local_successor_state_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/all_requirements_reviewed",
+        "/manifest/local_successor_state_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/all_review_requirements_verified",
+        "/manifest/local_successor_state_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/all_requirements_have_executable_evidence",
+        "/manifest/local_successor_state_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/all_support_tests_present",
+        "/manifest/local_successor_state_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/all_residuals_non_deployment_claims",
+        "/manifest/local_successor_state_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/d2_safe_default_profile_verified",
+        "/manifest/local_successor_state_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/target_chain_finality_profile_instantiated",
+        "/manifest/local_successor_state_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/target_chain_lifecycle_profile_review_pinned",
+        "/manifest/local_successor_state_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/target_chain_lifecycle_profile_verification_pinned",
+        "/manifest/local_successor_state_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/lifecycle_transition_profile_verified",
+    ] {
+        if !bool_at(&manifest, pointer)? {
+            return Err(format!(
+                "direct lifecycle manifest lost profile verification flag {pointer}"
+            ));
+        }
+    }
+    for pointer in [
+        "/manifest/local_successor_state_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/adoption_evidence_ready",
+        "/manifest/local_successor_state_boundary/target_chain_lifecycle_profile_verification_evidence/audit_summary/deployment_ready",
+    ] {
+        if bool_at(&manifest, pointer)? {
+            return Err(format!(
+                "direct lifecycle manifest unexpectedly closes profile verification flag {pointer}"
             ));
         }
     }
@@ -364,7 +424,15 @@ fn main() -> Result<(), String> {
         ),
         (
             "/manifest/selected_finality_profile/status",
-            "selected_and_instantiated_by_executable_d2_reorg_model_not_verified_deployment_profile",
+            "selected_instantiated_and_verified_by_executable_d2_lifecycle_profile_not_deployment_ready",
+        ),
+        (
+            "/manifest/selected_finality_profile/target_chain_lifecycle_profile_verification_id",
+            report.target_chain_lifecycle_profile_verification_id,
+        ),
+        (
+            "/manifest/selected_finality_profile/target_chain_lifecycle_profile_verification_artifact",
+            report.target_chain_lifecycle_profile_verification_artifact,
         ),
     ] {
         if str_at(&manifest, pointer)? != expected {
@@ -383,6 +451,16 @@ fn main() -> Result<(), String> {
                 .to_string(),
         );
     }
+    if at(
+        &manifest,
+        "/manifest/selected_finality_profile/target_chain_lifecycle_profile_verification_requirement_ids",
+    )? != &serde_json::json!(report.target_chain_lifecycle_profile_verification_requirement_ids)
+    {
+        return Err(
+            "direct lifecycle selected finality profile lost profile-verification requirement ids"
+                .to_string(),
+        );
+    }
     if !bool_at(
         &manifest,
         "/manifest/selected_finality_profile/target_chain_lifecycle_profile_review_pinned",
@@ -391,15 +469,18 @@ fn main() -> Result<(), String> {
             "direct lifecycle selected finality profile lost review-pinned flag".to_string(),
         );
     }
-    for pointer in [
-        "/manifest/open_obligations/lifecycle_transition_profile_verified",
-        "/manifest/open_obligations/deployment_ready",
-    ] {
+    for pointer in ["/manifest/open_obligations/deployment_ready"] {
         if bool_at(&manifest, pointer)? {
             return Err(format!(
                 "direct lifecycle manifest unexpectedly closes {pointer}"
             ));
         }
+    }
+    if !bool_at(
+        &manifest,
+        "/manifest/open_obligations/lifecycle_transition_profile_verified",
+    )? {
+        return Err("direct lifecycle manifest lost verified lifecycle profile flag".to_string());
     }
 
     for (needle, label) in [

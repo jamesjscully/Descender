@@ -7,6 +7,7 @@ use descender_parameter_search::manifest_vector_evidence::{
     path2_account_creation_proof_obligation_vector_corpus_evidence_v1,
     path2_account_creation_requirement_vector_corpus_evidence_v1,
     path2_direct_lifecycle_profile_review_evidence_v1,
+    path2_direct_lifecycle_profile_verification_evidence_v1,
     path2_direct_lifecycle_transition_vector_corpus_evidence_v1,
     path2_direct_theorem_obligation_vector_corpus_evidence_v1,
 };
@@ -407,6 +408,8 @@ fn check_consistency() -> Result<(), String> {
     let lifecycle_transition_vector_corpus_evidence =
         path2_direct_lifecycle_transition_vector_corpus_evidence_v1()?;
     let lifecycle_profile_review_evidence = path2_direct_lifecycle_profile_review_evidence_v1()?;
+    let lifecycle_profile_verification_evidence =
+        path2_direct_lifecycle_profile_verification_evidence_v1()?;
     expect_eq(
         get(
             lifecycle_manifest,
@@ -433,6 +436,18 @@ fn check_consistency() -> Result<(), String> {
     )?;
     expect_eq(
         get(
+            lifecycle_manifest,
+            &[
+                "local_successor_state_boundary",
+                "target_chain_lifecycle_profile_verification_evidence",
+            ],
+        )?,
+        "lifecycle.manifest.local_successor_state_boundary.target_chain_lifecycle_profile_verification_evidence",
+        &lifecycle_profile_verification_evidence,
+        "standalone lifecycle profile verification evidence",
+    )?;
+    expect_eq(
+        get(
             direct_manifest,
             &[
                 "direct_lifecycle_boundary",
@@ -454,6 +469,18 @@ fn check_consistency() -> Result<(), String> {
         "direct.manifest.direct_lifecycle_boundary.target_chain_lifecycle_profile_review_evidence",
         &lifecycle_profile_review_evidence,
         "standalone lifecycle profile review evidence",
+    )?;
+    expect_eq(
+        get(
+            direct_manifest,
+            &[
+                "direct_lifecycle_boundary",
+                "target_chain_lifecycle_profile_verification_evidence",
+            ],
+        )?,
+        "direct.manifest.direct_lifecycle_boundary.target_chain_lifecycle_profile_verification_evidence",
+        &lifecycle_profile_verification_evidence,
+        "standalone lifecycle profile verification evidence",
     )?;
 
     expect_eq(

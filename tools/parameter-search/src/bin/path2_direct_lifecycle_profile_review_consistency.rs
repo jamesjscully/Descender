@@ -134,7 +134,7 @@ fn main() -> Result<(), String> {
             review,
             "/review/target_chain_lifecycle_profile_review_pinned",
         )?
-        || bool_at(review, "/review/lifecycle_transition_profile_verified")?
+        || !bool_at(review, "/review/lifecycle_transition_profile_verified")?
         || bool_at(review, "/review/deployment_ready")?
     {
         return Err("lifecycle profile review has unexpected readiness flags".to_string());
@@ -162,6 +162,7 @@ fn main() -> Result<(), String> {
         "/audit_summary/d2_safe_default_profile_reviewed",
         "/audit_summary/target_chain_finality_profile_instantiated",
         "/audit_summary/target_chain_lifecycle_profile_review_pinned",
+        "/audit_summary/lifecycle_transition_profile_verified",
     ] {
         if !bool_at(review, pointer)? {
             return Err(format!(
@@ -170,7 +171,6 @@ fn main() -> Result<(), String> {
         }
     }
     for pointer in [
-        "/audit_summary/lifecycle_transition_profile_verified",
         "/audit_summary/adoption_evidence_ready",
         "/audit_summary/deployment_ready",
     ] {
@@ -277,12 +277,12 @@ fn main() -> Result<(), String> {
             "safe default profile theorem",
         ),
         (
-            "concrete deployment-profile verification",
-            "profile verification residual",
+            "D2 safe-default target-chain lifecycle profile verification",
+            "profile verification evidence",
         ),
         (
             "lifecycle_transition_profile_verified",
-            "open lifecycle verification flag",
+            "lifecycle verification flag",
         ),
     ] {
         require_contains(&lifecycle_theorem, needle, label)?;

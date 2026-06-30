@@ -8,6 +8,7 @@ use descender_parameter_search::{
         path2_direct_accepted_composition_evidence_artifact_v1,
         path2_direct_accepted_spend_tuple_evidence_artifact_v1,
         path2_direct_lifecycle_profile_review_evidence_v1,
+        path2_direct_lifecycle_profile_verification_evidence_v1,
         path2_direct_lifecycle_transition_vector_corpus_evidence_v1,
         path2_direct_theorem_obligation_vector_corpus_evidence_v1,
     },
@@ -52,6 +53,8 @@ fn manifest_body() -> Result<Value, String> {
     let lifecycle_transition_vector_corpus_evidence =
         path2_direct_lifecycle_transition_vector_corpus_evidence_v1()?;
     let lifecycle_profile_review_evidence = path2_direct_lifecycle_profile_review_evidence_v1()?;
+    let lifecycle_profile_verification_evidence =
+        path2_direct_lifecycle_profile_verification_evidence_v1()?;
     let direct_obligation_vector_corpus_evidence =
         path2_direct_theorem_obligation_vector_corpus_evidence_v1()?;
     let direct_accepted_spend_tuple_evidence_artifact =
@@ -345,6 +348,8 @@ fn manifest_body() -> Result<Value, String> {
                     lifecycle_report.transition_vector_corpus_pinned,
                 "target_chain_lifecycle_profile_review_pinned":
                     lifecycle_report.target_chain_lifecycle_profile_review_pinned,
+                "target_chain_lifecycle_profile_verification_pinned":
+                    lifecycle_report.target_chain_lifecycle_profile_verification_pinned,
                 "consume_once_insert_after_public_checks":
                     lifecycle_report.consume_once_insert_after_public_checks,
                 "replay_rejected_by_consume_set":
@@ -381,7 +386,9 @@ fn manifest_body() -> Result<Value, String> {
             "executable_tests": lifecycle_report.executable_tests,
             "transition_vector_corpus_evidence": lifecycle_transition_vector_corpus_evidence,
             "target_chain_lifecycle_profile_review_evidence":
-                lifecycle_profile_review_evidence
+                lifecycle_profile_review_evidence,
+            "target_chain_lifecycle_profile_verification_evidence":
+                lifecycle_profile_verification_evidence
         },
         "account_creation_proof_boundary": {
             "coverage": {

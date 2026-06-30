@@ -1,0 +1,217 @@
+{
+  "verification": {
+    "audit_summary": {
+      "adoption_evidence_ready": false,
+      "all_requirements_have_executable_evidence": true,
+      "all_requirements_reviewed": true,
+      "all_residuals_non_deployment_claims": true,
+      "all_review_requirements_verified": true,
+      "all_support_tests_present": true,
+      "d2_safe_default_profile_verified": true,
+      "deployment_ready": false,
+      "lifecycle_transition_profile_verified": true,
+      "requirement_count": 7,
+      "requirement_ids": [
+        "profile_finality_source",
+        "profile_pending_release_policy",
+        "profile_dropped_before_finality_policy",
+        "profile_finalized_reorg_policy",
+        "profile_recovery_burn_policy",
+        "profile_restore_anchor_policy",
+        "profile_persist_before_release_policy"
+      ],
+      "target_chain_finality_profile_instantiated": true,
+      "target_chain_lifecycle_profile_review_pinned": true,
+      "target_chain_lifecycle_profile_verification_pinned": true
+    },
+    "corpus_id": "Descender.Path2.DirectLifecycleProfileVerification.v1",
+    "corpus_version": 1,
+    "generator": {
+      "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_direct_lifecycle_profile_verification",
+      "source": "tools/parameter-search/src/bin/path2_direct_lifecycle_profile_verification.rs"
+    },
+    "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
+    "requirement_count": 7,
+    "requirements": [
+      {
+        "deployment_profile_slice_verified": true,
+        "deployment_ready": false,
+        "executable_evidence_verified": true,
+        "profile_decision": "D2 permanence boundary is the chain FINALIZED head",
+        "requirement_id": "profile_finality_source",
+        "residual": "concrete chain-client finality source, gas/resource limits, and external review remain outside this lifecycle-slice verification",
+        "review_requirement_verified": true,
+        "support_tests": [
+          "path2_d2_finality_profile_reorg_frees_window_but_preserves_finalized"
+        ],
+        "verified_by": [
+          "Path2D2FinalityProfileState::finalize_to",
+          "Path2D2FinalityProfileState::reorg_to"
+        ]
+      },
+      {
+        "deployment_profile_slice_verified": true,
+        "deployment_ready": false,
+        "executable_evidence_verified": true,
+        "profile_decision": "released spends keep the slot unavailable locally until finality evidence or burn/replacement",
+        "requirement_id": "profile_pending_release_policy",
+        "residual": "wallet/HSM transport encodings and custody operations remain adoption-profile work",
+        "review_requirement_verified": true,
+        "support_tests": [
+          "spent_slot_ledger_blocks_stale_wallet_replay",
+          "lifecycle_manager_verify_and_consume_blocks_replay"
+        ],
+        "verified_by": [
+          "ProductionSpentSlotLedger::insert",
+          "ProductionAccountLifecycleManager::verify_and_consume"
+        ]
+      },
+      {
+        "deployment_profile_slice_verified": true,
+        "deployment_ready": false,
+        "executable_evidence_verified": true,
+        "profile_decision": "records in [finalized, head] may be freed by reorg_to(new_head), while signer-local released slots remain unavailable absent finality or burn/replacement evidence",
+        "requirement_id": "profile_dropped_before_finality_policy",
+        "residual": "target-chain mempool/drop UX and retry policy remain adoption-profile work",
+        "review_requirement_verified": true,
+        "support_tests": [
+          "path2_d2_finality_profile_reorg_frees_window_but_preserves_finalized",
+          "spent_slot_ledger_records_reorg_burns"
+        ],
+        "verified_by": [
+          "Path2D2FinalityProfileState::reorg_to",
+          "ProductionSpentSlotLedger::mark_reorg_burn"
+        ]
+      },
+      {
+        "deployment_profile_slice_verified": true,
+        "deployment_ready": false,
+        "executable_evidence_verified": true,
+        "profile_decision": "reorg below finalized head is rejected rather than resurrecting consumed digests",
+        "requirement_id": "profile_finalized_reorg_policy",
+        "residual": "real consensus-client finalized-head mapping remains adoption-profile work",
+        "review_requirement_verified": true,
+        "support_tests": [
+          "path2_d2_finality_profile_reorg_frees_window_but_preserves_finalized"
+        ],
+        "verified_by": [
+          "Path2D2FinalityProfileState::reorg_to finalized-head guard"
+        ]
+      },
+      {
+        "deployment_profile_slice_verified": true,
+        "deployment_ready": false,
+        "executable_evidence_verified": true,
+        "profile_decision": "recovery may admit replacement slots or burn/recover old slots, but never resurrects a consumed digest",
+        "requirement_id": "profile_recovery_burn_policy",
+        "residual": "account-policy authorization for recovery remains policy/adoption work",
+        "review_requirement_verified": true,
+        "support_tests": [
+          "lifecycle_manager_recovery_burns_reserved_slots",
+          "lifecycle_snapshot_roundtrips_and_recovers_by_burning_reservations"
+        ],
+        "verified_by": [
+          "ProductionAccountLifecycleManager::recover_by_burning_reservations"
+        ]
+      },
+      {
+        "deployment_profile_slice_verified": true,
+        "deployment_ready": false,
+        "executable_evidence_verified": true,
+        "profile_decision": "restore-uncertain or stale snapshots cannot re-enable released slots",
+        "requirement_id": "profile_restore_anchor_policy",
+        "residual": "device backup, restore, and custody operating procedures remain adoption-profile work",
+        "review_requirement_verified": true,
+        "support_tests": [
+          "lifecycle_restore_anchor_rejects_old_backup_snapshots",
+          "lifecycle_file_store_roundtrips_and_recovers_reserved_slots"
+        ],
+        "verified_by": [
+          "ProductionAccountLifecycleManager restore-anchor checks",
+          "ProductionChainStateFileStores recovery path"
+        ]
+      },
+      {
+        "deployment_profile_slice_verified": true,
+        "deployment_ready": false,
+        "executable_evidence_verified": true,
+        "profile_decision": "accepted spend transition is persisted with the consume-once marker before the accepted result is exposed",
+        "requirement_id": "profile_persist_before_release_policy",
+        "residual": "target-chain write-ahead integration and resource limits remain adoption-profile work",
+        "review_requirement_verified": true,
+        "support_tests": [
+          "chain_state_file_stores_verify_record_and_persist_together"
+        ],
+        "verified_by": [
+          "ProductionChainStateFileStores::verify_consume_record_and_save"
+        ]
+      }
+    ],
+    "schema": "Descender.Path2.DirectLifecycleProfileVerification.v1",
+    "status": "digest_pinned_target_chain_lifecycle_profile_verified_not_deployment_ready",
+    "verification": {
+      "adoption_evidence_ready": false,
+      "artifact_path": "formal/kat/path2_direct_lifecycle_profile_verification_v1.json",
+      "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+      "deployment_ready": false,
+      "lifecycle_boundary_report_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
+      "lifecycle_boundary_report_recomputed_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
+      "lifecycle_transition_profile_verified": true,
+      "normative_sources": [
+        "spec/lifecycle_model.md",
+        "spec/deployment_profiles.md",
+        "spec/signer_state_profile.md",
+        "decisions/ADR-0010-registry-lifecycle-consensus-wiring-and-finality.md"
+      ],
+      "review_evidence": {
+        "audit_summary": {
+          "adoption_evidence_ready": false,
+          "all_relaxations_require_new_profile": true,
+          "all_requirements_have_authority": true,
+          "all_requirements_reviewed": true,
+          "all_reviewed_requirements_have_evidence_surface": true,
+          "d2_safe_default_profile_reviewed": true,
+          "deployment_ready": false,
+          "lifecycle_transition_profile_verified": true,
+          "requirement_count": 7,
+          "target_chain_finality_profile_instantiated": true,
+          "target_chain_lifecycle_profile_review_pinned": true
+        },
+        "direct_lifecycle_boundary_report_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
+        "direct_lifecycle_boundary_report_recomputed_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
+        "requirement_count": 7,
+        "requirement_ids": [
+          "profile_finality_source",
+          "profile_pending_release_policy",
+          "profile_dropped_before_finality_policy",
+          "profile_finalized_reorg_policy",
+          "profile_recovery_burn_policy",
+          "profile_restore_anchor_policy",
+          "profile_persist_before_release_policy"
+        ],
+        "review_digest": "7cecaef9f3c0f942869c33869b84b79241d02d243e48cfaf4745906493f8a67f",
+        "review_id": "Path2.DirectLifecycleProfileReview.D2.safe-default.v1",
+        "review_path": "formal/kat/path2_direct_lifecycle_profile_review_v1.json",
+        "review_recomputed_digest": "7cecaef9f3c0f942869c33869b84b79241d02d243e48cfaf4745906493f8a67f",
+        "review_schema": "Descender.Path2.DirectLifecycleProfileReview.v1",
+        "review_status": "digest_pinned_target_chain_lifecycle_profile_review_not_deployment_ready",
+        "schema": "Descender.Path2.DirectLifecycleProfileReviewEvidence.v1",
+        "status": "digest_pinned_direct_lifecycle_profile_review_evidence",
+        "target_chain_finality_profile_id": "ADR-0010.D2.finalized-head-reorg-window.v1"
+      },
+      "support_sources": [
+        "research/path2_lifecycle_finality_theorem_v1.md",
+        "research/path2_one_use_successor_state_theorem.md"
+      ],
+      "target_chain_finality_profile_authority": "decisions/ADR-0010-registry-lifecycle-consensus-wiring-and-finality.md",
+      "target_chain_finality_profile_id": "ADR-0010.D2.finalized-head-reorg-window.v1",
+      "target_chain_finality_profile_instantiated": true,
+      "target_chain_finality_profile_rule": "permanence boundary equals chain FINALIZED head; admissions and consumptions in [finalized, head] are reorg-freeable by reorg_to(new_head)",
+      "target_chain_lifecycle_profile_review_pinned": true,
+      "target_chain_lifecycle_profile_verification_pinned": true,
+      "verification_id": "Path2.DirectLifecycleProfileVerification.D2.production-reference.v1",
+      "verification_scope": "Mode A direct lifecycle transition profile verification for ADR-0010 D2 finalized-head safe default"
+    }
+  },
+  "verification_digest": "8425d74af529c67ab732b6c106f8c93769e537baf803294268d35a03bbc2e163"
+}

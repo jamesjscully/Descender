@@ -233,17 +233,18 @@ snapshot-recovery support, file-store recovery support, and
 lifecycle/spent-record persistence evidence. The lifecycle transition vector
 corpus now digest-pins local admit/spend/consume, replay, persistence,
 reorg-burn, recovery-burn, restore-anchor, file-store recovery, and ADR-0010 D2
-finality-window cases. The lifecycle profile review artifact now digest-pins the
-ADR-0010 D2 safe-default target-chain lifecycle review against finality,
+finality-window cases. The lifecycle profile review and verification artifacts
+now digest-pin the ADR-0010 D2 safe-default target-chain lifecycle review and
+production-reference lifecycle-slice verification against finality,
 pending-release, dropped-before-finality, finalized-reorg, recovery-burn,
 restore-anchor, and persist-before-release requirements, while keeping
-lifecycle transition verification and deployment readiness false. A
+deployment readiness false. A
 separate boundary manifest consistency gate checks that
 the direct theorem manifest embeds the same proof-boundary digest and
 field-group object as the standalone proof-boundary manifest. This report and
 manifest are not the proof; they are mechanical guards that prevent deployment
 preflight from drifting away from the theorem shape while the composition
-theorem and concrete deployment-profile verification remain open. The
+theorem and broader deployment-profile readiness remain open. The
 `path2_preflight_boundary_consistency` gate separately checks that production
 preflight stays fail-closed on the direct theorem blocker, account-creation
 proof-boundary blocker, and selected account-STARK residual blockers. It also
