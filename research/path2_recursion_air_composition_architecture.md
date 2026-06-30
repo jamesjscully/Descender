@@ -303,11 +303,12 @@ turns each real `SpendWitness` (via `spend_air::spend_derive` → `packed_witnes
 `block_recursive_air` folds N of them into one `chain_state_root`. `proves_spend_block_q128`
 proves+verifies a 4-spend block at production q128 knobs.
 
-REMAINING (same class as the creation aggregator's open `deep_c_full_leaf` gap): the full
-constraint-level spend verification — a `spend_constraint_air` re-deriving the spend C(zeta) (packing
-+ frame-digest sponge + checked-core SIS + sigma + challenge sponge), so the aggregator constrains the
-inner spend RELATION and not only its FRI/commitment layer; and the in-circuit `{creation, spend}`
-cross-binding (MED-2 + key) lifted from the settlement layer into the aggregator.
+The original remaining items for this rung were the full constraint-level spend verification and the
+in-circuit `{creation, spend}` cross-binding. Both now have concrete code paths: the spend C(zeta)
+mirror is wired into `recursive_air::deep_c_full_spend`, and `spend_block::SpendBindingBlockAir`
+enforces MED-2 plus key equality over authenticated creation/spend binding rows. The remaining depth
+is composing those expensive capstones with production proof fixtures and the final aggregate
+statement/DA format.
 
 ## Full inner C(zeta) per member in the aggregator — constraint-level + provability finding (2026-06-28)
 
@@ -394,3 +395,36 @@ Proven:
 
 The same re-arithmetization primitive now closes BOTH halves: creation (`leaf_constraint_air`) and
 spend (`spend_constraint_air`).
+
+## Spend recursive-window wiring and aggregate cross-binding (2026-06-29)
+
+The spend C(zeta) mirror is now wired into the live recursive window:
+- `RecursiveConfig::deep_c_full_spend` adds an (SC) block carrying the production spend trace OOD
+  opening, spend public values, `C_committed`, and the committed Horner `a_pow`/`acc` columns.
+- `pack_window` derives `DEEP_C = spend_C_partial(value_at_zeta, public_values, alpha) + C_committed`
+  and `DEEP_Q = DEEP_C / Z_H(zeta)` for spend windows, matching the creation `deep_c_full_leaf` path.
+- `eval_full_spend_c` replays `spend_constraint_air::spend_residuals` inside `RecursiveAir` and folds
+  them through `alpha_fold::assert_committed_fold`, binding the committed DEEP C(zeta) to the full
+  spend relation.
+
+Fast default tests pin the wiring without making the normal suite minute-scale:
+- `recursive_air::full_spend_window_derives_c_from_full_fold` checks the packed window's DEEP_C,
+  DEEP_Q, C_committed, and final accumulator against the native production spend fold.
+- `recursive_air::full_spend_native_fold_changes_on_representative_tamper` confirms representative
+  trace/public tampering changes the production full fold.
+- The full `check_all_constraints` accept/reject tests remain present but ignored as slow, because
+  evaluating the production spend mirror inside the full recursive AIR is debug-build minute-scale.
+
+The settlement-layer `{creation, spend}` checks are also lifted into the aggregate AIR at the
+authenticated-row level:
+- `spend_block::cfg_creation_spend_binding_settlement` uses a recursive member config with a
+  128-field leaf row:
+  `creation.packed_witness || spend.packed_witness || creation.checked_core_key || spend.witness_key`.
+- `RecursiveAir` authenticates that row via `merkle_leaf == MyHash(row || zero_salt)` and the member
+  Merkle path.
+- `spend_block::SpendBindingBlockAir` reuses `BlockRecursiveAir` for per-member verification and
+  chain folding, then constrains `creation.packed_witness == spend.packed_witness` (MED-2) and
+  `creation.checked_core_key == spend.witness_key` in-circuit.
+- `spend_block::creation_spend_binding_block_rejects_wrong_med2_or_key` proves the equality checks
+  are load-bearing: the generic block aggregator accepts a consistently hashed but semantically
+  mismatched row, while `SpendBindingBlockAir` rejects it.

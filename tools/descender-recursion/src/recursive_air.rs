@@ -232,15 +232,16 @@
 //!   opening + the chunk OOD recombination are NOW handled by item 19 (QO); the random-codeword
 //!   matrices and the 56-query fan-out stay deferred.
 
+use crate::challenger::RATE;
 use crate::fri_fold::{fold_pair, fold_point};
 use crate::fri_fold_air::{limbs, D, W};
-use crate::index_bus::{assert_canonical_pub, FIELD_BITS};
-use crate::challenger::RATE;
-use crate::inlined_perm::{self, eval_perm, ConstantsExpr, PermCells, C_OUTPUT, PERM_COLS};
-use crate::merkle_air::{eval_node, node_blocks, ABSORB_LEN, N_PERM};
-use crate::leaf_hash::LEAF_HASH_RATE; // leaf-row hash (MyHash) rate = 7 at q128 (vs challenger RATE = 8)
 use crate::fs_observe::fs_squeeze_betas_digest; // q128 FS β squeeze over DIGEST_ELEMS-wide commitments
+use crate::index_bus::{assert_canonical_pub, FIELD_BITS};
+use crate::inlined_perm::{self, eval_perm, ConstantsExpr, PermCells, C_OUTPUT, PERM_COLS};
 use crate::leaf_constraint_air as lc;
+use crate::leaf_hash::LEAF_HASH_RATE; // leaf-row hash (MyHash) rate = 7 at q128 (vs challenger RATE = 8)
+use crate::merkle_air::{eval_node, node_blocks, ABSORB_LEN, N_PERM};
+use crate::spend_constraint_air as sc;
 use descender_account_stark::{Challenge, Val, DIGEST_ELEMS, SALT_ELEMS, WIDTH};
 use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
 use p3_field::{BasedVectorSpace, Field, PrimeCharacteristicRing, PrimeField32, TwoAdicField};
@@ -566,6 +567,14 @@ pub struct RecursiveConfig {
     /// folder) — NOT silently-dropped per-row constraints. With an honest faithful row `C_committed`
     /// is the residual `C(zeta) − C_partial(value_at_zeta)`; the per-row leaf C(zeta) is FULLY folded.
     pub deep_c_full_leaf: bool,
+    /// (SPEND CAPSTONE) BIND the DEEP constraint-eval `C(zeta)` to the FULL alpha-FOLDED spend
+    /// relation `spend_constraint_air::spend_residuals(value_at_zeta, public_values)` plus a
+    /// committed summand. This is the spend analogue of `deep_c_full_leaf`: the window carries the
+    /// full spend trace OOD opening, the spend public values, and the committed Horner accumulator for
+    /// every spend residual (packing, frame/challenge sponges, checked-core SIS, sigma identity,
+    /// sigma commitments, and relation-id). Requires `deep_log_degree`; mutually exclusive with
+    /// `deep_c_full_leaf` because one recursive window verifies one inner relation.
+    pub deep_c_full_spend: bool,
     /// (QO) AUTHENTICATE the QUOTIENT-chunk opening at the FS query index against the inner QUOTIENT
     /// commitment, fold the quotient contribution into the DEEP reduced opening `e0`, and TIE `DEEP_Q`
     /// to the quotient chunks' OOD (at-`zeta`) openings. When `> 0` it is the number of opened quotient
@@ -672,6 +681,7 @@ impl RecursiveConfig {
             deep_e0_next: false,
             deep_c_from_vzeta: false,
             deep_c_full_leaf: false,
+            deep_c_full_spend: false,
             quot_chunks: 0,
             quot_merkle_levels: 0,
             quot_alpha_offset: 0,
@@ -1229,7 +1239,11 @@ const LO_LEAF_INPUT_LEN: usize = 2 * D + SALT_ELEMS;
 const fn lo_leaf_perms() -> usize {
     let m = LO_LEAF_INPUT_LEN;
     let c = m.div_ceil(LEAF_HASH_RATE);
-    if c == 0 { 1 } else { c }
+    if c == 0 {
+        1
+    } else {
+        c
+    }
 }
 
 /// Offset of leaf-hash perm block `k` within a layer-open sub-block.
@@ -1312,7 +1326,11 @@ fn fp_size(cfg: &RecursiveConfig) -> usize {
 /// The flattened arity-2 leaf row `[evals0; D] ‖ [evals1; D]` placed by parity: `evals[parity] =
 /// e_fold`, the other slot = `e_sib`. Mirrors [`crate::fri_layer_air::flatten_pair`].
 fn lo_flatten_pair(e_fold: Challenge, e_sib: Challenge, parity: bool) -> [Val; 2 * D] {
-    let (e0, e1) = if parity { (e_sib, e_fold) } else { (e_fold, e_sib) };
+    let (e0, e1) = if parity {
+        (e_sib, e_fold)
+    } else {
+        (e_fold, e_sib)
+    };
     let mut row = [Val::ZERO; 2 * D];
     row[..D].copy_from_slice(e0.as_basis_coefficients_slice());
     row[D..].copy_from_slice(e1.as_basis_coefficients_slice());
@@ -1320,14 +1338,24 @@ fn lo_flatten_pair(e_fold: Challenge, e_sib: Challenge, parity: bool) -> [Val; 2
 }
 
 /// The salted leaf-hash input `flatten(evals) ‖ salt` for a layer leaf.
-fn lo_leaf_input(e_fold: Challenge, e_sib: Challenge, parity: bool, salt: &[Val; SALT_ELEMS]) -> Vec<Val> {
+fn lo_leaf_input(
+    e_fold: Challenge,
+    e_sib: Challenge,
+    parity: bool,
+    salt: &[Val; SALT_ELEMS],
+) -> Vec<Val> {
     let mut v = lo_flatten_pair(e_fold, e_sib, parity).to_vec();
     v.extend_from_slice(salt);
     v
 }
 
 /// The layer leaf digest `MyHash(flatten(evals) ‖ salt)` — the value the Merkle path authenticates.
-pub fn layer_leaf_digest(e_fold: Challenge, e_sib: Challenge, parity: bool, salt: &[Val; SALT_ELEMS]) -> [Val; DIGEST_ELEMS] {
+pub fn layer_leaf_digest(
+    e_fold: Challenge,
+    e_sib: Challenge,
+    parity: bool,
+    salt: &[Val; SALT_ELEMS],
+) -> [Val; DIGEST_ELEMS] {
     leaf_hash_digest(&lo_leaf_input(e_fold, e_sib, parity, salt))
 }
 
@@ -1466,7 +1494,9 @@ pub fn fs_squeeze_betas(
         // observe(commit_phase_commit_r): one FULL-rate absorb-permute into the carried state.
         state = prefix_round_state(state, *block);
         // sample beta_r: LIFO squeeze of this round's permute output rate.
-        betas.push(Challenge::from_basis_coefficients_fn(|i| state[RATE - 1 - i]));
+        betas.push(Challenge::from_basis_coefficients_fn(|i| {
+            state[RATE - 1 - i]
+        }));
     }
     (betas, state)
 }
@@ -1736,7 +1766,44 @@ fn lc_base(cfg: &RecursiveConfig) -> usize {
 /// (`a_pow`, `acc`) so the full leaf C(zeta) folds at degree ≤ 4 (provable).
 fn lc_size(cfg: &RecursiveConfig) -> usize {
     if cfg.deep_c_full_leaf {
-        lc::N_OPENED_CELLS * D + D /* C_committed */ + 2 * lc::N_CONSTRAINTS * D /* a_pow ‖ acc */
+        lc::N_OPENED_CELLS * D + D /* C_committed */ + 2 * lc::N_CONSTRAINTS * D
+    /* a_pow ‖ acc */
+    } else {
+        0
+    }
+}
+
+// ----- (SC) FULL-spend-constraint mirror block -----
+//
+// Present iff `deep_c_full_spend`. Placed after the creation LC block and before quotient openings.
+// Layout:
+//   spend_value_at_zeta[W · D]  ‖  spend_public_values[P · D]  ‖  C_committed[D]
+//   ‖  a_pow[K · D]  ‖  acc[K · D]
+// where W is the production spend trace width, P is `SPEND_N_PUBLIC`, and K is the production
+// full-spend residual count. This mirrors `spend_constraint_air::SpendFoldAir` but embeds it into the
+// recursive verifier window and binds its result to DEEP_C.
+const SC_VZETA: usize = 0;
+fn sc_pub(_cfg: &RecursiveConfig) -> usize {
+    SC_VZETA + sc::production_trace_width() * D
+}
+fn sc_c_committed(cfg: &RecursiveConfig) -> usize {
+    sc_pub(cfg) + sc::production_public_count() * D
+}
+fn sc_apow(cfg: &RecursiveConfig) -> usize {
+    sc_c_committed(cfg) + D
+}
+fn sc_acc(cfg: &RecursiveConfig) -> usize {
+    sc_apow(cfg) + sc::production_residual_count() * D
+}
+fn sc_base(cfg: &RecursiveConfig) -> usize {
+    lc_base(cfg) + lc_size(cfg)
+}
+fn sc_size(cfg: &RecursiveConfig) -> usize {
+    if cfg.deep_c_full_spend {
+        sc::production_trace_width() * D
+            + sc::production_public_count() * D
+            + D
+            + 2 * sc::production_residual_count() * D
     } else {
         0
     }
@@ -1815,9 +1882,9 @@ fn qo_level_base(cfg: &RecursiveConfig, level: usize) -> usize {
     qo_base(cfg) + qo_merkle_base(cfg) + level * QO_MERKLE_LEVEL
 }
 
-/// Base of the (QO) block (after the (LC) block).
+/// Base of the (QO) block (after the optional LC/SC blocks).
 fn qo_base(cfg: &RecursiveConfig) -> usize {
-    lc_base(cfg) + lc_size(cfg)
+    sc_base(cfg) + sc_size(cfg)
 }
 
 /// Size of the (QO) block. 0 unless `quot_chunks > 0`.
@@ -2121,6 +2188,15 @@ pub struct WindowInputs<'a> {
     /// (LC) the DEFERRED committed summand `C_committed` of the leaf `C(zeta)` decomposition (see
     /// `deep_c_full_leaf`). Consumed only when `deep_c_full_leaf`.
     pub lc_c_committed: Challenge,
+    /// (SC) the FULL spend-trace OOD opening at `zeta`: spend trace column `c`'s value at `zeta` for
+    /// every `c < sc::production_trace_width()`. Consumed only when `deep_c_full_spend`.
+    pub sc_value_at_zeta: &'a [Challenge],
+    /// (SC) spend public values in `spend_air::SPEND_N_PUBLIC` order, embedded as extension cells.
+    /// Consumed only when `deep_c_full_spend`.
+    pub sc_public_values: &'a [Challenge],
+    /// (SC) the DEFERRED committed summand `C_committed` of the spend `C(zeta)` decomposition.
+    /// Consumed only when `deep_c_full_spend`.
+    pub sc_c_committed: Challenge,
     /// (QO) the inner proof's QUOTIENT commitment (the quotient-chunk Merkle tree root). Consumed only
     /// when `quot_chunks > 0`; the honest builder copies it into the `quot_commit` column block and the
     /// eval constrains the reconstructed quotient-path root == this.
@@ -2168,14 +2244,32 @@ impl<'a> WindowInputs<'a> {
             absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: &[],
-            fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            fs_beta_blocks: &[],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
             quot_commit: [Val::ZERO; DIGEST_ELEMS],
-            quot_opened_at_x: &[], quot_at_zeta: &[], quot_zps: &[],
-            quot_salt: [Val::ZERO; SALT_ELEMS], quot_x: Val::ZERO, quot_siblings: &[],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         }
     }
 }
@@ -2240,7 +2334,10 @@ pub fn squeeze_draw(sponge_in: [Val; WIDTH]) -> Val {
 /// the freshly-refilled `out_buf` (LIFO) WITHOUT re-permuting while the buffer is non-empty, so the
 /// first `count` draws (count ≤ RATE) all come from the same permute. Draw 0 is the index draw.
 pub fn squeeze_draws(sponge_in: [Val; WIDTH], count: usize) -> Vec<Val> {
-    assert!(count <= RATE, "at most RATE draws come from one squeeze permute");
+    assert!(
+        count <= RATE,
+        "at most RATE draws come from one squeeze permute"
+    );
     let consts = inlined_perm::Constants::pinned();
     let cols = inlined_perm::generate_perm_cols(sponge_in, &consts);
     (0..count)
@@ -2320,12 +2417,17 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
 /// index-dependent openings (e0/leaf-row/Merkle path/x/...) consistent with the r-th index, plus the
 /// SHARED fs blocks + commitments + OOD (identical for every ordinal). `r` must be `< RATE` (the
 /// within-RATE fan-out: one output-buffer refill).
-pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordinal: usize) -> Vec<Val> {
+pub fn pack_window_query(
+    cfg: &RecursiveConfig,
+    inp: &WindowInputs,
+    query_ordinal: usize,
+) -> Vec<Val> {
     let h = cfg.log_height;
     // (a-FS+++) when a transcript-prefix absorb chain feeds the duplex step, the duplex step's
     // prior_state is the chained output of absorbing the prefix blocks from the zero boundary; it
     // overrides the supplied prior_state field.
-    let prior_state = if cfg.inline_sponge_draw && cfg.sponge_absorb && cfg.sponge_prefix_rounds > 0 {
+    let prior_state = if cfg.inline_sponge_draw && cfg.sponge_absorb && cfg.sponge_prefix_rounds > 0
+    {
         prefix_chain_state(inp.prefix_blocks)
     } else {
         inp.prior_state
@@ -2348,7 +2450,10 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
     // index continuation point).
     let (fs_betas, post_beta_state): (Vec<Challenge>, [Val; WIDTH]) = if cfg.fs_beta_rounds > 0 {
         assert!(cfg.fs_alpha_zeta, "fs_beta_rounds requires fs_alpha_zeta");
-        assert!(rounds >= cfg.fs_beta_rounds, "num_rounds must be >= fs_beta_rounds");
+        assert!(
+            rounds >= cfg.fs_beta_rounds,
+            "num_rounds must be >= fs_beta_rounds"
+        );
         assert_eq!(
             inp.fs_beta_blocks.len(),
             cfg.fs_beta_rounds,
@@ -2370,7 +2475,10 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
     // post-beta transcript (final_poly ‖ log_arities ‖ query-PoW witness), then the index draw is the
     // top LIFO pop of the last observe round's permute rate — REPLACING the separate (a-FS) chain.
     let draw_out = if cfg.fs_final_blocks > 0 {
-        assert!(cfg.fs_beta_rounds > 0, "fs_final_blocks requires fs_beta_rounds > 0");
+        assert!(
+            cfg.fs_beta_rounds > 0,
+            "fs_final_blocks requires fs_beta_rounds > 0"
+        );
         assert_eq!(
             inp.fs_final_blocks.len(),
             cfg.fs_final_blocks,
@@ -2446,11 +2554,18 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
         }
         row[sp_col(j + 1)] = acc;
     }
-    debug_assert_eq!(acc, s0, "tower product != fold_point — base/bit convention mismatch");
+    debug_assert_eq!(
+        acc, s0,
+        "tower product != fold_point — base/bit convention mismatch"
+    );
 
     // (c) descent rounds r = 1..num_rounds: s_r = s_{r-1}², e0_r = folded_{r-1}, e1_r/beta_r given.
     if rounds > 1 {
-        assert_eq!(inp.descent.len(), rounds - 1, "descent must supply rounds-1 (e1,beta) pairs");
+        assert_eq!(
+            inp.descent.len(),
+            rounds - 1,
+            "descent must supply rounds-1 (e1,beta) pairs"
+        );
     }
     let mut s_prev = s0;
     let mut folded_prev = folded0;
@@ -2500,7 +2615,27 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
         // consumes, and Q is DERIVED as C/Z_H(zeta) so `C == Z_H·Q` still holds. This binds
         // value_at_zeta to the constraint relation: a forged value_at_zeta shifts C and breaks the
         // OOD identity. Otherwise (back-compat) C = Z_H·Q with the supplied free `deep_q`.
-        let (c, q) = if cfg.deep_c_full_leaf {
+        assert!(
+            !(cfg.deep_c_full_leaf && cfg.deep_c_full_spend),
+            "deep_c_full_leaf and deep_c_full_spend are mutually exclusive"
+        );
+        let (c, q) = if cfg.deep_c_full_spend {
+            assert_eq!(
+                inp.sc_value_at_zeta.len(),
+                sc::production_trace_width(),
+                "deep_c_full_spend: sc_value_at_zeta must have production spend trace width entries"
+            );
+            assert_eq!(
+                inp.sc_public_values.len(),
+                sc::production_public_count(),
+                "deep_c_full_spend: sc_public_values must have SPEND_N_PUBLIC entries"
+            );
+            let c_partial =
+                sc::production_c_partial(inp.sc_value_at_zeta, inp.sc_public_values, deep_alpha);
+            let c = c_partial + inp.sc_c_committed;
+            let q = c * zh.inverse();
+            (c, q)
+        } else if cfg.deep_c_full_leaf {
             // (CAPSTONE) DEEP_C = recompute_c_partial(full value_at_zeta, DEEP_ALPHA) + C_committed,
             // the FULL alpha-FOLDED leaf constraint over the full leaf-trace OOD opening (NOT the
             // linear reduction). Q is DERIVED as C/Z_H(zeta) so `C == Z_H·Q` still holds.
@@ -2575,6 +2710,53 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
         let ap = lcb + lc_apow(cfg);
         let ac = lcb + lc_acc(cfg);
         for r in 0..lc::N_CONSTRAINTS {
+            row[ap + r * D..ap + r * D + D].copy_from_slice(&limbs(apow_v[r]));
+            row[ac + r * D..ac + r * D + D].copy_from_slice(&limbs(acc_v[r]));
+        }
+    }
+
+    // (SC) FULL-spend-constraint mirror block: lay out the full spend-trace OOD opening, public
+    // values, C_committed, and the committed Horner accumulator over all spend residuals.
+    if cfg.deep_c_full_spend {
+        assert!(
+            !cfg.deep_c_full_leaf,
+            "deep_c_full_spend and deep_c_full_leaf are mutually exclusive"
+        );
+        let w = sc::production_trace_width();
+        let p = sc::production_public_count();
+        let k = sc::production_residual_count();
+        assert_eq!(
+            inp.sc_value_at_zeta.len(),
+            w,
+            "deep_c_full_spend: sc_value_at_zeta must have production spend trace width entries"
+        );
+        assert_eq!(
+            inp.sc_public_values.len(),
+            p,
+            "deep_c_full_spend: sc_public_values must have SPEND_N_PUBLIC entries"
+        );
+        let scb = sc_base(cfg);
+        for (c_idx, v) in inp.sc_value_at_zeta.iter().enumerate() {
+            let base = scb + SC_VZETA + c_idx * D;
+            row[base..base + D].copy_from_slice(&limbs(*v));
+        }
+        let poff = scb + sc_pub(cfg);
+        for (p_idx, v) in inp.sc_public_values.iter().enumerate() {
+            let base = poff + p_idx * D;
+            row[base..base + D].copy_from_slice(&limbs(*v));
+        }
+        let cc = scb + sc_c_committed(cfg);
+        row[cc..cc + D].copy_from_slice(&limbs(inp.sc_c_committed));
+        let (apow_v, acc_v) = sc::production_c_partial_accumulator_values(
+            inp.sc_value_at_zeta,
+            inp.sc_public_values,
+            deep_alpha,
+        );
+        assert_eq!(apow_v.len(), k, "spend residual count drift");
+        assert_eq!(acc_v.len(), k, "spend residual count drift");
+        let ap = scb + sc_apow(cfg);
+        let ac = scb + sc_acc(cfg);
+        for r in 0..k {
             row[ap + r * D..ap + r * D + D].copy_from_slice(&limbs(apow_v[r]));
             row[ac + r * D..ac + r * D + D].copy_from_slice(&limbs(acc_v[r]));
         }
@@ -2697,7 +2879,10 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
     // produce the DEEP/batch combination challenge alpha (after the pre-alpha prefix) and the OOD
     // point zeta (after observing the quotient commitment), mirroring p3-uni-stark's FS order.
     if cfg.fs_alpha_zeta {
-        assert!(cfg.fs_pre_alpha_rounds >= 1, "fs_pre_alpha_rounds must be >= 1");
+        assert!(
+            cfg.fs_pre_alpha_rounds >= 1,
+            "fs_pre_alpha_rounds must be >= 1"
+        );
         assert_eq!(
             inp.fs_blocks.len(),
             cfg.fs_pre_alpha_rounds + 1,
@@ -2795,7 +2980,10 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
             }
             let beta_r = Challenge::from_basis_coefficients_fn(|i| state[RATE - 1 - i]);
             row[rb + FB_BETA..rb + FB_BETA + D].copy_from_slice(&limbs(beta_r));
-            debug_assert_eq!(beta_r, fs_betas[r], "FS-β block beta_r != fs_squeeze_betas reference");
+            debug_assert_eq!(
+                beta_r, fs_betas[r],
+                "FS-β block beta_r != fs_squeeze_betas reference"
+            );
         }
         // `state` is now the post-last-beta state — the query-index continuation point.
 
@@ -2909,7 +3097,8 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
                 combined[..DIGEST_ELEMS].copy_from_slice(&a);
                 combined[DIGEST_ELEMS..].copy_from_slice(&b);
                 let (blocks, digest) = node_blocks(&combined, &consts);
-                row[lbase + LO_ML_PERM..lbase + LO_ML_PERM + N_PERM * PERM_COLS].copy_from_slice(&blocks);
+                row[lbase + LO_ML_PERM..lbase + LO_ML_PERM + N_PERM * PERM_COLS]
+                    .copy_from_slice(&blocks);
                 running = digest;
                 node_idx >>= 1;
             }
@@ -2943,7 +3132,11 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
     // (b-hash) leaf-row hashing: compute the level-0 leaf digest IN-AIR as MyHash(row ‖ salt) via
     // the PaddingFreeSponge schedule, laying out the raw row/salt cells and one perm per absorb.
     if cfg.leaf_row_len > 0 && cfg.merkle_levels > 0 {
-        assert_eq!(inp.leaf_row.len(), cfg.leaf_row_len, "leaf_row must have leaf_row_len entries");
+        assert_eq!(
+            inp.leaf_row.len(),
+            cfg.leaf_row_len,
+            "leaf_row must have leaf_row_len entries"
+        );
         let consts = inlined_perm::Constants::pinned();
         // raw row + salt cells (absolute columns).
         row[lh_row(cfg)..lh_row(cfg) + cfg.leaf_row_len].copy_from_slice(inp.leaf_row);
@@ -2973,12 +3166,19 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
     // IS the DEEP combination of the opened row, not a free / digest-bound value.
     if cfg.deep_e0_combine > 0 {
         let n = cfg.deep_e0_combine;
-        assert!(cfg.deep_log_degree.is_some(), "deep_e0_combine requires deep_log_degree");
+        assert!(
+            cfg.deep_log_degree.is_some(),
+            "deep_e0_combine requires deep_log_degree"
+        );
         assert!(
             cfg.leaf_row_len >= n && cfg.merkle_levels > 0,
             "deep_e0_combine requires leaf_row_len >= deep_e0_combine and a Merkle/leaf-hash block"
         );
-        assert_eq!(inp.dr_value_at_zeta.len(), n, "dr_value_at_zeta must have deep_e0_combine entries");
+        assert_eq!(
+            inp.dr_value_at_zeta.len(),
+            n,
+            "dr_value_at_zeta must have deep_e0_combine entries"
+        );
         let k = cfg.deep_log_degree.unwrap();
         let g = Val::two_adic_generator(k); // trace-domain generator: zeta_next = g·zeta
         let dr = dr_base(cfg);
@@ -3025,7 +3225,13 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
                 inp.dr_value_at_zeta_next,
             )
         } else {
-            deep_reduced_e0(deep_alpha, deep_zeta, inp.dr_x, opened_row, inp.dr_value_at_zeta)
+            deep_reduced_e0(
+                deep_alpha,
+                deep_zeta,
+                inp.dr_x,
+                opened_row,
+                inp.dr_value_at_zeta,
+            )
         };
         // (QO) ADD the quotient-chunk reduced-opening contribution: the quotient chunks share the
         // trace's log-height bucket, so p3 (`open_input` verifier.rs:720-752) folds their contribution
@@ -3057,13 +3263,38 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
     // perms, and the Merkle path at the FS index.
     if cfg.quot_chunks > 0 {
         let q = cfg.quot_chunks;
-        assert!(cfg.deep_log_degree.is_some(), "quot_chunks requires deep_log_degree");
-        assert!(cfg.deep_e0_combine > 0, "quot_chunks requires deep_e0_combine > 0 (trace e0)");
-        assert!(cfg.merkle_levels > 0, "quot_chunks requires a Merkle/leaf-hash block");
-        assert_eq!(inp.quot_opened_at_x.len(), q, "quot_opened_at_x must have quot_chunks entries");
-        assert_eq!(inp.quot_at_zeta.len(), q, "quot_at_zeta must have quot_chunks entries");
-        assert_eq!(inp.quot_zps.len(), q, "quot_zps must have quot_chunks entries");
-        assert_eq!(inp.quot_siblings.len(), cfg.quot_merkle_levels, "quot_siblings must have quot_merkle_levels entries");
+        assert!(
+            cfg.deep_log_degree.is_some(),
+            "quot_chunks requires deep_log_degree"
+        );
+        assert!(
+            cfg.deep_e0_combine > 0,
+            "quot_chunks requires deep_e0_combine > 0 (trace e0)"
+        );
+        assert!(
+            cfg.merkle_levels > 0,
+            "quot_chunks requires a Merkle/leaf-hash block"
+        );
+        assert_eq!(
+            inp.quot_opened_at_x.len(),
+            q,
+            "quot_opened_at_x must have quot_chunks entries"
+        );
+        assert_eq!(
+            inp.quot_at_zeta.len(),
+            q,
+            "quot_at_zeta must have quot_chunks entries"
+        );
+        assert_eq!(
+            inp.quot_zps.len(),
+            q,
+            "quot_zps must have quot_chunks entries"
+        );
+        assert_eq!(
+            inp.quot_siblings.len(),
+            cfg.quot_merkle_levels,
+            "quot_siblings must have quot_merkle_levels entries"
+        );
         let consts = inlined_perm::Constants::pinned();
         let qb = qo_base(cfg);
         // bound inner quotient commitment.
@@ -3099,7 +3330,11 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
         // MyHash(quot_opened ‖ salt) leaf perms.
         let leaf_input = qo_leaf_input(&opened_flat, &inp.quot_salt);
         let pre = leaf_hash_pre_states(&leaf_input);
-        debug_assert_eq!(pre.len(), qo_leaf_perms(cfg), "quot leaf perm count mismatch");
+        debug_assert_eq!(
+            pre.len(),
+            qo_leaf_perms(cfg),
+            "quot leaf perm count mismatch"
+        );
         for (k, st) in pre.iter().enumerate() {
             let cols = inlined_perm::generate_perm_cols(*st, &consts);
             let pb = qb + qo_leaf_perm_base(cfg, k);
@@ -3112,14 +3347,16 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
         for (level, &sib) in inp.quot_siblings.iter().enumerate() {
             let bit = (node_idx & 1) == 1;
             let lbase = qo_level_base(cfg, level);
-            row[lbase + QO_ML_RUNNING..lbase + QO_ML_RUNNING + DIGEST_ELEMS].copy_from_slice(&running);
+            row[lbase + QO_ML_RUNNING..lbase + QO_ML_RUNNING + DIGEST_ELEMS]
+                .copy_from_slice(&running);
             row[lbase + QO_ML_SIBLING..lbase + QO_ML_SIBLING + DIGEST_ELEMS].copy_from_slice(&sib);
             let (a, b) = if bit { (sib, running) } else { (running, sib) };
             let mut combined = [Val::ZERO; ABSORB_LEN];
             combined[..DIGEST_ELEMS].copy_from_slice(&a);
             combined[DIGEST_ELEMS..].copy_from_slice(&b);
             let (blocks, digest) = node_blocks(&combined, &consts);
-            row[lbase + QO_ML_PERM..lbase + QO_ML_PERM + N_PERM * PERM_COLS].copy_from_slice(&blocks);
+            row[lbase + QO_ML_PERM..lbase + QO_ML_PERM + N_PERM * PERM_COLS]
+                .copy_from_slice(&blocks);
             running = digest;
             node_idx >>= 1;
         }
@@ -3210,6 +3447,15 @@ pub fn window_root_col(cfg: &RecursiveConfig) -> usize {
     ml_node_digest(merkle_level_base(cfg, cfg.merkle_levels - 1))
 }
 
+/// Absolute column offset of a window's authenticated leaf-row cells. Exposed for aggregate AIRs
+/// that need to interpret the opened row semantically after `RecursiveAir` has constrained
+/// `merkle_leaf == MyHash(row || salt)` and authenticated that leaf to the reconstructed root.
+pub fn window_leaf_row_col(cfg: &RecursiveConfig) -> usize {
+    assert!(cfg.merkle_levels > 0);
+    assert!(cfg.leaf_row_len > 0);
+    lh_row(cfg)
+}
+
 /// Decode the bus index value of a packed window.
 pub fn window_index(row: &[Val]) -> u32 {
     row[C_INDEX].as_canonical_u32()
@@ -3265,16 +3511,59 @@ fn eval_full_leaf_c<AB: AirBuilder<F = Val>>(
     // the inline `recompute_c_partial` (degree ~N_CONSTRAINTS, which explodes the quotient LDE).
     let apow_off = lc_apow(cfg);
     let acc_off = lc_acc(cfg);
+    let apow =
+        |i: usize| -> [AB::Expr; D] { core::array::from_fn(|j| l(lcb + apow_off + i * D + j)) };
+    let acc =
+        |i: usize| -> [AB::Expr; D] { core::array::from_fn(|j| l(lcb + acc_off + i * D + j)) };
+    let c_partial =
+        lc::assert_c_partial_committed::<AB, _, _, _>(builder, &cell, &apow, &acc, &alpha);
+    let c_committed: [AB::Expr; D] = core::array::from_fn(|j| l(lcb + lc_c_committed(cfg) + j));
+    // C == C_partial + C_committed (limb-for-limb).
+    for i in 0..D {
+        builder.assert_zero(c[i].clone() - (c_partial[i].clone() + c_committed[i].clone()));
+    }
+}
+
+/// (SC CAPSTONE) Enforce `C == spend_C_partial(full_spend_value_at_zeta, spend_public_values)
+/// + C_committed` for the production spend relation. This is the spend analogue of
+/// [`eval_full_leaf_c`], but the residual list is supplied by `spend_constraint_air`.
+#[inline(never)]
+fn eval_full_spend_c<AB: AirBuilder<F = Val>>(
+    builder: &mut AB,
+    cfg: &RecursiveConfig,
+    local: &[AB::Var],
+    c: &[AB::Expr; D],
+) {
+    let l = |i: usize| -> AB::Expr { local[i].into() };
+    let db = deep_base(cfg);
+    let scb = sc_base(cfg);
+    let w = sc::production_trace_width();
+    let p = sc::production_public_count();
+    let k = sc::production_residual_count();
+    let alpha: [AB::Expr; D] = core::array::from_fn(|i| l(db + DEEP_ALPHA + i));
+    let cell = |c_idx: usize| -> [AB::Expr; D] {
+        debug_assert!(c_idx < w);
+        core::array::from_fn(|j| l(scb + SC_VZETA + c_idx * D + j))
+    };
+    let pubv = |p_idx: usize| -> [AB::Expr; D] {
+        debug_assert!(p_idx < p);
+        let base = scb + sc_pub(cfg) + p_idx * D;
+        core::array::from_fn(|j| l(base + j))
+    };
     let apow = |i: usize| -> [AB::Expr; D] {
-        core::array::from_fn(|j| l(lcb + apow_off + i * D + j))
+        debug_assert!(i < k);
+        core::array::from_fn(|j| l(scb + sc_apow(cfg) + i * D + j))
     };
     let acc = |i: usize| -> [AB::Expr; D] {
-        core::array::from_fn(|j| l(lcb + acc_off + i * D + j))
+        debug_assert!(i < k);
+        core::array::from_fn(|j| l(scb + sc_acc(cfg) + i * D + j))
     };
-    let c_partial = lc::assert_c_partial_committed::<AB, _, _, _>(builder, &cell, &apow, &acc, &alpha);
-    let c_committed: [AB::Expr; D] =
-        core::array::from_fn(|j| l(lcb + lc_c_committed(cfg) + j));
-    // C == C_partial + C_committed (limb-for-limb).
+    let air = sc::production_spend_air();
+    let residuals = sc::spend_residuals::<AB, _, _>(&air, &cell, &pubv);
+    let c_partial = crate::alpha_fold::assert_committed_fold::<AB, _, _>(
+        builder, &residuals, &apow, &acc, &alpha,
+    );
+    let c_committed: [AB::Expr; D] = core::array::from_fn(|j| l(scb + sc_c_committed(cfg) + j));
     for i in 0..D {
         builder.assert_zero(c[i].clone() - (c_partial[i].clone() + c_committed[i].clone()));
     }
@@ -3311,7 +3600,9 @@ pub struct RecursiveAir {
 impl RecursiveAir {
     /// Legacy single-window constructor (index↔draw + tower + single fold).
     pub fn single(log_height: usize) -> Self {
-        Self { cfg: RecursiveConfig::single_window(log_height) }
+        Self {
+            cfg: RecursiveConfig::single_window(log_height),
+        }
     }
 }
 
@@ -3499,7 +3790,9 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
             // of `deep_c_from_vzeta` (which only enforced C == Σ alpha^i·value_at_zeta[i]). The eval is
             // EXTRACTED into its own `#[inline(never)]` frame (the leaf-constraint eval is the heavy
             // one — 17796 octic residuals — keep it off this frame to respect stack discipline).
-            if cfg.deep_c_full_leaf {
+            if cfg.deep_c_full_spend {
+                eval_full_spend_c::<AB>(builder, &cfg, &local, &c);
+            } else if cfg.deep_c_full_leaf {
                 eval_full_leaf_c::<AB>(builder, &cfg, &local, &c);
             }
         }
@@ -3535,15 +3828,21 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 let bit = bits[level].clone();
                 // q128 sponge-mode node: combined = a ‖ b ordered by the BUS bit; eval_node mirrors
                 // node_blocks (absorb/carry wiring + inlined perms over all N_PERM blocks).
-                let run_e: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(lbase + ML_RUNNING + i)).collect();
-                let sib_e: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(lbase + ML_SIBLING + i)).collect();
+                let run_e: Vec<AB::Expr> = (0..DIGEST_ELEMS)
+                    .map(|i| l(lbase + ML_RUNNING + i))
+                    .collect();
+                let sib_e: Vec<AB::Expr> = (0..DIGEST_ELEMS)
+                    .map(|i| l(lbase + ML_SIBLING + i))
+                    .collect();
                 let bit_c = bit.clone();
                 let combined = |g: usize| -> AB::Expr {
                     if g < DIGEST_ELEMS {
-                        (one.clone() - bit_c.clone()) * run_e[g].clone() + bit_c.clone() * sib_e[g].clone()
+                        (one.clone() - bit_c.clone()) * run_e[g].clone()
+                            + bit_c.clone() * sib_e[g].clone()
                     } else {
                         let k = g - DIGEST_ELEMS;
-                        (one.clone() - bit_c.clone()) * sib_e[k].clone() + bit_c.clone() * run_e[k].clone()
+                        (one.clone() - bit_c.clone()) * sib_e[k].clone()
+                            + bit_c.clone() * run_e[k].clone()
                     }
                 };
                 eval_node::<AB, _, _>(builder, &cells, lbase + ML_PERM, combined, &consts);
@@ -3557,8 +3856,11 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 }
             }
             // leaf/root binding to public values (leaf = level-0 running, root = last output).
-            let pubs: Vec<AB::Expr> =
-                builder.public_values().iter().map(|p| (*p).into()).collect();
+            let pubs: Vec<AB::Expr> = builder
+                .public_values()
+                .iter()
+                .map(|p| (*p).into())
+                .collect();
             if pubs.len() == N_PUBLIC_MERKLE {
                 let l0 = merkle_level_base(&cfg, 0);
                 for i in 0..DIGEST_ELEMS {
@@ -3661,15 +3963,21 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                     // binding: the path is authenticated at the node the FS index SELECTS for round r.
                     let bit = bits[r + 1 + level].clone();
                     // q128 sponge-mode node: combined = a ‖ b ordered by the FS-shifted node bit.
-                    let run_e: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(lbase + LO_ML_RUNNING + i)).collect();
-                    let sib_e: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(lbase + LO_ML_SIBLING + i)).collect();
+                    let run_e: Vec<AB::Expr> = (0..DIGEST_ELEMS)
+                        .map(|i| l(lbase + LO_ML_RUNNING + i))
+                        .collect();
+                    let sib_e: Vec<AB::Expr> = (0..DIGEST_ELEMS)
+                        .map(|i| l(lbase + LO_ML_SIBLING + i))
+                        .collect();
                     let bit_c = bit.clone();
                     let combined = |g: usize| -> AB::Expr {
                         if g < DIGEST_ELEMS {
-                            (one.clone() - bit_c.clone()) * run_e[g].clone() + bit_c.clone() * sib_e[g].clone()
+                            (one.clone() - bit_c.clone()) * run_e[g].clone()
+                                + bit_c.clone() * sib_e[g].clone()
                         } else {
                             let k = g - DIGEST_ELEMS;
-                            (one.clone() - bit_c.clone()) * sib_e[k].clone() + bit_c.clone() * run_e[k].clone()
+                            (one.clone() - bit_c.clone()) * sib_e[k].clone()
+                                + bit_c.clone() * run_e[k].clone()
                         }
                     };
                     eval_node::<AB, _, _>(builder, &cells, lbase + LO_ML_PERM, combined, &consts);
@@ -3872,7 +4180,8 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 let zeta_next: [AB::Expr; D] =
                     core::array::from_fn(|j| zeta[j].clone() * AB::Expr::from(g));
                 // witnessed inverse inv_next·(zeta_next − x) == 1.
-                let inv_next: [AB::Expr; D] = core::array::from_fn(|j| l(dr + dr_inv_next(&cfg) + j));
+                let inv_next: [AB::Expr; D] =
+                    core::array::from_fn(|j| l(dr + dr_inv_next(&cfg) + j));
                 let mut zn_minus_x = zeta_next;
                 zn_minus_x[0] = zn_minus_x[0].clone() - x.clone();
                 let one_n = octic_mul::<AB>(&inv_next, &zn_minus_x);
@@ -3930,7 +4239,11 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 {
                     // build alpha^{offset} from `alpha` by repeated multiply (offset is a small const).
                     let mut target: [AB::Expr; D] = core::array::from_fn(|j| {
-                        if j == 0 { AB::Expr::ONE } else { AB::Expr::ZERO }
+                        if j == 0 {
+                            AB::Expr::ONE
+                        } else {
+                            AB::Expr::ZERO
+                        }
                     });
                     for _ in 0..cfg.quot_alpha_offset {
                         target = octic_mul::<AB>(&target, &alpha);
@@ -3962,7 +4275,8 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 for c in 0..q {
                     let zc = qzeta(c);
                     let xc = qopened(c);
-                    let diff: [AB::Expr; D] = core::array::from_fn(|j| zc[j].clone() - xc[j].clone());
+                    let diff: [AB::Expr; D] =
+                        core::array::from_fn(|j| zc[j].clone() - xc[j].clone());
                     let term = octic_mul::<AB>(&qapow(c), &diff);
                     for j in 0..D {
                         qnum[j] = qnum[j].clone() + term[j].clone();
@@ -4061,15 +4375,21 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 // selector = bus index bit `level` (the SAME FS index the main-trace path uses).
                 let bit = bits[level].clone();
                 // q128 sponge-mode node: combined = a ‖ b ordered by the bus index bit.
-                let run_e: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(lbase + QO_ML_RUNNING + i)).collect();
-                let sib_e: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(lbase + QO_ML_SIBLING + i)).collect();
+                let run_e: Vec<AB::Expr> = (0..DIGEST_ELEMS)
+                    .map(|i| l(lbase + QO_ML_RUNNING + i))
+                    .collect();
+                let sib_e: Vec<AB::Expr> = (0..DIGEST_ELEMS)
+                    .map(|i| l(lbase + QO_ML_SIBLING + i))
+                    .collect();
                 let bit_c = bit.clone();
                 let combined = |g: usize| -> AB::Expr {
                     if g < DIGEST_ELEMS {
-                        (one.clone() - bit_c.clone()) * run_e[g].clone() + bit_c.clone() * sib_e[g].clone()
+                        (one.clone() - bit_c.clone()) * run_e[g].clone()
+                            + bit_c.clone() * sib_e[g].clone()
                     } else {
                         let k = g - DIGEST_ELEMS;
-                        (one.clone() - bit_c.clone()) * sib_e[k].clone() + bit_c.clone() * run_e[k].clone()
+                        (one.clone() - bit_c.clone()) * sib_e[k].clone()
+                            + bit_c.clone() * run_e[k].clone()
                     }
                 };
                 eval_node::<AB, _, _>(builder, &cells, lbase + QO_ML_PERM, combined, &consts);
@@ -4165,18 +4485,14 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                     );
                     // remaining capacity slots [RATE+1..WIDTH] carried from prior_state.
                     for i in (RATE + 1)..WIDTH {
-                        builder.assert_zero(
-                            l(sb + SP_SPONGE_IN + i) - l(ab + SPA_PRIOR_STATE + i),
-                        );
+                        builder.assert_zero(l(sb + SP_SPONGE_IN + i) - l(ab + SPA_PRIOR_STATE + i));
                     }
                 } else {
                     // n == 0 (squeeze-only permute, empty input buffer): challenger::duplexing
                     // overwrites NO rate lanes and adds NO length tag, so the whole state is carried
                     // from prior_state unchanged. (sponge_in == prior_state.)
                     for i in 0..WIDTH {
-                        builder.assert_zero(
-                            l(sb + SP_SPONGE_IN + i) - l(ab + SPA_PRIOR_STATE + i),
-                        );
+                        builder.assert_zero(l(sb + SP_SPONGE_IN + i) - l(ab + SPA_PRIOR_STATE + i));
                     }
                 }
 
@@ -4210,9 +4526,8 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                             builder.assert_zero(l(inb + i) - l(pb + SPP_BLOCK + i));
                         }
                         // capacity slot RATE == state_{k-1}[RATE] + RATE (length tag, n == RATE).
-                        builder.assert_zero(
-                            l(inb + RATE) - state_prev(k, RATE) - rate_expr.clone(),
-                        );
+                        builder
+                            .assert_zero(l(inb + RATE) - state_prev(k, RATE) - rate_expr.clone());
                         // remaining capacity slots [RATE+1..WIDTH] carried from state_{k-1}.
                         for i in (RATE + 1)..WIDTH {
                             builder.assert_zero(l(inb + i) - state_prev(k, i));
@@ -4230,8 +4545,11 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                     // (a-FS+++) optionally bind each round's absorbed block to the public transcript:
                     // public value (k-1)*RATE + i == block_k[i] (the actual observed commitments + IO).
                     if cfg.prefix_blocks_public {
-                        let pubs: Vec<AB::Expr> =
-                            builder.public_values().iter().map(|p| (*p).into()).collect();
+                        let pubs: Vec<AB::Expr> = builder
+                            .public_values()
+                            .iter()
+                            .map(|p| (*p).into())
+                            .collect();
                         if pubs.len() == rounds * RATE {
                             for k in 1..=rounds {
                                 let pb = sb + prefix_round_base(&cfg, k);
@@ -4349,8 +4667,11 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
             // commitments + public digest, so a forger cannot fix alpha/zeta independent of the
             // statement.
             if cfg.fs_blocks_public {
-                let pubs: Vec<AB::Expr> =
-                    builder.public_values().iter().map(|p| (*p).into()).collect();
+                let pubs: Vec<AB::Expr> = builder
+                    .public_values()
+                    .iter()
+                    .map(|p| (*p).into())
+                    .collect();
                 let total = pre_rounds + 1;
                 if pubs.len() == total * RATE {
                     for r in 0..pre_rounds {
@@ -4360,7 +4681,9 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                         }
                     }
                     for i in 0..RATE {
-                        builder.assert_zero(l(qb + FS_BLOCK + i) - pubs[pre_rounds * RATE + i].clone());
+                        builder.assert_zero(
+                            l(qb + FS_BLOCK + i) - pubs[pre_rounds * RATE + i].clone(),
+                        );
                     }
                 }
             }
@@ -4467,13 +4790,18 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
             // (FS-β) optionally bind each commit-phase round's absorbed block to the PUBLIC transcript:
             // public value r*RATE + i == FS-β round r's block (the actual fold-round commitments).
             if cfg.fs_betas_public {
-                let pubs: Vec<AB::Expr> =
-                    builder.public_values().iter().map(|p| (*p).into()).collect();
+                let pubs: Vec<AB::Expr> = builder
+                    .public_values()
+                    .iter()
+                    .map(|p| (*p).into())
+                    .collect();
                 if pubs.len() == cfg.fs_beta_rounds * DIGEST_ELEMS {
                     for r in 0..cfg.fs_beta_rounds {
                         let rb = fb_round_base(&cfg, r);
                         for i in 0..DIGEST_ELEMS {
-                            builder.assert_zero(l(rb + FB_COMMIT + i) - pubs[r * DIGEST_ELEMS + i].clone());
+                            builder.assert_zero(
+                                l(rb + FB_COMMIT + i) - pubs[r * DIGEST_ELEMS + i].clone(),
+                            );
                         }
                     }
                 }
@@ -4593,7 +4921,8 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                     // single-query: pop = pow_pop_shift (0 with no PoW). The PoW (if any) pops 0; the
                     // index pops 1. pop <= 1 < RATE so it stays within P0's first refill (no extra perm).
                     builder.assert_zero(
-                        l(C_DRAW_OUT) - l(last_fq + FQ_PERM + C_OUTPUT + (RATE - 1 - pow_pop_shift)),
+                        l(C_DRAW_OUT)
+                            - l(last_fq + FQ_PERM + C_OUTPUT + (RATE - 1 - pow_pop_shift)),
                     );
                 }
 
@@ -4625,8 +4954,11 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 // (FS-qi) optionally bind each post-beta observe block to the PUBLIC transcript:
                 // public value r*RATE + i == FS-qi round r's block (final_poly ‖ log_arities ‖ PoW).
                 if cfg.fs_final_blocks_public {
-                    let pubs: Vec<AB::Expr> =
-                        builder.public_values().iter().map(|p| (*p).into()).collect();
+                    let pubs: Vec<AB::Expr> = builder
+                        .public_values()
+                        .iter()
+                        .map(|p| (*p).into())
+                        .collect();
                     if pubs.len() == cfg.fs_final_blocks * RATE {
                         for r in 0..cfg.fs_final_blocks {
                             let rb = fq_round_base(&cfg, r);
@@ -4919,11 +5251,19 @@ mod tests {
             // distinct member: a small Merkle tree opened at index 0.
             let cfg = cfg_merkle(levels);
             let n = 1usize << levels;
-            let leaves: Vec<Digest> = (0..n as u32).map(|x| digest(x + member * 1000 + 1)).collect();
+            let leaves: Vec<Digest> = (0..n as u32)
+                .map(|x| digest(x + member * 1000 + 1))
+                .collect();
             let tree = RefTree::new(leaves.clone());
             let index = 0usize;
             let root = tree.root();
-            let win = merkle_window(&cfg, Val::from_u32(index as u32), &tree, leaves[index], index);
+            let win = merkle_window(
+                &cfg,
+                Val::from_u32(index as u32),
+                &tree,
+                leaves[index],
+                index,
+            );
             let ncols = n_cols(&cfg);
             let mut flat = win.clone();
             flat.extend_from_slice(&win);
@@ -4983,7 +5323,10 @@ mod tests {
                 let row = pack_window(&cfg, &WindowInputs::single(d, ext(1), ext(2), ext(3)));
                 let index = (raw & ((1 << h) - 1)) as usize;
                 let expected = fold_point(h, index);
-                assert_eq!(row[C_S], expected, "tower s != fold_point at h={h}, raw={raw:#x}");
+                assert_eq!(
+                    row[C_S], expected,
+                    "tower s != fold_point at h={h}, raw={raw:#x}"
+                );
                 assert_eq!(row[sp_col(h)], expected, "sp[h] != fold_point");
                 let g = Val::two_adic_generator(h + 1);
                 assert_eq!(expected, g.exp_u64(reverse_bits_len(index, h) as u64));
@@ -4999,18 +5342,36 @@ mod tests {
                 .enumerate()
                 .map(|(k, &raw)| {
                     let kk = k as u32;
-                    (Val::from_u32(raw), ext_multi(10 + kk), ext_multi(40 + kk), ext_multi(70 + kk))
+                    (
+                        Val::from_u32(raw),
+                        ext_multi(10 + kk),
+                        ext_multi(40 + kk),
+                        ext_multi(70 + kk),
+                    )
                 })
                 .collect();
-            let report = check_all_constraints(&air(cfg_single(h)), &matrix_single(&queries, h), &[], None);
-            assert!(report.is_ok(), "honest windows rejected at h={h}: {} failures", report.failures.len());
+            let report =
+                check_all_constraints(&air(cfg_single(h)), &matrix_single(&queries, h), &[], None);
+            assert!(
+                report.is_ok(),
+                "honest windows rejected at h={h}: {} failures",
+                report.failures.len()
+            );
         }
     }
 
     #[test]
     fn air_rejects_forged_index() {
         let h = 12;
-        let mut m = matrix_single(&[(Val::from_u32(0xABCDE), ext_multi(1), ext_multi(2), ext_multi(3))], h);
+        let mut m = matrix_single(
+            &[(
+                Val::from_u32(0xABCDE),
+                ext_multi(1),
+                ext_multi(2),
+                ext_multi(3),
+            )],
+            h,
+        );
         m.values[C_INDEX] += Val::ONE;
         assert!(!check_all_constraints(&air(cfg_single(h)), &m, &[], None).is_ok());
     }
@@ -5025,7 +5386,10 @@ mod tests {
         let s_forged = fold_point(h, forged_index);
         assert_ne!(fold_point(h, honest_index), s_forged);
         let cfg = cfg_single(h);
-        let mut row = pack_window(&cfg, &WindowInputs::single(draw, ext_multi(4), ext_multi(5), ext_multi(6)));
+        let mut row = pack_window(
+            &cfg,
+            &WindowInputs::single(draw, ext_multi(4), ext_multi(5), ext_multi(6)),
+        );
         row[C_S] = s_forged;
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         assert!(!check_all_constraints(&air(cfg), &m, &[], None).is_ok());
@@ -5035,7 +5399,15 @@ mod tests {
     fn air_rejects_tampered_tower() {
         let h = 12;
         let cfg = cfg_single(h);
-        let mut row = pack_window(&cfg, &WindowInputs::single(Val::from_u32(0x55555), ext_multi(7), ext_multi(8), ext_multi(9)));
+        let mut row = pack_window(
+            &cfg,
+            &WindowInputs::single(
+                Val::from_u32(0x55555),
+                ext_multi(7),
+                ext_multi(8),
+                ext_multi(9),
+            ),
+        );
         row[sp_col(6)] += Val::ONE;
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         assert!(!check_all_constraints(&air(cfg), &m, &[], None).is_ok());
@@ -5046,7 +5418,10 @@ mod tests {
         let h = 8;
         let draw = Val::from_u32(0xABCD0);
         let cfg = cfg_single(h);
-        let mut row = pack_window(&cfg, &WindowInputs::single(draw, ext_multi(1), ext_multi(2), ext_multi(3)));
+        let mut row = pack_window(
+            &cfg,
+            &WindowInputs::single(draw, ext_multi(1), ext_multi(2), ext_multi(3)),
+        );
         row[C_BITS + 0] = Val::ONE;
         row[C_DRAW_OUT] += Val::ONE;
         row[C_INDEX] += Val::ONE;
@@ -5057,7 +5432,15 @@ mod tests {
     #[test]
     fn air_rejects_tampered_eval() {
         let h = 12;
-        let mut m = matrix_single(&[(Val::from_u32(0x1234), ext_multi(11), ext_multi(12), ext_multi(13))], h);
+        let mut m = matrix_single(
+            &[(
+                Val::from_u32(0x1234),
+                ext_multi(11),
+                ext_multi(12),
+                ext_multi(13),
+            )],
+            h,
+        );
         m.values[C_E0 + 2] += Val::ONE;
         assert!(!check_all_constraints(&air(cfg_single(h)), &m, &[], None).is_ok());
     }
@@ -5065,7 +5448,15 @@ mod tests {
     #[test]
     fn air_rejects_wrong_folded() {
         let h = 8;
-        let mut m = matrix_single(&[(Val::from_u32(0x9999), ext_multi(14), ext_multi(15), ext_multi(16))], h);
+        let mut m = matrix_single(
+            &[(
+                Val::from_u32(0x9999),
+                ext_multi(14),
+                ext_multi(15),
+                ext_multi(16),
+            )],
+            h,
+        );
         m.values[C_FOLDED + 1] += Val::ONE;
         assert!(!check_all_constraints(&air(cfg_single(h)), &m, &[], None).is_ok());
     }
@@ -5073,7 +5464,15 @@ mod tests {
     #[test]
     fn air_rejects_tampered_beta() {
         let h = 12;
-        let mut m = matrix_single(&[(Val::from_u32(0x4242), ext_multi(17), ext_multi(18), ext_multi(19))], h);
+        let mut m = matrix_single(
+            &[(
+                Val::from_u32(0x4242),
+                ext_multi(17),
+                ext_multi(18),
+                ext_multi(19),
+            )],
+            h,
+        );
         m.values[C_BETA + 4] += Val::ONE;
         assert!(!check_all_constraints(&air(cfg_single(h)), &m, &[], None).is_ok());
     }
@@ -5106,11 +5505,21 @@ mod tests {
         let h = 12;
         let queries: Vec<_> = (0..8u32)
             .map(|q| {
-                (Val::from_u32(0x40000 + q * 0x1111), ext_multi(100 + q), ext_multi(200 + q), ext_multi(300 + q))
+                (
+                    Val::from_u32(0x40000 + q * 0x1111),
+                    ext_multi(100 + q),
+                    ext_multi(200 + q),
+                    ext_multi(300 + q),
+                )
             })
             .collect();
-        let report = check_all_constraints(&air(cfg_single(h)), &matrix_single(&queries, h), &[], None);
-        assert!(report.is_ok(), "honest multi-row recursive_air trace rejected: {} failures", report.failures.len());
+        let report =
+            check_all_constraints(&air(cfg_single(h)), &matrix_single(&queries, h), &[], None);
+        assert!(
+            report.is_ok(),
+            "honest multi-row recursive_air trace rejected: {} failures",
+            report.failures.len()
+        );
     }
 
     // ---------------------------------------------------------------------------------
@@ -5118,7 +5527,9 @@ mod tests {
     // ---------------------------------------------------------------------------------
 
     fn digest(seed: u32) -> Digest {
-        core::array::from_fn(|i| Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32)))
+        core::array::from_fn(|i| {
+            Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32))
+        })
     }
 
     /// Reference binary Merkle tree built with the deployed compression (mirror of merkle_air).
@@ -5130,8 +5541,10 @@ mod tests {
             let c = compressor();
             let mut levels = vec![leaves.clone()];
             while leaves.len() > 1 {
-                let next: Vec<Digest> =
-                    leaves.chunks_exact(2).map(|p| c.compress([p[0], p[1]])).collect();
+                let next: Vec<Digest> = leaves
+                    .chunks_exact(2)
+                    .map(|p| c.compress([p[0], p[1]]))
+                    .collect();
                 levels.push(next.clone());
                 leaves = next;
             }
@@ -5161,12 +5574,21 @@ mod tests {
     /// Config with a Merkle block of `levels` levels at log-height = levels (so the bus index has
     /// exactly the bits the path consumes, and the leaf-layer fold point uses the same index).
     fn cfg_merkle(levels: usize) -> RecursiveConfig {
-        RecursiveConfig { merkle_levels: levels, ..RecursiveConfig::single_window(levels) }
+        RecursiveConfig {
+            merkle_levels: levels,
+            ..RecursiveConfig::single_window(levels)
+        }
     }
 
     /// Build a Merkle-augmented window for the query whose index is `draw`'s low `levels` bits,
     /// opening leaf `leaf` in `tree`.
-    fn merkle_window(cfg: &RecursiveConfig, draw: Val, tree: &RefTree, leaf: Digest, index: usize) -> Vec<Val> {
+    fn merkle_window(
+        cfg: &RecursiveConfig,
+        draw: Val,
+        tree: &RefTree,
+        leaf: Digest,
+        index: usize,
+    ) -> Vec<Val> {
         let sibs = tree.auth_path(index);
         let inp = WindowInputs {
             draw_out: draw,
@@ -5181,17 +5603,36 @@ mod tests {
             deep_alpha: Challenge::ZERO,
             fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH],
-            prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: &[],
-            fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            fs_beta_blocks: &[],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -5213,7 +5654,11 @@ mod tests {
             let row = merkle_window(&cfg, draw, &tree, leaves[index], index);
             let m = RowMajorMatrix::new(row, n_cols(&cfg));
             let report = check_all_constraints(&air(cfg), &m, &pubs(leaves[index], root), None);
-            assert!(report.is_ok(), "honest bus-bound Merkle path rejected (raw={raw:#x}): {} failures", report.failures.len());
+            assert!(
+                report.is_ok(),
+                "honest bus-bound Merkle path rejected (raw={raw:#x}): {} failures",
+                report.failures.len()
+            );
         }
     }
 
@@ -5242,19 +5687,47 @@ mod tests {
         let sibs = tree.auth_path(forged_index);
         let inp = WindowInputs {
             draw_out: forged_draw,
-            e0: ext_multi(1), e1: ext_multi(2), beta: ext_multi(3),
+            e0: ext_multi(1),
+            e1: ext_multi(2),
+            beta: ext_multi(3),
             descent: &[],
             merkle_leaf: leaves[forged_index],
             merkle_siblings: &sibs,
-            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            deep_zeta: Challenge::ZERO,
+            deep_q: Challenge::ZERO,
+            deep_alpha: Challenge::ZERO,
+            fs_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
+            public_io: &[],
+            fs_beta_blocks: &[],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         let mut row = pack_window(&cfg, &inp);
         // CONTROL: the FORGED Merkle blocks are internally valid — with a MATCHING forged bus
@@ -5268,20 +5741,53 @@ mod tests {
         );
         // Now overwrite the bus block (draw_out/bits/index/tower/fold) with the HONEST query. The
         // Merkle perm placements remain for forged_index; bits[level] now say honest_index.
-        let honest = pack_window(&cfg, &WindowInputs {
-            draw_out: draw, e0: ext_multi(1), e1: ext_multi(2), beta: ext_multi(3),
-            descent: &[], merkle_leaf: leaves[honest_index],
-            merkle_siblings: &tree.auth_path(honest_index),
-            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
-        });
+        let honest = pack_window(
+            &cfg,
+            &WindowInputs {
+                draw_out: draw,
+                e0: ext_multi(1),
+                e1: ext_multi(2),
+                beta: ext_multi(3),
+                descent: &[],
+                merkle_leaf: leaves[honest_index],
+                merkle_siblings: &tree.auth_path(honest_index),
+                deep_zeta: Challenge::ZERO,
+                deep_q: Challenge::ZERO,
+                deep_alpha: Challenge::ZERO,
+                fs_blocks: &[],
+                sponge_in: [Val::ZERO; WIDTH],
+                prior_state: [Val::ZERO; WIDTH],
+                absorbed: [Val::ZERO; RATE],
+                prefix_blocks: &[],
+                public_io: &[],
+                fs_beta_blocks: &[],
+                fs_ood_blocks: &[],
+                fs_ood_partial_block: [Val::ZERO; RATE],
+                fs_final_blocks: &[],
+                fs_final_partial_block: [Val::ZERO; RATE],
+                inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+                layer_opens: &[],
+                final_poly_x: Val::ZERO,
+                final_poly_coeffs: &[],
+                leaf_row: &[],
+                leaf_salt: [Val::ZERO; SALT_ELEMS],
+                dr_value_at_zeta: &[],
+                dr_value_at_zeta_next: &[],
+                dr_x: Val::ZERO,
+                lc_value_at_zeta: &[],
+                lc_c_committed: Challenge::ZERO,
+                sc_value_at_zeta: &[],
+                sc_public_values: &[],
+                sc_c_committed: Challenge::ZERO,
+                quot_commit: [Val::ZERO; DIGEST_ELEMS],
+                quot_opened_at_x: &[],
+                quot_at_zeta: &[],
+                quot_zps: &[],
+                quot_salt: [Val::ZERO; SALT_ELEMS],
+                quot_x: Val::ZERO,
+                quot_siblings: &[],
+            },
+        );
         for c in C_DRAW_OUT..tower_end(levels) {
             row[c] = honest[c];
         }
@@ -5343,7 +5849,9 @@ mod tests {
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         let mut bad_root = tree.root();
         bad_root[0] += Val::ONE;
-        assert!(!check_all_constraints(&air(cfg), &m, &pubs(leaves[index], bad_root), None).is_ok());
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &pubs(leaves[index], bad_root), None).is_ok()
+        );
     }
 
     // ---------------------------------------------------------------------------------
@@ -5394,16 +5902,31 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[],
-            fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
-            fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: main_commit,
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -5538,14 +6061,8 @@ mod tests {
         );
         // Overwrite the bus block (draw_out/bits/index/tower/fold) with the HONEST query: now
         // bits[level] say honest_index but the Merkle perm placements are for forged_index.
-        let honest = merkle_window_root_bound(
-            &cfg,
-            draw,
-            &tree,
-            leaves[honest_index],
-            honest_index,
-            root,
-        );
+        let honest =
+            merkle_window_root_bound(&cfg, draw, &tree, leaves[honest_index], honest_index, root);
         for c in C_DRAW_OUT..tower_end(levels) {
             row[c] = honest[c];
         }
@@ -5584,7 +6101,8 @@ mod tests {
         // These const params (`16,8,8` / `2,8,16`) are byte-identical to `config::MyHash`/`MyCompress`
         // (cross-checked: account-stark `config.rs` declares the same aliases over the same `Perm`).
         type LeafHash = PaddingFreeSponge<Perm, 16, 7, DIGEST_ELEMS>;
-        type NodeCompress = descender_account_stark::sponge_compression::SpongeCompression<LeafHash>;
+        type NodeCompress =
+            descender_account_stark::sponge_compression::SpongeCompression<LeafHash>;
         let perm: Perm = default_koalabear_poseidon2_16();
         let hash = LeafHash::new(perm.clone());
         let compress = NodeCompress::new(LeafHash::new(perm.clone()));
@@ -5594,12 +6112,18 @@ mod tests {
         let levels = 4usize;
         let n = 1usize << levels; // power-of-two height ⇒ clean binary tree, one binary level/depth.
         let width = 5usize; // a small main-trace-shaped row width.
-        // Deterministic single committed matrix (one PCS round = the main trace).
-        let vals: Vec<Val> = (0..(n * width) as u32).map(|x| Val::from_u32(x.wrapping_mul(2_654_435_761))).collect();
+                            // Deterministic single committed matrix (one PCS round = the main trace).
+        let vals: Vec<Val> = (0..(n * width) as u32)
+            .map(|x| Val::from_u32(x.wrapping_mul(2_654_435_761)))
+            .collect();
         let matrix = RowMajorMatrix::new(vals, width);
         let (commit, prover_data) = mmcs.commit(vec![matrix.clone()]);
         // cap_height 0 ⇒ the cap has exactly ONE root: the inner main-trace Merkle root.
-        assert_eq!(commit.num_roots(), 1, "cap_height 0 must yield a single root");
+        assert_eq!(
+            commit.num_roots(),
+            1,
+            "cap_height 0 must yield a single root"
+        );
         let inner_main_commit: Digest = commit.roots()[0];
 
         let cfg = cfg_merkle_root_bound(levels);
@@ -5648,16 +6172,31 @@ mod tests {
                     prefix_blocks: &[],
                     public_io: &[],
                     fs_beta_blocks: &[],
-                    fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
-                    fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
+                    fs_ood_blocks: &[],
+                    fs_ood_partial_block: [Val::ZERO; RATE],
+                    fs_final_blocks: &[],
+                    fs_final_partial_block: [Val::ZERO; RATE],
                     inner_main_commit: commit,
-                    layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-                    leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
-                    dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+                    layer_opens: &[],
+                    final_poly_x: Val::ZERO,
+                    final_poly_coeffs: &[],
+                    leaf_row: &[],
+                    leaf_salt: [Val::ZERO; SALT_ELEMS],
+                    dr_value_at_zeta: &[],
+                    dr_value_at_zeta_next: &[],
+                    dr_x: Val::ZERO,
+                    lc_value_at_zeta: &[],
+                    lc_c_committed: Challenge::ZERO,
+                    sc_value_at_zeta: &[],
+                    sc_public_values: &[],
+                    sc_c_committed: Challenge::ZERO,
+                    quot_commit: [Val::ZERO; DIGEST_ELEMS],
+                    quot_opened_at_x: &[],
+                    quot_at_zeta: &[],
+                    quot_zps: &[],
+                    quot_salt: [Val::ZERO; SALT_ELEMS],
+                    quot_x: Val::ZERO,
+                    quot_siblings: &[],
                 };
                 pack_window(&cfg, &inp)
             };
@@ -5669,7 +6208,8 @@ mod tests {
                 "in-AIR fold root != real MMCS commitment at index {index} — node-fold fidelity broken"
             );
             let m = RowMajorMatrix::new(row, n_cols(&cfg));
-            let report = check_all_constraints(&air(cfg), &m, &pubs(leaf_digest, inner_main_commit), None);
+            let report =
+                check_all_constraints(&air(cfg), &m, &pubs(leaf_digest, inner_main_commit), None);
             assert!(
                 report.is_ok(),
                 "real-MMCS opening rejected in-AIR at index {index}: {} failures",
@@ -5681,7 +6221,8 @@ mod tests {
             let bad_row = build(bad_commit);
             let bm = RowMajorMatrix::new(bad_row, n_cols(&cfg));
             assert!(
-                !check_all_constraints(&air(cfg), &bm, &pubs(leaf_digest, bad_commit), None).is_ok(),
+                !check_all_constraints(&air(cfg), &bm, &pubs(leaf_digest, bad_commit), None)
+                    .is_ok(),
                 "a corrupted inner main-trace commitment was accepted at index {index}"
             );
         }
@@ -5692,7 +6233,10 @@ mod tests {
     // ---------------------------------------------------------------------------------
 
     fn cfg_beta_bound(h: usize) -> RecursiveConfig {
-        RecursiveConfig { bind_beta_to_draws: true, ..RecursiveConfig::single_window(h) }
+        RecursiveConfig {
+            bind_beta_to_draws: true,
+            ..RecursiveConfig::single_window(h)
+        }
     }
 
     /// GOLDEN: an honest window with `beta` bound to its challenger-draw columns ACCEPTS.
@@ -5700,10 +6244,18 @@ mod tests {
     fn air_accepts_beta_bound_to_draws() {
         let h = 10;
         let cfg = cfg_beta_bound(h);
-        let inp = WindowInputs::single(Val::from_u32(0xABCDE), ext_multi(11), ext_multi(12), ext_multi(13));
+        let inp = WindowInputs::single(
+            Val::from_u32(0xABCDE),
+            ext_multi(11),
+            ext_multi(12),
+            ext_multi(13),
+        );
         let row = pack_window(&cfg, &inp);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
-        assert!(check_all_constraints(&air(cfg), &m, &[], None).is_ok(), "honest beta-draw-bound window rejected");
+        assert!(
+            check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "honest beta-draw-bound window rejected"
+        );
     }
 
     /// (b) FORGERY — a forged beta NOT equal to the challenger draw: swap the beta limbs to a
@@ -5733,7 +6285,13 @@ mod tests {
         let dbase = draw_block_base(&cfg);
         control[dbase..dbase + D].copy_from_slice(&limbs(forged_beta));
         assert!(
-            check_all_constraints(&air(cfg), &RowMajorMatrix::new(control, n_cols(&cfg)), &[], None).is_ok(),
+            check_all_constraints(
+                &air(cfg),
+                &RowMajorMatrix::new(control, n_cols(&cfg)),
+                &[],
+                None
+            )
+            .is_ok(),
             "forged-beta control (draw == beta) should accept — test would prove nothing otherwise"
         );
         // draw columns still carry honest_beta ⇒ (b) equality fails.
@@ -5750,7 +6308,12 @@ mod tests {
     fn air_rejects_tampered_beta_draw_column() {
         let h = 10;
         let cfg = cfg_beta_bound(h);
-        let inp = WindowInputs::single(Val::from_u32(0x12345), ext_multi(21), ext_multi(22), ext_multi(23));
+        let inp = WindowInputs::single(
+            Val::from_u32(0x12345),
+            ext_multi(21),
+            ext_multi(22),
+            ext_multi(23),
+        );
         let mut row = pack_window(&cfg, &inp);
         let dbase = draw_block_base(&cfg);
         row[dbase + 2] += Val::ONE; // corrupt a draw limb
@@ -5763,7 +6326,10 @@ mod tests {
     // ---------------------------------------------------------------------------------
 
     fn cfg_descent(h: usize, rounds: usize) -> RecursiveConfig {
-        RecursiveConfig { num_rounds: rounds, ..RecursiveConfig::single_window(h) }
+        RecursiveConfig {
+            num_rounds: rounds,
+            ..RecursiveConfig::single_window(h)
+        }
     }
 
     /// Honest descent inputs: fold a degree-`2^rounds` poly through `rounds` commit-phase folds,
@@ -5810,19 +6376,47 @@ mod tests {
         let (e0_0, e1_0, beta0, descent) = honest_descent(&coeffs, &betas, h0, index);
         let inp = WindowInputs {
             draw_out: index_draw,
-            e0: e0_0, e1: e1_0, beta: beta0,
+            e0: e0_0,
+            e1: e1_0,
+            beta: beta0,
             descent: &descent,
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
-            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            deep_zeta: Challenge::ZERO,
+            deep_q: Challenge::ZERO,
+            deep_alpha: Challenge::ZERO,
+            fs_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
+            public_io: &[],
+            fs_beta_blocks: &[],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -5837,7 +6431,11 @@ mod tests {
             let row = descent_window(&cfg, h0, Val::from_u32(0xABCDE));
             let m = RowMajorMatrix::new(row, n_cols(&cfg));
             let report = check_all_constraints(&air(cfg), &m, &[], None);
-            assert!(report.is_ok(), "honest {rounds}-round descent rejected: {} failures", report.failures.len());
+            assert!(
+                report.is_ok(),
+                "honest {rounds}-round descent rejected: {} failures",
+                report.failures.len()
+            );
         }
     }
 
@@ -5931,19 +6529,47 @@ mod tests {
     fn deep_window(cfg: &RecursiveConfig, draw: Val, zeta: Challenge, q: Challenge) -> Vec<Val> {
         let inp = WindowInputs {
             draw_out: draw,
-            e0: ext_multi(1), e1: ext_multi(2), beta: ext_multi(3),
+            e0: ext_multi(1),
+            e1: ext_multi(2),
+            beta: ext_multi(3),
             descent: &[],
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
-            deep_zeta: zeta, deep_q: q, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            deep_zeta: zeta,
+            deep_q: q,
+            deep_alpha: Challenge::ZERO,
+            fs_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
+            public_io: &[],
+            fs_beta_blocks: &[],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -5956,7 +6582,10 @@ mod tests {
             let cfg = cfg_deep(h, k, true);
             let row = deep_window(&cfg, Val::from_u32(0xABCDE), ext_multi(55), ext_multi(66));
             let m = RowMajorMatrix::new(row, n_cols(&cfg));
-            assert!(check_all_constraints(&air(cfg), &m, &[], None).is_ok(), "honest DEEP OOD (k={k}) rejected");
+            assert!(
+                check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+                "honest DEEP OOD (k={k}) rejected"
+            );
         }
     }
 
@@ -6059,24 +6688,56 @@ mod tests {
         let sibs = tree.auth_path(index);
         let inp = WindowInputs {
             draw_out: draw,
-            e0: e0_0, e1: e1_0, beta: beta0,
+            e0: e0_0,
+            e1: e1_0,
+            beta: beta0,
             descent: &descent,
             merkle_leaf: leaves[index],
             merkle_siblings: &sibs,
-            deep_zeta: ext_multi(55), deep_q: ext_multi(66), deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            deep_zeta: ext_multi(55),
+            deep_q: ext_multi(66),
+            deep_alpha: Challenge::ZERO,
+            fs_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
+            public_io: &[],
+            fs_beta_blocks: &[],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         let row = pack_window(&cfg, &inp);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         let report = check_all_constraints(&air(cfg), &m, &pubs(leaves[index], root), None);
-        assert!(report.is_ok(), "full monolith window rejected: {} failures", report.failures.len());
+        assert!(
+            report.is_ok(),
+            "full monolith window rejected: {} failures",
+            report.failures.len()
+        );
     }
 
     // ---------------------------------------------------------------------------------
@@ -6084,37 +6745,67 @@ mod tests {
     // ---------------------------------------------------------------------------------
 
     fn cfg_sponge(h: usize) -> RecursiveConfig {
-        RecursiveConfig { inline_sponge_draw: true, ..RecursiveConfig::single_window(h) }
+        RecursiveConfig {
+            inline_sponge_draw: true,
+            ..RecursiveConfig::single_window(h)
+        }
     }
 
     /// A representative pre-squeeze sponge state (16 lanes) — stands in for the absorbed-transcript
     /// boundary (the absorb chain producing it is the DEFERRED full-transcript piece).
     fn sponge_state(seed: u32) -> [Val; WIDTH] {
         core::array::from_fn(|i| {
-            Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32 * 1009 + 1))
+            Val::from_u32(
+                seed.wrapping_mul(2654435761)
+                    .wrapping_add(i as u32 * 1009 + 1),
+            )
         })
     }
 
     fn sponge_window(cfg: &RecursiveConfig, sponge_in: [Val; WIDTH]) -> Vec<Val> {
         let inp = WindowInputs {
             draw_out: Val::ZERO, // ignored — derived from sponge_in
-            e0: ext_multi(1), e1: ext_multi(2), beta: ext_multi(3),
+            e0: ext_multi(1),
+            e1: ext_multi(2),
+            beta: ext_multi(3),
             descent: &[],
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
-            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
+            deep_zeta: Challenge::ZERO,
+            deep_q: Challenge::ZERO,
+            deep_alpha: Challenge::ZERO,
+            fs_blocks: &[],
             sponge_in,
-            prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: &[],
-            fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            fs_beta_blocks: &[],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -6131,10 +6822,18 @@ mod tests {
                 let sin = sponge_state(seed);
                 let row = sponge_window(&cfg, sin);
                 // the draw_out column IS the squeeze pop.
-                assert_eq!(row[C_DRAW_OUT], squeeze_draw(sin), "draw_out != squeeze pop (seed {seed:#x})");
+                assert_eq!(
+                    row[C_DRAW_OUT],
+                    squeeze_draw(sin),
+                    "draw_out != squeeze pop (seed {seed:#x})"
+                );
                 let m = RowMajorMatrix::new(row, n_cols(&cfg));
                 let report = check_all_constraints(&air(cfg), &m, &[], None);
-                assert!(report.is_ok(), "honest inlined-sponge window rejected (h={h}, seed={seed:#x}): {} failures", report.failures.len());
+                assert!(
+                    report.is_ok(),
+                    "honest inlined-sponge window rejected (h={h}, seed={seed:#x}): {} failures",
+                    report.failures.len()
+                );
             }
         }
     }
@@ -6158,16 +6857,28 @@ mod tests {
         // (bits/index/tower/fold all derived from forged_draw) ⇒ accepts. So nothing in the bus
         // machinery rejects forged_draw on its own.
         let cfg_off = RecursiveConfig::single_window(h);
-        let control = pack_window(&cfg_off, &WindowInputs::single(forged_draw, ext_multi(1), ext_multi(2), ext_multi(3)));
+        let control = pack_window(
+            &cfg_off,
+            &WindowInputs::single(forged_draw, ext_multi(1), ext_multi(2), ext_multi(3)),
+        );
         assert!(
-            check_all_constraints(&air(cfg_off), &RowMajorMatrix::new(control, n_cols(&cfg_off)), &[], None).is_ok(),
+            check_all_constraints(
+                &air(cfg_off),
+                &RowMajorMatrix::new(control, n_cols(&cfg_off)),
+                &[],
+                None
+            )
+            .is_ok(),
             "forged-draw control (sponge off) should accept — test would prove nothing otherwise"
         );
 
         // Now: honest sponge block, but overwrite the bus (draw_out/bits/index/tower/fold) with the
         // forged-draw bus. The sponge still squeezes honest_draw ⇒ (a-FS) draw==squeeze rejects.
         let mut row = sponge_window(&cfg, sin);
-        let forged_bus = pack_window(&cfg_off, &WindowInputs::single(forged_draw, ext_multi(1), ext_multi(2), ext_multi(3)));
+        let forged_bus = pack_window(
+            &cfg_off,
+            &WindowInputs::single(forged_draw, ext_multi(1), ext_multi(2), ext_multi(3)),
+        );
         for c in C_DRAW_OUT..tower_end(h) {
             row[c] = forged_bus[c];
         }
@@ -6231,7 +6942,11 @@ mod tests {
     // ---------------------------------------------------------------------------------
 
     fn cfg_sponge_draws(h: usize, draws: usize) -> RecursiveConfig {
-        RecursiveConfig { inline_sponge_draw: true, sponge_draws: draws, ..RecursiveConfig::single_window(h) }
+        RecursiveConfig {
+            inline_sponge_draw: true,
+            sponge_draws: draws,
+            ..RecursiveConfig::single_window(h)
+        }
     }
 
     /// GOLDEN: with `sponge_draws` successive draws bound to the SAME squeeze permute, the index
@@ -6250,11 +6965,19 @@ mod tests {
                 assert_eq!(row[C_DRAW_OUT], want[0], "index draw != squeeze draw 0");
                 let sb = sponge_base(&cfg);
                 for d in 1..draws {
-                    assert_eq!(row[sb + SP_EXTRA_DRAWS + (d - 1)], want[d], "extra draw {d} mismatch");
+                    assert_eq!(
+                        row[sb + SP_EXTRA_DRAWS + (d - 1)],
+                        want[d],
+                        "extra draw {d} mismatch"
+                    );
                 }
                 let m = RowMajorMatrix::new(row, n_cols(&cfg));
                 let report = check_all_constraints(&air(cfg), &m, &[], None);
-                assert!(report.is_ok(), "honest multi-draw ({draws}, seed {seed:#x}) rejected: {} failures", report.failures.len());
+                assert!(
+                    report.is_ok(),
+                    "honest multi-draw ({draws}, seed {seed:#x}) rejected: {} failures",
+                    report.failures.len()
+                );
             }
         }
     }
@@ -6271,7 +6994,13 @@ mod tests {
         let sin = sponge_state(101);
         let honest = sponge_window(&cfg, sin);
         assert!(
-            check_all_constraints(&air(cfg), &RowMajorMatrix::new(honest.clone(), n_cols(&cfg)), &[], None).is_ok(),
+            check_all_constraints(
+                &air(cfg),
+                &RowMajorMatrix::new(honest.clone(), n_cols(&cfg)),
+                &[],
+                None
+            )
+            .is_ok(),
             "honest multi-draw control should accept — test would prove nothing otherwise"
         );
         let sb = sponge_base(&cfg);
@@ -6325,27 +7054,54 @@ mod tests {
 
     /// Build an absorb-fed sponge window: sponge_in is DERIVED from (prior_state, absorbed, n) by
     /// the honest builder; the index draw is the squeeze of that derived state.
-    fn absorb_window(cfg: &RecursiveConfig, prior_state: [Val; WIDTH], absorbed: [Val; RATE]) -> Vec<Val> {
+    fn absorb_window(
+        cfg: &RecursiveConfig,
+        prior_state: [Val; WIDTH],
+        absorbed: [Val; RATE],
+    ) -> Vec<Val> {
         let inp = WindowInputs {
             draw_out: Val::ZERO, // derived
-            e0: ext_multi(1), e1: ext_multi(2), beta: ext_multi(3),
+            e0: ext_multi(1),
+            e1: ext_multi(2),
+            beta: ext_multi(3),
             descent: &[],
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
-            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
+            deep_zeta: Challenge::ZERO,
+            deep_q: Challenge::ZERO,
+            deep_alpha: Challenge::ZERO,
+            fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], // ignored — derived from absorb
             prior_state,
             absorbed,
             prefix_blocks: &[],
             public_io: &[],
-            fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            fs_beta_blocks: &[],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -6372,12 +7128,24 @@ mod tests {
                 let sb = sponge_base(&cfg);
                 let want_sin = absorb_state(prior, absorbed, n);
                 for i in 0..WIDTH {
-                    assert_eq!(row[sb + SP_SPONGE_IN + i], want_sin[i], "sponge_in lane {i} != absorb (n={n})");
+                    assert_eq!(
+                        row[sb + SP_SPONGE_IN + i],
+                        want_sin[i],
+                        "sponge_in lane {i} != absorb (n={n})"
+                    );
                 }
-                assert_eq!(row[C_DRAW_OUT], squeeze_draw(want_sin), "index draw != squeeze of absorbed state");
+                assert_eq!(
+                    row[C_DRAW_OUT],
+                    squeeze_draw(want_sin),
+                    "index draw != squeeze of absorbed state"
+                );
                 let m = RowMajorMatrix::new(row, n_cols(&cfg));
                 let report = check_all_constraints(&air(cfg), &m, &[], None);
-                assert!(report.is_ok(), "honest absorb-fed sponge (n={n}, h={h}) rejected: {} failures", report.failures.len());
+                assert!(
+                    report.is_ok(),
+                    "honest absorb-fed sponge (n={n}, h={h}) rejected: {} failures",
+                    report.failures.len()
+                );
             }
         }
     }
@@ -6446,7 +7214,10 @@ mod tests {
         // re-derive the whole bus (draw_out/bits/index/tower/fold) for the forged squeeze draw, so
         // the only constraint that can object is the absorb-derivation (length tag), not the bus.
         let forged_draw = forged_perm[C_OUTPUT + (RATE - 1)];
-        let forged_bus = pack_window(&cfg_off, &WindowInputs::single(forged_draw, ext_multi(1), ext_multi(2), ext_multi(3)));
+        let forged_bus = pack_window(
+            &cfg_off,
+            &WindowInputs::single(forged_draw, ext_multi(1), ext_multi(2), ext_multi(3)),
+        );
         for c in C_DRAW_OUT..tower_end(h) {
             row[c] = forged_bus[c];
         }
@@ -6480,7 +7251,10 @@ mod tests {
         row[sb + SP_SPONGE_IN..sb + SP_SPONGE_IN + WIDTH].copy_from_slice(&tampered_sin);
         row[sb + SP_PERM..sb + SP_PERM + PERM_COLS].copy_from_slice(&perm);
         let forged_draw = perm[C_OUTPUT + (RATE - 1)];
-        let forged_bus = pack_window(&RecursiveConfig::single_window(h), &WindowInputs::single(forged_draw, ext_multi(1), ext_multi(2), ext_multi(3)));
+        let forged_bus = pack_window(
+            &RecursiveConfig::single_window(h),
+            &WindowInputs::single(forged_draw, ext_multi(1), ext_multi(2), ext_multi(3)),
+        );
         for c in C_DRAW_OUT..tower_end(h) {
             row[c] = forged_bus[c];
         }
@@ -6514,11 +7288,19 @@ mod tests {
         assert_eq!(row[C_DRAW_OUT], want_draws[0]);
         let sb = sponge_base(&cfg);
         for d in 1..draws {
-            assert_eq!(row[sb + SP_EXTRA_DRAWS + (d - 1)], want_draws[d], "draw {d} != squeeze draw");
+            assert_eq!(
+                row[sb + SP_EXTRA_DRAWS + (d - 1)],
+                want_draws[d],
+                "draw {d} != squeeze draw"
+            );
         }
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         let report = check_all_constraints(&air(cfg), &m, &[], None);
-        assert!(report.is_ok(), "honest absorb-fed multi-draw window rejected: {} failures", report.failures.len());
+        assert!(
+            report.is_ok(),
+            "honest absorb-fed multi-draw window rejected: {} failures",
+            report.failures.len()
+        );
     }
 
     // ---------------------------------------------------------------------------------
@@ -6539,7 +7321,12 @@ mod tests {
     /// A representative RATE-element transcript block (stands in for an observed commitment cap /
     /// public-IO chunk).
     fn prefix_block(seed: u32) -> [Val; RATE] {
-        core::array::from_fn(|i| Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32 * 31 + 1)))
+        core::array::from_fn(|i| {
+            Val::from_u32(
+                seed.wrapping_mul(2654435761)
+                    .wrapping_add(i as u32 * 31 + 1),
+            )
+        })
     }
 
     /// Build a prefix-chained absorb window: prior_state is DERIVED by the honest builder from the
@@ -6552,24 +7339,47 @@ mod tests {
     ) -> Vec<Val> {
         let inp = WindowInputs {
             draw_out: Val::ZERO,
-            e0: ext_multi(1), e1: ext_multi(2), beta: ext_multi(3),
+            e0: ext_multi(1),
+            e1: ext_multi(2),
+            beta: ext_multi(3),
             descent: &[],
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
-            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
+            deep_zeta: Challenge::ZERO,
+            deep_q: Challenge::ZERO,
+            deep_alpha: Challenge::ZERO,
+            fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH],
             prior_state: [Val::ZERO; WIDTH], // ignored — derived from the prefix chain
             absorbed,
             prefix_blocks: blocks,
             public_io: &[],
-            fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            fs_beta_blocks: &[],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -6585,8 +7395,9 @@ mod tests {
             for n in [0usize, 3, 8] {
                 let h = 8usize;
                 let cfg = cfg_prefix(h, n, rounds);
-                let blocks: Vec<[Val; RATE]> =
-                    (0..rounds as u32).map(|k| prefix_block(0xA11CE + k)).collect();
+                let blocks: Vec<[Val; RATE]> = (0..rounds as u32)
+                    .map(|k| prefix_block(0xA11CE + k))
+                    .collect();
                 let absorbed = absorbed_vec(0xF00D + rounds as u32);
                 let row = prefix_window(&cfg, &blocks, absorbed);
                 // the derived prior_state matches the reference chain from the zero boundary.
@@ -6594,14 +7405,26 @@ mod tests {
                 let sb = sponge_base(&cfg);
                 let ab = sb + sp_absorb(&cfg);
                 for i in 0..WIDTH {
-                    assert_eq!(row[ab + SPA_PRIOR_STATE + i], want_prior[i], "prior_state lane {i} != chain (rounds={rounds},n={n})");
+                    assert_eq!(
+                        row[ab + SPA_PRIOR_STATE + i],
+                        want_prior[i],
+                        "prior_state lane {i} != chain (rounds={rounds},n={n})"
+                    );
                 }
                 // and the index draw is the squeeze of absorb(prior_state, absorbed, n).
                 let want_sin = absorb_state(want_prior, absorbed, n);
-                assert_eq!(row[C_DRAW_OUT], squeeze_draw(want_sin), "index draw != squeeze of chained state");
+                assert_eq!(
+                    row[C_DRAW_OUT],
+                    squeeze_draw(want_sin),
+                    "index draw != squeeze of chained state"
+                );
                 let m = RowMajorMatrix::new(row, n_cols(&cfg));
                 let report = check_all_constraints(&air(cfg), &m, &[], None);
-                assert!(report.is_ok(), "honest prefix chain (rounds={rounds}, n={n}) rejected: {} failures", report.failures.len());
+                assert!(
+                    report.is_ok(),
+                    "honest prefix chain (rounds={rounds}, n={n}) rejected: {} failures",
+                    report.failures.len()
+                );
             }
         }
     }
@@ -6619,13 +7442,21 @@ mod tests {
         let n = 4usize;
         let rounds = 2usize;
         let cfg = cfg_prefix(h, n, rounds);
-        let blocks: Vec<[Val; RATE]> = (0..rounds as u32).map(|k| prefix_block(0xBEE5 + k)).collect();
+        let blocks: Vec<[Val; RATE]> = (0..rounds as u32)
+            .map(|k| prefix_block(0xBEE5 + k))
+            .collect();
         let absorbed = absorbed_vec(0x1357);
         let mut row = prefix_window(&cfg, &blocks, absorbed);
         let sb = sponge_base(&cfg);
         // CONTROL: the honest row (chain seeded from the zero boundary) accepts.
         assert!(
-            check_all_constraints(&air(cfg), &RowMajorMatrix::new(row.clone(), n_cols(&cfg)), &[], None).is_ok(),
+            check_all_constraints(
+                &air(cfg),
+                &RowMajorMatrix::new(row.clone(), n_cols(&cfg)),
+                &[],
+                None
+            )
+            .is_ok(),
             "honest prefix-chain control should accept — test would prove nothing otherwise"
         );
 
@@ -6661,7 +7492,9 @@ mod tests {
         let n = 5usize;
         let rounds = 3usize;
         let cfg = cfg_prefix(h, n, rounds);
-        let blocks: Vec<[Val; RATE]> = (0..rounds as u32).map(|k| prefix_block(0xCAFE + k)).collect();
+        let blocks: Vec<[Val; RATE]> = (0..rounds as u32)
+            .map(|k| prefix_block(0xCAFE + k))
+            .collect();
         let absorbed = absorbed_vec(0x2468);
         let mut row = prefix_window(&cfg, &blocks, absorbed);
         let sb = sponge_base(&cfg);
@@ -6691,7 +7524,9 @@ mod tests {
         let n = 2usize;
         let rounds = 3usize;
         let cfg = cfg_prefix(h, n, rounds);
-        let blocks: Vec<[Val; RATE]> = (0..rounds as u32).map(|k| prefix_block(0xD00D + k)).collect();
+        let blocks: Vec<[Val; RATE]> = (0..rounds as u32)
+            .map(|k| prefix_block(0xD00D + k))
+            .collect();
         let absorbed = absorbed_vec(0x9753);
         let mut row = prefix_window(&cfg, &blocks, absorbed);
         let sb = sponge_base(&cfg);
@@ -6726,12 +7561,20 @@ mod tests {
         let n = 6usize;
         let rounds = 2usize;
         let cfg = cfg_prefix(h, n, rounds);
-        let blocks: Vec<[Val; RATE]> = (0..rounds as u32).map(|k| prefix_block(0xE0E0 + k)).collect();
+        let blocks: Vec<[Val; RATE]> = (0..rounds as u32)
+            .map(|k| prefix_block(0xE0E0 + k))
+            .collect();
         let absorbed = absorbed_vec(0x1122);
         let mut row = prefix_window(&cfg, &blocks, absorbed);
         let sb = sponge_base(&cfg);
         assert!(
-            check_all_constraints(&air(cfg), &RowMajorMatrix::new(row.clone(), n_cols(&cfg)), &[], None).is_ok(),
+            check_all_constraints(
+                &air(cfg),
+                &RowMajorMatrix::new(row.clone(), n_cols(&cfg)),
+                &[],
+                None
+            )
+            .is_ok(),
             "honest prefix-chain control should accept — test would prove nothing otherwise"
         );
         // corrupt block_1[3] alone; the perm/state stay the honest absorb of the OLD block.
@@ -6755,7 +7598,9 @@ mod tests {
         let n = 4usize;
         let rounds = 2usize;
         let cfg = cfg_prefix(h, n, rounds);
-        let blocks: Vec<[Val; RATE]> = (0..rounds as u32).map(|k| prefix_block(0x5A5A + k)).collect();
+        let blocks: Vec<[Val; RATE]> = (0..rounds as u32)
+            .map(|k| prefix_block(0x5A5A + k))
+            .collect();
         let absorbed = absorbed_vec(0x3344);
         let mut row = prefix_window(&cfg, &blocks, absorbed);
         let sb = sponge_base(&cfg);
@@ -6773,7 +7618,10 @@ mod tests {
         row[sb + SP_SPONGE_IN..sb + SP_SPONGE_IN + WIDTH].copy_from_slice(&forged_sin);
         row[sb + SP_PERM..sb + SP_PERM + PERM_COLS].copy_from_slice(&forged_perm);
         let forged_draw = forged_perm[C_OUTPUT + (RATE - 1)];
-        let forged_bus = pack_window(&RecursiveConfig::single_window(h), &WindowInputs::single(forged_draw, ext_multi(1), ext_multi(2), ext_multi(3)));
+        let forged_bus = pack_window(
+            &RecursiveConfig::single_window(h),
+            &WindowInputs::single(forged_draw, ext_multi(1), ext_multi(2), ext_multi(3)),
+        );
         for c in C_DRAW_OUT..tower_end(h) {
             row[c] = forged_bus[c];
         }
@@ -6792,8 +7640,13 @@ mod tests {
         let h = 8usize;
         let n = 3usize;
         let rounds = 2usize;
-        let cfg = RecursiveConfig { prefix_blocks_public: true, ..cfg_prefix(h, n, rounds) };
-        let blocks: Vec<[Val; RATE]> = (0..rounds as u32).map(|k| prefix_block(0x7E57 + k)).collect();
+        let cfg = RecursiveConfig {
+            prefix_blocks_public: true,
+            ..cfg_prefix(h, n, rounds)
+        };
+        let blocks: Vec<[Val; RATE]> = (0..rounds as u32)
+            .map(|k| prefix_block(0x7E57 + k))
+            .collect();
         let absorbed = absorbed_vec(0x4455);
         let row = prefix_window(&cfg, &blocks, absorbed);
         // public values = the flattened transcript blocks (round 0 then round 1).
@@ -6830,25 +7683,59 @@ mod tests {
 
     /// Build a Merkle window whose round-0 e0 limbs equal the opened leaf digest (the honest
     /// builder for the (b-leaf) binding).
-    fn leaf_e0_window(cfg: &RecursiveConfig, draw: Val, tree: &RefTree, leaf: Digest, index: usize) -> Vec<Val> {
+    fn leaf_e0_window(
+        cfg: &RecursiveConfig,
+        draw: Val,
+        tree: &RefTree,
+        leaf: Digest,
+        index: usize,
+    ) -> Vec<Val> {
         // e0 = the leaf digest as a Challenge (limb i = leaf[i]); DIGEST_ELEMS == D == 8.
         let e0 = Challenge::from_basis_coefficients_slice(&leaf[..D]).unwrap();
         let sibs = tree.auth_path(index);
         let inp = WindowInputs {
             draw_out: draw,
-            e0, e1: ext_multi(2), beta: ext_multi(3),
+            e0,
+            e1: ext_multi(2),
+            beta: ext_multi(3),
             descent: &[],
             merkle_leaf: leaf,
             merkle_siblings: &sibs,
-            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            deep_zeta: Challenge::ZERO,
+            deep_q: Challenge::ZERO,
+            deep_alpha: Challenge::ZERO,
+            fs_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
+            public_io: &[],
+            fs_beta_blocks: &[],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -6868,7 +7755,11 @@ mod tests {
             let row = leaf_e0_window(&cfg, draw, &tree, leaves[index], index);
             let m = RowMajorMatrix::new(row, n_cols(&cfg));
             let report = check_all_constraints(&air(cfg), &m, &pubs(leaves[index], root), None);
-            assert!(report.is_ok(), "honest leaf↔e0 window rejected (raw={raw:#x}): {} failures", report.failures.len());
+            assert!(
+                report.is_ok(),
+                "honest leaf↔e0 window rejected (raw={raw:#x}): {} failures",
+                report.failures.len()
+            );
         }
     }
 
@@ -6897,27 +7788,68 @@ mod tests {
         let sibs = tree.auth_path(index);
         let forged_e0 = ext_multi(777); // not the leaf digest
         let inp = WindowInputs {
-            draw_out: draw, e0: forged_e0, e1: ext_multi(2), beta: ext_multi(3),
-            descent: &[], merkle_leaf: leaves[index], merkle_siblings: &sibs,
-            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            draw_out: draw,
+            e0: forged_e0,
+            e1: ext_multi(2),
+            beta: ext_multi(3),
+            descent: &[],
+            merkle_leaf: leaves[index],
+            merkle_siblings: &sibs,
+            deep_zeta: Challenge::ZERO,
+            deep_q: Challenge::ZERO,
+            deep_alpha: Challenge::ZERO,
+            fs_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
+            public_io: &[],
+            fs_beta_blocks: &[],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         let row = pack_window(&cfg_off, &inp);
         assert!(
-            check_all_constraints(&air(cfg_off), &RowMajorMatrix::new(row.clone(), n_cols(&cfg_off)), &pubs(leaves[index], root), None).is_ok(),
+            check_all_constraints(
+                &air(cfg_off),
+                &RowMajorMatrix::new(row.clone(), n_cols(&cfg_off)),
+                &pubs(leaves[index], root),
+                None
+            )
+            .is_ok(),
             "control (leaf↔e0 binding off) should accept — test would prove nothing otherwise"
         );
 
         // Binding ON: same columns (leaf and e0 layouts identical between cfgs) ⇒ leaf != e0 rejects.
         let cfg_on = cfg_leaf_e0(levels);
-        assert_eq!(n_cols(&cfg_on), n_cols(&cfg_off), "leaf↔e0 binding must not change layout");
+        assert_eq!(
+            n_cols(&cfg_on),
+            n_cols(&cfg_off),
+            "leaf↔e0 binding must not change layout"
+        );
         let m = RowMajorMatrix::new(row, n_cols(&cfg_on));
         assert!(
             !check_all_constraints(&air(cfg_on), &m, &pubs(leaves[index], root), None).is_ok(),
@@ -6940,11 +7872,18 @@ mod tests {
 
     fn sample_row(seed: u32, len: usize) -> Vec<Val> {
         (0..len as u32)
-            .map(|i| Val::from_u32(seed.wrapping_mul(2_654_435_761).wrapping_add(i.wrapping_mul(7) + 1)))
+            .map(|i| {
+                Val::from_u32(
+                    seed.wrapping_mul(2_654_435_761)
+                        .wrapping_add(i.wrapping_mul(7) + 1),
+                )
+            })
             .collect()
     }
     fn sample_salt(seed: u32) -> [Val; SALT_ELEMS] {
-        core::array::from_fn(|i| Val::from_u32(seed.wrapping_mul(40_503).wrapping_add(i as u32 + 3)))
+        core::array::from_fn(|i| {
+            Val::from_u32(seed.wrapping_mul(40_503).wrapping_add(i as u32 + 3))
+        })
     }
 
     /// PIN: the in-AIR `leaf_hash_digest` (the inlined `PaddingFreeSponge` schedule) matches a REAL
@@ -6968,7 +7907,10 @@ mod tests {
             input.extend_from_slice(&salt);
             let native: [Val; DIGEST_ELEMS] = hash.hash_iter_slices([input.as_slice()]);
             let in_air = leaf_hash_digest(&input);
-            assert_eq!(in_air, native, "in-AIR MyHash != native PaddingFreeSponge at row_len={row_len}");
+            assert_eq!(
+                in_air, native,
+                "in-AIR MyHash != native PaddingFreeSponge at row_len={row_len}"
+            );
         }
     }
 
@@ -6985,10 +7927,11 @@ mod tests {
         use p3_commit::Mmcs;
         use p3_koala_bear::default_koalabear_poseidon2_16;
         use p3_merkle_tree::MerkleTreeMmcs;
-        use p3_symmetric::{PaddingFreeSponge};
+        use p3_symmetric::PaddingFreeSponge;
 
         type LeafHash = PaddingFreeSponge<Perm, 16, 7, DIGEST_ELEMS>;
-        type NodeCompress = descender_account_stark::sponge_compression::SpongeCompression<LeafHash>;
+        type NodeCompress =
+            descender_account_stark::sponge_compression::SpongeCompression<LeafHash>;
         let perm: Perm = default_koalabear_poseidon2_16();
         let hash = LeafHash::new(perm.clone());
         let compress = NodeCompress::new(LeafHash::new(perm.clone()));
@@ -6998,8 +7941,9 @@ mod tests {
         let levels = 4usize;
         let n = 1usize << levels;
         let width = 11usize; // a non-RATE-aligned main-trace row width (11 + 0 salt = 11 -> 2 perms).
-        let vals: Vec<Val> =
-            (0..(n * width) as u32).map(|x| Val::from_u32(x.wrapping_mul(2_654_435_761))).collect();
+        let vals: Vec<Val> = (0..(n * width) as u32)
+            .map(|x| Val::from_u32(x.wrapping_mul(2_654_435_761)))
+            .collect();
         let matrix = RowMajorMatrix::new(vals, width);
         let (commit, prover_data) = mmcs.commit(vec![matrix.clone()]);
         let inner_main_commit: Digest = commit.roots()[0];
@@ -7036,7 +7980,10 @@ mod tests {
                 })
                 .collect();
             let tree = RefTree::new(leaves.clone());
-            assert_eq!(tree.levels[0][index], leaf_digest, "ref leaf != in-AIR leaf hash");
+            assert_eq!(
+                tree.levels[0][index], leaf_digest,
+                "ref leaf != in-AIR leaf hash"
+            );
             let sibs = tree.auth_path(index);
             let root = tree.root();
 
@@ -7060,17 +8007,31 @@ mod tests {
                 prefix_blocks: &[],
                 public_io: &[],
                 fs_beta_blocks: &[],
-                fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
-                fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
+                fs_ood_blocks: &[],
+                fs_ood_partial_block: [Val::ZERO; RATE],
+                fs_final_blocks: &[],
+                fs_final_partial_block: [Val::ZERO; RATE],
                 inner_main_commit: root,
-                layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
+                layer_opens: &[],
+                final_poly_x: Val::ZERO,
+                final_poly_coeffs: &[],
                 leaf_row: &opened_row,
                 leaf_salt: [Val::ZERO; SALT_ELEMS],
-                dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+                dr_value_at_zeta: &[],
+                dr_value_at_zeta_next: &[],
+                dr_x: Val::ZERO,
+                lc_value_at_zeta: &[],
+                lc_c_committed: Challenge::ZERO,
+                sc_value_at_zeta: &[],
+                sc_public_values: &[],
+                sc_c_committed: Challenge::ZERO,
+                quot_commit: [Val::ZERO; DIGEST_ELEMS],
+                quot_opened_at_x: &[],
+                quot_at_zeta: &[],
+                quot_zps: &[],
+                quot_salt: [Val::ZERO; SALT_ELEMS],
+                quot_x: Val::ZERO,
+                quot_siblings: &[],
             };
             let row = pack_window(&cfg, &inp);
             assert_eq!(
@@ -7122,17 +8083,31 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[],
-            fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
-            fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
             leaf_row: row,
             leaf_salt: salt,
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         (pack_window(cfg, &inp), leaf, root)
     }
@@ -7165,7 +8140,8 @@ mod tests {
             let (rows, tree) = leaf_tree_for(width, n, salt);
             for &index in &[0usize, 1, 5, n - 1] {
                 let draw = Val::from_u32(index as u32);
-                let (row, leaf, root) = leaf_hash_window(&cfg, draw, index, &rows[index], salt, &tree);
+                let (row, leaf, root) =
+                    leaf_hash_window(&cfg, draw, index, &rows[index], salt, &tree);
                 let m = RowMajorMatrix::new(row, n_cols(&cfg));
                 let report = check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None);
                 assert!(
@@ -7186,7 +8162,10 @@ mod tests {
         let width = 12usize;
         let levels = 4usize;
         let n = 1usize << levels;
-        let cfg = RecursiveConfig { bind_merkle_leaf_to_e0: true, ..cfg_leaf_hash(levels, width) };
+        let cfg = RecursiveConfig {
+            bind_merkle_leaf_to_e0: true,
+            ..cfg_leaf_hash(levels, width)
+        };
         let salt = sample_salt(0x9);
         let (rows, tree) = leaf_tree_for(width, n, salt);
         let index = 5usize;
@@ -7259,23 +8238,40 @@ mod tests {
                 prefix_blocks: &[],
                 public_io: &[],
                 fs_beta_blocks: &[],
-                fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
-                fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
+                fs_ood_blocks: &[],
+                fs_ood_partial_block: [Val::ZERO; RATE],
+                fs_final_blocks: &[],
+                fs_final_partial_block: [Val::ZERO; RATE],
                 inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-                layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
+                layer_opens: &[],
+                final_poly_x: Val::ZERO,
+                final_poly_coeffs: &[],
                 leaf_row: &rows[index],
                 leaf_salt: salt,
-                dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+                dr_value_at_zeta: &[],
+                dr_value_at_zeta_next: &[],
+                dr_x: Val::ZERO,
+                lc_value_at_zeta: &[],
+                lc_c_committed: Challenge::ZERO,
+                sc_value_at_zeta: &[],
+                sc_public_values: &[],
+                sc_c_committed: Challenge::ZERO,
+                quot_commit: [Val::ZERO; DIGEST_ELEMS],
+                quot_opened_at_x: &[],
+                quot_at_zeta: &[],
+                quot_zps: &[],
+                quot_salt: [Val::ZERO; SALT_ELEMS],
+                quot_x: Val::ZERO,
+                quot_siblings: &[],
             };
             pack_window(cfg, &inp)
         };
 
         // CONTROL: hashing OFF (level-0 running supplied free) ⇒ the free digest authenticates ⇒ accepts.
-        let cfg_off = RecursiveConfig { bind_merkle_leaf_to_e0: true, ..cfg_merkle(levels) };
+        let cfg_off = RecursiveConfig {
+            bind_merkle_leaf_to_e0: true,
+            ..cfg_merkle(levels)
+        };
         let row_off = build(&cfg_off);
         assert!(
             check_all_constraints(&air(cfg_off), &RowMajorMatrix::new(row_off.clone(), n_cols(&cfg_off)), &pubs(free_leaf, root), None).is_ok(),
@@ -7287,7 +8283,10 @@ mod tests {
         // free digest != honest_leaf rejects. (Built honestly + tampered post-build because the honest
         // builder debug-asserts running == MyHash(row); the forgery is the tamper, exactly like
         // `air_rejects_tampered_leaf_row`.)
-        let cfg_on = RecursiveConfig { bind_merkle_leaf_to_e0: true, ..cfg_leaf_hash(levels, width) };
+        let cfg_on = RecursiveConfig {
+            bind_merkle_leaf_to_e0: true,
+            ..cfg_leaf_hash(levels, width)
+        };
         let honest_leaves: Vec<Digest> = (0..n)
             .map(|r| {
                 let mut s = rows[r].clone();
@@ -7316,7 +8315,10 @@ mod tests {
         let width = 20usize; // 2-block sponge (20+4=24).
         let levels = 4usize;
         let n = 1usize << levels;
-        let cfg = RecursiveConfig { bind_merkle_leaf_to_e0: true, ..cfg_leaf_hash(levels, width) };
+        let cfg = RecursiveConfig {
+            bind_merkle_leaf_to_e0: true,
+            ..cfg_leaf_hash(levels, width)
+        };
         let salt = sample_salt(0x5);
         let (rows, tree) = leaf_tree_for(width, n, salt);
         let index = 3usize;
@@ -7337,29 +8339,56 @@ mod tests {
     // ---------------------------------------------------------------------------------
 
     fn cfg_public_io(h: usize, len: usize) -> RecursiveConfig {
-        RecursiveConfig { public_io_len: len, ..RecursiveConfig::single_window(h) }
+        RecursiveConfig {
+            public_io_len: len,
+            ..RecursiveConfig::single_window(h)
+        }
     }
 
     fn pio_window(cfg: &RecursiveConfig, draw: Val, stmt: &[(Val, Val, Val)]) -> Vec<Val> {
         let inp = WindowInputs {
             draw_out: draw,
-            e0: ext_multi(1), e1: ext_multi(2), beta: ext_multi(3),
+            e0: ext_multi(1),
+            e1: ext_multi(2),
+            beta: ext_multi(3),
             descent: &[],
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
-            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
+            deep_zeta: Challenge::ZERO,
+            deep_q: Challenge::ZERO,
+            deep_alpha: Challenge::ZERO,
+            fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH],
-            prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: stmt,
-            fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            fs_beta_blocks: &[],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -7370,12 +8399,20 @@ mod tests {
         let h = 8usize;
         let len = 19usize;
         let cfg = cfg_public_io(h, len);
-        let stmt: Vec<(Val, Val, Val)> =
-            (0..len as u32).map(|i| { let v = Val::from_u32(1000 + i); (v, v, v) }).collect();
+        let stmt: Vec<(Val, Val, Val)> = (0..len as u32)
+            .map(|i| {
+                let v = Val::from_u32(1000 + i);
+                (v, v, v)
+            })
+            .collect();
         let row = pio_window(&cfg, Val::from_u32(0xABCDE), &stmt);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         let report = check_all_constraints(&air(cfg), &m, &[], None);
-        assert!(report.is_ok(), "honest public-IO block rejected: {} failures", report.failures.len());
+        assert!(
+            report.is_ok(),
+            "honest public-IO block rejected: {} failures",
+            report.failures.len()
+        );
     }
 
     /// (c-pub) FORGERY — STATEMENT SUBSTITUTION: the inner proof's public value differs from the
@@ -7386,8 +8423,12 @@ mod tests {
         let h = 8usize;
         let len = 19usize;
         let cfg = cfg_public_io(h, len);
-        let stmt: Vec<(Val, Val, Val)> =
-            (0..len as u32).map(|i| { let v = Val::from_u32(1000 + i); (v, v, v) }).collect();
+        let stmt: Vec<(Val, Val, Val)> = (0..len as u32)
+            .map(|i| {
+                let v = Val::from_u32(1000 + i);
+                (v, v, v)
+            })
+            .collect();
         let mut row = pio_window(&cfg, Val::from_u32(0xABCDE), &stmt);
         // corrupt the INNER cell of element 7 (inner != outer) — statement substitution.
         let pb = public_io_base(&cfg);
@@ -7406,8 +8447,12 @@ mod tests {
         let h = 8usize;
         let len = 12usize;
         let cfg = cfg_public_io(h, len);
-        let stmt: Vec<(Val, Val, Val)> =
-            (0..len as u32).map(|i| { let v = Val::from_u32(2000 + i); (v, v, v) }).collect();
+        let stmt: Vec<(Val, Val, Val)> = (0..len as u32)
+            .map(|i| {
+                let v = Val::from_u32(2000 + i);
+                (v, v, v)
+            })
+            .collect();
         let mut row = pio_window(&cfg, Val::from_u32(0x1234), &stmt);
         let pb = public_io_base(&cfg);
         row[pb + 5 * PIO_STRIDE + PIO_OBSERVED] += Val::ONE;
@@ -7446,40 +8491,72 @@ mod tests {
         let leaf = leaves[index];
         let e0 = Challenge::from_basis_coefficients_slice(&leaf[..D]).unwrap(); // leaf↔e0
         let sibs = tree.auth_path(index);
-        let stmt: Vec<(Val, Val, Val)> =
-            (0..pio_len as u32).map(|i| { let v = Val::from_u32(7000 + i); (v, v, v) }).collect();
+        let stmt: Vec<(Val, Val, Val)> = (0..pio_len as u32)
+            .map(|i| {
+                let v = Val::from_u32(7000 + i);
+                (v, v, v)
+            })
+            .collect();
         let inp = WindowInputs {
             draw_out: Val::ZERO, // derived from sponge_in
-            e0, e1: ext_multi(2), beta: ext_multi(3),
+            e0,
+            e1: ext_multi(2),
+            beta: ext_multi(3),
             descent: &[],
             merkle_leaf: leaf,
             merkle_siblings: &sibs,
-            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
+            deep_zeta: Challenge::ZERO,
+            deep_q: Challenge::ZERO,
+            deep_alpha: Challenge::ZERO,
+            fs_blocks: &[],
             sponge_in: sin,
-            prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: &stmt,
-            fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            fs_beta_blocks: &[],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         let row = pack_window(&cfg, &inp);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         let report = check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None);
-        assert!(report.is_ok(), "monolith (sponge+leaf↔e0+public-IO) rejected: {} failures", report.failures.len());
+        assert!(
+            report.is_ok(),
+            "monolith (sponge+leaf↔e0+public-IO) rejected: {} failures",
+            report.failures.len()
+        );
     }
 
     // ---------------------------------------------------------------------------------
     // (FS-αζ) SQUEEZE alpha + zeta from the inline FS challenger, p3-uni-stark order.
     // ---------------------------------------------------------------------------------
 
-    use p3_challenger::{CanObserve, CanSample};
     use descender_account_stark::Challenger;
+    use p3_challenger::{CanObserve, CanSample};
     use p3_koala_bear::default_koalabear_poseidon2_16;
 
     fn cfg_fs(h: usize, k: usize, pre_rounds: usize) -> RecursiveConfig {
@@ -7495,28 +8572,57 @@ mod tests {
     /// observed (metadata ‖ trace-commitment ‖ public-values ‖ quotient-commitment) stream.
     fn fs_block(seed: u32) -> [Val; RATE] {
         core::array::from_fn(|i| {
-            Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32 * 131 + 7))
+            Val::from_u32(
+                seed.wrapping_mul(2654435761)
+                    .wrapping_add(i as u32 * 131 + 7),
+            )
         })
     }
 
     fn fs_window(cfg: &RecursiveConfig, blocks: &[[Val; RATE]], q: Challenge) -> Vec<Val> {
         let inp = WindowInputs {
             draw_out: Val::from_u32(0xABCDE),
-            e0: ext_multi(1), e1: ext_multi(2), beta: ext_multi(3),
+            e0: ext_multi(1),
+            e1: ext_multi(2),
+            beta: ext_multi(3),
             descent: &[],
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
-            deep_zeta: Challenge::ZERO, deep_q: q, deep_alpha: Challenge::ZERO,
+            deep_zeta: Challenge::ZERO,
+            deep_q: q,
+            deep_alpha: Challenge::ZERO,
             fs_blocks: blocks,
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
-            prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
+            public_io: &[],
+            fs_beta_blocks: &[],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -7544,19 +8650,23 @@ mod tests {
                     ch.observe(x);
                 }
             }
-            let alpha_native: Challenge = {
-                Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() })
-            };
+            let alpha_native: Challenge =
+                { Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() }) };
             for &x in quot.iter() {
                 ch.observe(x);
             }
-            let zeta_native: Challenge = {
-                Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() })
-            };
+            let zeta_native: Challenge =
+                { Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() }) };
 
             let (alpha, zeta) = fs_squeeze_alpha_zeta(&pre, quot);
-            assert_eq!(alpha, alpha_native, "FS alpha diverges from native challenger (pre={pre_rounds})");
-            assert_eq!(zeta, zeta_native, "FS zeta diverges from native challenger (pre={pre_rounds})");
+            assert_eq!(
+                alpha, alpha_native,
+                "FS alpha diverges from native challenger (pre={pre_rounds})"
+            );
+            assert_eq!(
+                zeta, zeta_native,
+                "FS zeta diverges from native challenger (pre={pre_rounds})"
+            );
         }
     }
 
@@ -7568,23 +8678,37 @@ mod tests {
         for &pre_rounds in &[1usize, 2, 3] {
             for &k in &[4usize, 8, 12] {
                 let cfg = cfg_fs(10, k, pre_rounds);
-                let blocks: Vec<[Val; RATE]> =
-                    (0..(pre_rounds + 1) as u32).map(|r| fs_block(20 + r)).collect();
+                let blocks: Vec<[Val; RATE]> = (0..(pre_rounds + 1) as u32)
+                    .map(|r| fs_block(20 + r))
+                    .collect();
                 let row = fs_window(&cfg, &blocks, ext_multi(66));
                 // the DEEP alpha/zeta cells equal the FS squeeze.
-                let (alpha, zeta) = fs_squeeze_alpha_zeta(&blocks[..pre_rounds], blocks[pre_rounds]);
+                let (alpha, zeta) =
+                    fs_squeeze_alpha_zeta(&blocks[..pre_rounds], blocks[pre_rounds]);
                 let db = deep_base(&cfg);
                 assert_eq!(
-                    Challenge::from_basis_coefficients_slice(&row[db + DEEP_ALPHA..db + DEEP_ALPHA + D]).unwrap(),
-                    alpha, "DEEP alpha cell != FS-squeezed alpha"
+                    Challenge::from_basis_coefficients_slice(
+                        &row[db + DEEP_ALPHA..db + DEEP_ALPHA + D]
+                    )
+                    .unwrap(),
+                    alpha,
+                    "DEEP alpha cell != FS-squeezed alpha"
                 );
                 assert_eq!(
-                    Challenge::from_basis_coefficients_slice(&row[db + DEEP_ZETA..db + DEEP_ZETA + D]).unwrap(),
-                    zeta, "DEEP zeta cell != FS-squeezed zeta"
+                    Challenge::from_basis_coefficients_slice(
+                        &row[db + DEEP_ZETA..db + DEEP_ZETA + D]
+                    )
+                    .unwrap(),
+                    zeta,
+                    "DEEP zeta cell != FS-squeezed zeta"
                 );
                 let m = RowMajorMatrix::new(row, n_cols(&cfg));
                 let report = check_all_constraints(&air(cfg), &m, &[], None);
-                assert!(report.is_ok(), "honest FS-αζ window rejected (pre={pre_rounds}, k={k}): {} failures", report.failures.len());
+                assert!(
+                    report.is_ok(),
+                    "honest FS-αζ window rejected (pre={pre_rounds}, k={k}): {} failures",
+                    report.failures.len()
+                );
             }
         }
     }
@@ -7636,7 +8760,13 @@ mod tests {
         let blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(50 + r)).collect();
         // honest window for the original blocks.
         let honest = fs_window(&cfg, &blocks, ext_multi(11));
-        assert!(check_all_constraints(&air(cfg), &RowMajorMatrix::new(honest.clone(), n_cols(&cfg)), &[], None).is_ok());
+        assert!(check_all_constraints(
+            &air(cfg),
+            &RowMajorMatrix::new(honest.clone(), n_cols(&cfg)),
+            &[],
+            None
+        )
+        .is_ok());
 
         // tamper a pre-alpha block, re-pack the FS squeeze HONESTLY for the tampered block (so the
         // perm chain is internally valid), but KEEP the OLD DEEP alpha/zeta cells (the stale challenge
@@ -7645,8 +8775,14 @@ mod tests {
         tampered[0][3] += Val::ONE;
         let (old_alpha, old_zeta) = fs_squeeze_alpha_zeta(&blocks[..2], blocks[2]);
         let (new_alpha, new_zeta) = fs_squeeze_alpha_zeta(&tampered[..2], tampered[2]);
-        assert_ne!(old_alpha, new_alpha, "observed block change did not move alpha");
-        assert_ne!(old_zeta, new_zeta, "observed block change did not move zeta");
+        assert_ne!(
+            old_alpha, new_alpha,
+            "observed block change did not move alpha"
+        );
+        assert_ne!(
+            old_zeta, new_zeta,
+            "observed block change did not move zeta"
+        );
 
         let mut row = fs_window(&cfg, &tampered, ext_multi(11));
         // re-pin the DEEP block to the OLD (stale) challenge: zeta + its tower + C, and alpha.
@@ -7762,7 +8898,9 @@ mod tests {
             fs_blocks_public: true,
             ..RecursiveConfig::single_window(10)
         };
-        let blocks: Vec<[Val; RATE]> = (0..(pre_rounds + 1) as u32).map(|r| fs_block(130 + r)).collect();
+        let blocks: Vec<[Val; RATE]> = (0..(pre_rounds + 1) as u32)
+            .map(|r| fs_block(130 + r))
+            .collect();
         let row = fs_window(&cfg, &blocks, ext_multi(23));
         // public values = the concatenated absorbed blocks (the committed transcript).
         let pubs: Vec<Val> = blocks.iter().flatten().copied().collect();
@@ -7776,7 +8914,13 @@ mod tests {
         let mut bad_pubs = pubs.clone();
         bad_pubs[RATE + 2] += Val::ONE;
         assert!(
-            !check_all_constraints(&air(cfg), &RowMajorMatrix::new(row, n_cols(&cfg)), &bad_pubs, None).is_ok(),
+            !check_all_constraints(
+                &air(cfg),
+                &RowMajorMatrix::new(row, n_cols(&cfg)),
+                &bad_pubs,
+                None
+            )
+            .is_ok(),
             "a public transcript inconsistent with the FS absorbed block was accepted"
         );
     }
@@ -7789,7 +8933,10 @@ mod tests {
     /// A representative FRI commit-phase commitment block (RATE elements).
     fn fb_block(seed: u32) -> [Val; DIGEST_ELEMS] {
         core::array::from_fn(|i| {
-            Val::from_u32(seed.wrapping_mul(2246822519).wrapping_add(i as u32 * 97 + 3))
+            Val::from_u32(
+                seed.wrapping_mul(2246822519)
+                    .wrapping_add(i as u32 * 97 + 3),
+            )
         })
     }
 
@@ -7831,25 +8978,47 @@ mod tests {
             .collect();
         let inp = WindowInputs {
             draw_out: Val::from_u32(0xABCDE),
-            e0: ext_multi(1), e1: ext_multi(2), beta: Challenge::ZERO,
+            e0: ext_multi(1),
+            e1: ext_multi(2),
+            beta: Challenge::ZERO,
             descent: &descent,
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
-            deep_zeta: Challenge::ZERO, deep_q: q, deep_alpha: Challenge::ZERO,
+            deep_zeta: Challenge::ZERO,
+            deep_q: q,
+            deep_alpha: Challenge::ZERO,
             fs_blocks,
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
-            prefix_blocks: &[], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
+            public_io: &[],
             fs_beta_blocks: beta_blocks,
-            fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
-            fs_final_blocks: final_blocks, fs_final_partial_block: [Val::ZERO; RATE],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: final_blocks,
+            fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -7862,7 +9031,8 @@ mod tests {
     fn fs_squeeze_betas_match_native_duplex_challenger() {
         for pre_rounds in [1usize, 2] {
             for beta_rounds in [1usize, 2, 3] {
-                let pre: Vec<[Val; RATE]> = (0..pre_rounds as u32).map(|r| fs_block(10 + r)).collect();
+                let pre: Vec<[Val; RATE]> =
+                    (0..pre_rounds as u32).map(|r| fs_block(10 + r)).collect();
                 let quot = fs_block(900);
                 let comms: Vec<[Val; DIGEST_ELEMS]> =
                     (0..beta_rounds as u32).map(|r| fb_block(200 + r)).collect();
@@ -7871,15 +9041,23 @@ mod tests {
                 // then per FRI commit-phase round: observe(comm_r), sample beta_r.
                 let mut ch = Challenger::new(default_koalabear_poseidon2_16());
                 for block in &pre {
-                    for &x in block.iter() { ch.observe(x); }
+                    for &x in block.iter() {
+                        ch.observe(x);
+                    }
                 }
-                let _alpha: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
-                for &x in quot.iter() { ch.observe(x); }
-                let _zeta: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+                let _alpha: Challenge =
+                    Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+                for &x in quot.iter() {
+                    ch.observe(x);
+                }
+                let _zeta: Challenge =
+                    Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
                 let betas_native: Vec<Challenge> = comms
                     .iter()
                     .map(|comm| {
-                        for &x in comm.iter() { ch.observe(x); }
+                        for &x in comm.iter() {
+                            ch.observe(x);
+                        }
                         Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() })
                     })
                     .collect();
@@ -7906,8 +9084,9 @@ mod tests {
         for &pre_rounds in &[1usize, 2] {
             for &beta_rounds in &[1usize, 2, 3] {
                 let cfg = cfg_fb(12, 8, pre_rounds, beta_rounds);
-                let fs_blocks: Vec<[Val; RATE]> =
-                    (0..(pre_rounds + 1) as u32).map(|r| fs_block(20 + r)).collect();
+                let fs_blocks: Vec<[Val; RATE]> = (0..(pre_rounds + 1) as u32)
+                    .map(|r| fs_block(20 + r))
+                    .collect();
                 let comms: Vec<[Val; DIGEST_ELEMS]> =
                     (0..beta_rounds as u32).map(|r| fb_block(300 + r)).collect();
                 let row = fb_window(&cfg, &fs_blocks, &comms, ext_multi(66));
@@ -7918,8 +9097,12 @@ mod tests {
                 for r in 0..beta_rounds {
                     let rb = fb_round_base(&cfg, r);
                     assert_eq!(
-                        Challenge::from_basis_coefficients_slice(&row[rb + FB_BETA..rb + FB_BETA + D]).unwrap(),
-                        betas[r], "FS-β round {r} beta cell != squeezed beta_r"
+                        Challenge::from_basis_coefficients_slice(
+                            &row[rb + FB_BETA..rb + FB_BETA + D]
+                        )
+                        .unwrap(),
+                        betas[r],
+                        "FS-β round {r} beta cell != squeezed beta_r"
                     );
                 }
                 let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -7979,7 +9162,13 @@ mod tests {
         let comms: Vec<[Val; DIGEST_ELEMS]> = (0..3u32).map(|r| fb_block(440 + r)).collect();
         // honest window accepts.
         let honest = fb_window(&cfg, &fs_blocks, &comms, ext_multi(11));
-        assert!(check_all_constraints(&air(cfg), &RowMajorMatrix::new(honest, n_cols(&cfg)), &[], None).is_ok());
+        assert!(check_all_constraints(
+            &air(cfg),
+            &RowMajorMatrix::new(honest, n_cols(&cfg)),
+            &[],
+            None
+        )
+        .is_ok());
 
         // changing comm_0 must move beta_0 AND beta_1 AND beta_2 (carried state).
         let mut tampered = comms.clone();
@@ -7988,7 +9177,10 @@ mod tests {
         let (old_betas, _) = fs_squeeze_betas_digest(start, &comms);
         let (new_betas, _) = fs_squeeze_betas_digest(start, &tampered);
         for r in 0..3 {
-            assert_ne!(old_betas[r], new_betas[r], "comm_0 change did not move beta_{r} (subsequent-round binding)");
+            assert_ne!(
+                old_betas[r], new_betas[r],
+                "comm_0 change did not move beta_{r} (subsequent-round binding)"
+            );
         }
 
         // re-pack with the tampered comm (honest squeeze), then OVERWRITE the descent consumer betas
@@ -8033,7 +9225,10 @@ mod tests {
         let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(460 + r)).collect();
         let start = fs_post_zeta_state(&fs_blocks[..2], fs_blocks[2]);
         let (betas, _) = fs_squeeze_betas_digest(start, &comms);
-        assert_ne!(betas[0], betas[1], "beta_0 == beta_1 (carried-state threading broke)");
+        assert_ne!(
+            betas[0], betas[1],
+            "beta_0 == beta_1 (carried-state threading broke)"
+        );
 
         let mut row = fb_window(&cfg, &fs_blocks, &comms, ext_multi(13));
         // put beta_1 in round 0's consumer (C_BETA) and re-fold round 0 — wrong-round beta.
@@ -8113,18 +9308,31 @@ mod tests {
             ..RecursiveConfig::single_window(12)
         };
         let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(130 + r)).collect();
-        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..beta_rounds as u32).map(|r| fb_block(540 + r)).collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> =
+            (0..beta_rounds as u32).map(|r| fb_block(540 + r)).collect();
         let row = fb_window(&cfg, &fs_blocks, &comms, ext_multi(23));
         let pubs: Vec<Val> = comms.iter().flatten().copied().collect();
         assert_eq!(pubs.len(), beta_rounds * DIGEST_ELEMS); // q128: each commitment is a 13-wide digest
         assert!(
-            check_all_constraints(&air(cfg), &RowMajorMatrix::new(row.clone(), n_cols(&cfg)), &pubs, None).is_ok(),
+            check_all_constraints(
+                &air(cfg),
+                &RowMajorMatrix::new(row.clone(), n_cols(&cfg)),
+                &pubs,
+                None
+            )
+            .is_ok(),
             "honest FS-β public-transcript binding rejected"
         );
         let mut bad_pubs = pubs.clone();
         bad_pubs[RATE + 1] += Val::ONE;
         assert!(
-            !check_all_constraints(&air(cfg), &RowMajorMatrix::new(row, n_cols(&cfg)), &bad_pubs, None).is_ok(),
+            !check_all_constraints(
+                &air(cfg),
+                &RowMajorMatrix::new(row, n_cols(&cfg)),
+                &bad_pubs,
+                None
+            )
+            .is_ok(),
             "a public transcript inconsistent with the FS-β absorbed commitment was accepted"
         );
     }
@@ -8181,23 +9389,31 @@ mod tests {
     ) -> (Challenge, Challenge, Challenge, Vec<Challenge>, usize) {
         let mut ch = Challenger::new(default_koalabear_poseidon2_16());
         for block in pre {
-            for &x in block.iter() { ch.observe(x); }
+            for &x in block.iter() {
+                ch.observe(x);
+            }
         }
         let alpha: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
-        for &x in quot.iter() { ch.observe(x); }
+        for &x in quot.iter() {
+            ch.observe(x);
+        }
         let zeta: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
         // FRI batch-combination alpha (verifier.rs:195): a sample with NO observe.
         let bca: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
         let betas: Vec<Challenge> = comms
             .iter()
             .map(|comm| {
-                for &x in comm.iter() { ch.observe(x); }
+                for &x in comm.iter() {
+                    ch.observe(x);
+                }
                 Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() })
             })
             .collect();
         // post-beta observes (final_poly ‖ log_arities ‖ query-PoW witness), then the index draw.
         for block in final_blocks {
-            for &x in block.iter() { ch.observe(x); }
+            for &x in block.iter() {
+                ch.observe(x);
+            }
         }
         let index = ch.sample_bits(index_bits);
         (alpha, zeta, bca, betas, index)
@@ -8211,7 +9427,8 @@ mod tests {
     fn fs_batch_combo_alpha_and_betas_match_native_duplex_challenger() {
         for pre_rounds in [1usize, 2] {
             for beta_rounds in [1usize, 2, 3] {
-                let pre: Vec<[Val; RATE]> = (0..pre_rounds as u32).map(|r| fs_block(10 + r)).collect();
+                let pre: Vec<[Val; RATE]> =
+                    (0..pre_rounds as u32).map(|r| fs_block(10 + r)).collect();
                 let quot = fs_block(900);
                 let comms: Vec<[Val; DIGEST_ELEMS]> =
                     (0..beta_rounds as u32).map(|r| fb_block(200 + r)).collect();
@@ -8221,7 +9438,10 @@ mod tests {
                 // ours: post-zeta → batch-combo alpha squeeze → betas continue from THAT.
                 let post_zeta = fs_post_zeta_state(&pre, quot);
                 let (bca, bca_state) = fs_squeeze_batch_combo_alpha(post_zeta);
-                assert_eq!(bca, bca_native, "batch-combo alpha diverges from native challenger");
+                assert_eq!(
+                    bca, bca_native,
+                    "batch-combo alpha diverges from native challenger"
+                );
                 let (betas, _) = fs_squeeze_betas_digest(bca_state, &comms);
                 assert_eq!(betas.len(), beta_rounds);
                 for (r, (b, bn)) in betas.iter().zip(betas_native.iter()).enumerate() {
@@ -8279,8 +9499,9 @@ mod tests {
             for &beta_rounds in &[1usize, 2] {
                 for &final_n in &[1usize, 2] {
                     let cfg = cfg_fbq(12, 8, pre_rounds, beta_rounds, true, final_n);
-                    let fs_blocks: Vec<[Val; RATE]> =
-                        (0..(pre_rounds + 1) as u32).map(|r| fs_block(20 + r)).collect();
+                    let fs_blocks: Vec<[Val; RATE]> = (0..(pre_rounds + 1) as u32)
+                        .map(|r| fs_block(20 + r))
+                        .collect();
                     let comms: Vec<[Val; DIGEST_ELEMS]> =
                         (0..beta_rounds as u32).map(|r| fb_block(300 + r)).collect();
                     let finals: Vec<[Val; RATE]> =
@@ -8349,25 +9570,47 @@ mod tests {
             .collect();
         let inp = WindowInputs {
             draw_out: Val::from_u32(0xABCDE),
-            e0: ext_multi(1), e1: ext_multi(2), beta: Challenge::ZERO,
+            e0: ext_multi(1),
+            e1: ext_multi(2),
+            beta: Challenge::ZERO,
             descent: &descent,
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
-            deep_zeta: Challenge::ZERO, deep_q: q, deep_alpha: Challenge::ZERO,
+            deep_zeta: Challenge::ZERO,
+            deep_q: q,
+            deep_alpha: Challenge::ZERO,
             fs_blocks,
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
-            prefix_blocks: &[], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
+            public_io: &[],
             fs_beta_blocks: beta_blocks,
-            fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
-            fs_final_blocks: final_blocks, fs_final_partial_block: partial_block,
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: final_blocks,
+            fs_final_partial_block: partial_block,
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -8385,15 +9628,22 @@ mod tests {
     ) -> usize {
         let mut ch = Challenger::new(default_koalabear_poseidon2_16());
         for block in pre {
-            for &x in block.iter() { ch.observe(x); }
+            for &x in block.iter() {
+                ch.observe(x);
+            }
         }
         let _alpha: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
-        for &x in quot.iter() { ch.observe(x); }
+        for &x in quot.iter() {
+            ch.observe(x);
+        }
         let _zeta: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
         let _bca: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
         for comm in comms {
-            for &x in comm.iter() { ch.observe(x); }
-            let _beta: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+            for &x in comm.iter() {
+                ch.observe(x);
+            }
+            let _beta: Challenge =
+                Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
         }
         // observe the post-beta stream element-by-element (NO RATE-chunking assumed by the caller).
         for &x in post_beta_stream {
@@ -8430,8 +9680,9 @@ mod tests {
         let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(200 + r)).collect();
         // sweep stream lengths that are NOT multiples of RATE (and one that is, as control).
         for stream_len in [1usize, 3, 7, 9, 13, 15, 16, 17, 23] {
-            let stream: Vec<Val> =
-                (0..stream_len as u32).map(|i| Val::from_u32(i.wrapping_mul(7919) + 13)).collect();
+            let stream: Vec<Val> = (0..stream_len as u32)
+                .map(|i| Val::from_u32(i.wrapping_mul(7919) + 13))
+                .collect();
             let index_native = native_index_flat_stream(&pre, quot, &comms, &stream, h);
 
             // ours: chunk into full + partial, feed fs_squeeze_query_p0_state, pop 0.
@@ -8459,10 +9710,21 @@ mod tests {
             let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
             let finals: Vec<[Val; RATE]> = (0..2u32).map(|r| fq_block(70 + r)).collect();
             let partial_block = fq_block(999);
-            let row = fb_window_partial(&cfg, &fs_blocks, &comms, &finals, partial_block, ext_multi(66));
+            let row = fb_window_partial(
+                &cfg,
+                &fs_blocks,
+                &comms,
+                &finals,
+                partial_block,
+                ext_multi(66),
+            );
             let m = RowMajorMatrix::new(row, n_cols(&cfg));
             let report = check_all_constraints(&air(cfg), &m, &[], None);
-            assert!(report.is_ok(), "honest partial-absorb window rejected (partial={partial}): {} failures", report.failures.len());
+            assert!(
+                report.is_ok(),
+                "honest partial-absorb window rejected (partial={partial}): {} failures",
+                report.failures.len()
+            );
         }
     }
 
@@ -8477,7 +9739,14 @@ mod tests {
         let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
         let finals: Vec<[Val; RATE]> = (0..2u32).map(|r| fq_block(70 + r)).collect();
         let partial_block = fq_block(999);
-        let mut row = fb_window_partial(&cfg, &fs_blocks, &comms, &finals, partial_block, ext_multi(66));
+        let mut row = fb_window_partial(
+            &cfg,
+            &fs_blocks,
+            &comms,
+            &finals,
+            partial_block,
+            ext_multi(66),
+        );
         // partial round is round index fs_final_blocks (== 2); corrupt a PADDING rate lane (>= n) of
         // its perm input — the partial absorb must zero lanes [n..RATE].
         let rb = fq_round_base(&cfg, cfg.fs_final_blocks);
@@ -8500,7 +9769,14 @@ mod tests {
         let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
         let finals: Vec<[Val; RATE]> = (0..2u32).map(|r| fq_block(70 + r)).collect();
         let partial_block = fq_block(999);
-        let mut row = fb_window_partial(&cfg, &fs_blocks, &comms, &finals, partial_block, ext_multi(66));
+        let mut row = fb_window_partial(
+            &cfg,
+            &fs_blocks,
+            &comms,
+            &finals,
+            partial_block,
+            ext_multi(66),
+        );
         let rb = fq_round_base(&cfg, cfg.fs_final_blocks);
         // bump the partial round's length tag (capacity slot RATE) — wrong n ⇒ wrong prefix-free tag.
         row[rb + FQ_PERM + inlined_perm::C_INPUTS + RATE] += Val::ONE;
@@ -8523,20 +9799,32 @@ mod tests {
         let quot = fs_block(900);
         let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(200 + r)).collect();
         // post-beta stream WITHOUT the witness: final_poly ‖ log_arities (length not RATE-aligned).
-        let prefix: Vec<Val> = (0..10u32).map(|i| Val::from_u32(i.wrapping_mul(8161) + 3)).collect();
+        let prefix: Vec<Val> = (0..10u32)
+            .map(|i| Val::from_u32(i.wrapping_mul(8161) + 3))
+            .collect();
 
         // native: drive the challenger to the PoW point, grind a real witness, then check + sample.
         let mut ch = Challenger::new(default_koalabear_poseidon2_16());
-        for block in &pre { for &x in block.iter() { ch.observe(x); } }
+        for block in &pre {
+            for &x in block.iter() {
+                ch.observe(x);
+            }
+        }
         let _a: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
-        for &x in quot.iter() { ch.observe(x); }
+        for &x in quot.iter() {
+            ch.observe(x);
+        }
         let _z: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
         let _bca: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
         for comm in &comms {
-            for &x in comm.iter() { ch.observe(x); }
+            for &x in comm.iter() {
+                ch.observe(x);
+            }
             let _b: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
         }
-        for &x in &prefix { ch.observe(x); }
+        for &x in &prefix {
+            ch.observe(x);
+        }
         // grind() finds w s.t. observe(w); sample_bits(pow_bits) == 0, and ADVANCES the challenger
         // through the check_witness (the observe(w) + the PoW sample_bits pop).
         let witness = ch.grind(pow_bits);
@@ -8560,7 +9848,10 @@ mod tests {
         // the index is pop 1 (the PoW consumed pop 0) — output[RATE-2].
         let draw = p0[RATE - 2];
         let index = (draw.as_canonical_u32() & ((1u32 << h) - 1)) as usize;
-        assert_eq!(index, index_native, "query index (post-PoW pop shift) diverges from native grind");
+        assert_eq!(
+            index, index_native,
+            "query index (post-PoW pop shift) diverges from native grind"
+        );
     }
 
     /// GOLDEN (positive): an honest window with a NONZERO query PoW (a real ground witness) ACCEPTS
@@ -8585,19 +9876,33 @@ mod tests {
         let finals: Vec<[Val; RATE]> = vec![fq_block(70)];
         let mut partial_block = fq_block(999);
         // grind a witness with the partial stream = finals[0] ‖ partial[0..2] ‖ witness.
-        let prefix: Vec<Val> = finals[0].iter().copied().chain(partial_block[..2].iter().copied()).collect();
+        let prefix: Vec<Val> = finals[0]
+            .iter()
+            .copied()
+            .chain(partial_block[..2].iter().copied())
+            .collect();
         // native challenger continued to the PoW point (same prefix observes as p0 chain).
         let mut ch = Challenger::new(default_koalabear_poseidon2_16());
-        for block in pre { for &x in block.iter() { ch.observe(x); } }
+        for block in pre {
+            for &x in block.iter() {
+                ch.observe(x);
+            }
+        }
         let _a: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
-        for &x in quot.iter() { ch.observe(x); }
+        for &x in quot.iter() {
+            ch.observe(x);
+        }
         let _z: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
         let _bca: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
         for comm in &comms {
-            for &x in comm.iter() { ch.observe(x); }
+            for &x in comm.iter() {
+                ch.observe(x);
+            }
             let _b: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
         }
-        for &x in &prefix { ch.observe(x); }
+        for &x in &prefix {
+            ch.observe(x);
+        }
         let witness = ch.grind(pow_bits);
         partial_block[2] = witness;
         let _ = post_beta; // (the betas reference is exercised by the builder)
@@ -8605,7 +9910,11 @@ mod tests {
         let row = fb_window_partial(&cfg, &fs_blocks, &comms, &finals, partial_block, q);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         let report = check_all_constraints(&air(cfg), &m, &[], None);
-        assert!(report.is_ok(), "honest query-PoW window rejected: {} failures", report.failures.len());
+        assert!(
+            report.is_ok(),
+            "honest query-PoW window rejected: {} failures",
+            report.failures.len()
+        );
     }
 
     /// TAMPER: a query-PoW witness that FAILS the zero-bits check rejects. We replace the ground
@@ -8621,7 +9930,14 @@ mod tests {
         let finals: Vec<[Val; RATE]> = vec![fq_block(70)];
         // a NON-ground witness: the partial block's lanes are arbitrary (PoW sample low bits != 0 whp).
         let partial_block = fq_block(12345);
-        let row = fb_window_partial(&cfg, &fs_blocks, &comms, &finals, partial_block, ext_multi(66));
+        let row = fb_window_partial(
+            &cfg,
+            &fs_blocks,
+            &comms,
+            &finals,
+            partial_block,
+            ext_multi(66),
+        );
         // sanity: confirm this witness actually fails the PoW (else the test is vacuous).
         let pre = &fs_blocks[..2];
         let quot = fs_blocks[2];
@@ -8653,7 +9969,14 @@ mod tests {
         let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
         let finals: Vec<[Val; RATE]> = vec![fq_block(70)];
         let partial_block = fq_block(12345); // a failing witness
-        let mut row = fb_window_partial(&cfg, &fs_blocks, &comms, &finals, partial_block, ext_multi(66));
+        let mut row = fb_window_partial(
+            &cfg,
+            &fs_blocks,
+            &comms,
+            &finals,
+            partial_block,
+            ext_multi(66),
+        );
         // forge: zero the low pow_bits of the PoW-bits decomposition (to satisfy the grind asserts),
         // leaving the high bits as-is. Recomposition now != the real pow_sample ⇒ reject.
         let pb = pow_bits_base(&cfg);
@@ -8691,32 +10014,57 @@ mod tests {
             .collect();
         let inp = WindowInputs {
             draw_out: Val::from_u32(0xABCDE),
-            e0: ext_multi(1), e1: ext_multi(2), beta: Challenge::ZERO,
+            e0: ext_multi(1),
+            e1: ext_multi(2),
+            beta: Challenge::ZERO,
             descent: &descent,
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
-            deep_zeta: Challenge::ZERO, deep_q: q, deep_alpha: Challenge::ZERO,
+            deep_zeta: Challenge::ZERO,
+            deep_q: q,
+            deep_alpha: Challenge::ZERO,
             fs_blocks,
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
-            prefix_blocks: &[], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
+            public_io: &[],
             fs_beta_blocks: comms,
-            fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
-            fs_final_blocks: finals, fs_final_partial_block: [Val::ZERO; RATE],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: finals,
+            fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         pack_window_query(cfg, &inp, r)
     }
 
     /// A fan-out config: the full FS transcript (alpha/zeta/batch-combo/betas/query-index) + N queries.
     fn cfg_fan_out(h: usize, n: usize) -> RecursiveConfig {
-        RecursiveConfig { fan_out_queries: n, ..cfg_fbq(h, 8, 2, 2, true, 1) }
+        RecursiveConfig {
+            fan_out_queries: n,
+            ..cfg_fbq(h, 8, 2, 2, true, 1)
+        }
     }
 
     /// Build the honest N-row fan-out matrix (one query per row) + return the shared transcript blocks
@@ -8725,7 +10073,13 @@ mod tests {
     fn fan_out_matrix(
         cfg: &RecursiveConfig,
         n: usize,
-    ) -> (RowMajorMatrix<Val>, Vec<[Val; RATE]>, Vec<[Val; DIGEST_ELEMS]>, Vec<[Val; RATE]>, Challenge) {
+    ) -> (
+        RowMajorMatrix<Val>,
+        Vec<[Val; RATE]>,
+        Vec<[Val; DIGEST_ELEMS]>,
+        Vec<[Val; RATE]>,
+        Challenge,
+    ) {
         let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(20 + r)).collect();
         let comms: Vec<[Val; DIGEST_ELEMS]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
         let finals: Vec<[Val; RATE]> = vec![fq_block(70)];
@@ -8734,7 +10088,13 @@ mod tests {
         for r in 0..n {
             flat.extend_from_slice(&fan_out_row(cfg, &fs_blocks, &comms, &finals, q, r));
         }
-        (RowMajorMatrix::new(flat, n_cols(cfg)), fs_blocks, comms, finals, q)
+        (
+            RowMajorMatrix::new(flat, n_cols(cfg)),
+            fs_blocks,
+            comms,
+            finals,
+            q,
+        )
     }
 
     /// The N native FRI query indices: drive a real `DuplexChallenger` through the FULL ordered FS
@@ -8749,16 +10109,28 @@ mod tests {
         let pre = &fs_blocks[..fs_blocks.len() - 1];
         let quot = fs_blocks[fs_blocks.len() - 1];
         let mut ch = Challenger::new(default_koalabear_poseidon2_16());
-        for block in pre { for &x in block.iter() { ch.observe(x); } }
+        for block in pre {
+            for &x in block.iter() {
+                ch.observe(x);
+            }
+        }
         let _alpha: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
-        for &x in quot.iter() { ch.observe(x); }
+        for &x in quot.iter() {
+            ch.observe(x);
+        }
         let _zeta: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
         let _bca: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
         for comm in comms {
-            for &x in comm.iter() { ch.observe(x); }
+            for &x in comm.iter() {
+                ch.observe(x);
+            }
             let _b: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
         }
-        for block in finals { for &x in block.iter() { ch.observe(x); } }
+        for block in finals {
+            for &x in block.iter() {
+                ch.observe(x);
+            }
+        }
         (0..n).map(|_| ch.sample_bits(h)).collect()
     }
 
@@ -8792,16 +10164,26 @@ mod tests {
             .chain(partial_block[..partial - 1].iter().copied())
             .collect();
         let mut ch = Challenger::new(default_koalabear_poseidon2_16());
-        for block in pre { for &x in block.iter() { ch.observe(x); } }
+        for block in pre {
+            for &x in block.iter() {
+                ch.observe(x);
+            }
+        }
         let _a: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
-        for &x in quot.iter() { ch.observe(x); }
+        for &x in quot.iter() {
+            ch.observe(x);
+        }
         let _z: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
         let _bca: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
         for comm in &comms {
-            for &x in comm.iter() { ch.observe(x); }
+            for &x in comm.iter() {
+                ch.observe(x);
+            }
             let _b: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
         }
-        for &x in &prefix { ch.observe(x); }
+        for &x in &prefix {
+            ch.observe(x);
+        }
         let witness = ch.grind(pow_bits);
         partial_block[partial - 1] = witness;
         // native indices: N successive sample_bits AFTER the grind (the PoW already consumed pop 0).
@@ -8815,35 +10197,65 @@ mod tests {
                 .collect();
             let inp = WindowInputs {
                 draw_out: Val::from_u32(0xABCDE),
-                e0: ext_multi(1), e1: ext_multi(2), beta: Challenge::ZERO,
+                e0: ext_multi(1),
+                e1: ext_multi(2),
+                beta: Challenge::ZERO,
                 descent: &descent,
-                merkle_leaf: [Val::ZERO; DIGEST_ELEMS], merkle_siblings: &[],
-                deep_zeta: Challenge::ZERO, deep_q: q, deep_alpha: Challenge::ZERO,
+                merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
+                merkle_siblings: &[],
+                deep_zeta: Challenge::ZERO,
+                deep_q: q,
+                deep_alpha: Challenge::ZERO,
                 fs_blocks: &fs_blocks,
-                sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
-                prefix_blocks: &[], public_io: &[],
+                sponge_in: [Val::ZERO; WIDTH],
+                prior_state: [Val::ZERO; WIDTH],
+                absorbed: [Val::ZERO; RATE],
+                prefix_blocks: &[],
+                public_io: &[],
                 fs_beta_blocks: &comms,
-                fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
-                fs_final_blocks: &finals, fs_final_partial_block: partial_block,
+                fs_ood_blocks: &[],
+                fs_ood_partial_block: [Val::ZERO; RATE],
+                fs_final_blocks: &finals,
+                fs_final_partial_block: partial_block,
                 inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-                layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-                leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
-                dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-                lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-                quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-                quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-                quot_x: Val::ZERO, quot_siblings: &[],
+                layer_opens: &[],
+                final_poly_x: Val::ZERO,
+                final_poly_coeffs: &[],
+                leaf_row: &[],
+                leaf_salt: [Val::ZERO; SALT_ELEMS],
+                dr_value_at_zeta: &[],
+                dr_value_at_zeta_next: &[],
+                dr_x: Val::ZERO,
+                lc_value_at_zeta: &[],
+                lc_c_committed: Challenge::ZERO,
+                sc_value_at_zeta: &[],
+                sc_public_values: &[],
+                sc_c_committed: Challenge::ZERO,
+                quot_commit: [Val::ZERO; DIGEST_ELEMS],
+                quot_opened_at_x: &[],
+                quot_at_zeta: &[],
+                quot_zps: &[],
+                quot_salt: [Val::ZERO; SALT_ELEMS],
+                quot_x: Val::ZERO,
+                quot_siblings: &[],
             };
             flat.extend_from_slice(&pack_window_query(&cfg, &inp, r));
         }
         let m = RowMajorMatrix::new(flat, n_cols(&cfg));
         // honest accepts (full constraint check, including the PoW zero-bits + partial absorb).
         let report = check_all_constraints(&air(cfg.clone()), &m, &[], None);
-        assert!(report.is_ok(), "honest fan-out partial+PoW matrix rejected: {} failures", report.failures.len());
+        assert!(
+            report.is_ok(),
+            "honest fan-out partial+PoW matrix rejected: {} failures",
+            report.failures.len()
+        );
         // each row's index PINs to the native draw (post-PoW pop shift, across the partial-absorb P0).
         for r in 0..n {
             let row_index = m.values[r * n_cols(&cfg) + C_INDEX].as_canonical_u32() as usize;
-            assert_eq!(row_index, native[r], "fan-out partial+PoW row {r} index != native draw r");
+            assert_eq!(
+                row_index, native[r],
+                "fan-out partial+PoW row {r} index != native draw r"
+            );
         }
     }
 
@@ -8884,7 +10296,11 @@ mod tests {
         }
         // the draws are genuinely distinct per row (the LIFO pops differ); at least two differ.
         assert!(
-            native.iter().collect::<std::collections::HashSet<_>>().len() >= 2,
+            native
+                .iter()
+                .collect::<std::collections::HashSet<_>>()
+                .len()
+                >= 2,
             "the N FS query indices are not distinct draws (transcript collapse)"
         );
     }
@@ -8899,7 +10315,13 @@ mod tests {
         let w = n_cols(&cfg);
         let mut flat = m.values.clone();
         // honest control accepts.
-        assert!(check_all_constraints(&air(cfg.clone()), &RowMajorMatrix::new(flat.clone(), w), &[], None).is_ok());
+        assert!(check_all_constraints(
+            &air(cfg.clone()),
+            &RowMajorMatrix::new(flat.clone(), w),
+            &[],
+            None
+        )
+        .is_ok());
         // overwrite row 1's draw_out with the value it would have if it used pop 0 (row 0's draw) —
         // but draw_offset stays 1, so the (FS-qi) one-hot binds C_DRAW_OUT to output[RATE-1-1] ≠ this.
         flat[1 * w + C_DRAW_OUT] = flat[0 * w + C_DRAW_OUT];
@@ -8922,7 +10344,8 @@ mod tests {
         let mut a = m.values.clone();
         a[0 * w + off] += Val::ONE;
         assert!(
-            !check_all_constraints(&air(cfg.clone()), &RowMajorMatrix::new(a, w), &[], None).is_ok(),
+            !check_all_constraints(&air(cfg.clone()), &RowMajorMatrix::new(a, w), &[], None)
+                .is_ok(),
             "fan-out accepted a non-zero first-row draw_offset"
         );
         // (b) break the +1 transition (row 2 offset wrong).
@@ -8946,7 +10369,13 @@ mod tests {
         let w = n_cols(&cfg);
         let db = deep_base(&cfg);
         // honest control accepts.
-        assert!(check_all_constraints(&air(cfg.clone()), &RowMajorMatrix::new(m.values.clone(), w), &[], None).is_ok());
+        assert!(check_all_constraints(
+            &air(cfg.clone()),
+            &RowMajorMatrix::new(m.values.clone(), w),
+            &[],
+            None
+        )
+        .is_ok());
         // tamper row 1's shared DEEP_ALPHA limb (a shared challenge) ⇒ cross-row equality fails.
         for &(label, col) in &[
             ("alpha", db + DEEP_ALPHA),
@@ -9057,7 +10486,8 @@ mod tests {
             for r in 0..n {
                 let row_index = m.values[r * n_cols(&cfg) + C_INDEX].as_canonical_u32() as usize;
                 assert_eq!(
-                    row_index, native[r],
+                    row_index,
+                    native[r],
                     "fan-out row {r} (N={n}) index != the r-th native sample_bits draw \
                      (bucket {}, refill chain mismatch)",
                     r / RATE
@@ -9081,7 +10511,13 @@ mod tests {
         let (m, _fs, _c, _f, _q) = fan_out_matrix(&cfg, 12);
         let w = n_cols(&cfg);
         let mut flat = m.values.clone();
-        assert!(check_all_constraints(&air(cfg.clone()), &RowMajorMatrix::new(flat.clone(), w), &[], None).is_ok());
+        assert!(check_all_constraints(
+            &air(cfg.clone()),
+            &RowMajorMatrix::new(flat.clone(), w),
+            &[],
+            None
+        )
+        .is_ok());
         // row 8 is the first bucket-1 draw; force it to carry row 0's (bucket-0) draw value.
         flat[8 * w + C_DRAW_OUT] = flat[0 * w + C_DRAW_OUT];
         let m2 = RowMajorMatrix::new(flat, w);
@@ -9145,7 +10581,8 @@ mod tests {
         assert_eq!(fan_out_buckets(&cfg), PROD_NUM_QUERIES.div_ceil(RATE));
         assert_eq!(fan_out_buckets(&cfg), 7, "ceil(56/8) == 7 buckets");
         assert_eq!(
-            fan_out_refill_perms(&cfg), 6,
+            fan_out_refill_perms(&cfg),
+            6,
             "6 squeeze-only refill permutes (P1..P6) for 56 queries"
         );
         // structural: the (FAN-OUT) block sizes to draw_offset + 6 refill perms.
@@ -9182,9 +10619,11 @@ mod tests {
     fn air_rejects_omitted_batch_combo_alpha() {
         let pre_rounds = 2usize;
         let beta_rounds = 2usize;
-        let fs_blocks: Vec<[Val; RATE]> =
-            (0..(pre_rounds + 1) as u32).map(|r| fs_block(20 + r)).collect();
-        let comms: Vec<[Val; DIGEST_ELEMS]> = (0..beta_rounds as u32).map(|r| fb_block(300 + r)).collect();
+        let fs_blocks: Vec<[Val; RATE]> = (0..(pre_rounds + 1) as u32)
+            .map(|r| fs_block(20 + r))
+            .collect();
+        let comms: Vec<[Val; DIGEST_ELEMS]> =
+            (0..beta_rounds as u32).map(|r| fb_block(300 + r)).collect();
 
         // The betas WITH vs WITHOUT the batch-combo alpha differ (the shift moves every beta).
         let post_zeta = fs_post_zeta_state(&fs_blocks[..pre_rounds], fs_blocks[pre_rounds]);
@@ -9236,7 +10675,13 @@ mod tests {
 
         // honest accepts.
         let honest = fb_window_full(&cfg, &fs_blocks, &comms, &finals, ext_multi(66));
-        assert!(check_all_constraints(&air(cfg), &RowMajorMatrix::new(honest.clone(), n_cols(&cfg)), &[], None).is_ok());
+        assert!(check_all_constraints(
+            &air(cfg),
+            &RowMajorMatrix::new(honest.clone(), n_cols(&cfg)),
+            &[],
+            None
+        )
+        .is_ok());
 
         // changing final block 0 moves the draw_out (and hence the index).
         let mut tampered = finals.clone();
@@ -9246,7 +10691,10 @@ mod tests {
         let (_, post_beta) = fs_squeeze_betas_digest(bca_state, &comms);
         let (old_draw, _) = fs_squeeze_query_index(post_beta, &finals);
         let (new_draw, _) = fs_squeeze_query_index(post_beta, &tampered);
-        assert_ne!(old_draw, new_draw, "final-poly change did not move the query draw");
+        assert_ne!(
+            old_draw, new_draw,
+            "final-poly change did not move the query draw"
+        );
 
         // re-pack honestly for the tampered final block, then OVERWRITE C_DRAW_OUT/C_BITS/C_INDEX back
         // to the OLD (stale) draw — the FS-qi binding (draw_out == last squeeze pop) now rejects.
@@ -9332,13 +10780,25 @@ mod tests {
         let pubs: Vec<Val> = finals.iter().flatten().copied().collect();
         assert_eq!(pubs.len(), final_n * RATE);
         assert!(
-            check_all_constraints(&air(cfg), &RowMajorMatrix::new(row.clone(), n_cols(&cfg)), &pubs, None).is_ok(),
+            check_all_constraints(
+                &air(cfg),
+                &RowMajorMatrix::new(row.clone(), n_cols(&cfg)),
+                &pubs,
+                None
+            )
+            .is_ok(),
             "honest FS-qi public-transcript binding rejected"
         );
         let mut bad_pubs = pubs.clone();
         bad_pubs[RATE + 2] += Val::ONE;
         assert!(
-            !check_all_constraints(&air(cfg), &RowMajorMatrix::new(row, n_cols(&cfg)), &bad_pubs, None).is_ok(),
+            !check_all_constraints(
+                &air(cfg),
+                &RowMajorMatrix::new(row, n_cols(&cfg)),
+                &bad_pubs,
+                None
+            )
+            .is_ok(),
             "a public transcript inconsistent with the FS-qi observed block was accepted"
         );
     }
@@ -9359,8 +10819,10 @@ mod tests {
             let c = compressor();
             let mut levels = vec![leaves.clone()];
             while leaves.len() > 1 {
-                let next: Vec<Digest> =
-                    leaves.chunks_exact(2).map(|p| c.compress([p[0], p[1]])).collect();
+                let next: Vec<Digest> = leaves
+                    .chunks_exact(2)
+                    .map(|p| c.compress([p[0], p[1]]))
+                    .collect();
                 levels.push(next.clone());
                 leaves = next;
             }
@@ -9406,7 +10868,10 @@ mod tests {
     fn lo_window(
         cfg: &RecursiveConfig,
         index_draw: Val,
-    ) -> (Vec<Val>, Vec<([Val; DIGEST_ELEMS], Challenge, Challenge, usize)>) {
+    ) -> (
+        Vec<Val>,
+        Vec<([Val; DIGEST_ELEMS], Challenge, Challenge, usize)>,
+    ) {
         let h0 = cfg.log_height;
         let rounds = cfg.rounds();
         let levels = cfg.layer_open_levels;
@@ -9464,7 +10929,9 @@ mod tests {
                     if j == node {
                         leaf
                     } else {
-                        core::array::from_fn(|i| Val::from_u32((j as u32 + 1) * 7919 + i as u32 + r as u32))
+                        core::array::from_fn(|i| {
+                            Val::from_u32((j as u32 + 1) * 7919 + i as u32 + r as u32)
+                        })
                     }
                 })
                 .collect();
@@ -9506,19 +10973,31 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[],
-            fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
-            fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &layer_opens,
             final_poly_x: fp_x,
             final_poly_coeffs: &fp_coeffs,
             leaf_row: &[],
             leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         (pack_window(cfg, &inp), metas)
     }
@@ -9555,13 +11034,18 @@ mod tests {
         use p3_koala_bear::default_koalabear_poseidon2_16;
         use p3_matrix::Dimensions;
         use p3_merkle_tree::MerkleTreeMmcs;
-        use p3_symmetric::{PaddingFreeSponge};
+        use p3_symmetric::PaddingFreeSponge;
 
         type LeafHash = PaddingFreeSponge<Perm, 16, 7, DIGEST_ELEMS>;
-        type NodeCompress = descender_account_stark::sponge_compression::SpongeCompression<LeafHash>;
+        type NodeCompress =
+            descender_account_stark::sponge_compression::SpongeCompression<LeafHash>;
         let perm: Perm = default_koalabear_poseidon2_16();
         let mmcs: MerkleTreeMmcs<Val, Val, LeafHash, NodeCompress, 2, DIGEST_ELEMS> =
-            MerkleTreeMmcs::new(LeafHash::new(perm.clone()), NodeCompress::new(LeafHash::new(perm.clone())), 0);
+            MerkleTreeMmcs::new(
+                LeafHash::new(perm.clone()),
+                NodeCompress::new(LeafHash::new(perm.clone())),
+                0,
+            );
         let node_levels = 3usize;
         let n_nodes = 1usize << node_levels;
         let width = 2 * D;
@@ -9575,7 +11059,10 @@ mod tests {
         let (opened_values, opening_proof) = opening.unpack();
         mmcs.verify_batch(
             &commit,
-            &[Dimensions { width, height: n_nodes }],
+            &[Dimensions {
+                width,
+                height: n_nodes,
+            }],
             2,
             p3_commit::BatchOpeningRef::new(&opened_values, &opening_proof),
         )
@@ -9606,7 +11093,11 @@ mod tests {
         let pair: Vec<Val> = (0..width).map(|c| vals[node * width + c]).collect();
         let evals0 = Challenge::from_basis_coefficients_slice(&pair[..D]).unwrap();
         let evals1 = Challenge::from_basis_coefficients_slice(&pair[D..]).unwrap();
-        let (e_fold, e_sib) = if parity { (evals1, evals0) } else { (evals0, evals1) };
+        let (e_fold, e_sib) = if parity {
+            (evals1, evals0)
+        } else {
+            (evals0, evals1)
+        };
         let beta0 = ext_multi(7);
         let sibs = tree.auth_path(node);
         let layer_opens = [LayerOpenInput {
@@ -9632,29 +11123,48 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[],
-            fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
-            fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &layer_opens,
             final_poly_x: Val::ZERO,
             final_poly_coeffs: &[],
             leaf_row: &[],
             leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         let row = pack_window(&cfg, &inp);
         // zero-residual reconstructed root == reference root.
         let llast = lo_node_digest(lo_level_base(&cfg, 0, node_levels - 1));
-        let recon: [Val; DIGEST_ELEMS] =
-            core::array::from_fn(|i| row[llast + i]);
-        assert_eq!(recon, tree.root(), "in-window round-0 layer root != real reference root");
+        let recon: [Val; DIGEST_ELEMS] = core::array::from_fn(|i| row[llast + i]);
+        assert_eq!(
+            recon,
+            tree.root(),
+            "in-window round-0 layer root != real reference root"
+        );
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         let report = check_all_constraints(&air(cfg), &m, &[], None);
-        assert!(report.is_ok(), "composed round-0 layer open rejected: {} failures", report.failures.len());
+        assert!(
+            report.is_ok(),
+            "composed round-0 layer open rejected: {} failures",
+            report.failures.len()
+        );
     }
 
     /// LOAD-BEARING (the gap closed): a descent whose sibling != the AUTHENTICATED layer-open output is
@@ -9766,7 +11276,11 @@ mod tests {
         let (mut row, _) = lo_window(&cfg, Val::from_u32(0xABCDE));
         // flip FS bit 3 (feeds round 0 level 2 selector = bit 3, and round 1 level 1 selector = bit 3).
         let bitpos = 3usize;
-        row[C_BITS + bitpos] = if row[C_BITS + bitpos] == Val::ONE { Val::ZERO } else { Val::ONE };
+        row[C_BITS + bitpos] = if row[C_BITS + bitpos] == Val::ONE {
+            Val::ZERO
+        } else {
+            Val::ONE
+        };
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         assert!(
             !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
@@ -9864,12 +11378,19 @@ mod tests {
         cfg: &RecursiveConfig,
         fs_prefix: &[[Val; RATE]],
         index_draw: Val,
-    ) -> (Vec<Val>, Vec<([Val; DIGEST_ELEMS], Challenge, Challenge, usize)>) {
+    ) -> (
+        Vec<Val>,
+        Vec<([Val; DIGEST_ELEMS], Challenge, Challenge, usize)>,
+    ) {
         let h0 = cfg.log_height;
         let rounds = cfg.rounds();
         let levels = cfg.layer_open_levels;
         let pre = cfg.fs_pre_alpha_rounds;
-        assert_eq!(fs_prefix.len(), pre + 1, "fs_prefix = pre-alpha rounds + quotient observe");
+        assert_eq!(
+            fs_prefix.len(),
+            pre + 1,
+            "fs_prefix = pre-alpha rounds + quotient observe"
+        );
         // beta-chain start = post-zeta state (no batch-combo alpha in this fixture).
         let beta_start = fs_post_zeta_state(&fs_prefix[..pre], fs_prefix[pre]);
 
@@ -9928,8 +11449,9 @@ mod tests {
         }
 
         // descent inputs: (e_sib_r, dummy beta) for rounds 1..rounds (betas overridden by FS-β).
-        let descent: Vec<(Challenge, Challenge)> =
-            (1..rounds).map(|r| (round_pairs[r].1, Challenge::ZERO)).collect();
+        let descent: Vec<(Challenge, Challenge)> = (1..rounds)
+            .map(|r| (round_pairs[r].1, Challenge::ZERO))
+            .collect();
         let layer_opens: Vec<LayerOpenInput> = (0..rounds)
             .map(|r| LayerOpenInput {
                 layer_commit: metas[r].0,
@@ -9956,19 +11478,31 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &comms,
-            fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
-            fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &layer_opens,
             final_poly_x: Val::ZERO,
             final_poly_coeffs: &[],
             leaf_row: &[],
             leaf_salt: [Val::ZERO; SALT_ELEMS],
-            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         (pack_window(cfg, &inp), metas)
     }
@@ -10050,7 +11584,10 @@ mod tests {
         let alt_tree = LoRefTree::new(alt_leaves);
         let alt_root = alt_tree.root();
         let alt_sibs = alt_tree.auth_path(node);
-        assert_ne!(alt_root, metas[1].0, "alternate tree must yield a different real root");
+        assert_ne!(
+            alt_root, metas[1].0,
+            "alternate tree must yield a different real root"
+        );
         // re-pack ONLY round 1's LO sub-block against the alternate (valid) open, leaving the FS-β
         // observed block + beta_1 + descent untouched. Mirror pack_window's LO layout exactly.
         let rb = lo_round_base(&cfg, 1);
@@ -10075,22 +11612,30 @@ mod tests {
         for (level, &sib) in alt_sibs.iter().enumerate() {
             let bit = (node_idx & 1) == 1;
             let lbase = lo_level_base(&cfg, 1, level);
-            row[lbase + LO_ML_RUNNING..lbase + LO_ML_RUNNING + DIGEST_ELEMS].copy_from_slice(&running);
+            row[lbase + LO_ML_RUNNING..lbase + LO_ML_RUNNING + DIGEST_ELEMS]
+                .copy_from_slice(&running);
             row[lbase + LO_ML_SIBLING..lbase + LO_ML_SIBLING + DIGEST_ELEMS].copy_from_slice(&sib);
             let (a, b) = if bit { (sib, running) } else { (running, sib) };
             let mut combined = [Val::ZERO; ABSORB_LEN];
             combined[..DIGEST_ELEMS].copy_from_slice(&a);
             combined[DIGEST_ELEMS..].copy_from_slice(&b);
             let (blocks, digest) = node_blocks(&combined, &consts);
-            row[lbase + LO_ML_PERM..lbase + LO_ML_PERM + N_PERM * PERM_COLS].copy_from_slice(&blocks);
+            row[lbase + LO_ML_PERM..lbase + LO_ML_PERM + N_PERM * PERM_COLS]
+                .copy_from_slice(&blocks);
             running = digest;
             node_idx >>= 1;
         }
-        assert_eq!(running, alt_root, "alternate in-row fold must reconstruct the alternate root");
+        assert_eq!(
+            running, alt_root,
+            "alternate in-row fold must reconstruct the alternate root"
+        );
         // sanity: the authentication root now DIFFERS from the FS-observed commitment.
         let fb_rb = fb_round_base(&cfg, 1);
         let differs = (0..DIGEST_ELEMS).any(|k| row[rb + k] != row[fb_rb + FB_COMMIT + k]);
-        assert!(differs, "alternate root must differ from the FS-observed commit");
+        assert!(
+            differs,
+            "alternate root must differ from the FS-observed commit"
+        );
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         assert!(
             !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
@@ -10207,9 +11752,15 @@ mod tests {
             let alpha = ext_multi(seed.wrapping_mul(13) + 1);
             let zeta = ext_multi(seed.wrapping_mul(29) + 7);
             let x = Val::from_u32(seed.wrapping_mul(97).wrapping_add(3));
-            let row: Vec<Val> = (0..n as u32).map(|i| Val::from_u32(seed.wrapping_mul(7) + i + 1)).collect();
-            let vz: Vec<Challenge> = (0..n as u32).map(|i| ext_multi(seed.wrapping_mul(101) + i)).collect();
-            let vzn: Vec<Challenge> = (0..n as u32).map(|i| ext_multi(seed.wrapping_mul(211) + i)).collect();
+            let row: Vec<Val> = (0..n as u32)
+                .map(|i| Val::from_u32(seed.wrapping_mul(7) + i + 1))
+                .collect();
+            let vz: Vec<Challenge> = (0..n as u32)
+                .map(|i| ext_multi(seed.wrapping_mul(101) + i))
+                .collect();
+            let vzn: Vec<Challenge> = (0..n as u32)
+                .map(|i| ext_multi(seed.wrapping_mul(211) + i))
+                .collect();
 
             // single opening point.
             assert_eq!(
@@ -10228,7 +11779,13 @@ mod tests {
 
     /// A (DR) config: a real Merkle/leaf-hash window at `levels` + DEEP at `log_degree`, deriving e0
     /// from the reduced opening of `combine` columns of the opened row. `next` toggles the g·zeta term.
-    fn cfg_dr(levels: usize, width: usize, combine: usize, log_degree: usize, next: bool) -> RecursiveConfig {
+    fn cfg_dr(
+        levels: usize,
+        width: usize,
+        combine: usize,
+        log_degree: usize,
+        next: bool,
+    ) -> RecursiveConfig {
         RecursiveConfig {
             merkle_levels: levels,
             leaf_row_len: width,
@@ -10249,7 +11806,16 @@ mod tests {
         opened_row: &[Val],
         salt: [Val; SALT_ELEMS],
         tree: &RefTree,
-    ) -> (Vec<Val>, Digest, Digest, Vec<Challenge>, Vec<Challenge>, Val, Challenge, Challenge) {
+    ) -> (
+        Vec<Val>,
+        Digest,
+        Digest,
+        Vec<Challenge>,
+        Vec<Challenge>,
+        Val,
+        Challenge,
+        Challenge,
+    ) {
         let n = cfg.deep_e0_combine;
         let k = cfg.deep_log_degree.unwrap();
         let g = dr_g(k);
@@ -10289,10 +11855,14 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[],
-            fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
-            fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
             leaf_row: opened_row,
             leaf_salt: salt,
             dr_value_at_zeta: &vz,
@@ -10300,9 +11870,16 @@ mod tests {
             dr_x: x,
             lc_value_at_zeta: &[],
             lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         (pack_window(cfg, &inp), leaf, root, vz, vzn, x, alpha, zeta)
     }
@@ -10383,15 +11960,22 @@ mod tests {
         let n = 1usize << 4;
         let salt = sample_salt(0x21);
         let (rows, tree) = leaf_tree_for(12, n, salt);
-        let (row, _leaf, _root, vz, _vzn, x, alpha, zeta) = dr_window(&cfg, 5, &rows[5], salt, &tree);
+        let (row, _leaf, _root, vz, _vzn, x, alpha, zeta) =
+            dr_window(&cfg, 5, &rows[5], salt, &tree);
         let e0_honest = deep_reduced_e0(alpha, zeta, x, &rows[5][..12], &vz);
         let mut tampered = rows[5].clone();
         tampered[3] += Val::ONE;
         let e0_tampered = deep_reduced_e0(alpha, zeta, x, &tampered[..12], &vz);
-        assert_ne!(e0_honest, e0_tampered, "DR e0 does NOT depend on the opened row — vacuous binding");
+        assert_ne!(
+            e0_honest, e0_tampered,
+            "DR e0 does NOT depend on the opened row — vacuous binding"
+        );
         // and the in-AIR e0 cell is the honest reduced opening (load-bearing equality).
         let e0_cell = Challenge::from_basis_coefficients_slice(&row[C_E0..C_E0 + D]).unwrap();
-        assert_eq!(e0_cell, e0_honest, "laid-out e0 != reduced opening of the opened row");
+        assert_eq!(
+            e0_cell, e0_honest,
+            "laid-out e0 != reduced opening of the opened row"
+        );
     }
 
     /// FORGERY — WRONG alpha (!= the DEEP/FS-bound alpha cell): bump the DEEP_ALPHA cell. e0 was
@@ -10532,7 +12116,13 @@ mod tests {
 
     /// A (DR↔b′) config: as `cfg_dr` but with the DEEP `C(zeta)` bound to the SAME `value_at_zeta`
     /// cells (`deep_c_from_vzeta`). This is the connection of the constraint mirror to the FRI side.
-    fn cfg_dr_cbind(levels: usize, width: usize, combine: usize, log_degree: usize, next: bool) -> RecursiveConfig {
+    fn cfg_dr_cbind(
+        levels: usize,
+        width: usize,
+        combine: usize,
+        log_degree: usize,
+        next: bool,
+    ) -> RecursiveConfig {
         RecursiveConfig {
             deep_c_from_vzeta: true,
             ..cfg_dr(levels, width, combine, log_degree, next)
@@ -10578,7 +12168,8 @@ mod tests {
         let n = 1usize << 4;
         let salt = sample_salt(0xB2);
         let (rows, tree) = leaf_tree_for(12, n, salt);
-        let (row, _leaf, _root, vz, _vzn, _x, alpha, zeta) = dr_window(&cfg, 5, &rows[5], salt, &tree);
+        let (row, _leaf, _root, vz, _vzn, _x, alpha, zeta) =
+            dr_window(&cfg, 5, &rows[5], salt, &tree);
         // Mred(zeta) = Σ alpha^i · value_at_zeta[i] over the SAME cells.
         let mut mred = Challenge::ZERO;
         let mut ap = Challenge::ONE;
@@ -10587,12 +12178,21 @@ mod tests {
             ap *= alpha;
         }
         let db = deep_base(&cfg);
-        let c_cell = Challenge::from_basis_coefficients_slice(&row[db + DEEP_C..db + DEEP_C + D]).unwrap();
-        assert_eq!(c_cell, mred, "DEEP_C != reduced opening of the value_at_zeta cells");
+        let c_cell =
+            Challenge::from_basis_coefficients_slice(&row[db + DEEP_C..db + DEEP_C + D]).unwrap();
+        assert_eq!(
+            c_cell, mred,
+            "DEEP_C != reduced opening of the value_at_zeta cells"
+        );
         // and C == Z_H(zeta)·Q for the laid-out Q.
-        let q_cell = Challenge::from_basis_coefficients_slice(&row[db + DEEP_Q..db + DEEP_Q + D]).unwrap();
+        let q_cell =
+            Challenge::from_basis_coefficients_slice(&row[db + DEEP_Q..db + DEEP_Q + D]).unwrap();
         let zh = crate::deep::vanishing_poly_at(zeta, 10);
-        assert_eq!(c_cell, zh * q_cell, "DEEP_C != Z_H(zeta)·Q for the laid-out Q");
+        assert_eq!(
+            c_cell,
+            zh * q_cell,
+            "DEEP_C != Z_H(zeta)·Q for the laid-out Q"
+        );
     }
 
     /// FORGERY — a forged `value_at_zeta` (≠ the real OOD evaluation) now BREAKS THE CONSTRAINT
@@ -10632,7 +12232,8 @@ mod tests {
         let n = 1usize << 4;
         let salt = sample_salt(0xD4);
         let (rows, tree) = leaf_tree_for(12, n, salt);
-        let (row_h, _leaf, _root, vz, _vzn, x, alpha, zeta) = dr_window(&cfg, 5, &rows[5], salt, &tree);
+        let (row_h, _leaf, _root, vz, _vzn, x, alpha, zeta) =
+            dr_window(&cfg, 5, &rows[5], salt, &tree);
         // forge vz[7].
         let mut vz_f = vz.clone();
         vz_f[7] += Challenge::ONE;
@@ -10646,19 +12247,47 @@ mod tests {
         let e0_f = deep_reduced_e0(alpha, zeta, x, &rows[5][..12], &vz_f);
         let inp = WindowInputs {
             draw_out: Val::from_u32(5),
-            e0: e0_f, e1: ext_multi(2), beta: ext_multi(3), descent: &[],
-            merkle_leaf: leaf, merkle_siblings: &sibs,
-            deep_zeta: zeta, deep_q: ext_multi(5), deep_alpha: alpha,
-            fs_blocks: &[], sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH],
-            absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
-            fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-            leaf_row: &rows[5], leaf_salt: salt,
-            dr_value_at_zeta: &vz_f, dr_value_at_zeta_next: &[], dr_x: x,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
-            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
-            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
-            quot_x: Val::ZERO, quot_siblings: &[],
+            e0: e0_f,
+            e1: ext_multi(2),
+            beta: ext_multi(3),
+            descent: &[],
+            merkle_leaf: leaf,
+            merkle_siblings: &sibs,
+            deep_zeta: zeta,
+            deep_q: ext_multi(5),
+            deep_alpha: alpha,
+            fs_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
+            public_io: &[],
+            fs_beta_blocks: &[],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &rows[5],
+            leaf_salt: salt,
+            dr_value_at_zeta: &vz_f,
+            dr_value_at_zeta_next: &[],
+            dr_x: x,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
         };
         // This builds a FULLY honest window for vz_f (C derived from vz_f) — it should ACCEPT, proving
         // the connection accepts honest forged-free windows.
@@ -10730,7 +12359,8 @@ mod tests {
         c_committed: Challenge,
     ) -> (Vec<Val>, [Challenge; lc::N_OPENED_CELLS]) {
         let cells = lc::honest_cells_for_test(c4_vals, pad_seed);
-        let mut inp = WindowInputs::single(Val::from_u32(0), ext_multi(1), ext_multi(2), ext_multi(3));
+        let mut inp =
+            WindowInputs::single(Val::from_u32(0), ext_multi(1), ext_multi(2), ext_multi(3));
         inp.deep_zeta = zeta;
         inp.deep_alpha = alpha;
         inp.lc_value_at_zeta = &cells;
@@ -10751,13 +12381,20 @@ mod tests {
             let alpha = ext_multi(40 + k as u32);
             let zeta = ext_multi(50 + k as u32);
             let c_committed = ext_multi(9);
-            let (row, cells) =
-                full_leaf_window(&cfg, [0, 1, 127, 12288, 5000, 96], 17, alpha, zeta, c_committed);
+            let (row, cells) = full_leaf_window(
+                &cfg,
+                [0, 1, 127, 12288, 5000, 96],
+                17,
+                alpha,
+                zeta,
+                c_committed,
+            );
             // FIDELITY-PIN: DEEP_C == the leaf's own folded C(zeta) + C_committed (native reference).
             let c_partial = lc::partial_constraint_eval(&cells, alpha);
             let db = deep_base(&cfg);
             let c_cell =
-                Challenge::from_basis_coefficients_slice(&row[db + DEEP_C..db + DEEP_C + D]).unwrap();
+                Challenge::from_basis_coefficients_slice(&row[db + DEEP_C..db + DEEP_C + D])
+                    .unwrap();
             assert_eq!(
                 c_cell,
                 c_partial + c_committed,
@@ -10765,7 +12402,8 @@ mod tests {
             );
             // and C == Z_H(zeta)·Q.
             let q_cell =
-                Challenge::from_basis_coefficients_slice(&row[db + DEEP_Q..db + DEEP_Q + D]).unwrap();
+                Challenge::from_basis_coefficients_slice(&row[db + DEEP_Q..db + DEEP_Q + D])
+                    .unwrap();
             assert_eq!(
                 c_cell,
                 crate::deep::vanishing_poly_at(zeta, k) * q_cell,
@@ -10802,7 +12440,14 @@ mod tests {
         use p3_merkle_tree::MerkleTreeMmcs;
         use p3_uni_stark::{prove, verify, StarkConfig};
 
-        type ValMmcs = MerkleTreeMmcs<<Val as Field>::Packing, <Val as Field>::Packing, MyHash, MyCompress, 2, DIGEST_ELEMS>;
+        type ValMmcs = MerkleTreeMmcs<
+            <Val as Field>::Packing,
+            <Val as Field>::Packing,
+            MyHash,
+            MyCompress,
+            2,
+            DIGEST_ELEMS,
+        >;
         type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
         type DftT = Radix2DitParallel<Val>;
         type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
@@ -10810,7 +12455,11 @@ mod tests {
         type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
 
         let perm: Perm = default_koalabear_poseidon2_16();
-        let val_mmcs = ValMmcs::new(MyHash::new(perm.clone()), MyCompress::new(MyHash::new(perm.clone())), 0);
+        let val_mmcs = ValMmcs::new(
+            MyHash::new(perm.clone()),
+            MyCompress::new(MyHash::new(perm.clone())),
+            0,
+        );
         let challenge_mmcs = ChallengeMmcs::new(val_mmcs.clone());
         let fri_params = FriParameters {
             log_blowup: PROD_LOG_BLOWUP,
@@ -10829,14 +12478,25 @@ mod tests {
         let alpha = ext_multi(40 + k as u32);
         let zeta = ext_multi(50 + k as u32);
         let c_committed = ext_multi(9);
-        let (row, _cells) =
-            full_leaf_window(&cfg, [0, 1, 127, 12288, 5000, 96], 17, alpha, zeta, c_committed);
+        let (row, _cells) = full_leaf_window(
+            &cfg,
+            [0, 1, 127, 12288, 5000, 96],
+            17,
+            alpha,
+            zeta,
+            c_committed,
+        );
         // Pad to 2 identical rows (the single window has no cross-row constraints).
         let w = n_cols(&cfg);
         let mut values = row.clone();
         values.extend_from_slice(&row);
         let trace = RowMajorMatrix::new(values, w);
-        let proof = prove(&config, &RecursiveAir { cfg: cfg.clone() }, trace, &alloc::vec![]);
+        let proof = prove(
+            &config,
+            &RecursiveAir { cfg: cfg.clone() },
+            trace,
+            &alloc::vec![],
+        );
         verify(&config, &RecursiveAir { cfg }, &proof, &alloc::vec![])
             .expect("full-leaf recursive_air window must prove+verify at production q128 knobs");
     }
@@ -10858,18 +12518,24 @@ mod tests {
         let lcb = lc_base(&cfg);
         // representative cells across the mirrored classes (cell INDEX into the (LC) block).
         let targets = [
-            lc::L_CELLS + 0,                                  // C4 lane0 v (algebraic)
-            lc::L_CELLS + 24,                                 // C4 lane0 is96
-            lc::c1_out_cell_idx(0),                           // C1 squeeze output (sponge)
+            lc::L_CELLS + 0,                                            // C4 lane0 v (algebraic)
+            lc::L_CELLS + 24,                                           // C4 lane0 is96
+            lc::c1_out_cell_idx(0), // C1 squeeze output (sponge)
             lc::c1_perm_cell_idx(0, crate::inlined_perm::C_BEGIN_POST), // C1 interior perm post
-            lc::c2_squeeze_output_cell_idx(15),              // C2 squeezed lane (reduce input)
-            lc::carrier_masked_cell_idx(4),                  // carrier masked_projection
-            lc::chain_out_cell_idx(0),                        // batch-chain running digest
-            lc::byterange_absorbed_cell_idx(0),              // byte-range absorbed lane
+            lc::c2_squeeze_output_cell_idx(15), // C2 squeezed lane (reduce input)
+            lc::carrier_masked_cell_idx(4), // carrier masked_projection
+            lc::chain_out_cell_idx(0), // batch-chain running digest
+            lc::byterange_absorbed_cell_idx(0), // byte-range absorbed lane
         ];
         for &cell_idx in &targets {
-            let (mut row, _cells) =
-                full_leaf_window(&cfg, [0, 1, 127, 12288, 5000, 96], 17, alpha, zeta, c_committed);
+            let (mut row, _cells) = full_leaf_window(
+                &cfg,
+                [0, 1, 127, 12288, 5000, 96],
+                17,
+                alpha,
+                zeta,
+                c_committed,
+            );
             // tamper limb 0 of the opened (LC) cell (DEEP_C, DEEP_Q, C_committed unchanged).
             row[lcb + LC_VZETA + cell_idx * D] += Val::ONE;
             let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -10898,11 +12564,20 @@ mod tests {
         // of the FULL leaf C(zeta) (its perm round residuals) but would never appear in a degree-1
         // linear reduction of a fixed set of opened-row columns.
         let interior = lc::c1_perm_cell_idx(3, crate::inlined_perm::C_BEGIN_POST + 5);
-        let (mut row, cells) =
-            full_leaf_window(&cfg, [0, 1, 127, 12288, 5000, 96], 17, alpha, zeta, c_committed);
+        let (mut row, cells) = full_leaf_window(
+            &cfg,
+            [0, 1, 127, 12288, 5000, 96],
+            17,
+            alpha,
+            zeta,
+            c_committed,
+        );
         // Sanity: honest accepts first.
         let m_ok = RowMajorMatrix::new(row.clone(), n_cols(&cfg));
-        assert!(check_all_constraints(&air(cfg.clone()), &m_ok, &[], None).is_ok(), "honest rejected");
+        assert!(
+            check_all_constraints(&air(cfg.clone()), &m_ok, &[], None).is_ok(),
+            "honest rejected"
+        );
         // Confirm the tamper actually changes the FULL fold (native reference): C_partial shifts.
         let mut tampered_cells = cells;
         tampered_cells[interior] += Challenge::from(Val::ONE);
@@ -10925,8 +12600,14 @@ mod tests {
     #[test]
     fn full_leaf_rejects_tampered_q() {
         let cfg = cfg_full_leaf(8, 8);
-        let (mut row, _cells) =
-            full_leaf_window(&cfg, [0, 1, 127, 12288, 5000, 96], 17, ext_multi(43), ext_multi(53), ext_multi(2));
+        let (mut row, _cells) = full_leaf_window(
+            &cfg,
+            [0, 1, 127, 12288, 5000, 96],
+            17,
+            ext_multi(43),
+            ext_multi(53),
+            ext_multi(2),
+        );
         let db = deep_base(&cfg);
         row[db + DEEP_Q + 3] += Val::ONE;
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -10941,8 +12622,14 @@ mod tests {
     #[test]
     fn full_leaf_rejects_tampered_c_committed() {
         let cfg = cfg_full_leaf(8, 8);
-        let (mut row, _cells) =
-            full_leaf_window(&cfg, [0, 1, 127, 12288, 5000, 96], 17, ext_multi(44), ext_multi(54), ext_multi(5));
+        let (mut row, _cells) = full_leaf_window(
+            &cfg,
+            [0, 1, 127, 12288, 5000, 96],
+            17,
+            ext_multi(44),
+            ext_multi(54),
+            ext_multi(5),
+        );
         let cc = lc_base(&cfg) + lc_c_committed(&cfg);
         row[cc + 2] += Val::ONE;
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -10952,13 +12639,258 @@ mod tests {
         );
     }
 
+    // =======================================================================
+    // (SC CAPSTONE) deep_c_full_spend: the live window's DEEP C(zeta) is the FULL
+    // alpha-FOLDED spend constraint mirror over the spend trace opening + public
+    // values, plus a committed summand.
+    // =======================================================================
+
+    fn cfg_full_spend(h: usize, k: usize) -> RecursiveConfig {
+        RecursiveConfig {
+            deep_log_degree: Some(k),
+            deep_c_full_spend: true,
+            ..RecursiveConfig::single_window(h)
+        }
+    }
+
+    fn spend_witness_for_recursive(seed: u32) -> descender_account_stark::spend_air::SpendWitness {
+        use descender_account_stark::checked_core::CC_Q;
+        descender_account_stark::spend_air::SpendWitness {
+            sigma_w: core::array::from_fn(|i| {
+                ((seed.wrapping_mul(149).wrapping_add(i as u32) + 29) % CC_Q as u32) as u16
+            }),
+            sigma_t: core::array::from_fn(|i| {
+                ((seed.wrapping_mul(71).wrapping_add(i as u32) + 5) % CC_Q as u32) as u16
+            }),
+            projection: core::array::from_fn(|i| {
+                ((seed.wrapping_mul(211).wrapping_add(i as u32) + 5) % CC_Q as u32) as u16
+            }),
+            account_id: core::array::from_fn(|i| {
+                (i as u8).wrapping_mul(13).wrapping_add(seed as u8)
+            }),
+            slot_id: 0xDEAD_BEEF_0000_0042u64.wrapping_add(seed as u64),
+            account_state_root: core::array::from_fn(|i| {
+                (i as u8)
+                    .wrapping_mul(17)
+                    .wrapping_add(7)
+                    .wrapping_add(seed as u8)
+            }),
+            message_digest: core::array::from_fn(|i| {
+                (i as u8)
+                    .wrapping_mul(7)
+                    .wrapping_add(1)
+                    .wrapping_add(seed as u8)
+            }),
+        }
+    }
+
+    fn honest_spend_opening(seed: u32) -> (Vec<Challenge>, Vec<Challenge>) {
+        use descender_account_stark::spend_air::generate_spend_trace;
+        let spend_air = sc::production_spend_air();
+        let (trace, public_values, _frame_digest) =
+            generate_spend_trace(&spend_air, &spend_witness_for_recursive(seed));
+        let width = spend_air.trace_width();
+        assert_eq!(
+            width,
+            sc::production_trace_width(),
+            "production spend width drift"
+        );
+        assert_eq!(
+            public_values.len(),
+            sc::production_public_count(),
+            "production spend public width drift"
+        );
+        let cells: Vec<Challenge> = trace.values[..width]
+            .iter()
+            .map(|&v| Challenge::from(v))
+            .collect();
+        let pubvals: Vec<Challenge> = public_values.iter().map(|&v| Challenge::from(v)).collect();
+        (cells, pubvals)
+    }
+
+    fn full_spend_window(
+        cfg: &RecursiveConfig,
+        seed: u32,
+        alpha: Challenge,
+        zeta: Challenge,
+        c_committed: Challenge,
+    ) -> (Vec<Val>, Vec<Challenge>, Vec<Challenge>) {
+        let (cells, pubvals) = honest_spend_opening(seed);
+        let mut inp =
+            WindowInputs::single(Val::from_u32(0), ext_multi(1), ext_multi(2), ext_multi(3));
+        inp.deep_zeta = zeta;
+        inp.deep_alpha = alpha;
+        inp.sc_value_at_zeta = &cells;
+        inp.sc_public_values = &pubvals;
+        inp.sc_c_committed = c_committed;
+        let row = pack_window(cfg, &inp);
+        (row, cells, pubvals)
+    }
+
+    /// GOLDEN (fast): packing a full-spend recursive window derives DEEP_C from the production spend
+    /// mirror's native full C_partial fold plus C_committed, fills the committed accumulator, and still
+    /// satisfies the DEEP quotient identity C == Z_H(zeta) * Q. The full recursive evaluator check is
+    /// present below as an ignored slow test.
+    #[test]
+    fn full_spend_window_derives_c_from_full_fold() {
+        for &k in &[1usize, 6, 10] {
+            let cfg = cfg_full_spend(8, k);
+            let alpha = ext_multi(140 + k as u32);
+            let zeta = ext_multi(150 + k as u32);
+            let c_committed = ext_multi(19);
+            let (row, cells, pubvals) =
+                full_spend_window(&cfg, k as u32 + 1, alpha, zeta, c_committed);
+            let c_partial = sc::production_c_partial(&cells, &pubvals, alpha);
+            let db = deep_base(&cfg);
+            let c_cell =
+                Challenge::from_basis_coefficients_slice(&row[db + DEEP_C..db + DEEP_C + D])
+                    .unwrap();
+            assert_eq!(
+                c_cell,
+                c_partial + c_committed,
+                "DEEP_C != spend C_partial(value_at_zeta, public_values) + C_committed at k={k}"
+            );
+            let q_cell =
+                Challenge::from_basis_coefficients_slice(&row[db + DEEP_Q..db + DEEP_Q + D])
+                    .unwrap();
+            assert_eq!(
+                c_cell,
+                crate::deep::vanishing_poly_at(zeta, k) * q_cell,
+                "DEEP_C != Z_H(zeta) * Q at k={k}"
+            );
+
+            let scb = sc_base(&cfg);
+            let cc_cell = Challenge::from_basis_coefficients_slice(
+                &row[scb + sc_c_committed(&cfg)..scb + sc_c_committed(&cfg) + D],
+            )
+            .unwrap();
+            assert_eq!(cc_cell, c_committed, "C_committed not copied into SC block");
+            let final_acc = Challenge::from_basis_coefficients_slice(
+                &row[scb + sc_acc(&cfg) + (sc::production_residual_count() - 1) * D
+                    ..scb + sc_acc(&cfg) + sc::production_residual_count() * D],
+            )
+            .unwrap();
+            assert_eq!(
+                final_acc, c_partial,
+                "SC committed accumulator final value != spend C_partial at k={k}"
+            );
+        }
+    }
+
+    /// FIDELITY (fast): representative spend trace/public tampering changes the production full fold
+    /// natively. The ignored slow reject tests below exercise the same tampering through the recursive
+    /// AIR evaluator.
+    #[test]
+    fn full_spend_native_fold_changes_on_representative_tamper() {
+        let (cells, pubvals) = honest_spend_opening(11);
+        let alpha = ext_multi(170);
+        let base = sc::production_c_partial(&cells, &pubvals, alpha);
+        assert_eq!(
+            base,
+            Challenge::ZERO,
+            "honest spend residual fold must be zero"
+        );
+
+        let mut bad_cells = cells.clone();
+        bad_cells[0] += Challenge::from(Val::ONE);
+        assert_ne!(
+            sc::production_c_partial(&bad_cells, &pubvals, alpha),
+            base,
+            "spend trace opening tamper did not change the native full fold"
+        );
+
+        let mut bad_pubvals = pubvals;
+        bad_pubvals[0] += Challenge::from(Val::ONE);
+        assert_ne!(
+            sc::production_c_partial(&cells, &bad_pubvals, alpha),
+            base,
+            "spend public-value tamper did not change the native full fold"
+        );
+    }
+
+    /// SLOW GOLDEN: the full recursive AIR evaluator accepts the full-spend capstone window. This is
+    /// intentionally ignored because evaluating the production spend mirror inside recursive_air is
+    /// minute-scale in debug builds.
+    #[test]
+    #[ignore = "slow: full-spend recursive_air check_all_constraints over production spend mirror"]
+    fn full_spend_recursive_constraints_accept_honest() {
+        let cfg = cfg_full_spend(8, 1);
+        let (row, _cells, _pubvals) =
+            full_spend_window(&cfg, 12, ext_multi(171), ext_multi(181), ext_multi(23));
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        let report = check_all_constraints(&air(cfg), &m, &[], None);
+        assert!(
+            report.is_ok(),
+            "honest full-spend window rejected: {} failures",
+            report.failures.len()
+        );
+    }
+
+    /// FORGERY: changing an opened spend trace/public cell while leaving DEEP_C/Q and the committed
+    /// accumulator unchanged breaks the full-spend fold equality, so the recursive window rejects.
+    #[test]
+    #[ignore = "slow: full-spend recursive_air check_all_constraints over production spend mirror"]
+    fn full_spend_rejects_forged_opening_cells() {
+        let cfg = cfg_full_spend(8, 8);
+        let alpha = ext_multi(141);
+        let zeta = ext_multi(151);
+        let c_committed = ext_multi(17);
+        let scb = sc_base(&cfg);
+        let trace_targets = [
+            0usize,
+            sc::production_trace_width() / 3,
+            sc::production_trace_width().saturating_sub(1),
+        ];
+        for &cell_idx in &trace_targets {
+            let (mut row, _cells, _pubvals) =
+                full_spend_window(&cfg, cell_idx as u32 + 3, alpha, zeta, c_committed);
+            row[scb + SC_VZETA + cell_idx * D] += Val::ONE;
+            let m = RowMajorMatrix::new(row, n_cols(&cfg));
+            assert!(
+                !check_all_constraints(&air(cfg.clone()), &m, &[], None).is_ok(),
+                "forged spend trace opening cell {cell_idx} was accepted"
+            );
+        }
+        let public_idx = sc::production_public_count() / 2;
+        let (mut row, _cells, _pubvals) = full_spend_window(&cfg, 99, alpha, zeta, c_committed);
+        row[scb + sc_pub(&cfg) + public_idx * D] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "forged spend public-value opening cell {public_idx} was accepted"
+        );
+    }
+
+    /// FORGERY: tampering the spend C_committed summand with the spend opening and DEEP_C unchanged
+    /// breaks the decomposition C == spend_C_partial + C_committed.
+    #[test]
+    #[ignore = "slow: full-spend recursive_air check_all_constraints over production spend mirror"]
+    fn full_spend_rejects_tampered_c_committed() {
+        let cfg = cfg_full_spend(8, 8);
+        let (mut row, _cells, _pubvals) =
+            full_spend_window(&cfg, 7, ext_multi(144), ext_multi(154), ext_multi(5));
+        let cc = sc_base(&cfg) + sc_c_committed(&cfg);
+        row[cc + 2] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "tampered spend C_committed was accepted"
+        );
+    }
+
     // ---------------------------------------------------------------------------------
     // (QO) quotient-chunk opening: Merkle-auth at FS index, e0 quotient contribution, DEEP_Q tie.
     // ---------------------------------------------------------------------------------
 
     /// Config: a (DR) trace e0 block + the (QO) quotient block. `q` chunks, quotient path depth =
     /// `levels` (same FS index decomposition as the main trace).
-    fn cfg_quot(levels: usize, width: usize, combine: usize, k: usize, q: usize) -> RecursiveConfig {
+    fn cfg_quot(
+        levels: usize,
+        width: usize,
+        combine: usize,
+        k: usize,
+        q: usize,
+    ) -> RecursiveConfig {
         RecursiveConfig {
             merkle_levels: levels,
             leaf_row_len: width,
@@ -10982,7 +12914,11 @@ mod tests {
         salt: [Val; SALT_ELEMS],
     ) -> (Vec<Vec<Challenge>>, RefTree) {
         let opened: Vec<Vec<Challenge>> = (0..n as u32)
-            .map(|r| (0..q as u32).map(|c| ext_multi(0xC00u32.wrapping_add(r * 31 + c))).collect())
+            .map(|r| {
+                (0..q as u32)
+                    .map(|c| ext_multi(0xC00u32.wrapping_add(r * 31 + c)))
+                    .collect()
+            })
             .collect();
         let leaves: Vec<Digest> = opened
             .iter()
@@ -11011,7 +12947,15 @@ mod tests {
         quot_opened_at_x: &[Challenge],
         quot_salt: [Val; SALT_ELEMS],
         quot_tree: &RefTree,
-    ) -> (Vec<Val>, Digest, Digest, Digest, Challenge, Vec<Challenge>, Vec<Challenge>) {
+    ) -> (
+        Vec<Val>,
+        Digest,
+        Digest,
+        Digest,
+        Challenge,
+        Vec<Challenge>,
+        Vec<Challenge>,
+    ) {
         let n = cfg.deep_e0_combine;
         let q = cfg.quot_chunks;
         let k = cfg.deep_log_degree.unwrap();
@@ -11041,7 +12985,14 @@ mod tests {
 
         // faithful e0 = trace reduced opening + quotient reduced opening.
         let trace_e0 = deep_reduced_e0(alpha, zeta, x, &trace_row[..n], &vz);
-        let quot_e0 = quotient_reduced_e0(alpha, zeta, x, cfg.quot_alpha_offset, quot_opened_at_x, &at_zeta);
+        let quot_e0 = quotient_reduced_e0(
+            alpha,
+            zeta,
+            x,
+            cfg.quot_alpha_offset,
+            quot_opened_at_x,
+            &at_zeta,
+        );
         let e0 = trace_e0 + quot_e0;
 
         let inp = WindowInputs {
@@ -11062,16 +13013,24 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[],
-            fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
-            fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
             leaf_row: trace_row,
             leaf_salt: trace_salt,
             dr_value_at_zeta: &vz,
             dr_value_at_zeta_next: &[],
             dr_x: x,
-            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
             quot_commit: quot_root,
             quot_opened_at_x,
             quot_at_zeta: &at_zeta,
@@ -11080,7 +13039,15 @@ mod tests {
             quot_x: x,
             quot_siblings: &quot_sibs,
         };
-        (pack_window(cfg, &inp), trace_leaf, trace_root, quot_root, deep_q, at_zeta, zps)
+        (
+            pack_window(cfg, &inp),
+            trace_leaf,
+            trace_root,
+            quot_root,
+            deep_q,
+            at_zeta,
+            zps,
+        )
     }
 
     /// GOLDEN: an honest (DR + QO) window — quotient opening Merkle-authenticated at the FS index, the
@@ -11100,8 +13067,16 @@ mod tests {
             let (trows, ttree) = leaf_tree_for(width, n, tsalt);
             let (qopened, qtree) = quot_tree_for(q, n, qsalt);
             for &index in &[0usize, 3, n - 1] {
-                let (row, tleaf, troot, ..) =
-                    quot_window(&cfg, index, &trows[index], tsalt, &ttree, &qopened[index], qsalt, &qtree);
+                let (row, tleaf, troot, ..) = quot_window(
+                    &cfg,
+                    index,
+                    &trows[index],
+                    tsalt,
+                    &ttree,
+                    &qopened[index],
+                    qsalt,
+                    &qtree,
+                );
                 let m = RowMajorMatrix::new(row, n_cols(&cfg));
                 let report = check_all_constraints(&air(cfg), &m, &pubs(tleaf, troot), None);
                 assert!(
@@ -11125,8 +13100,16 @@ mod tests {
         let qsalt = sample_salt(0x91);
         let (trows, ttree) = leaf_tree_for(12, n, tsalt);
         let (qopened, qtree) = quot_tree_for(8, n, qsalt);
-        let (mut row, tleaf, troot, ..) =
-            quot_window(&cfg, 5, &trows[5], tsalt, &ttree, &qopened[5], qsalt, &qtree);
+        let (mut row, tleaf, troot, ..) = quot_window(
+            &cfg,
+            5,
+            &trows[5],
+            tsalt,
+            &ttree,
+            &qopened[5],
+            qsalt,
+            &qtree,
+        );
         let qb = qo_base(&cfg);
         row[qb + qo_opened(&cfg) + 3] += Val::ONE; // tamper opened chunk 0 limb 3
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -11147,8 +13130,16 @@ mod tests {
         let qsalt = sample_salt(0x92);
         let (trows, ttree) = leaf_tree_for(12, n, tsalt);
         let (qopened, qtree) = quot_tree_for(8, n, qsalt);
-        let (mut row, tleaf, troot, ..) =
-            quot_window(&cfg, 5, &trows[5], tsalt, &ttree, &qopened[5], qsalt, &qtree);
+        let (mut row, tleaf, troot, ..) = quot_window(
+            &cfg,
+            5,
+            &trows[5],
+            tsalt,
+            &ttree,
+            &qopened[5],
+            qsalt,
+            &qtree,
+        );
         let qb = qo_base(&cfg);
         row[qb + QO_COMMIT] += Val::ONE; // corrupt the bound quotient commitment
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -11173,8 +13164,16 @@ mod tests {
         let fs_index = 5usize;
         let other = 10usize;
         // honest window at fs_index, then splice the OTHER leaf's opened chunks + path.
-        let (mut row, tleaf, troot, ..) =
-            quot_window(&cfg, fs_index, &trows[fs_index], tsalt, &ttree, &qopened[fs_index], qsalt, &qtree);
+        let (mut row, tleaf, troot, ..) = quot_window(
+            &cfg,
+            fs_index,
+            &trows[fs_index],
+            tsalt,
+            &ttree,
+            &qopened[fs_index],
+            qsalt,
+            &qtree,
+        );
         // re-pack the QO opened cells + path levels for the OTHER leaf (keeping FS bits = fs_index).
         let qb = qo_base(&cfg);
         let other_sibs = qtree.auth_path(other);
@@ -11201,14 +13200,16 @@ mod tests {
         for (level, &sib) in other_sibs.iter().enumerate() {
             let bit = (node_idx & 1) == 1;
             let lbase = qo_level_base(&cfg, level);
-            row[lbase + QO_ML_RUNNING..lbase + QO_ML_RUNNING + DIGEST_ELEMS].copy_from_slice(&running);
+            row[lbase + QO_ML_RUNNING..lbase + QO_ML_RUNNING + DIGEST_ELEMS]
+                .copy_from_slice(&running);
             row[lbase + QO_ML_SIBLING..lbase + QO_ML_SIBLING + DIGEST_ELEMS].copy_from_slice(&sib);
             let (a, b) = if bit { (sib, running) } else { (running, sib) };
             let mut combined = [Val::ZERO; ABSORB_LEN];
             combined[..DIGEST_ELEMS].copy_from_slice(&a);
             combined[DIGEST_ELEMS..].copy_from_slice(&b);
             let (blocks, digest) = node_blocks(&combined, &consts);
-            row[lbase + QO_ML_PERM..lbase + QO_ML_PERM + N_PERM * PERM_COLS].copy_from_slice(&blocks);
+            row[lbase + QO_ML_PERM..lbase + QO_ML_PERM + N_PERM * PERM_COLS]
+                .copy_from_slice(&blocks);
             running = digest;
             node_idx >>= 1;
         }
@@ -11233,12 +13234,22 @@ mod tests {
         let qsalt = sample_salt(0x94);
         let (trows, ttree) = leaf_tree_for(12, n, tsalt);
         let (qopened, qtree) = quot_tree_for(8, n, qsalt);
-        let (mut row, tleaf, troot, _quot_root, deep_q, ..) =
-            quot_window(&cfg, 5, &trows[5], tsalt, &ttree, &qopened[5], qsalt, &qtree);
+        let (mut row, tleaf, troot, _quot_root, deep_q, ..) = quot_window(
+            &cfg,
+            5,
+            &trows[5],
+            tsalt,
+            &ttree,
+            &qopened[5],
+            qsalt,
+            &qtree,
+        );
         // forge DEEP_Q to a different value AND re-derive DEEP_C = Z_H(zeta)·forged_q so C == Z_H·Q
         // still passes — ONLY the (QO) recombination tie should catch the divergence.
         let db = deep_base(&cfg);
-        let zeta = Challenge::from_basis_coefficients_slice(&row[db + DEEP_ZETA..db + DEEP_ZETA + D]).unwrap();
+        let zeta =
+            Challenge::from_basis_coefficients_slice(&row[db + DEEP_ZETA..db + DEEP_ZETA + D])
+                .unwrap();
         let zh = crate::deep::vanishing_poly_at(zeta, 10);
         let forged_q = deep_q + ext_multi(1);
         row[db + DEEP_Q..db + DEEP_Q + D].copy_from_slice(&limbs(forged_q));
@@ -11262,8 +13273,16 @@ mod tests {
         let qsalt = sample_salt(0x95);
         let (trows, ttree) = leaf_tree_for(12, n, tsalt);
         let (qopened, qtree) = quot_tree_for(8, n, qsalt);
-        let (mut row, tleaf, troot, ..) =
-            quot_window(&cfg, 5, &trows[5], tsalt, &ttree, &qopened[5], qsalt, &qtree);
+        let (mut row, tleaf, troot, ..) = quot_window(
+            &cfg,
+            5,
+            &trows[5],
+            tsalt,
+            &ttree,
+            &qopened[5],
+            qsalt,
+            &qtree,
+        );
         let qb = qo_base(&cfg);
         row[qb + qo_at_zeta(&cfg) + 2] += Val::ONE; // changes e0 numerator AND DEEP_Q recombination
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -11287,10 +13306,11 @@ mod tests {
         use p3_koala_bear::default_koalabear_poseidon2_16;
         use p3_matrix::Dimensions;
         use p3_merkle_tree::MerkleTreeMmcs;
-        use p3_symmetric::{PaddingFreeSponge};
+        use p3_symmetric::PaddingFreeSponge;
 
         type LeafHash = PaddingFreeSponge<Perm, 16, 7, DIGEST_ELEMS>;
-        type NodeCompress = descender_account_stark::sponge_compression::SpongeCompression<LeafHash>;
+        type NodeCompress =
+            descender_account_stark::sponge_compression::SpongeCompression<LeafHash>;
         let perm: Perm = default_koalabear_poseidon2_16();
         let hash = LeafHash::new(perm.clone());
         let compress = NodeCompress::new(LeafHash::new(perm.clone()));
@@ -11310,7 +13330,9 @@ mod tests {
         let mut vals: Vec<Val> = Vec::with_capacity(n * qwidth);
         for r in 0..n as u32 {
             for c in 0..(q * D) as u32 {
-                vals.push(Val::from_u32(r.wrapping_mul(0x9E37_79B1).wrapping_add(c).wrapping_add(7)));
+                vals.push(Val::from_u32(
+                    r.wrapping_mul(0x9E37_79B1).wrapping_add(c).wrapping_add(7),
+                ));
             }
             vals.extend_from_slice(&qsalt);
         }
@@ -11330,7 +13352,10 @@ mod tests {
             let (opened_values, opening_proof) = opening.unpack();
             assert_eq!(opened_values.len(), 1);
             assert_eq!(opening_proof.len(), levels);
-            let dims = [Dimensions { width: qwidth, height: n }];
+            let dims = [Dimensions {
+                width: qwidth,
+                height: n,
+            }];
             mmcs.verify_batch(
                 &qcommit,
                 &dims,
@@ -11342,7 +13367,10 @@ mod tests {
             let opened_row: &[Val] = opened_values[0].as_slice();
             // first q·D = chunk limbs; last SALT_ELEMS = salt (== qsalt, by construction).
             let opened_chunks: Vec<Challenge> = (0..q)
-                .map(|c| Challenge::from_basis_coefficients_slice(&opened_row[c * D..(c + 1) * D]).unwrap())
+                .map(|c| {
+                    Challenge::from_basis_coefficients_slice(&opened_row[c * D..(c + 1) * D])
+                        .unwrap()
+                })
                 .collect();
             let quot_siblings: Vec<Digest> = opening_proof.clone();
 
@@ -11354,7 +13382,14 @@ mod tests {
             let n_tr = cfg.deep_e0_combine;
             let vz: Vec<Challenge> = (0..n_tr as u32).map(|i| ext_multi(0x300 + i)).collect();
             let trace_e0 = deep_reduced_e0(alpha, zeta, x, &trows[index][..n_tr], &vz);
-            let quot_e0 = quotient_reduced_e0(alpha, zeta, x, cfg.quot_alpha_offset, &opened_chunks, &opened_chunks);
+            let quot_e0 = quotient_reduced_e0(
+                alpha,
+                zeta,
+                x,
+                cfg.quot_alpha_offset,
+                &opened_chunks,
+                &opened_chunks,
+            );
             let mut tinput = trows[index].clone();
             tinput.extend_from_slice(&tsalt);
             let trace_leaf = leaf_hash_digest(&tinput);
@@ -11363,21 +13398,45 @@ mod tests {
                 let inp = WindowInputs {
                     draw_out: Val::from_u32(index as u32),
                     e0: trace_e0 + quot_e0,
-                    e1: ext_multi(2), beta: ext_multi(3), descent: &[],
-                    merkle_leaf: trace_leaf, merkle_siblings: &ttree.auth_path(index),
-                    deep_zeta: zeta, deep_q, deep_alpha: alpha,
-                    fs_blocks: &[], sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH],
-                    absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
-                    fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-                    layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-                    leaf_row: &trows[index], leaf_salt: tsalt,
-                    dr_value_at_zeta: &vz, dr_value_at_zeta_next: &[], dr_x: x,
-                    lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+                    e1: ext_multi(2),
+                    beta: ext_multi(3),
+                    descent: &[],
+                    merkle_leaf: trace_leaf,
+                    merkle_siblings: &ttree.auth_path(index),
+                    deep_zeta: zeta,
+                    deep_q,
+                    deep_alpha: alpha,
+                    fs_blocks: &[],
+                    sponge_in: [Val::ZERO; WIDTH],
+                    prior_state: [Val::ZERO; WIDTH],
+                    absorbed: [Val::ZERO; RATE],
+                    prefix_blocks: &[],
+                    public_io: &[],
+                    fs_beta_blocks: &[],
+                    fs_ood_blocks: &[],
+                    fs_ood_partial_block: [Val::ZERO; RATE],
+                    fs_final_blocks: &[],
+                    fs_final_partial_block: [Val::ZERO; RATE],
+                    inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+                    layer_opens: &[],
+                    final_poly_x: Val::ZERO,
+                    final_poly_coeffs: &[],
+                    leaf_row: &trows[index],
+                    leaf_salt: tsalt,
+                    dr_value_at_zeta: &vz,
+                    dr_value_at_zeta_next: &[],
+                    dr_x: x,
+                    lc_value_at_zeta: &[],
+                    lc_c_committed: Challenge::ZERO,
+                    sc_value_at_zeta: &[],
+                    sc_public_values: &[],
+                    sc_c_committed: Challenge::ZERO,
                     quot_commit: qc,
                     quot_opened_at_x: &opened_chunks,
                     quot_at_zeta: &opened_chunks,
                     quot_zps: &zps,
-                    quot_salt: qsalt, quot_x: x,
+                    quot_salt: qsalt,
+                    quot_x: x,
                     quot_siblings: &quot_siblings,
                 };
                 pack_window(&cfg, &inp)
@@ -11387,9 +13446,13 @@ mod tests {
             let llast = qo_node_digest(qo_level_base(&cfg, cfg.quot_merkle_levels - 1));
             let mut recon = [Val::ZERO; DIGEST_ELEMS];
             recon.copy_from_slice(&row[llast..llast + DIGEST_ELEMS]);
-            assert_eq!(recon, quot_commit, "in-AIR quotient fold root != real MMCS commitment at index {index}");
+            assert_eq!(
+                recon, quot_commit,
+                "in-AIR quotient fold root != real MMCS commitment at index {index}"
+            );
             let m = RowMajorMatrix::new(row, n_cols(&cfg));
-            let report = check_all_constraints(&air(cfg.clone()), &m, &pubs(trace_leaf, ttree.root()), None);
+            let report =
+                check_all_constraints(&air(cfg.clone()), &m, &pubs(trace_leaf, ttree.root()), None);
             assert!(
                 report.is_ok(),
                 "real-MMCS quotient opening rejected in-AIR at index {index}: {} failures",
@@ -11402,7 +13465,13 @@ mod tests {
             bad_row[qo_base(&cfg) + QO_COMMIT] += Val::ONE;
             let bm = RowMajorMatrix::new(bad_row, n_cols(&cfg));
             assert!(
-                !check_all_constraints(&air(cfg.clone()), &bm, &pubs(trace_leaf, ttree.root()), None).is_ok(),
+                !check_all_constraints(
+                    &air(cfg.clone()),
+                    &bm,
+                    &pubs(trace_leaf, ttree.root()),
+                    None
+                )
+                .is_ok(),
                 "a corrupted inner quotient commitment was accepted at index {index}"
             );
         }
@@ -11416,8 +13485,8 @@ mod tests {
     #[test]
     fn fidelity_real_quotient_ood_recombination() {
         use p3_commit::PolynomialSpace;
-        use p3_field::TwoAdicField;
         use p3_field::coset::TwoAdicMultiplicativeCoset;
+        use p3_field::TwoAdicField;
 
         let levels = 4usize;
         let n = 1usize << levels;
@@ -11432,7 +13501,9 @@ mod tests {
         let g_quot = Val::GENERATOR;
         let gen = Val::two_adic_generator(log_total);
         let chunk_domains: Vec<TwoAdicMultiplicativeCoset<Val>> = (0..q)
-            .map(|i| TwoAdicMultiplicativeCoset::new(g_quot * gen.exp_u64(i as u64), log_chunk).unwrap())
+            .map(|i| {
+                TwoAdicMultiplicativeCoset::new(g_quot * gen.exp_u64(i as u64), log_chunk).unwrap()
+            })
             .collect();
         let zeta = ext_multi(0x9292);
         let zps_real: Vec<Challenge> = (0..q)
@@ -11443,7 +13514,8 @@ mod tests {
                     .filter(|(j, _)| *j != i)
                     .map(|(_, dj)| {
                         dj.vanishing_poly_at_point(zeta)
-                            * dj.vanishing_poly_at_point(chunk_domains[i].first_point()).inverse()
+                            * dj.vanishing_poly_at_point(chunk_domains[i].first_point())
+                                .inverse()
                     })
                     .product::<Challenge>()
             })
@@ -11462,7 +13534,14 @@ mod tests {
         let n_tr = cfg.deep_e0_combine;
         let vz: Vec<Challenge> = (0..n_tr as u32).map(|i| ext_multi(0x300 + i)).collect();
         let trace_e0 = deep_reduced_e0(alpha, zeta, x, &trows[index][..n_tr], &vz);
-        let quot_e0 = quotient_reduced_e0(alpha, zeta, x, cfg.quot_alpha_offset, &qopened[index], &at_zeta);
+        let quot_e0 = quotient_reduced_e0(
+            alpha,
+            zeta,
+            x,
+            cfg.quot_alpha_offset,
+            &qopened[index],
+            &at_zeta,
+        );
         let mut tinput = trows[index].clone();
         tinput.extend_from_slice(&tsalt);
         let trace_leaf = leaf_hash_digest(&tinput);
@@ -11470,21 +13549,45 @@ mod tests {
             let inp = WindowInputs {
                 draw_out: Val::from_u32(index as u32),
                 e0: trace_e0 + quot_e0,
-                e1: ext_multi(2), beta: ext_multi(3), descent: &[],
-                merkle_leaf: trace_leaf, merkle_siblings: &ttree.auth_path(index),
-                deep_zeta: zeta, deep_q: dq, deep_alpha: alpha,
-                fs_blocks: &[], sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH],
-                absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
-                fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
-                layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
-                leaf_row: &trows[index], leaf_salt: tsalt,
-                dr_value_at_zeta: &vz, dr_value_at_zeta_next: &[], dr_x: x,
-                lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+                e1: ext_multi(2),
+                beta: ext_multi(3),
+                descent: &[],
+                merkle_leaf: trace_leaf,
+                merkle_siblings: &ttree.auth_path(index),
+                deep_zeta: zeta,
+                deep_q: dq,
+                deep_alpha: alpha,
+                fs_blocks: &[],
+                sponge_in: [Val::ZERO; WIDTH],
+                prior_state: [Val::ZERO; WIDTH],
+                absorbed: [Val::ZERO; RATE],
+                prefix_blocks: &[],
+                public_io: &[],
+                fs_beta_blocks: &[],
+                fs_ood_blocks: &[],
+                fs_ood_partial_block: [Val::ZERO; RATE],
+                fs_final_blocks: &[],
+                fs_final_partial_block: [Val::ZERO; RATE],
+                inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+                layer_opens: &[],
+                final_poly_x: Val::ZERO,
+                final_poly_coeffs: &[],
+                leaf_row: &trows[index],
+                leaf_salt: tsalt,
+                dr_value_at_zeta: &vz,
+                dr_value_at_zeta_next: &[],
+                dr_x: x,
+                lc_value_at_zeta: &[],
+                lc_c_committed: Challenge::ZERO,
+                sc_value_at_zeta: &[],
+                sc_public_values: &[],
+                sc_c_committed: Challenge::ZERO,
                 quot_commit: qtree.root(),
                 quot_opened_at_x: &qopened[index],
                 quot_at_zeta: &at_zeta,
                 quot_zps: zps,
-                quot_salt: qsalt, quot_x: x,
+                quot_salt: qsalt,
+                quot_x: x,
                 quot_siblings: &qtree.auth_path(index),
             };
             pack_window(&cfg, &inp)
@@ -11493,7 +13596,8 @@ mod tests {
         let row = build(&zps_real, deep_q);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         assert!(
-            check_all_constraints(&air(cfg.clone()), &m, &pubs(trace_leaf, ttree.root()), None).is_ok(),
+            check_all_constraints(&air(cfg.clone()), &m, &pubs(trace_leaf, ttree.root()), None)
+                .is_ok(),
             "honest real-zps recombination window rejected"
         );
         // tamper a zps selector CELL post-build (keep DEEP_Q at the honest recombination; the honest
@@ -11559,7 +13663,9 @@ mod real_proof_capstone {
             c6_nonce: core::array::from_fn(|i| (i as u8).wrapping_mul(13).wrapping_add(2)),
             account_id: core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(4)),
             verifier_version: 0x0A0B_0C0D,
-            account_state_root: core::array::from_fn(|i| (i as u8).wrapping_mul(19).wrapping_add(6)),
+            account_state_root: core::array::from_fn(|i| {
+                (i as u8).wrapping_mul(19).wrapping_add(6)
+            }),
             syndrome: core::array::from_fn(|i| ((i as u32 * 911 + 13) % 12289) as u16),
             checked_core_key_commitment: [0x2bu8; 32],
         }
@@ -11577,14 +13683,23 @@ mod real_proof_capstone {
         v.extend_from_slice(&p.masked_projection);
         // context, same embedding as the AIR `context` block
         v.extend(p.account_id.iter().map(|&b| Val::from_u32(b as u32)));
-        v.extend(p.slot_id.to_le_bytes().iter().map(|&b| Val::from_u32(b as u32)));
+        v.extend(
+            p.slot_id
+                .to_le_bytes()
+                .iter()
+                .map(|&b| Val::from_u32(b as u32)),
+        );
         v.extend(
             p.verifier_version
                 .to_le_bytes()
                 .iter()
                 .map(|&b| Val::from_u32(b as u32)),
         );
-        v.extend(p.account_state_root.iter().map(|&b| Val::from_u32(b as u32)));
+        v.extend(
+            p.account_state_root
+                .iter()
+                .map(|&b| Val::from_u32(b as u32)),
+        );
         v.extend(p.lifecycle_anchor.iter().map(|&b| Val::from_u32(b as u32)));
         v.extend_from_slice(&p.role_root);
         v.extend_from_slice(&p.relation_id);
@@ -12044,7 +14159,11 @@ mod real_proof_capstone {
             .comm_streams
             .iter()
             .map(|s| {
-                assert_eq!(s.len(), DIGEST_ELEMS, "commit-phase commitment is one DIGEST_ELEMS-wide digest");
+                assert_eq!(
+                    s.len(),
+                    DIGEST_ELEMS,
+                    "commit-phase commitment is one DIGEST_ELEMS-wide digest"
+                );
                 core::array::from_fn(|i| s[i])
             })
             .collect();
@@ -12061,8 +14180,9 @@ mod real_proof_capstone {
         // PROD_QUERY_POW_BITS > 0) into full RATE blocks + a trailing partial.
         let stream = &real.post_beta_stream;
         let n_full = stream.len() / RATE;
-        let full_blocks: Vec<[Val; RATE]> =
-            (0..n_full).map(|b| core::array::from_fn(|i| stream[b * RATE + i])).collect();
+        let full_blocks: Vec<[Val; RATE]> = (0..n_full)
+            .map(|b| core::array::from_fn(|i| stream[b * RATE + i]))
+            .collect();
         let rem = stream.len() % RATE;
         let mut partial = [Val::ZERO; RATE];
         for i in 0..rem {
