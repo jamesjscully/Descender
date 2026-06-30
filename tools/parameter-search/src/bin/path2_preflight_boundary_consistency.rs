@@ -1,5 +1,6 @@
 use descender_parameter_search::production_reference::{
-    path2_account_creation_proof_boundary_report_v1,
+    Path2AccountCreationProofBoundaryReportV1, Path2AccountStarkResidualMatrixReportV1,
+    Path2DirectTheoremBoundaryReportV1, path2_account_creation_proof_boundary_report_v1,
     path2_account_creation_proof_boundary_report_v1_digest,
     path2_account_stark_fri_aok_boundary_report_v1,
     path2_account_stark_fri_aok_boundary_report_v1_digest,
@@ -34,8 +35,7 @@ use descender_parameter_search::production_reference::{
     validate_production_deployment_preflight_certificate,
     validate_production_deployment_preflight_ready_assertion,
     validate_production_deployment_preflight_report,
-    validate_production_deployment_preflight_verdict, Path2AccountCreationProofBoundaryReportV1,
-    Path2AccountStarkResidualMatrixReportV1, Path2DirectTheoremBoundaryReportV1,
+    validate_production_deployment_preflight_verdict,
 };
 use serde_json::Value;
 use sha2::{Digest, Sha256};
@@ -745,21 +745,23 @@ fn main() -> Result<(), String> {
         return Err("production preflight manifest digests drifted from reports".to_string());
     }
 
-    if at(direct_boundary, "/direct_accepted_composition_evidence_artifact")?
+    if at(
+        direct_boundary,
+        "/direct_accepted_composition_evidence_artifact",
+    )? != at(
+        direct_boundary,
+        "/direct_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact",
+    )? || at(
+        direct_boundary,
+        "/direct_accepted_composition_evidence_artifact",
+    )? != at(
+        proof_boundary,
+        "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact",
+    )? || at(proof_boundary, "/accepted_proof_boundary_evidence_artifact")?
         != at(
-            direct_boundary,
-            "/direct_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact",
+            proof_boundary,
+            "/proof_obligation_vector_corpus_evidence/accepted_proof_boundary_evidence_artifact",
         )?
-        || at(direct_boundary, "/direct_accepted_composition_evidence_artifact")?
-            != at(
-                proof_boundary,
-                "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact",
-            )?
-        || at(proof_boundary, "/accepted_proof_boundary_evidence_artifact")?
-            != at(
-                proof_boundary,
-                "/proof_obligation_vector_corpus_evidence/accepted_proof_boundary_evidence_artifact",
-            )?
         || at(proof_boundary, "/accepted_proof_boundary_evidence_artifact")?
             != at(
                 direct_boundary,
@@ -810,6 +812,9 @@ fn main() -> Result<(), String> {
     for pointer in [
         "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/lifecycle_transition_profile_verified",
         "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/deployment_ready",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/lifecycle_transition_profile_verified",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/adoption_evidence_ready",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/deployment_ready",
     ] {
         if bool_at(direct_manifest, pointer)? {
             return Err(format!(
@@ -828,6 +833,7 @@ fn main() -> Result<(), String> {
     }
     for pointer in [
         "/direct_lifecycle_boundary/coverage/transition_vector_corpus_pinned",
+        "/direct_lifecycle_boundary/coverage/target_chain_lifecycle_profile_review_pinned",
         "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/all_cases_have_support_tests",
         "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/all_support_tests_present",
         "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/all_cases_have_evidence",
@@ -840,6 +846,13 @@ fn main() -> Result<(), String> {
         "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/covers_reorg",
         "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/covers_d2_finality_window",
         "/direct_lifecycle_boundary/transition_vector_corpus_evidence/audit_summary/transition_vector_corpus_pinned",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/all_requirements_have_authority",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/all_requirements_reviewed",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/all_reviewed_requirements_have_evidence_surface",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/all_relaxations_require_new_profile",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/d2_safe_default_profile_reviewed",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/target_chain_finality_profile_instantiated",
+        "/direct_lifecycle_boundary/target_chain_lifecycle_profile_review_evidence/audit_summary/target_chain_lifecycle_profile_review_pinned",
     ] {
         if !bool_at(direct_manifest, pointer)? {
             return Err(format!(
@@ -1200,9 +1213,7 @@ fn main() -> Result<(), String> {
             != direct_report.closure_dependency_rows.len()
         || direct_report.closure_dependency_count != direct_report.obligation_rows.len()
     {
-        return Err(
-            "direct theorem boundary lost closure-dependency blocker coverage".to_string(),
-        );
+        return Err("direct theorem boundary lost closure-dependency blocker coverage".to_string());
     }
     require_direct_closure_dependency_evidence_identity(
         direct_boundary,
@@ -1388,8 +1399,10 @@ fn main() -> Result<(), String> {
         != direct_report.obligation_count as u64
         || u64_at(direct_boundary, "/coverage/closure_dependency_count")?
             != direct_report.closure_dependency_count as u64
-        || u64_at(direct_boundary, "/coverage/closure_dependency_evidence_count")?
-            != direct_report.closure_dependency_evidence_count as u64
+        || u64_at(
+            direct_boundary,
+            "/coverage/closure_dependency_evidence_count",
+        )? != direct_report.closure_dependency_evidence_count as u64
         || u64_at(
             direct_boundary,
             "/coverage/closure_dependency_open_obligation_evidence_count",
@@ -1406,8 +1419,10 @@ fn main() -> Result<(), String> {
             != proof_report.proof_obligation_count as u64
         || u64_at(proof_boundary, "/coverage/closure_dependency_count")?
             != proof_report.closure_dependency_count as u64
-        || u64_at(proof_boundary, "/coverage/closure_dependency_evidence_count")?
-            != proof_report.closure_dependency_evidence_count as u64
+        || u64_at(
+            proof_boundary,
+            "/coverage/closure_dependency_evidence_count",
+        )? != proof_report.closure_dependency_evidence_count as u64
         || u64_at(
             proof_boundary,
             "/coverage/closure_dependency_open_obligation_evidence_count",

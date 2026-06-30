@@ -10015,7 +10015,11 @@ pub struct Path2DirectLifecycleBoundaryReportV1 {
     pub chain_file_store_type: &'static str,
     pub executable_tests: &'static [&'static str],
     pub transition_vector_case_ids: &'static [&'static str],
+    pub target_chain_lifecycle_profile_review_id: &'static str,
+    pub target_chain_lifecycle_profile_review_artifact: &'static str,
+    pub target_chain_lifecycle_profile_review_requirement_ids: &'static [&'static str],
     pub transition_vector_corpus_pinned: bool,
+    pub target_chain_lifecycle_profile_review_pinned: bool,
     pub local_successor_state_model_pinned: bool,
     pub consume_once_insert_after_public_checks: bool,
     pub replay_rejected_by_consume_set: bool,
@@ -11349,6 +11353,19 @@ pub const PATH2_DIRECT_LIFECYCLE_TRANSITION_VECTOR_CASE_IDS: [&str; 8] = [
     "lifecycle_transition_file_store_recovery",
     "lifecycle_transition_d2_finality_window",
 ];
+pub const PATH2_DIRECT_LIFECYCLE_PROFILE_REVIEW_ID: &str =
+    "Path2.DirectLifecycleProfileReview.D2.safe-default.v1";
+pub const PATH2_DIRECT_LIFECYCLE_PROFILE_REVIEW_ARTIFACT: &str =
+    "formal/kat/path2_direct_lifecycle_profile_review_v1.json";
+pub const PATH2_DIRECT_LIFECYCLE_PROFILE_REVIEW_REQUIREMENT_IDS: [&str; 7] = [
+    "profile_finality_source",
+    "profile_pending_release_policy",
+    "profile_dropped_before_finality_policy",
+    "profile_finalized_reorg_policy",
+    "profile_recovery_burn_policy",
+    "profile_restore_anchor_policy",
+    "profile_persist_before_release_policy",
+];
 
 pub const PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES: [&str; 9] = [
     "leaf_is_canonical_and_live",
@@ -11479,7 +11496,7 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         acceptance_hypothesis: "lifecycle_transition_consumes_authorization_once",
         supporting_surface: "consume-once lifecycle state transition",
         current_evidence:
-            "lifecycle model, consume-once verifier helper, accepted-tuple before/after state evidence, digest-pinned local transition vector corpus, recovery regressions, and executable ADR-0010 D2 finalized-head reorg profile evidence exist; target-chain lifecycle profile review remains open",
+            "lifecycle model, consume-once verifier helper, accepted-tuple before/after state evidence, digest-pinned local transition vector corpus, recovery regressions, executable ADR-0010 D2 finalized-head reorg profile evidence, and digest-pinned D2 safe-default lifecycle profile review exist; concrete deployment-profile verification remains open",
         required_closure:
             "composition theorem imports consume-once successor-state proof and target-chain lifecycle profile",
         named_break: "slot_replay_or_rollback_break",
@@ -13526,7 +13543,13 @@ pub fn path2_direct_lifecycle_boundary_report_v1() -> Path2DirectLifecycleBounda
         chain_file_store_type: "ProductionChainStateFileStores",
         executable_tests: &PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS,
         transition_vector_case_ids: &PATH2_DIRECT_LIFECYCLE_TRANSITION_VECTOR_CASE_IDS,
+        target_chain_lifecycle_profile_review_id: PATH2_DIRECT_LIFECYCLE_PROFILE_REVIEW_ID,
+        target_chain_lifecycle_profile_review_artifact:
+            PATH2_DIRECT_LIFECYCLE_PROFILE_REVIEW_ARTIFACT,
+        target_chain_lifecycle_profile_review_requirement_ids:
+            &PATH2_DIRECT_LIFECYCLE_PROFILE_REVIEW_REQUIREMENT_IDS,
         transition_vector_corpus_pinned: true,
+        target_chain_lifecycle_profile_review_pinned: true,
         local_successor_state_model_pinned: true,
         consume_once_insert_after_public_checks: true,
         replay_rejected_by_consume_set: true,
@@ -13569,6 +13592,13 @@ pub fn validate_path2_direct_lifecycle_boundary_report_v1(
     }
     if !report.local_successor_state_model_pinned
         || !report.transition_vector_corpus_pinned
+        || !report.target_chain_lifecycle_profile_review_pinned
+        || report.target_chain_lifecycle_profile_review_id
+            != PATH2_DIRECT_LIFECYCLE_PROFILE_REVIEW_ID
+        || report.target_chain_lifecycle_profile_review_artifact
+            != PATH2_DIRECT_LIFECYCLE_PROFILE_REVIEW_ARTIFACT
+        || report.target_chain_lifecycle_profile_review_requirement_ids
+            != PATH2_DIRECT_LIFECYCLE_PROFILE_REVIEW_REQUIREMENT_IDS.as_ref()
         || !report.consume_once_insert_after_public_checks
         || !report.replay_rejected_by_consume_set
         || !report.spent_slot_ledger_rejects_stale_wallet_replay
@@ -70578,10 +70608,43 @@ fn path2_direct_lifecycle_boundary_report_v1_frame(
         append_u64(&mut frame, b"transition_vector_case_index", index as u64);
         append_frame(&mut frame, b"transition_vector_case_id", case_id.as_bytes());
     }
+    append_frame(
+        &mut frame,
+        b"target_chain_lifecycle_profile_review_id",
+        report.target_chain_lifecycle_profile_review_id.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"target_chain_lifecycle_profile_review_artifact",
+        report
+            .target_chain_lifecycle_profile_review_artifact
+            .as_bytes(),
+    );
+    for (index, requirement_id) in report
+        .target_chain_lifecycle_profile_review_requirement_ids
+        .iter()
+        .enumerate()
+    {
+        append_u64(
+            &mut frame,
+            b"target_chain_lifecycle_profile_review_requirement_index",
+            index as u64,
+        );
+        append_frame(
+            &mut frame,
+            b"target_chain_lifecycle_profile_review_requirement_id",
+            requirement_id.as_bytes(),
+        );
+    }
     append_u64(
         &mut frame,
         b"transition_vector_corpus_pinned",
         u64::from(report.transition_vector_corpus_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"target_chain_lifecycle_profile_review_pinned",
+        u64::from(report.target_chain_lifecycle_profile_review_pinned),
     );
     append_u64(
         &mut frame,
@@ -114253,6 +114316,25 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         );
         assert_eq!(report.transition_vector_case_ids.len(), 8);
         assert!(report.transition_vector_corpus_pinned);
+        assert_eq!(
+            report.target_chain_lifecycle_profile_review_id,
+            PATH2_DIRECT_LIFECYCLE_PROFILE_REVIEW_ID
+        );
+        assert_eq!(
+            report.target_chain_lifecycle_profile_review_artifact,
+            PATH2_DIRECT_LIFECYCLE_PROFILE_REVIEW_ARTIFACT
+        );
+        assert_eq!(
+            report.target_chain_lifecycle_profile_review_requirement_ids,
+            PATH2_DIRECT_LIFECYCLE_PROFILE_REVIEW_REQUIREMENT_IDS.as_ref()
+        );
+        assert_eq!(
+            report
+                .target_chain_lifecycle_profile_review_requirement_ids
+                .len(),
+            7
+        );
+        assert!(report.target_chain_lifecycle_profile_review_pinned);
         assert!(report
             .executable_tests
             .contains(&"path2_prevalidated_slot_consume_once_rejects_reauthorization"));

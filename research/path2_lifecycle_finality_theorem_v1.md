@@ -101,11 +101,14 @@ theorem to discharge here.
   spend was released. A profile that relaxes the default owns the residual.
 - **Recovery resurrects a consumed digest.** `slot_replay_or_rollback_break` per
   the break mapping; account recovery must not resurrect consumed digests.
-- **Honest residual.** (1) Target-chain/deployment profile review tying the
-  digest-pinned local transition corpus to an adopter profile; the boundary now
-  pins admit→spend→replay→burn→recovery→restore/D2 local vectors, but not a
-  deployment-reviewed profile. (2) Deployment profile review for any chain that
-  relaxes the D2 safe default. (3) External review.
+- **Honest residual.** (1) The target-chain lifecycle profile review for the D2
+  safe default is now digest-pinned by
+  `formal/kat/path2_direct_lifecycle_profile_review_v1.json`, tying the local
+  transition corpus to the finality, pending-release, drop/reorg,
+  recovery-burn, restore-anchor, and persist-before-release lifecycle
+  requirements without claiming adoption evidence. (2) Concrete deployment
+  profile verification remains open for any target chain, and a new profile is
+  required for any chain that relaxes the D2 safe default. (3) External review.
   `Path2DirectLifecycleBoundaryReportV1` sets
   `target_chain_finality_profile_instantiated = true` for the D2 finalized-head
   rule, while keeping `lifecycle_transition_profile_verified` and
@@ -117,6 +120,6 @@ theorem to discharge here.
   composition charging reorg/finality as a named profiled assumption, so the
   direct theorem's consume-once hypothesis carries no hidden proof gap — the
   `R_namespace`/lifecycle factor of `R_create` reduces to `A_finality(profile)`.
-- **Hands off (deployment decision):** target-chain lifecycle profile review
-  (`SPEC-DEPLOY-001`), including recovery/restore policy review; external
-  review.
+- **Hands off (deployment decision):** concrete deployment-profile verification
+  (`SPEC-DEPLOY-001`), including target-chain client mapping, wallet/HSM
+  recovery/restore operations, resource limits, and external review.

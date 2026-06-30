@@ -243,9 +243,8 @@ fn main() -> Result<(), String> {
         );
     }
     let expected_direct_closure_dependencies =
-        serde_json::to_value(direct_report.closure_dependency_rows).map_err(|err| {
-            format!("serialize direct theorem closure dependency rows: {err}")
-        })?;
+        serde_json::to_value(direct_report.closure_dependency_rows)
+            .map_err(|err| format!("serialize direct theorem closure dependency rows: {err}"))?;
     if u64_at(corpus, "/direct_theorem_report/closure_dependency_count")?
         != direct_report.closure_dependency_count as u64
         || at(corpus, "/direct_theorem_report/closure_dependency_rows")?
@@ -626,7 +625,9 @@ fn main() -> Result<(), String> {
     }
     for pointer in [
         "/lifecycle_boundary_report/target_chain_finality_profile_instantiated",
+        "/lifecycle_boundary_report/target_chain_lifecycle_profile_review_pinned",
         "/audit_summary/lifecycle_target_chain_finality_profile_instantiated",
+        "/audit_summary/lifecycle_target_chain_profile_review_pinned",
     ] {
         if !bool_at(corpus, pointer)? {
             return Err(format!(

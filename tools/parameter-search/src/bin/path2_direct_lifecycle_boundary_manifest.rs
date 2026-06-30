@@ -1,5 +1,8 @@
 use descender_parameter_search::{
-    manifest_vector_evidence::path2_direct_lifecycle_transition_vector_corpus_evidence_v1,
+    manifest_vector_evidence::{
+        path2_direct_lifecycle_profile_review_evidence_v1,
+        path2_direct_lifecycle_transition_vector_corpus_evidence_v1,
+    },
     production_reference::{
         PROFILE, path2_direct_lifecycle_boundary_report_v1,
         path2_direct_lifecycle_boundary_report_v1_digest, path2_direct_theorem_boundary_report_v1,
@@ -41,6 +44,7 @@ fn manifest_body() -> Result<Value, String> {
     }
     let transition_vector_corpus_evidence =
         path2_direct_lifecycle_transition_vector_corpus_evidence_v1()?;
+    let lifecycle_profile_review_evidence = path2_direct_lifecycle_profile_review_evidence_v1()?;
 
     Ok(json!({
         "schema": "Descender.Path2.DirectLifecycleBoundaryManifest.v1",
@@ -73,6 +77,10 @@ fn manifest_body() -> Result<Value, String> {
                 lifecycle_report.target_chain_finality_profile_authority,
             "target_chain_finality_profile_rule":
                 lifecycle_report.target_chain_finality_profile_rule,
+            "target_chain_lifecycle_profile_review_id":
+                lifecycle_report.target_chain_lifecycle_profile_review_id,
+            "target_chain_lifecycle_profile_review_artifact":
+                lifecycle_report.target_chain_lifecycle_profile_review_artifact,
             "direct_theorem_blocker": lifecycle_report.blocker
         },
         "digests": {
@@ -94,6 +102,8 @@ fn manifest_body() -> Result<Value, String> {
                     lifecycle_report.local_successor_state_model_pinned,
                 "transition_vector_corpus_pinned":
                     lifecycle_report.transition_vector_corpus_pinned,
+                "target_chain_lifecycle_profile_review_pinned":
+                    lifecycle_report.target_chain_lifecycle_profile_review_pinned,
                 "consume_once_insert_after_public_checks":
                     lifecycle_report.consume_once_insert_after_public_checks,
                 "replay_rejected_by_consume_set":
@@ -120,7 +130,9 @@ fn manifest_body() -> Result<Value, String> {
                 "blocker": lifecycle_report.blocker
             },
             "executable_tests": lifecycle_report.executable_tests,
-            "transition_vector_corpus_evidence": transition_vector_corpus_evidence
+            "transition_vector_corpus_evidence": transition_vector_corpus_evidence,
+            "target_chain_lifecycle_profile_review_evidence":
+                lifecycle_profile_review_evidence
         },
         "selected_finality_profile": {
             "target_chain_finality_profile_selected":
@@ -133,6 +145,14 @@ fn manifest_body() -> Result<Value, String> {
                 lifecycle_report.target_chain_finality_profile_authority,
             "target_chain_finality_profile_rule":
                 lifecycle_report.target_chain_finality_profile_rule,
+            "target_chain_lifecycle_profile_review_id":
+                lifecycle_report.target_chain_lifecycle_profile_review_id,
+            "target_chain_lifecycle_profile_review_artifact":
+                lifecycle_report.target_chain_lifecycle_profile_review_artifact,
+            "target_chain_lifecycle_profile_review_requirement_ids":
+                lifecycle_report.target_chain_lifecycle_profile_review_requirement_ids,
+            "target_chain_lifecycle_profile_review_pinned":
+                lifecycle_report.target_chain_lifecycle_profile_review_pinned,
             "status":
                 "selected_and_instantiated_by_executable_d2_reorg_model_not_verified_deployment_profile"
         },

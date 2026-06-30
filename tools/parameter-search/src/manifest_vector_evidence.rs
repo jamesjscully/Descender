@@ -1,4 +1,5 @@
 use crate::production_reference::{
+    PATH2_DIRECT_LIFECYCLE_PROFILE_REVIEW_ARTIFACT, PATH2_DIRECT_LIFECYCLE_PROFILE_REVIEW_ID,
     path2_account_creation_frame_kat_boundary_report_v1,
     path2_account_creation_frame_kat_boundary_report_v1_digest,
     path2_account_creation_no_export_boundary_report_v1,
@@ -22,7 +23,7 @@ use crate::production_reference::{
     validate_path2_direct_qrom_action_boundary_report_v1,
     validate_path2_direct_theorem_boundary_report_v1,
 };
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
     fs,
@@ -168,7 +169,10 @@ pub fn path2_direct_lifecycle_transition_vector_corpus_evidence_v1() -> Result<V
         || !bool_at(corpus, "/audit_summary/covers_reorg")?
         || !bool_at(corpus, "/audit_summary/covers_d2_finality_window")?
         || !bool_at(corpus, "/audit_summary/transition_vector_corpus_pinned")?
-        || bool_at(corpus, "/audit_summary/lifecycle_transition_profile_verified")?
+        || bool_at(
+            corpus,
+            "/audit_summary/lifecycle_transition_profile_verified",
+        )?
         || bool_at(corpus, "/audit_summary/deployment_ready")?
     {
         return Err(
@@ -242,6 +246,152 @@ pub fn path2_direct_lifecycle_transition_vector_corpus_evidence_v1() -> Result<V
     }))
 }
 
+pub fn path2_direct_lifecycle_profile_review_evidence_v1() -> Result<Value, String> {
+    let lifecycle_report = path2_direct_lifecycle_boundary_report_v1();
+    validate_path2_direct_lifecycle_boundary_report_v1(&lifecycle_report)?;
+    let lifecycle_digest = path2_direct_lifecycle_boundary_report_v1_digest(&lifecycle_report);
+    if lifecycle_digest != lifecycle_report.digest {
+        return Err("direct lifecycle boundary report digest mismatch".to_string());
+    }
+
+    let review_file = load_json(PATH2_DIRECT_LIFECYCLE_PROFILE_REVIEW_ARTIFACT)?;
+    let review = at(&review_file, "/review")?;
+    let review_digest = body_digest(review, "direct lifecycle profile review")?;
+    if str_at(&review_file, "/review_digest")? != review_digest {
+        return Err("direct lifecycle profile review digest mismatch".to_string());
+    }
+    let requirement_ids = field_values_at(review, "/requirements", "requirement_id")?;
+    if requirement_ids != lifecycle_report.target_chain_lifecycle_profile_review_requirement_ids {
+        return Err(
+            "direct lifecycle profile review requirement ids drifted from lifecycle report"
+                .to_string(),
+        );
+    }
+    if str_at(review, "/schema")? != "Descender.Path2.DirectLifecycleProfileReview.v1"
+        || str_at(review, "/status")?
+            != "digest_pinned_target_chain_lifecycle_profile_review_not_deployment_ready"
+        || str_at(review, "/review/review_id")? != PATH2_DIRECT_LIFECYCLE_PROFILE_REVIEW_ID
+        || str_at(review, "/review/artifact_path")?
+            != PATH2_DIRECT_LIFECYCLE_PROFILE_REVIEW_ARTIFACT
+        || str_at(review, "/review/lifecycle_boundary_report_digest")?
+            != hex_encode(&lifecycle_report.digest)
+        || str_at(
+            review,
+            "/review/lifecycle_boundary_report_recomputed_digest",
+        )? != hex_encode(&lifecycle_digest)
+        || str_at(review, "/review/target_chain_finality_profile_id")?
+            != lifecycle_report.target_chain_finality_profile_id
+        || str_at(review, "/review/target_chain_finality_profile_authority")?
+            != lifecycle_report.target_chain_finality_profile_authority
+        || str_at(review, "/review/target_chain_finality_profile_rule")?
+            != lifecycle_report.target_chain_finality_profile_rule
+        || !bool_at(review, "/review/target_chain_finality_profile_instantiated")?
+        || !bool_at(
+            review,
+            "/review/target_chain_lifecycle_profile_review_pinned",
+        )?
+        || bool_at(review, "/review/lifecycle_transition_profile_verified")?
+        || bool_at(review, "/review/deployment_ready")?
+        || u64_at(review, "/requirement_count")?
+            != lifecycle_report
+                .target_chain_lifecycle_profile_review_requirement_ids
+                .len() as u64
+        || u64_at(review, "/audit_summary/requirement_count")?
+            != lifecycle_report
+                .target_chain_lifecycle_profile_review_requirement_ids
+                .len() as u64
+        || !bool_at(review, "/audit_summary/all_requirements_have_authority")?
+        || !bool_at(review, "/audit_summary/all_requirements_reviewed")?
+        || !bool_at(
+            review,
+            "/audit_summary/all_reviewed_requirements_have_evidence_surface",
+        )?
+        || !bool_at(review, "/audit_summary/all_relaxations_require_new_profile")?
+        || !bool_at(review, "/audit_summary/d2_safe_default_profile_reviewed")?
+        || !bool_at(
+            review,
+            "/audit_summary/target_chain_finality_profile_instantiated",
+        )?
+        || !bool_at(
+            review,
+            "/audit_summary/target_chain_lifecycle_profile_review_pinned",
+        )?
+        || bool_at(
+            review,
+            "/audit_summary/lifecycle_transition_profile_verified",
+        )?
+        || bool_at(review, "/audit_summary/adoption_evidence_ready")?
+        || bool_at(review, "/audit_summary/deployment_ready")?
+    {
+        return Err(
+            "direct lifecycle profile review is not bound to current open lifecycle report"
+                .to_string(),
+        );
+    }
+
+    Ok(json!({
+        "schema": "Descender.Path2.DirectLifecycleProfileReviewEvidence.v1",
+        "status": "digest_pinned_open_direct_lifecycle_profile_review_evidence",
+        "review_path": PATH2_DIRECT_LIFECYCLE_PROFILE_REVIEW_ARTIFACT,
+        "review_schema": str_at(review, "/schema")?,
+        "review_status": str_at(review, "/status")?,
+        "review_digest": str_at(&review_file, "/review_digest")?,
+        "review_recomputed_digest": review_digest,
+        "review_id": str_at(review, "/review/review_id")?,
+        "direct_lifecycle_boundary_report_digest": str_at(
+            review,
+            "/review/lifecycle_boundary_report_digest"
+        )?,
+        "direct_lifecycle_boundary_report_recomputed_digest": hex_encode(&lifecycle_digest),
+        "target_chain_finality_profile_id": str_at(
+            review,
+            "/review/target_chain_finality_profile_id"
+        )?,
+        "requirement_count": u64_at(review, "/requirement_count")?,
+        "requirement_ids": requirement_ids,
+        "audit_summary": {
+            "requirement_count": u64_at(review, "/audit_summary/requirement_count")?,
+            "all_requirements_have_authority": bool_at(
+                review,
+                "/audit_summary/all_requirements_have_authority"
+            )?,
+            "all_requirements_reviewed": bool_at(
+                review,
+                "/audit_summary/all_requirements_reviewed"
+            )?,
+            "all_reviewed_requirements_have_evidence_surface": bool_at(
+                review,
+                "/audit_summary/all_reviewed_requirements_have_evidence_surface"
+            )?,
+            "all_relaxations_require_new_profile": bool_at(
+                review,
+                "/audit_summary/all_relaxations_require_new_profile"
+            )?,
+            "d2_safe_default_profile_reviewed": bool_at(
+                review,
+                "/audit_summary/d2_safe_default_profile_reviewed"
+            )?,
+            "target_chain_finality_profile_instantiated": bool_at(
+                review,
+                "/audit_summary/target_chain_finality_profile_instantiated"
+            )?,
+            "target_chain_lifecycle_profile_review_pinned": bool_at(
+                review,
+                "/audit_summary/target_chain_lifecycle_profile_review_pinned"
+            )?,
+            "lifecycle_transition_profile_verified": bool_at(
+                review,
+                "/audit_summary/lifecycle_transition_profile_verified"
+            )?,
+            "adoption_evidence_ready": bool_at(
+                review,
+                "/audit_summary/adoption_evidence_ready"
+            )?,
+            "deployment_ready": bool_at(review, "/audit_summary/deployment_ready")?
+        }
+    }))
+}
+
 pub fn path2_account_creation_accepted_proof_boundary_evidence_artifact_v1() -> Result<Value, String>
 {
     let proof_report = path2_account_creation_proof_boundary_report_v1();
@@ -271,8 +421,7 @@ pub fn path2_account_creation_accepted_proof_boundary_evidence_artifact_v1() -> 
     )?;
     if accepted_requirement_ids.as_slice() != proof_report.accepting_requirements {
         return Err(
-            "accepted proof-boundary evidence rows drifted from accepting requirements"
-                .to_string(),
+            "accepted proof-boundary evidence rows drifted from accepting requirements".to_string(),
         );
     }
     if str_at(artifact, "/schema")?
@@ -315,7 +464,10 @@ pub fn path2_account_creation_accepted_proof_boundary_evidence_artifact_v1() -> 
             artifact,
             "/evidence/accepted_path_applicable_requirement_count",
         )? != 8
-        || u64_at(artifact, "/evidence/accepted_path_requirement_evidence_count")? != 8
+        || u64_at(
+            artifact,
+            "/evidence/accepted_path_requirement_evidence_count",
+        )? != 8
         || u64_at(
             artifact,
             "/evidence/boundary_or_audit_requirement_evidence_count",
@@ -555,7 +707,10 @@ pub fn path2_direct_accepted_spend_tuple_evidence_artifact_v1() -> Result<Value,
         )?
         || !bool_at(artifact, "/evidence/public_result_accepts_same_slot")?
         || !bool_at(artifact, "/evidence/tuple_fields_match_theorem_boundary")?
-        || !bool_at(artifact, "/evidence/every_accepted_tuple_field_has_evidence")?
+        || !bool_at(
+            artifact,
+            "/evidence/every_accepted_tuple_field_has_evidence",
+        )?
         || !bool_at(
             artifact,
             "/evidence/every_accepted_tuple_field_has_open_direct_obligation",
@@ -756,8 +911,7 @@ pub fn path2_direct_accepted_composition_evidence_artifact_v1() -> Result<Value,
         .collect::<Vec<_>>();
     if accepted_hypothesis_direct_obligation_ids != direct_obligation_ids {
         return Err(
-            "direct accepted composition evidence rows drifted from direct obligations"
-                .to_string(),
+            "direct accepted composition evidence rows drifted from direct obligations".to_string(),
         );
     }
     if str_at(artifact, "/schema")?
@@ -1071,8 +1225,7 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
         .collect::<Vec<_>>();
     if proof_obligation_case_ids != proof_report_obligation_ids {
         return Err(
-            "proof-obligation vector corpus case ids drifted from proof-boundary rows"
-                .to_string(),
+            "proof-obligation vector corpus case ids drifted from proof-boundary rows".to_string(),
         );
     }
     if at(corpus, "/direct_accepted_composition_evidence_artifact")?
@@ -1133,8 +1286,10 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
             corpus,
             "/audit_summary/proof_obligation_audit_vector_case_count",
         )? != proof_report.proof_obligation_audit_vector_case_count as u64
-        || at(corpus, "/audit_summary/proof_obligation_named_break_classes")?
-            != &json!(proof_report.proof_obligation_named_break_classes)
+        || at(
+            corpus,
+            "/audit_summary/proof_obligation_named_break_classes",
+        )? != &json!(proof_report.proof_obligation_named_break_classes)
         || !bool_at(corpus, "/audit_summary/all_cases_open")?
         || !bool_at(corpus, "/audit_summary/all_cases_have_named_break")?
         || !bool_at(corpus, "/audit_summary/all_open_cases_block_deployment")?
@@ -1386,6 +1541,10 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
             corpus,
             "/audit_summary/lifecycle_target_chain_finality_profile_instantiated",
         )?
+        || !bool_at(
+            corpus,
+            "/audit_summary/lifecycle_target_chain_profile_review_pinned",
+        )?
         || bool_at(
             corpus,
             "/audit_summary/lifecycle_transition_profile_verified",
@@ -1478,6 +1637,10 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
             "lifecycle_target_chain_finality_profile_instantiated": bool_at(
                 corpus,
                 "/audit_summary/lifecycle_target_chain_finality_profile_instantiated"
+            )?,
+            "lifecycle_target_chain_profile_review_pinned": bool_at(
+                corpus,
+                "/audit_summary/lifecycle_target_chain_profile_review_pinned"
             )?,
             "lifecycle_transition_profile_verified": bool_at(
                 corpus,

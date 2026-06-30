@@ -4,7 +4,7 @@ use descender_parameter_search::{
         path2_direct_accepted_spend_tuple_evidence_artifact_v1,
     },
     production_reference::{
-        path2_account_creation_proof_boundary_report_v1,
+        PROFILE, path2_account_creation_proof_boundary_report_v1,
         path2_account_creation_proof_boundary_report_v1_digest,
         path2_direct_lifecycle_boundary_report_v1,
         path2_direct_lifecycle_boundary_report_v1_digest,
@@ -14,10 +14,10 @@ use descender_parameter_search::{
         validate_path2_account_creation_proof_boundary_report_v1,
         validate_path2_direct_lifecycle_boundary_report_v1,
         validate_path2_direct_qrom_action_boundary_report_v1,
-        validate_path2_direct_theorem_boundary_report_v1, PROFILE,
+        validate_path2_direct_theorem_boundary_report_v1,
     },
 };
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
 fn hex_encode(bytes: &[u8]) -> String {
@@ -186,6 +186,8 @@ fn manifest_body() -> Result<Value, String> {
             "named_break": lifecycle_report.named_break,
             "target_chain_finality_profile_instantiated":
                 lifecycle_report.target_chain_finality_profile_instantiated,
+            "target_chain_lifecycle_profile_review_pinned":
+                lifecycle_report.target_chain_lifecycle_profile_review_pinned,
             "lifecycle_transition_profile_verified":
                 lifecycle_report.lifecycle_transition_profile_verified,
             "deployment_ready": lifecycle_report.deployment_ready,
@@ -250,6 +252,8 @@ fn manifest_body() -> Result<Value, String> {
                 qrom_action_report.external_qrom_review_complete,
             "lifecycle_target_chain_finality_profile_instantiated":
                 lifecycle_report.target_chain_finality_profile_instantiated,
+            "lifecycle_target_chain_profile_review_pinned":
+                lifecycle_report.target_chain_lifecycle_profile_review_pinned,
             "deployment_ready": direct_report.deployment_ready
         },
         "case_count": cases.len(),

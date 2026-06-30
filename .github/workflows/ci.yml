@@ -150,6 +150,12 @@ jobs:
           diff -u ../../formal/kat/path2_direct_lifecycle_transition_vectors_v1.json /tmp/path2_direct_lifecycle_transition_vectors_v1.json
       - name: Direct lifecycle transition vector consistency check
         run: cargo run --quiet --bin path2_direct_lifecycle_transition_vector_consistency
+      - name: Direct lifecycle profile review check
+        run: |
+          cargo run --quiet --bin path2_direct_lifecycle_profile_review > /tmp/path2_direct_lifecycle_profile_review_v1.json
+          diff -u ../../formal/kat/path2_direct_lifecycle_profile_review_v1.json /tmp/path2_direct_lifecycle_profile_review_v1.json
+      - name: Direct lifecycle profile review consistency check
+        run: cargo run --quiet --bin path2_direct_lifecycle_profile_review_consistency
       - name: Direct lifecycle boundary manifest check
         run: |
           cargo run --quiet --bin path2_direct_lifecycle_boundary_manifest > /tmp/path2_direct_lifecycle_boundary_v1.json

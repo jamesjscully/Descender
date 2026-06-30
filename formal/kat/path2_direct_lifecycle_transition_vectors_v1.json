@@ -164,12 +164,12 @@
       "acceptance_hypothesis": "lifecycle_transition_consumes_authorization_once",
       "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
       "deployment_ready": false,
-      "digest": "73a3b9de7658f6141309806a6a915b10ac14ca42aeca241937189f5c6702e76a",
+      "digest": "de8497b1fb9a21c9c91c3511f910b109693efdcff5d589fc7834e60791bbaf0c",
       "direct_obligation_id": "direct_obligation_consume_once",
       "domain": "Descender.Path2.DirectLifecycleBoundaryReport.v1",
       "lifecycle_transition_profile_verified": false,
       "named_break": "slot_replay_or_rollback_break",
-      "recomputed_digest": "73a3b9de7658f6141309806a6a915b10ac14ca42aeca241937189f5c6702e76a",
+      "recomputed_digest": "de8497b1fb9a21c9c91c3511f910b109693efdcff5d589fc7834e60791bbaf0c",
       "target_chain_finality_profile_id": "ADR-0010.D2.finalized-head-reorg-window.v1",
       "target_chain_finality_profile_instantiated": true,
       "theorem_target": "one_use_successor_state_theorem_v1"
@@ -178,5 +178,5 @@
     "schema": "Descender.Path2.DirectLifecycleTransitionVectors.v1",
     "status": "digest_pinned_direct_lifecycle_transition_vectors"
   },
-  "corpus_digest": "3dc3369b5c9a9636cd490ebab27b0817be1334bddb1d7478a5f1b355830db277"
+  "corpus_digest": "3ef3033ac00f4987b17ee583acddc64847549faeeb7ddb10894b724b40163b17"
 }

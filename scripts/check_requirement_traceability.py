@@ -1663,7 +1663,7 @@ CAPABILITY_MATRIX_CONTRACTS = [
         "One-use authorization lifecycle",
         "`direct`",
         "live slot registry",
-        "full lifecycle transition KATs remain open",
+        "D2 safe-default lifecycle profile review",
         {"SPEC-LIFE-001", "DIR-LIFE-001"},
     ),
     (
@@ -1934,7 +1934,7 @@ DIRECT_IMPLEMENTATION_SURFACE_CONTRACTS = [
         "Consume-once lifecycle transition",
         "`direct`",
         "`not_ready`",
-        "remaining target-chain lifecycle profile review",
+        "digest-pinned target-chain lifecycle profile review",
         {"DIR-LIFE-001", "SPEC-LIFE-001", "ADOPT-HW-STATE-001"},
     ),
     (
