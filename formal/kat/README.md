@@ -439,10 +439,10 @@ It pins the current local consume-once successor-state model, including the
 consume-once validator, direct spend composition endpoint, lifecycle manager,
 spent-slot ledger, target-chain adapter, chain file-store evidence, and the
 named regression tests for replay rejection, stale-wallet replay, reorg burns,
-restore anchors, lifecycle/spent-record persistence, and the ADR-0010 D2
-finalized-head finality/reorg profile. It does not verify the full lifecycle
-transition profile: `lifecycle_transition_profile_verified` and
-`deployment_ready` remain false.
+restore anchors, recovery burns, snapshot recovery, file-store recovery,
+lifecycle/spent-record persistence, and the ADR-0010 D2 finalized-head
+finality/reorg profile. It does not verify the full lifecycle transition profile:
+`lifecycle_transition_profile_verified` and `deployment_ready` remain false.
 The `path2_direct_lifecycle_boundary_consistency` gate checks the manifest
 against `research/path2_one_use_successor_state_theorem.md`, source hooks, and
 named tests.

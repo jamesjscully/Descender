@@ -101,10 +101,12 @@ theorem to discharge here.
   spend was released. A profile that relaxes the default owns the residual.
 - **Recovery resurrects a consumed digest.** `slot_replay_or_rollback_break` per
   the break mapping; account recovery must not resurrect consumed digests.
-- **Honest residual.** (1) Broader executable
-  admit→spend→replay→burn→recovery→restore evidence (`DIR-LIFE-001` tests).
-  (2) Deployment profile review for any chain that relaxes the D2 safe default.
-  (3) External review. `Path2DirectLifecycleBoundaryReportV1` sets
+- **Honest residual.** (1) Full transition-vector coverage tying
+  admit→spend→replay→burn→recovery→restore into one digest-pinned profile
+  corpus; the boundary now pins named recovery-burn, snapshot-recovery, and
+  file-store recovery regressions, but not a complete profile corpus. (2)
+  Deployment profile review for any chain that relaxes the D2 safe default. (3)
+  External review. `Path2DirectLifecycleBoundaryReportV1` sets
   `target_chain_finality_profile_instantiated = true` for the D2 finalized-head
   rule, while keeping `lifecycle_transition_profile_verified` and
   `deployment_ready` false.
@@ -115,6 +117,6 @@ theorem to discharge here.
   composition charging reorg/finality as a named profiled assumption, so the
   direct theorem's consume-once hypothesis carries no hidden proof gap — the
   `R_namespace`/lifecycle factor of `R_create` reduces to `A_finality(profile)`.
-- **Hands off (deployment decision):** full lifecycle transition KATs and
-  profile review (`SPEC-DEPLOY-001`); recovery/restore executable evidence;
+- **Hands off (deployment decision):** full lifecycle transition vector corpus
+  and profile review (`SPEC-DEPLOY-001`); target-chain recovery/restore review;
   external review.

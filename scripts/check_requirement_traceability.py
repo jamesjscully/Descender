@@ -1934,7 +1934,7 @@ DIRECT_IMPLEMENTATION_SURFACE_CONTRACTS = [
         "Consume-once lifecycle transition",
         "`direct`",
         "`not_ready`",
-        "remaining lifecycle KATs",
+        "remaining full lifecycle transition vector corpus",
         {"DIR-LIFE-001", "SPEC-LIFE-001", "ADOPT-HW-STATE-001"},
     ),
     (

@@ -979,6 +979,9 @@ fn main() -> Result<(), String> {
         || !lifecycle_report.chain_state_persists_lifecycle_and_spent_record
         || !lifecycle_report.reorg_burn_support_present
         || !lifecycle_report.restore_anchor_support_present
+        || !lifecycle_report.recovery_burn_support_present
+        || !lifecycle_report.snapshot_recovery_support_present
+        || !lifecycle_report.file_store_recovery_support_present
     {
         return Err(
             "direct lifecycle boundary is missing local successor-state evidence".to_string(),

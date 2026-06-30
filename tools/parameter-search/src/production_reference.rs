@@ -10021,6 +10021,9 @@ pub struct Path2DirectLifecycleBoundaryReportV1 {
     pub chain_state_persists_lifecycle_and_spent_record: bool,
     pub reorg_burn_support_present: bool,
     pub restore_anchor_support_present: bool,
+    pub recovery_burn_support_present: bool,
+    pub snapshot_recovery_support_present: bool,
+    pub file_store_recovery_support_present: bool,
     pub target_chain_finality_profile_selected: bool,
     pub target_chain_finality_profile_id: &'static str,
     pub target_chain_finality_profile_authority: &'static str,
@@ -11320,7 +11323,7 @@ pub const PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_AUTHORITY: &str =
     "decisions/ADR-0010-registry-lifecycle-consensus-wiring-and-finality.md";
 pub const PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_RULE: &str =
     "permanence boundary equals chain FINALIZED head; admissions and consumptions in [finalized, head] are reorg-freeable by reorg_to(new_head)";
-pub const PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS: [&str; 9] = [
+pub const PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS: [&str; 12] = [
     "path2_prevalidated_slot_consume_once_rejects_reauthorization",
     "path2_direct_single_slot_spend_composes_admission_signature_and_consume_once",
     "path2_direct_single_slot_spend_rejects_leaf_slot_rebinding",
@@ -11329,6 +11332,9 @@ pub const PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS: [&str; 9] = [
     "spent_slot_ledger_records_reorg_burns",
     "chain_state_file_stores_verify_record_and_persist_together",
     "lifecycle_restore_anchor_rejects_old_backup_snapshots",
+    "lifecycle_manager_recovery_burns_reserved_slots",
+    "lifecycle_snapshot_roundtrips_and_recovers_by_burning_reservations",
+    "lifecycle_file_store_roundtrips_and_recovers_reserved_slots",
     "path2_d2_finality_profile_reorg_frees_window_but_preserves_finalized",
 ];
 
@@ -11461,7 +11467,7 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         acceptance_hypothesis: "lifecycle_transition_consumes_authorization_once",
         supporting_surface: "consume-once lifecycle state transition",
         current_evidence:
-            "lifecycle model, consume-once verifier helper, accepted-tuple before/after state evidence, and executable ADR-0010 D2 finalized-head reorg profile evidence exist; full lifecycle transition profile remains open",
+            "lifecycle model, consume-once verifier helper, accepted-tuple before/after state evidence, recovery regressions, and executable ADR-0010 D2 finalized-head reorg profile evidence exist; full lifecycle transition profile remains open",
         required_closure:
             "composition theorem imports consume-once successor-state proof and target-chain lifecycle profile",
         named_break: "slot_replay_or_rollback_break",
@@ -13514,6 +13520,9 @@ pub fn path2_direct_lifecycle_boundary_report_v1() -> Path2DirectLifecycleBounda
         chain_state_persists_lifecycle_and_spent_record: true,
         reorg_burn_support_present: true,
         restore_anchor_support_present: true,
+        recovery_burn_support_present: true,
+        snapshot_recovery_support_present: true,
+        file_store_recovery_support_present: true,
         target_chain_finality_profile_selected: true,
         target_chain_finality_profile_id: PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_ID,
         target_chain_finality_profile_authority:
@@ -13551,6 +13560,9 @@ pub fn validate_path2_direct_lifecycle_boundary_report_v1(
         || !report.chain_state_persists_lifecycle_and_spent_record
         || !report.reorg_burn_support_present
         || !report.restore_anchor_support_present
+        || !report.recovery_burn_support_present
+        || !report.snapshot_recovery_support_present
+        || !report.file_store_recovery_support_present
         || !report.target_chain_finality_profile_selected
         || report.target_chain_finality_profile_id != PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_ID
         || report.target_chain_finality_profile_authority
@@ -70584,6 +70596,21 @@ fn path2_direct_lifecycle_boundary_report_v1_frame(
     );
     append_u64(
         &mut frame,
+        b"recovery_burn_support_present",
+        u64::from(report.recovery_burn_support_present),
+    );
+    append_u64(
+        &mut frame,
+        b"snapshot_recovery_support_present",
+        u64::from(report.snapshot_recovery_support_present),
+    );
+    append_u64(
+        &mut frame,
+        b"file_store_recovery_support_present",
+        u64::from(report.file_store_recovery_support_present),
+    );
+    append_u64(
+        &mut frame,
         b"target_chain_finality_profile_selected",
         u64::from(report.target_chain_finality_profile_selected),
     );
@@ -114195,13 +114222,22 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.executable_tests,
             PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS.as_ref()
         );
-        assert_eq!(report.executable_tests.len(), 9);
+        assert_eq!(report.executable_tests.len(), 12);
         assert!(report
             .executable_tests
             .contains(&"path2_prevalidated_slot_consume_once_rejects_reauthorization"));
         assert!(report
             .executable_tests
             .contains(&"chain_state_file_stores_verify_record_and_persist_together"));
+        assert!(report
+            .executable_tests
+            .contains(&"lifecycle_manager_recovery_burns_reserved_slots"));
+        assert!(report
+            .executable_tests
+            .contains(&"lifecycle_snapshot_roundtrips_and_recovers_by_burning_reservations"));
+        assert!(report
+            .executable_tests
+            .contains(&"lifecycle_file_store_roundtrips_and_recovers_reserved_slots"));
         assert!(report.executable_tests.contains(
             &"path2_d2_finality_profile_reorg_frees_window_but_preserves_finalized"
         ));
@@ -114212,6 +114248,9 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.chain_state_persists_lifecycle_and_spent_record);
         assert!(report.reorg_burn_support_present);
         assert!(report.restore_anchor_support_present);
+        assert!(report.recovery_burn_support_present);
+        assert!(report.snapshot_recovery_support_present);
+        assert!(report.file_store_recovery_support_present);
         assert!(report.target_chain_finality_profile_selected);
         assert_eq!(
             report.target_chain_finality_profile_id,

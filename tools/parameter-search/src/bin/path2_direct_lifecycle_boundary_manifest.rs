@@ -97,6 +97,12 @@ fn manifest_body() -> Result<Value, String> {
                     lifecycle_report.chain_state_persists_lifecycle_and_spent_record,
                 "reorg_burn_support_present": lifecycle_report.reorg_burn_support_present,
                 "restore_anchor_support_present": lifecycle_report.restore_anchor_support_present,
+                "recovery_burn_support_present":
+                    lifecycle_report.recovery_burn_support_present,
+                "snapshot_recovery_support_present":
+                    lifecycle_report.snapshot_recovery_support_present,
+                "file_store_recovery_support_present":
+                    lifecycle_report.file_store_recovery_support_present,
                 "target_chain_finality_profile_selected":
                     lifecycle_report.target_chain_finality_profile_selected,
                 "target_chain_finality_profile_instantiated":
