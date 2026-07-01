@@ -322,6 +322,8 @@ fn main() -> Result<(), String> {
         "selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted",
         "SelectedRustAcceptedBoundaryAuthorizationClassBindingSupport",
         "selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted",
+        "SelectedRustAuthorizationClassBindingTheoremClosed",
+        "selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted",
         "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted",
         "SelectedRustAcceptedBoundarySamplerIntegrationRowsSupported",
         "selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted",
@@ -355,7 +357,6 @@ fn main() -> Result<(), String> {
     }
     for pointer in [
         "/manifest/open_obligations/honest_sampler_theorem_instantiated",
-        "/manifest/open_obligations/authorization_class_binding_theorem_instantiated",
         "/manifest/open_obligations/deployment_ready",
     ] {
         if bool_at(&manifest, pointer)? {
@@ -363,6 +364,15 @@ fn main() -> Result<(), String> {
                 "sampler/timing manifest unexpectedly closes {pointer}"
             ));
         }
+    }
+    if !bool_at(
+        &manifest,
+        "/manifest/open_obligations/authorization_class_binding_theorem_instantiated",
+    )? {
+        return Err(
+            "sampler/timing manifest lost imported authorization-class binding theorem"
+                .to_string(),
+        );
     }
     if !bool_at(
         &manifest,

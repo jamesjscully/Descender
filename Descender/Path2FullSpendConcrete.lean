@@ -1206,6 +1206,95 @@ theorem selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundary
       hCompatible' hCompatible
 
 /--
+Closed selected-Rust authorization-class binding theorem.
+
+For an accepted selected-Rust creation boundary, the accepted leaf's
+authorization-local class is exactly `pSpend(q)`, every private authorization
+local compatible with the same boundary has that same public class, the semantic
+meaning agrees with that public spend class, and the selected checked-core frame
+carries the same spend digest. This closes the local authorization-class binding
+slice; it does not claim honest sampler, no-export, proof-family, deployment, or
+external-review closure.
+-/
+def SelectedRustAuthorizationClassBindingTheoremClosed
+    (spend : ConcreteSpendTuple) : Prop :=
+  let q := spend.creationEvidence.boundary
+  let h := concreteLeafAuthorizationFiber spend.leaf
+  SelectedRustAcceptedBoundaryAuthorizationClassBindingSupport spend ∧
+    spend.leaf.authorizationClass = selectedRustPublicProjections.pSpend q ∧
+      selectedRustPrivateFiberPredicates.authClass h =
+        selectedRustPublicProjections.pSpend q ∧
+        (selectedRustMeaningProjection.meaningOfBoundary q).spendAuthorizationClass =
+          selectedRustPublicProjections.pSpend q ∧
+          (∀ h',
+            Path2NativeAccountDesign.AuthorizationCompatibleOverClass
+              selectedRustPrivateFiberPredicates selectedRustPublicProjections q h' ->
+            selectedRustPrivateFiberPredicates.authClass h' =
+              selectedRustPublicProjections.pSpend q) ∧
+            selectedRustCheckedCoreFrameFields.spendDigest q =
+              selectedRustPublicProjections.pSpend q ∧
+              ∀ msg state commitment,
+                selectedRustConcreteGameConfig.checkedCore.frame q msg state commitment =
+                  selectedRustFrameEncoder.encode [
+                    selectedRustCheckedCoreFrameFields.nativeBoundaryVersion q,
+                    selectedRustCheckedCoreFrameFields.parameterSetId q,
+                    selectedRustCheckedCoreFrameFields.verifierFamilyId q,
+                    selectedRustCheckedCoreFrameFields.accountCreationDomain q,
+                    selectedRustCheckedCoreFrameFields.spendVerifierDomain q,
+                    selectedRustCheckedCoreFrameFields.chainApplicationDomain q,
+                    selectedRustCheckedCoreFrameFields.forkEpochScope q,
+                    selectedRustCheckedCoreFrameFields.aggregationMode q,
+                    selectedRustCheckedCoreFrameFields.nativeBoundaryDigest q,
+                    selectedRustCheckedCoreFrameFields.accountDigest q,
+                    selectedRustPublicProjections.pSpend q,
+                    selectedRustCheckedCoreFrameFields.lifecycleDigest q,
+                    selectedRustCheckedCoreFrameFields.transcriptDigest q,
+                    selectedRustCheckedCoreFrameFields.stateDigest q,
+                    selectedRustCheckedCoreFrameFields.messageDigest msg,
+                    selectedRustCheckedCoreFrameFields.currentStateDigest state,
+                    selectedRustCheckedCoreFrameFields.proofCommitment commitment
+                  ]
+
+/--
+Accepted selected-Rust proof-boundary evidence closes the local
+authorization-class binding theorem by importing the accepted-boundary
+authorization support and the selected checked-core spend-digest field binding.
+-/
+theorem selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted
+    {spend : ConcreteSpendTuple}
+    (hAccepted :
+      AccountCreationProofBoundaryEvidenceAccepted
+        selectedRustConcreteGameConfig spend) :
+    SelectedRustAuthorizationClassBindingTheoremClosed spend := by
+  dsimp [SelectedRustAuthorizationClassBindingTheoremClosed]
+  have hAuthTracked :
+      AccountCreationAuthorizationClassObligationTracked
+        selectedRustConcreteGameConfig spend :=
+    hAccepted.2.2.1
+  have hLeafClass :=
+    authorizationClass_matches_pSpend_of_obligationTracked hAuthTracked
+  have hSupport :=
+    selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted
+      hAccepted
+  exact ⟨hSupport,
+    by simpa [selectedRustConcreteGameConfig] using hLeafClass,
+    by
+      simpa [
+        concreteLeafAuthorizationFiber,
+        selectedRustPrivateFiberPredicates,
+        selectedRustConcreteGameConfig
+      ] using hLeafClass,
+    selectedRustMeaningProjection_spendAuthorizationClass_eq_pSpend
+      spend.creationEvidence.boundary,
+    by
+      intro h' hCompatible
+      exact hCompatible.2,
+    rfl,
+    by
+      intro msg state commitment
+      rfl⟩
+
+/--
 Accepted selected-Rust proof-boundary evidence alone gives the spend-specific
 honest-sampler support package for the accepted boundary and leaf fiber.  This
 removes the explicit honest-create witness hypothesis from the previous hook,

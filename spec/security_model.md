@@ -397,18 +397,21 @@ authorization-class field-completeness audit: every revised `p_spend` field is
 named, every row maps to the deployed projection/check surface, the direct spend
 verifier is checked for absence of private authorization-local material reads,
 and the source-shape hook list covers the Rust hooks, Lean boundary hooks, and
-selected-Rust typed compatibility/projection bridge hooks. The concrete Lean
-carrier also now packages the selected-Rust typed no-ambiguity consequence in
-`selectedRustAuthorizationCompatibleOverClass_noAmbiguity` and imports it into
-the accepted-boundary support hook
-`selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted`.
+selected-Rust typed compatibility/projection bridge hooks plus the local
+authorization-class closure hook. The concrete Lean carrier now proves the
+selected-Rust typed no-ambiguity consequence in
+`selectedRustAuthorizationCompatibleOverClass_noAmbiguity`, imports it into the
+accepted-boundary support hook
+`selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted`,
+and closes the local authorization-class theorem with
+`selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted`.
 The
 sampler/timing report imports that audit digest, and
 `formal/kat/path2_authorization_class_binding_audit_v1.json` is regenerated and
 checked before sampler/timing and proof-boundary manifests. This is executable
-audit evidence for the authorization-class binding residual; it keeps the
-authorization-class theorem, full honest-create sampler integration, external
-review, and deployment readiness false.
+audit evidence for the authorization-class binding row; it keeps full
+honest-create sampler integration, external review, and deployment readiness
+false.
 The sampler/timing report also pins a five-row honest-create sampler integration
 checklist over the private-to-public construction order, selected-Rust bridge
 hooks, authorization-class audit import, accepted proof-boundary import, and
@@ -423,10 +426,11 @@ which consumes accepted proof-boundary evidence plus the selected-Rust
 `honestCreate` witness into the checked integration package while the full hook
 list remains digest-pinned by the report. The authorization-class
 row now points at
-`selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted`,
-which packages the accepted leaf fiber's typed compatibility, match to boundary
-meaning, and same-boundary no-ambiguity consequence while the audit digest remains
-imported by the report. The accepted-boundary
+`selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted`,
+which proves the accepted leaf authorization class, every same-boundary
+compatible private authorization local, the semantic spend class, and the
+selected checked-core spend digest all agree with `p_spend(q)` while the audit
+digest remains imported by the report. The accepted-boundary
 row now points at
 `selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted`,
 the Lean support hook that packages the private-to-public order row,
@@ -436,7 +440,7 @@ evidence. Its accepted-boundary sampler component still derives the
 `honestCreate` witness from accepted-boundary facts and binds `q,h` to the
 accepted spend's own creation boundary and concrete leaf authorization fiber.
 The checklist is executable evidence for
-the remaining integration path, not closure: it records four open rows and keeps
+the remaining integration path: it records three open rows and keeps
 `full_honest_sampler_integration_complete` and
 `honest_sampler_theorem_instantiated` false.
 `formal/kat/path2_account_creation_proof_obligation_vectors_v1.json`
@@ -444,12 +448,12 @@ turns that row table into a digest-pinned audit corpus bound to both the
 proof-boundary and direct-theorem reports; its honest-sampler obligation row now
 names the same
 `selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted`
-support package while staying open, records the current 6-open / 2-closed
+support package while staying open, records the current 5-open / 3-closed
 proof-boundary accounting, and keeps deployment fail-closed. Its
-authorization-class obligation row now names
-`selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted`
-plus the audit report's `p_spend` completeness and no-private-material checks
-while also staying open. A separate
+authorization-class obligation row is now closed by
+`selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted` plus the
+audit report's `p_spend` completeness and no-private-material checks, moving the
+proof-boundary accounting to 5 open / 3 closed. A separate
 requirement-coverage matrix maps every
 acceptance requirement to its current evidence surface, vector evidence kind,
 current vector case ids where they exist, public rejection classes for rejection
@@ -560,7 +564,7 @@ theorem's open per-hypothesis obligations after that manifest is
 checked. The shared proof-boundary object now also embeds digest-pinned
 requirement-vector-corpus evidence for the frame KAT, no-export, FRI/QROM
 domain, and payload KAT corpora plus the digest-pinned 8-case
-proof-obligation audit-vector corpus (6 open / 2 closed) and accepted
+proof-obligation audit-vector corpus (5 open / 3 closed) and accepted
 proof-boundary KAT evidence artifact. The direct theorem manifest embeds the
 same proof-boundary object and
 binds its own 9-case open direct-obligation audit-vector corpus plus accepted

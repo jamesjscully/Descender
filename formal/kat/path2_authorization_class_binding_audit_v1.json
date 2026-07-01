@@ -19,10 +19,10 @@
     "corpus_id": "Descender.Path2.AuthorizationClassBindingAudit.v1",
     "corpus_version": 1,
     "digests": {
-      "authorization_class_binding_audit_report_digest": "19d2d50f2838c4cab7b7ce2d81ca58b5a5e6bfa575c35813727d88ea6faacb0b",
-      "authorization_class_binding_audit_report_recomputed_digest": "19d2d50f2838c4cab7b7ce2d81ca58b5a5e6bfa575c35813727d88ea6faacb0b",
-      "sampler_timing_report_authorization_class_audit_digest": "19d2d50f2838c4cab7b7ce2d81ca58b5a5e6bfa575c35813727d88ea6faacb0b",
-      "sampler_timing_report_digest": "b55c8d9c4486a9fbabaf13c7e3027a2a9da6f8e5d5187d9086d4418d2ce268f0"
+      "authorization_class_binding_audit_report_digest": "ea480d25897c0762b7f929b797189a58b42ebe85eaf7a8e134111c24e52c2e80",
+      "authorization_class_binding_audit_report_recomputed_digest": "ea480d25897c0762b7f929b797189a58b42ebe85eaf7a8e134111c24e52c2e80",
+      "sampler_timing_report_authorization_class_audit_digest": "ea480d25897c0762b7f929b797189a58b42ebe85eaf7a8e134111c24e52c2e80",
+      "sampler_timing_report_digest": "656399042146b12c99d8b233320383a604250d99f5fcf6cbe6c03d1c85f8507f"
     },
     "field_completeness": {
       "field_completeness_negative_audit_complete": true,
@@ -115,7 +115,7 @@
     "open_obligations": {
       "deployment_ready": false,
       "external_review_complete": false,
-      "theorem_instantiated": false
+      "theorem_instantiated": true
     },
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.AuthorizationClassBindingAuditManifest.v1",
@@ -126,7 +126,7 @@
       "lean_boundary_hooks_present": true,
       "no_private_authorization_material_in_direct_verifier": true,
       "slot_authorization_digest_imported": true,
-      "source_shape_hook_count": 24,
+      "source_shape_hook_count": 26,
       "source_shape_hook_ids": [
         "path2_native_spend_authorization_class_digest_v1",
         "path2_native_spend_projection_v1_bytes",
@@ -151,9 +151,11 @@
         "selectedRust_accountCreationAuthorizationClass_matchesMeaning_of_obligationTracked",
         "SelectedRustAcceptedBoundaryAuthorizationClassBindingSupport",
         "selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted",
+        "SelectedRustAuthorizationClassBindingTheoremClosed",
+        "selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted",
         "path2_native_honest_constructor_rejects_authorization_class_mismatch"
       ]
     }
   },
-  "manifest_digest": "330ffc25c86aedb6e3ddf457442fa8f92c365cd1b83ffbac69c7d5b63d9f261c"
+  "manifest_digest": "573aaae726c8d236318302ccac8108901933100ca88a85c52132bd9fa02b23bb"
 }

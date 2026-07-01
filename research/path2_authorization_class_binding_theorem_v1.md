@@ -25,8 +25,11 @@ and the dangerous failure is impossible:
                  ∧ AuthClass_c(auth) ≠ AuthClass_c(auth').
 ```
 
-`DIR-AUTHCLASS-001` keeps `authorization_class_binding_theorem_instantiated`
-false. Named break: `authorization_class_binding_break`.
+`DIR-AUTHCLASS-001` now imports the selected-Rust Lean closure
+`selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted` for this
+local theorem. Named break: `authorization_class_binding_break` remains the
+routing class for any future drift in the field-completeness audit or checked-core
+binding.
 
 ## Two-part structure
 
@@ -141,9 +144,9 @@ and `E_SD` (`p_spend.allowed_state_transition_class = p_state.state_transition_c
   includes selected-Rust hooks for `AuthorizationCompatibleOverClass`, the
   honest-create wrapper, and the projection-completeness bridge
   `p_spend(q) = meaning_of_boundary`. `Path2AccountCreationSamplerTimingReportV1`
-  now row-pins the remaining sampler integration path, but the theorem has not
-  consumed that checklist. Remaining residuals are full honest-create sampler
-  integration/evidence closure and external review. No theorem flag flipped.
+  now row-pins this local theorem as imported while preserving the remaining
+  sampler integration path. Remaining residuals are full honest-create sampler
+  integration/evidence closure and external review.
 
 ## What This Closes And Hands Off
 
@@ -168,9 +171,13 @@ and `E_SD` (`p_spend.allowed_state_transition_class = p_state.state_transition_c
   `selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted`
   packages the concrete leaf fiber's compatibility, match to boundary meaning,
   and same-boundary no-ambiguity consequence for every other compatible private
-  fiber.
-  These are support hooks, not theorem closure.
-- **Hands off:** full honest-create sampler integration/evidence path that
-  consumes the row-pinned checklist, and external review. `DIR-AUTHCLASS-001` keeps
-  `authorization_class_binding_theorem_instantiated` false pending that theorem
-  closure and review.
+  fiber. The closure hook
+  `selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted` adds
+  the selected checked-core spend-digest field binding and proves the accepted
+  leaf authorization class, every same-boundary compatible private authorization
+  local, and the boundary semantic spend class all equal `p_spend(q)`.
+- **Hands off:** full honest-create sampler integration/evidence path,
+  simulator/no-export, proof-family, deployment-gate, and external-review work.
+  `authorization_class_binding_theorem_instantiated` is true for this local
+  selected-Rust theorem only; deployment readiness and external review remain
+  false.

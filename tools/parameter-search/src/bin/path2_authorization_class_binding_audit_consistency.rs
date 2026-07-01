@@ -244,8 +244,12 @@ fn main() -> Result<(), String> {
             ));
         }
     }
+    if !bool_at(&manifest, "/manifest/open_obligations/theorem_instantiated")? {
+        return Err(
+            "authorization-class audit lost imported authorization-class theorem".to_string(),
+        );
+    }
     for pointer in [
-        "/manifest/open_obligations/theorem_instantiated",
         "/manifest/open_obligations/external_review_complete",
         "/manifest/open_obligations/deployment_ready",
     ] {
@@ -360,6 +364,8 @@ fn main() -> Result<(), String> {
         "selectedRust_accountCreationAuthorizationClass_matchesMeaning_of_obligationTracked",
         "SelectedRustAcceptedBoundaryAuthorizationClassBindingSupport",
         "selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted",
+        "SelectedRustAuthorizationClassBindingTheoremClosed",
+        "selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted",
         "spend.leaf.authorizationClass =",
         "C.nativeProjections.pSpend spend.creationEvidence.boundary",
     ] {

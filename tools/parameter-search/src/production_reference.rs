@@ -11401,13 +11401,13 @@ pub const PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS:
     Path2AccountCreationSamplerIntegrationRowV1 {
         integration_id: "sampler_integration_authorization_class_audit",
         support_surface:
-            "Path2AuthorizationClassBindingAuditReportV1 + accepted-boundary Lean auth-class support",
+            "Path2AuthorizationClassBindingAuditReportV1 + selected-Rust Lean auth-class closure",
         current_evidence:
-            "selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted",
+            "selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted",
         required_closure:
-            "close selected_account_creation_authorization_class_binding_v1 after full sampler integration",
+            "closed local authorization-class binding theorem imported; honest sampler theorem remains separate",
         named_break: "checked_core_message_binding_break",
-        open: true,
+        open: false,
     },
     Path2AccountCreationSamplerIntegrationRowV1 {
         integration_id: "sampler_integration_accepted_boundary_import",
@@ -11440,7 +11440,7 @@ pub const PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_FIELDS: [&str; 8] = [
     "aggregation_mode",
     "spend_domain_separator",
 ];
-pub const PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_HOOKS: [&str; 24] = [
+pub const PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_HOOKS: [&str; 26] = [
     "path2_native_spend_authorization_class_digest_v1",
     "path2_native_spend_projection_v1_bytes",
     "verify_path2_direct_single_slot_spend_authorization",
@@ -11464,6 +11464,8 @@ pub const PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_HOOKS: [&str; 24] = [
     "selectedRust_accountCreationAuthorizationClass_matchesMeaning_of_obligationTracked",
     "SelectedRustAcceptedBoundaryAuthorizationClassBindingSupport",
     "selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted",
+    "SelectedRustAuthorizationClassBindingTheoremClosed",
+    "selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted",
     "path2_native_honest_constructor_rejects_authorization_class_mismatch",
 ];
 pub const PATH2_ACCOUNT_CREATION_TIMING_ORDER_STEPS: [&str; 11] = [
@@ -12197,13 +12199,13 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
         obligation_id: "creation_proof_obligation_authorization_class_binding",
         closure_target: "selected_account_creation_authorization_class_binding_v1",
         supporting_surface:
-            "Path2AuthorizationClassBindingAuditReportV1 + accepted-boundary Lean authorization-class support + checked-core frame binding",
+            "Path2AuthorizationClassBindingAuditReportV1 + selected-Rust Lean authorization-class closure + checked-core frame binding",
         current_evidence:
-            "selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted packages typed compatibility, match to boundary meaning, and same-boundary no-ambiguity while the audit pins p_spend completeness and direct-verifier no-private-material checks",
-        required_closure: "prove private authorization-local material cannot change public spend semantics or bypass checked-core binding",
+            "selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted proves accepted-boundary authorization-local class equals pSpend, every compatible private authorization local has the same public class, the semantic meaning agrees with pSpend, and the selected checked-core frame carries the same spend digest; the audit pins p_spend completeness and direct-verifier no-private-material checks",
+        required_closure: "closed by importing the selected-Rust authorization-class binding theorem; honest sampler, proof-family, deployment, and external-review obligations remain separate",
         named_break: "checked_core_message_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
-        open: true,
+        open: false,
     },
     Path2AccountCreationProofBoundaryObligationRowV1 {
         obligation_id: "creation_proof_obligation_no_postchallenge_timing",
@@ -12290,12 +12292,12 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CLOSURE_DEPENDENCY_ROWS:
     Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
         dependency_id: "closure_dependency_authorization_class_binding",
         source_report: "Path2AccountCreationSamplerTimingReportV1",
-        source_flag_group: "authorization_class_binding_theorem_instantiated=false",
+        source_flag_group: "authorization_class_binding_theorem_instantiated=true",
         proof_obligation_id: "creation_proof_obligation_authorization_class_binding",
         residual_item: "",
         named_break: "checked_core_message_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
-        open: true,
+        open: false,
     },
     Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
         dependency_id: "closure_dependency_no_postchallenge_timing",
@@ -12956,7 +12958,7 @@ pub fn path2_authorization_class_binding_audit_report_v1(
         field_completeness_negative_audit_complete: true,
         lean_boundary_hooks_present: true,
         existing_negative_tests_present: true,
-        theorem_instantiated: false,
+        theorem_instantiated: true,
         external_review_complete: false,
         deployment_ready: false,
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
@@ -13000,7 +13002,7 @@ pub fn validate_path2_authorization_class_binding_audit_report_v1(
         || !report.field_completeness_negative_audit_complete
         || !report.lean_boundary_hooks_present
         || !report.existing_negative_tests_present
-        || report.theorem_instantiated
+        || !report.theorem_instantiated
         || report.external_review_complete
         || report.deployment_ready
     {
@@ -13070,7 +13072,7 @@ pub fn path2_account_creation_sampler_timing_report_v1() -> Path2AccountCreation
         sampler_boundary_pinned: true,
         timing_boundary_pinned: true,
         honest_sampler_theorem_instantiated: false,
-        authorization_class_binding_theorem_instantiated: false,
+        authorization_class_binding_theorem_instantiated: true,
         no_postchallenge_timing_theorem_instantiated: true,
         deployment_ready: false,
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
@@ -13144,7 +13146,7 @@ pub fn validate_path2_account_creation_sampler_timing_report_v1(
         || !report.sampler_boundary_pinned
         || !report.timing_boundary_pinned
         || report.honest_sampler_theorem_instantiated
-        || report.authorization_class_binding_theorem_instantiated
+        || !report.authorization_class_binding_theorem_instantiated
         || !report.no_postchallenge_timing_theorem_instantiated
         || report.deployment_ready
     {
@@ -13359,6 +13361,25 @@ fn path2_account_creation_closed_no_postchallenge_dependency_imported_v1(
         })
 }
 
+fn path2_account_creation_closed_authorization_class_dependency_imported_v1(
+    dependency: &Path2AccountCreationProofBoundaryClosureDependencyRowV1,
+    proof_obligation_rows: &[Path2AccountCreationProofBoundaryObligationRowV1],
+    sampler_timing_report: &Path2AccountCreationSamplerTimingReportV1,
+) -> bool {
+    dependency.dependency_id == "closure_dependency_authorization_class_binding"
+        && dependency.proof_obligation_id
+            == "creation_proof_obligation_authorization_class_binding"
+        && dependency.named_break == "checked_core_message_binding_break"
+        && !dependency.open
+        && sampler_timing_report.authorization_class_binding_theorem_instantiated
+        && !sampler_timing_report.deployment_ready
+        && proof_obligation_rows.iter().any(|obligation| {
+            obligation.obligation_id == dependency.proof_obligation_id
+                && obligation.named_break == dependency.named_break
+                && !obligation.open
+        })
+}
+
 fn path2_account_creation_closed_frozen_payload_dependency_imported_v1(
     dependency: &Path2AccountCreationProofBoundaryClosureDependencyRowV1,
     proof_obligation_rows: &[Path2AccountCreationProofBoundaryObligationRowV1],
@@ -13388,6 +13409,10 @@ fn path2_account_creation_closed_dependency_imported_v1(
     payload_kat_boundary_report: &Path2AccountStarkPayloadKatBoundaryReportV1,
 ) -> bool {
     path2_account_creation_closed_no_postchallenge_dependency_imported_v1(
+        dependency,
+        proof_obligation_rows,
+        sampler_timing_report,
+    ) || path2_account_creation_closed_authorization_class_dependency_imported_v1(
         dependency,
         proof_obligation_rows,
         sampler_timing_report,
@@ -13638,6 +13663,7 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
                     && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
             } else {
                 (row.dependency_id == "closure_dependency_no_postchallenge_timing"
+                    || row.dependency_id == "closure_dependency_authorization_class_binding"
                     || row.dependency_id == "closure_dependency_frozen_payload_kats")
                     && !row.proof_obligation_still_open
                     && !row.source_support_still_open
@@ -13820,6 +13846,7 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
                     && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
             } else {
                 (row.dependency_id == "closure_dependency_no_postchallenge_timing"
+                    || row.dependency_id == "closure_dependency_authorization_class_binding"
                     || row.dependency_id == "closure_dependency_frozen_payload_kats")
                     && !row.proof_obligation_still_open
                     && !row.source_support_still_open
@@ -51327,6 +51354,8 @@ fn path2_full_signature_execution_source_boundary_present_in_source_v1(
         "selectedRustAuthorizationCompatibleOverClass_noAmbiguity",
         "SelectedRustAcceptedBoundaryAuthorizationClassBindingSupport",
         "selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted",
+        "SelectedRustAuthorizationClassBindingTheoremClosed",
+        "selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted",
         "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted",
         "SelectedRustAcceptedBoundarySamplerIntegrationRowsSupported",
         "selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted",
@@ -114800,7 +114829,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS.as_ref()
         );
         assert_eq!(report.sampler_integration_row_count, 5);
-        assert_eq!(report.sampler_integration_open_count, 4);
+        assert_eq!(report.sampler_integration_open_count, 3);
         assert!(report
             .sampler_integration_rows
             .iter()
@@ -114825,8 +114854,8 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             .any(
                 |row| row.integration_id == "sampler_integration_authorization_class_audit"
                     && row.current_evidence
-                        == "selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted"
-                    && row.open
+                        == "selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted"
+                    && !row.open
             ));
         assert!(report
             .sampler_integration_rows
@@ -114862,7 +114891,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.sampler_boundary_pinned);
         assert!(report.timing_boundary_pinned);
         assert!(!report.honest_sampler_theorem_instantiated);
-        assert!(!report.authorization_class_binding_theorem_instantiated);
+        assert!(report.authorization_class_binding_theorem_instantiated);
         assert!(report.no_postchallenge_timing_theorem_instantiated);
         assert!(!report.deployment_ready);
         assert_eq!(
@@ -115239,7 +115268,8 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         for row in report.proof_obligation_rows {
             let expected_closed = matches!(
                 row.obligation_id,
-                "creation_proof_obligation_no_postchallenge_timing"
+                "creation_proof_obligation_authorization_class_binding"
+                    | "creation_proof_obligation_no_postchallenge_timing"
                     | "creation_proof_obligation_frozen_payload_kats"
             );
             assert_eq!(row.open, !expected_closed);
