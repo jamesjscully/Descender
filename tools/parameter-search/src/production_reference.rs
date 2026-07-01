@@ -9836,6 +9836,7 @@ pub struct Path2DirectAcceptedTupleFieldEvidenceRowV1 {
     pub imported_boundary_report: &'static str,
     pub separate_closure_required: bool,
     pub all_referenced_direct_obligations_still_open: bool,
+    pub all_referenced_direct_obligations_open_or_imported: bool,
     pub closed_by_imported_boundary: bool,
     pub blocker: &'static str,
 }
@@ -10174,6 +10175,7 @@ pub struct Path2DirectTheoremBoundaryReportV1 {
     pub named_break_classes_pinned: bool,
     pub composition_theorem_instantiated: bool,
     pub account_creation_proof_boundary_verified: bool,
+    pub checked_core_frame_binding_imported: bool,
     pub lifecycle_transition_profile_verified: bool,
     pub qrom_and_action_bounds_linked_to_theorem: bool,
     pub deployment_ready: bool,
@@ -11486,12 +11488,12 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         acceptance_hypothesis: "checked_core_challenge_binds_public_spend_context",
         supporting_surface: "Path2NativeCheckedCoreFrameV1",
         current_evidence:
-            "DIR-CC-001 is verified for checked-core frame field order, mutation tests, and authorization digest binding",
+            "DIR-CC-001 is verified for checked-core frame field order, mutation tests, and authorization digest binding; Lean imports CheckedCoreChallengeBindsAcceptedTuple from ConcreteSpendVerificationAccepts through concreteDirectAcceptedSpendSoundness",
         required_closure:
-            "composition theorem imports checked-core frame binding for the accepted spend tuple",
+            "closed by importing checked-core frame binding for the accepted spend tuple into the direct theorem boundary",
         named_break: "checked_core_message_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
-        open: true,
+        open: false,
     },
     Path2DirectTheoremObligationRowV1 {
         obligation_id: "direct_obligation_checked_core_acceptance",
@@ -11592,13 +11594,13 @@ pub const PATH2_DIRECT_THEOREM_CLOSURE_DEPENDENCY_ROWS:
     Path2DirectTheoremClosureDependencyRowV1 {
         dependency_id: "direct_dependency_checked_core_frame_binding",
         source_report: "Path2DirectTheoremBoundaryReportV1",
-        source_flag_group: "composition_theorem_instantiated",
+        source_flag_group: "checked_core_frame_binding_imported=true",
         direct_obligation_id: "direct_obligation_checked_core_frame_binding",
         acceptance_hypothesis: "checked_core_challenge_binds_public_spend_context",
         support_surface: "Path2NativeCheckedCoreFrameV1",
         named_break: "checked_core_message_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
-        open: true,
+        open: false,
     },
     Path2DirectTheoremClosureDependencyRowV1 {
         dependency_id: "direct_dependency_checked_core_acceptance",
@@ -13732,9 +13734,14 @@ fn path2_direct_theorem_closure_dependency_support_open_v1(
         "direct_dependency_leaf_canonical_live"
         | "direct_dependency_slot_authorization_digest"
         | "direct_dependency_admission_namespace"
-        | "direct_dependency_checked_core_frame_binding"
         | "direct_dependency_public_rejection" => {
             !direct_report.composition_theorem_instantiated && !direct_report.deployment_ready
+        }
+        "direct_dependency_checked_core_frame_binding" => {
+            row.open
+                && !direct_report.checked_core_frame_binding_imported
+                && !direct_report.composition_theorem_instantiated
+                && !direct_report.deployment_ready
         }
         "direct_dependency_evidence_leaf_bindings" => {
             !direct_report.composition_theorem_instantiated
@@ -13777,6 +13784,140 @@ fn path2_direct_theorem_closed_lifecycle_dependency_imported_v1(
         && lifecycle_report.target_chain_lifecycle_profile_review_pinned
         && lifecycle_report.target_chain_lifecycle_profile_verification_pinned
         && !lifecycle_report.deployment_ready
+}
+
+fn path2_direct_checked_core_frame_binding_imported_v1() -> bool {
+    let full_spend_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
+    path2_direct_checked_core_frame_binding_imported_in_source_v1(full_spend_source)
+}
+
+fn path2_direct_checked_core_frame_binding_imported_in_source_v1(
+    full_spend_source: &str,
+) -> bool {
+    let Some(predicate_start) =
+        full_spend_source.find("\ndef CheckedCoreChallengeBindsAcceptedTuple")
+    else {
+        return false;
+    };
+    let Some(predicate_end) = full_spend_source[predicate_start..]
+        .find("\n/-- The exact digest is absent before the transition")
+    else {
+        return false;
+    };
+    let predicate_window = &full_spend_source[predicate_start..predicate_start + predicate_end];
+
+    let Some(accept_start) =
+        full_spend_source.find("\ndef ConcreteSpendVerificationAccepts")
+    else {
+        return false;
+    };
+    let Some(accept_end) = full_spend_source[accept_start..]
+        .find("\n/--\nClosed direct-theorem checked-core frame-binding slice.")
+    else {
+        return false;
+    };
+    let accept_window = &full_spend_source[accept_start..accept_start + accept_end];
+
+    let Some(import_start) = full_spend_source
+        .find("\ntheorem checkedCoreFrameBinding_imported_of_concreteSpendAccepts")
+    else {
+        return false;
+    };
+    let Some(import_end) = full_spend_source[import_start..]
+        .find("\n/-- The imported checked-core frame binding exposes")
+    else {
+        return false;
+    };
+    let import_window = &full_spend_source[import_start..import_start + import_end];
+
+    let Some(frame_eq_start) =
+        full_spend_source.find("\ntheorem checkedCoreFrameBinding_frame_eq_of_imported")
+    else {
+        return false;
+    };
+    let Some(frame_eq_end) = full_spend_source[frame_eq_start..]
+        .find("\n/-- Full-game predicates for the concrete native carrier.")
+    else {
+        return false;
+    };
+    let frame_eq_window = &full_spend_source[frame_eq_start..frame_eq_start + frame_eq_end];
+
+    let Some(soundness_start) = full_spend_source.find("\ndef concreteDirectAcceptedSpendSoundness")
+    else {
+        return false;
+    };
+    let Some(soundness_end) = full_spend_source[soundness_start..]
+        .find("\n/--\nConcrete direct-mode theorem")
+    else {
+        return false;
+    };
+    let soundness_window = &full_spend_source[soundness_start..soundness_start + soundness_end];
+
+    let predicate_checks = [
+        "C.nativeVerifier.spendAccept spend.leaf.boundary",
+        "spend.signatureBody.checkedCoreFrame =",
+        "C.checkedCore.frame spend.leaf.boundary",
+        "spend.message",
+        "spend.consumeStateBefore.stateNonce",
+        "spend.signatureBody.proofCommitment",
+        "spend.leaf.checkedCoreFrame = spend.signatureBody.checkedCoreFrame",
+        "spend.leaf.accountId = spend.accountId",
+        "spend.leaf.accountStateRoot = spend.accountStateRootBefore",
+        "spend.leaf.slotId = spend.slotId",
+        "spend.leaf.publicKey = spend.publicKey",
+    ];
+    let accept_checks = [
+        "BoundConcretePrevalidatedSlot C spend",
+        "AdmittedConcretePrechallengeLeaf C spend",
+        "CheckedCoreChallengeBindsAcceptedTuple C spend",
+        "ConcreteConsumeOnceAcceptedTransition C spend",
+    ];
+    let import_checks = [
+        "checkedCoreFrameBinding_imported_of_concreteSpendAccepts",
+        "hAccept : ConcreteSpendVerificationAccepts C spend",
+        "CheckedCoreChallengeBindsAcceptedTuple C spend",
+        "hAccept.2.2.1",
+    ];
+    let frame_eq_checks = [
+        "checkedCoreFrameBinding_frame_eq_of_imported",
+        "hChecked : CheckedCoreChallengeBindsAcceptedTuple C spend",
+        "spend.signatureBody.checkedCoreFrame =",
+        "C.checkedCore.frame spend.leaf.boundary",
+        "hChecked.2.1",
+    ];
+    let soundness_checks = [
+        "checked_core_binds_or_break := by",
+        "intro spend hAccept",
+        "exact Or.inl hAccept.2.2.1",
+    ];
+
+    predicate_checks
+        .iter()
+        .all(|marker| predicate_window.contains(marker))
+        && accept_checks
+            .iter()
+            .all(|marker| accept_window.contains(marker))
+        && import_checks
+            .iter()
+            .all(|marker| import_window.contains(marker))
+        && frame_eq_checks
+            .iter()
+            .all(|marker| frame_eq_window.contains(marker))
+        && soundness_checks
+            .iter()
+            .all(|marker| soundness_window.contains(marker))
+}
+
+fn path2_direct_theorem_closed_checked_core_frame_dependency_imported_v1(
+    row: &Path2DirectTheoremClosureDependencyRowV1,
+    direct_report: &Path2DirectTheoremBoundaryReportV1,
+) -> bool {
+    row.dependency_id == "direct_dependency_checked_core_frame_binding"
+        && !row.open
+        && row.source_flag_group == "checked_core_frame_binding_imported=true"
+        && direct_report.checked_core_frame_binding_imported
+        && !direct_report.composition_theorem_instantiated
+        && !direct_report.deployment_ready
 }
 
 fn path2_direct_theorem_closure_dependency_evidence_rows_v1(
@@ -13832,6 +13973,8 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
             && direct_lifecycle_boundary_report
                 .target_chain_lifecycle_profile_verification_pinned
             && !direct_lifecycle_boundary_report.deployment_ready;
+    let checked_core_frame_binding_imported =
+        path2_direct_checked_core_frame_binding_imported_v1();
     let mut report = Path2DirectTheoremBoundaryReportV1 {
         digest: [0_u8; DIGEST_BYTES],
         domain: PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN,
@@ -13884,6 +14027,7 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
         named_break_classes_pinned: true,
         composition_theorem_instantiated: false,
         account_creation_proof_boundary_verified: false,
+        checked_core_frame_binding_imported,
         lifecycle_transition_profile_verified,
         qrom_and_action_bounds_linked_to_theorem: false,
         deployment_ready: false,
@@ -13944,7 +14088,9 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
                     !row.direct_obligation_still_open
                         && !row.source_support_still_open
                         && !row.blocks_deployment
-                        && row.dependency_id == "direct_dependency_consume_once"
+                        && (row.dependency_id == "direct_dependency_consume_once"
+                            || row.dependency_id
+                                == "direct_dependency_checked_core_frame_binding")
                 }
             });
     report.digest = path2_direct_theorem_boundary_report_v1_digest(&report);
@@ -14083,6 +14229,9 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
                     row,
                     report,
                     &direct_lifecycle_boundary_report,
+                ) || path2_direct_theorem_closed_checked_core_frame_dependency_imported_v1(
+                    row,
+                    report,
                 )
             }
         })
@@ -14096,8 +14245,10 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
                 !row.direct_obligation_still_open
                     && !row.source_support_still_open
                     && !row.blocks_deployment
-                    && row.dependency_id == "direct_dependency_consume_once"
-                    && row.source_report == "Path2DirectLifecycleBoundaryReportV1"
+                    && ((row.dependency_id == "direct_dependency_consume_once"
+                        && row.source_report == "Path2DirectLifecycleBoundaryReportV1")
+                        || (row.dependency_id == "direct_dependency_checked_core_frame_binding"
+                            && row.source_report == "Path2DirectTheoremBoundaryReportV1"))
             }
         })
     {
@@ -14114,6 +14265,7 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
         || !report.named_break_classes_pinned
         || report.composition_theorem_instantiated
         || report.account_creation_proof_boundary_verified
+        || !report.checked_core_frame_binding_imported
         || !report.lifecycle_transition_profile_verified
         || report.qrom_and_action_bounds_linked_to_theorem
         || report.deployment_ready
@@ -66734,16 +66886,35 @@ fn path2_direct_referenced_obligations_still_open_v1(obligation_ids: &[&str]) ->
         })
 }
 
+fn path2_direct_referenced_obligations_open_or_imported_v1(obligation_ids: &[&str]) -> bool {
+    !obligation_ids.is_empty()
+        && obligation_ids.iter().all(|obligation_id| {
+            PATH2_DIRECT_THEOREM_OBLIGATION_ROWS.iter().any(|row| {
+                row.obligation_id == *obligation_id
+                    && (row.open
+                        || (*obligation_id == "direct_obligation_consume_once"
+                            && row.acceptance_hypothesis
+                                == "lifecycle_transition_consumes_authorization_once")
+                        || (*obligation_id == "direct_obligation_checked_core_frame_binding"
+                            && row.acceptance_hypothesis
+                                == "checked_core_challenge_binds_public_spend_context"))
+            })
+        })
+}
+
 fn path2_direct_referenced_obligations_closed_by_import_v1(obligation_ids: &[&str]) -> bool {
     !obligation_ids.is_empty()
         && obligation_ids.iter().all(|obligation_id| {
-            *obligation_id == "direct_obligation_consume_once"
-                && PATH2_DIRECT_THEOREM_OBLIGATION_ROWS.iter().any(|row| {
-                    row.obligation_id == *obligation_id
-                        && !row.open
+            PATH2_DIRECT_THEOREM_OBLIGATION_ROWS.iter().any(|row| {
+                row.obligation_id == *obligation_id
+                    && !row.open
+                    && ((*obligation_id == "direct_obligation_consume_once"
                         && row.acceptance_hypothesis
-                            == "lifecycle_transition_consumes_authorization_once"
-                })
+                            == "lifecycle_transition_consumes_authorization_once")
+                        || (*obligation_id == "direct_obligation_checked_core_frame_binding"
+                            && row.acceptance_hypothesis
+                                == "checked_core_challenge_binds_public_spend_context"))
+            })
         })
 }
 
@@ -66770,6 +66941,10 @@ fn path2_direct_accepted_tuple_field_evidence_rows_v1(
                 ),
                 all_referenced_direct_obligations_still_open:
                     path2_direct_referenced_obligations_still_open_v1(direct_obligation_ids),
+                all_referenced_direct_obligations_open_or_imported:
+                    path2_direct_referenced_obligations_open_or_imported_v1(
+                        direct_obligation_ids,
+                    ),
                 closed_by_imported_boundary:
                     path2_direct_referenced_obligations_closed_by_import_v1(
                         direct_obligation_ids,
@@ -67113,21 +67288,10 @@ pub fn path2_direct_accepted_spend_tuple_evidence_v1(
     tuple_evidence.every_accepted_tuple_field_has_open_or_imported_direct_obligation =
         tuple_evidence.accepted_tuple_field_evidence_count
             == PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
-            && tuple_evidence.accepted_tuple_field_open_obligation_count
-                + tuple_evidence.accepted_tuple_field_imported_closure_count
-                == PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
             && tuple_evidence
                 .accepted_tuple_field_evidence_rows
                 .iter()
-                .all(|row| {
-                    (row.separate_closure_required
-                        && row.all_referenced_direct_obligations_still_open
-                        && !row.closed_by_imported_boundary)
-                        || (!row.separate_closure_required
-                            && !row.all_referenced_direct_obligations_still_open
-                            && row.closed_by_imported_boundary
-                            && row.imported_boundary_report == "Path2DirectLifecycleBoundaryReportV1")
-                });
+                .all(|row| row.all_referenced_direct_obligations_open_or_imported);
     tuple_evidence.digest =
         path2_direct_accepted_spend_tuple_evidence_v1_digest(&tuple_evidence);
     Ok(tuple_evidence)
@@ -67962,11 +68126,15 @@ pub fn validate_path2_direct_accepted_spend_tuple_evidence_v1(
         || evidence.accepted_tuple_field_evidence_present_count
             != PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
         || evidence.accepted_tuple_field_open_obligation_count
-            != PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len() - 1
-        || evidence.accepted_tuple_field_imported_closure_count != 1
+            != 7
+        || evidence.accepted_tuple_field_imported_closure_count != 2
         || !evidence.every_accepted_tuple_field_has_evidence
         || evidence.every_accepted_tuple_field_has_open_direct_obligation
         || !evidence.every_accepted_tuple_field_has_open_or_imported_direct_obligation
+        || !evidence
+            .accepted_tuple_field_evidence_rows
+            .iter()
+            .all(|row| row.all_referenced_direct_obligations_open_or_imported)
     {
         return Err(
             "Path 2 direct accepted spend tuple evidence lost field evidence rows".to_string(),
@@ -71496,6 +71664,11 @@ pub fn path2_direct_accepted_spend_tuple_evidence_v1_frame(
         );
         append_u64(
             &mut frame,
+            b"all_referenced_direct_obligations_open_or_imported",
+            u64::from(row.all_referenced_direct_obligations_open_or_imported),
+        );
+        append_u64(
+            &mut frame,
             b"closed_by_imported_boundary",
             u64::from(row.closed_by_imported_boundary),
         );
@@ -72248,6 +72421,11 @@ fn path2_direct_theorem_boundary_report_v1_frame(
         &mut frame,
         b"account_creation_proof_boundary_verified",
         u64::from(report.account_creation_proof_boundary_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_frame_binding_imported",
+        u64::from(report.checked_core_frame_binding_imported),
     );
     append_u64(
         &mut frame,
@@ -114819,7 +114997,11 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             assert_eq!(row.obligation_id, *expected_case_id);
             assert_eq!(
                 row.open,
-                row.obligation_id != "direct_obligation_consume_once"
+                !matches!(
+                    row.obligation_id,
+                    "direct_obligation_consume_once"
+                        | "direct_obligation_checked_core_frame_binding"
+                )
             );
             assert_eq!(
                 row.blocker,
@@ -114837,6 +115019,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.named_break_classes_pinned);
         assert!(!report.composition_theorem_instantiated);
         assert!(!report.account_creation_proof_boundary_verified);
+        assert!(report.checked_core_frame_binding_imported);
         assert!(report.lifecycle_transition_profile_verified);
         assert!(!report.qrom_and_action_bounds_linked_to_theorem);
         assert!(!report.deployment_ready);

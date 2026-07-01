@@ -16,7 +16,7 @@ mod enabled {
             validate_path2_direct_accepted_spend_tuple_kat_evidence_v1,
         },
     };
-    use serde_json::{json, to_value, Value};
+    use serde_json::{Value, json, to_value};
     use sha2::{Digest, Sha256};
     use std::{
         fs,
@@ -268,20 +268,17 @@ mod enabled {
                 body,
                 "/evidence/accepted_tuple_field_evidence_present_count",
             )? != evidence.accepted_tuple_field_evidence_present_count as u64
-            || u64_at(
-                body,
-                "/evidence/accepted_tuple_field_open_obligation_count",
-            )? != evidence.accepted_tuple_field_open_obligation_count as u64
+            || u64_at(body, "/evidence/accepted_tuple_field_open_obligation_count")?
+                != evidence.accepted_tuple_field_open_obligation_count as u64
             || u64_at(
                 body,
                 "/evidence/accepted_tuple_field_imported_closure_count",
             )? != evidence.accepted_tuple_field_imported_closure_count as u64
             || evidence.accepted_tuple_field_evidence_count != 11
             || evidence.accepted_tuple_field_evidence_present_count != 11
-            || evidence.accepted_tuple_field_open_obligation_count != 10
-            || evidence.accepted_tuple_field_imported_closure_count != 1
-            || at(body, "/evidence/accepted_tuple_field_evidence_rows")?
-                != &expected_field_rows
+            || evidence.accepted_tuple_field_open_obligation_count != 7
+            || evidence.accepted_tuple_field_imported_closure_count != 2
+            || at(body, "/evidence/accepted_tuple_field_evidence_rows")? != &expected_field_rows
         {
             return Err(
                 "direct accepted spend tuple manifest lost accepted-field evidence rows"
@@ -343,8 +340,10 @@ mod enabled {
             "direct accepted composition manifest",
         )?;
 
-        if at(direct_boundary, "/direct_accepted_spend_tuple_evidence_artifact")?
-            != &accepted_artifact
+        if at(
+            direct_boundary,
+            "/direct_accepted_spend_tuple_evidence_artifact",
+        )? != &accepted_artifact
             || at(
                 direct_boundary,
                 "/direct_obligation_vector_corpus_evidence/direct_accepted_spend_tuple_evidence_artifact",

@@ -11,10 +11,10 @@ fn main() -> Result<(), String> {
 #[cfg(feature = "account-creation-stark-verifier")]
 mod enabled {
     use descender_parameter_search::production_reference::{
-        path2_direct_accepted_spend_tuple_evidence_v1_digest,
-        path2_direct_accepted_spend_tuple_kat_evidence_v1, PROFILE,
+        PROFILE, path2_direct_accepted_spend_tuple_evidence_v1_digest,
+        path2_direct_accepted_spend_tuple_kat_evidence_v1,
     };
-    use serde_json::{json, Value};
+    use serde_json::{Value, json};
     use sha2::{Digest, Sha256};
 
     fn hex_encode(bytes: &[u8]) -> String {
@@ -42,8 +42,8 @@ mod enabled {
             || !evidence.tuple_fields_match_theorem_boundary
             || evidence.accepted_tuple_field_evidence_count != 11
             || evidence.accepted_tuple_field_evidence_present_count != 11
-            || evidence.accepted_tuple_field_open_obligation_count != 10
-            || evidence.accepted_tuple_field_imported_closure_count != 1
+            || evidence.accepted_tuple_field_open_obligation_count != 7
+            || evidence.accepted_tuple_field_imported_closure_count != 2
             || !evidence.every_accepted_tuple_field_has_evidence
             || evidence.every_accepted_tuple_field_has_open_direct_obligation
             || !evidence.every_accepted_tuple_field_has_open_or_imported_direct_obligation

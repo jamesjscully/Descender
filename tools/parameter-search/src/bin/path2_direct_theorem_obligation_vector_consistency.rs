@@ -564,10 +564,16 @@ fn main() -> Result<(), String> {
         );
     }
 
-    let open_direct_obligation_count =
-        direct_report.obligation_rows.iter().filter(|row| row.open).count() as u64;
-    let closed_direct_obligation_count =
-        direct_report.obligation_rows.iter().filter(|row| !row.open).count() as u64;
+    let open_direct_obligation_count = direct_report
+        .obligation_rows
+        .iter()
+        .filter(|row| row.open)
+        .count() as u64;
+    let closed_direct_obligation_count = direct_report
+        .obligation_rows
+        .iter()
+        .filter(|row| !row.open)
+        .count() as u64;
     if u64_at(corpus, "/case_count")? != direct_report.obligation_count as u64
         || u64_at(corpus, "/audit_summary/direct_obligation_count")?
             != direct_report.obligation_count as u64
@@ -598,8 +604,8 @@ fn main() -> Result<(), String> {
     )? || bool_at(corpus, "/audit_summary/all_cases_open")?
         || !bool_at(corpus, "/audit_summary/all_cases_have_named_break")?
         || !bool_at(corpus, "/audit_summary/all_open_cases_block_deployment")?
-        || open_direct_obligation_count != 8
-        || closed_direct_obligation_count != 1
+        || open_direct_obligation_count != 7
+        || closed_direct_obligation_count != 2
     {
         return Err(
             "direct theorem obligation vector corpus lost partial-close row invariants".to_string(),
@@ -631,7 +637,9 @@ fn main() -> Result<(), String> {
         }
     }
     for pointer in [
+        "/direct_theorem_report/checked_core_frame_binding_imported",
         "/direct_theorem_report/lifecycle_transition_profile_verified",
+        "/audit_summary/checked_core_frame_binding_imported",
         "/lifecycle_boundary_report/target_chain_finality_profile_instantiated",
         "/lifecycle_boundary_report/target_chain_lifecycle_profile_review_pinned",
         "/lifecycle_boundary_report/target_chain_lifecycle_profile_verification_pinned",
@@ -873,9 +881,14 @@ fn main() -> Result<(), String> {
                 "direct theorem obligation case {case_id} open flag drifted"
             ));
         }
-        if !row.open && case_id != "direct_obligation_consume_once" {
+        if !row.open
+            && !matches!(
+                case_id,
+                "direct_obligation_consume_once" | "direct_obligation_checked_core_frame_binding"
+            )
+        {
             return Err(format!(
-                "direct theorem obligation case {case_id} closed without lifecycle import"
+                "direct theorem obligation case {case_id} closed without an imported boundary"
             ));
         }
     }

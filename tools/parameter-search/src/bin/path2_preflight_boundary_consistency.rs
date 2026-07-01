@@ -281,6 +281,7 @@ fn require_direct_accepted_tuple_field_evidence_identity(
             return Err(format!("{row_label}.direct_obligation_ids is empty"));
         }
         let mut all_referenced_open = true;
+        let mut all_referenced_open_or_imported = true;
         for obligation_id_value in direct_obligation_ids {
             let obligation_id = obligation_id_value.as_str().ok_or_else(|| {
                 format!("{row_label}.direct_obligation_ids contains a non-string")
@@ -296,11 +297,28 @@ fn require_direct_accepted_tuple_field_evidence_identity(
                     "{row_label} blocker does not match boundary obligation {obligation_id}"
                 ));
             }
-            all_referenced_open &= bool_at(source_row, "/open")?;
+            let source_open = bool_at(source_row, "/open")?;
+            let acceptance_hypothesis = str_at(source_row, "/acceptance_hypothesis")?;
+            let imported_closed = !source_open
+                && ((obligation_id == "direct_obligation_consume_once"
+                    && acceptance_hypothesis
+                        == "lifecycle_transition_consumes_authorization_once")
+                    || (obligation_id == "direct_obligation_checked_core_frame_binding"
+                        && acceptance_hypothesis
+                            == "checked_core_challenge_binds_public_spend_context"));
+            all_referenced_open &= source_open;
+            all_referenced_open_or_imported &= source_open || imported_closed;
         }
         if bool_at(row, "/all_referenced_direct_obligations_still_open")? != all_referenced_open {
             return Err(format!(
                 "{row_label}.all_referenced_direct_obligations_still_open drifted from boundary obligation rows"
+            ));
+        }
+        if bool_at(row, "/all_referenced_direct_obligations_open_or_imported")?
+            != all_referenced_open_or_imported
+        {
+            return Err(format!(
+                "{row_label}.all_referenced_direct_obligations_open_or_imported drifted from boundary obligation rows"
             ));
         }
     }
@@ -1003,7 +1021,14 @@ fn main() -> Result<(), String> {
         return Err("direct theorem boundary unexpectedly reports closed obligations".to_string());
     }
     if !direct_report.lifecycle_transition_profile_verified {
-        return Err("direct theorem boundary has not imported verified lifecycle profile".to_string());
+        return Err(
+            "direct theorem boundary has not imported verified lifecycle profile".to_string(),
+        );
+    }
+    if !direct_report.checked_core_frame_binding_imported {
+        return Err(
+            "direct theorem boundary has not imported checked-core frame binding".to_string(),
+        );
     }
     if qrom_action_report.deployment_ready
         || qrom_action_report.theorem_imports_budget
@@ -1063,8 +1088,11 @@ fn main() -> Result<(), String> {
             "account-creation proof boundary unexpectedly reports closed obligations".to_string(),
         );
     }
-    let open_proof_closure_dependency_count =
-        proof_report.closure_dependency_rows.iter().filter(|row| row.open).count();
+    let open_proof_closure_dependency_count = proof_report
+        .closure_dependency_rows
+        .iter()
+        .filter(|row| row.open)
+        .count();
     if !proof_report.proof_obligation_rows_pinned
         || !proof_report.every_proof_obligation_has_named_break
         || !proof_report.every_open_proof_obligation_blocks_deployment
@@ -1145,11 +1173,11 @@ fn main() -> Result<(), String> {
         ),
         (
             "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/accepted_tuple_field_open_obligation_count",
-            10,
+            7,
         ),
         (
             "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/accepted_tuple_field_imported_closure_count",
-            1,
+            2,
         ),
         (
             "/direct_accepted_composition_evidence_artifact/audit_summary/accepted_hypothesis_evidence_count",
@@ -1171,8 +1199,7 @@ fn main() -> Result<(), String> {
         "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/every_accepted_tuple_field_has_open_direct_obligation",
     )? {
         return Err(
-            "production preflight manifest unexpectedly kept all-open tuple field flag"
-                .to_string(),
+            "production preflight manifest unexpectedly kept all-open tuple field flag".to_string(),
         );
     }
     if at(
@@ -1231,17 +1258,19 @@ fn main() -> Result<(), String> {
                 .obligation_rows
                 .iter()
                 .filter(|row| row.open)
-                .all(|row| {
-                    row.blocker == direct_report.blocker && contains(blockers, row.blocker)
-                })
+                .all(|row| row.blocker == direct_report.blocker && contains(blockers, row.blocker))
             || !direct_report
                 .obligation_rows
                 .iter()
                 .filter(|row| !row.open)
                 .all(|row| {
-                    row.obligation_id == "direct_obligation_consume_once"
+                    (row.obligation_id == "direct_obligation_consume_once"
                         && row.acceptance_hypothesis
-                            == "lifecycle_transition_consumes_authorization_once"
+                            == "lifecycle_transition_consumes_authorization_once")
+                        || (row.obligation_id == "direct_obligation_checked_core_frame_binding"
+                            && row.acceptance_hypothesis
+                                == "checked_core_challenge_binds_public_spend_context"
+                            && direct_report.checked_core_frame_binding_imported)
                 }))
     {
         return Err(
@@ -1257,9 +1286,17 @@ fn main() -> Result<(), String> {
         || direct_report.closure_dependency_evidence_count
             != direct_report.closure_dependency_rows.len()
         || direct_report.closure_dependency_open_obligation_evidence_count
-            != direct_report.closure_dependency_rows.iter().filter(|row| row.open).count()
+            != direct_report
+                .closure_dependency_rows
+                .iter()
+                .filter(|row| row.open)
+                .count()
         || direct_report.closure_dependency_open_support_evidence_count
-            != direct_report.closure_dependency_rows.iter().filter(|row| row.open).count()
+            != direct_report
+                .closure_dependency_rows
+                .iter()
+                .filter(|row| row.open)
+                .count()
         || direct_report.closure_dependency_count != direct_report.obligation_rows.len()
     {
         return Err("direct theorem boundary lost closure-dependency blocker coverage".to_string());
@@ -1298,6 +1335,25 @@ fn main() -> Result<(), String> {
         {
             return Err(
                 "direct lifecycle import is not backed by verified non-deployable lifecycle boundary"
+                    .to_string(),
+            );
+        }
+    }
+    if direct_report.checked_core_frame_binding_imported {
+        let checked_core_row = direct_report
+            .obligation_rows
+            .iter()
+            .find(|row| row.obligation_id == "direct_obligation_checked_core_frame_binding")
+            .ok_or_else(|| {
+                "direct theorem boundary lost checked-core frame-binding row".to_string()
+            })?;
+        if checked_core_row.open
+            || checked_core_row.acceptance_hypothesis
+                != "checked_core_challenge_binds_public_spend_context"
+            || checked_core_row.named_break != "checked_core_message_binding_break"
+        {
+            return Err(
+                "direct checked-core frame-binding import is not backed by a closed direct row"
                     .to_string(),
             );
         }

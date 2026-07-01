@@ -257,6 +257,7 @@ fn expect_direct_accepted_tuple_field_evidence_identity(
             return Err(format!("{row_label}.direct_obligation_ids is empty"));
         }
         let mut all_referenced_open = true;
+        let mut all_referenced_open_or_imported = true;
         for obligation_id_value in direct_obligation_ids {
             let obligation_id = obligation_id_value
                 .as_str()
@@ -277,11 +278,25 @@ fn expect_direct_accepted_tuple_field_evidence_identity(
                     "{row_label} blocker does not match boundary obligation {obligation_id}"
                 ));
             }
-            all_referenced_open &= get_bool_field(
+            let source_open = get_bool_field(
                 source_row,
                 "open",
                 &format!("{label}.boundary.obligation_rows"),
             )?;
+            let acceptance_hypothesis = get_str_field(
+                source_row,
+                "acceptance_hypothesis",
+                &format!("{label}.boundary.obligation_rows"),
+            )?;
+            let imported_closed = !source_open
+                && ((obligation_id == "direct_obligation_consume_once"
+                    && acceptance_hypothesis
+                        == "lifecycle_transition_consumes_authorization_once")
+                    || (obligation_id == "direct_obligation_checked_core_frame_binding"
+                        && acceptance_hypothesis
+                            == "checked_core_challenge_binds_public_spend_context"));
+            all_referenced_open &= source_open;
+            all_referenced_open_or_imported &= source_open || imported_closed;
         }
         if get_bool_field(
             row,
@@ -291,6 +306,16 @@ fn expect_direct_accepted_tuple_field_evidence_identity(
         {
             return Err(format!(
                 "{row_label}.all_referenced_direct_obligations_still_open drifted from boundary obligation rows"
+            ));
+        }
+        if get_bool_field(
+            row,
+            "all_referenced_direct_obligations_open_or_imported",
+            &row_label,
+        )? != all_referenced_open_or_imported
+        {
+            return Err(format!(
+                "{row_label}.all_referenced_direct_obligations_open_or_imported drifted from boundary obligation rows"
             ));
         }
     }
@@ -646,7 +671,7 @@ fn check_consistency() -> Result<(), String> {
             "coverage",
             "closure_dependency_open_obligation_evidence_count",
         ],
-        8,
+        7,
     )?;
     expect_u64(
         direct_manifest,
@@ -655,7 +680,7 @@ fn check_consistency() -> Result<(), String> {
             "coverage",
             "closure_dependency_open_support_evidence_count",
         ],
-        8,
+        7,
     )?;
     expect_bool(
         direct_manifest,
@@ -1550,6 +1575,15 @@ fn check_consistency() -> Result<(), String> {
         direct_manifest,
         &[
             "direct_theorem_boundary",
+            "coverage",
+            "checked_core_frame_binding_imported",
+        ],
+        true,
+    )?;
+    expect_bool(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
             "direct_obligation_vector_corpus_evidence",
             "audit_summary",
             "all_open_cases_block_deployment",
@@ -1650,6 +1684,16 @@ fn check_consistency() -> Result<(), String> {
             "qrom_external_review_complete",
         ],
         false,
+    )?;
+    expect_bool(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "direct_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "checked_core_frame_binding_imported",
+        ],
+        true,
     )?;
     expect_bool(
         direct_manifest,
@@ -1814,8 +1858,8 @@ fn check_consistency() -> Result<(), String> {
     for (field, expected) in [
         ("accepted_tuple_field_evidence_count", 11),
         ("accepted_tuple_field_evidence_present_count", 11),
-        ("accepted_tuple_field_open_obligation_count", 10),
-        ("accepted_tuple_field_imported_closure_count", 1),
+        ("accepted_tuple_field_open_obligation_count", 7),
+        ("accepted_tuple_field_imported_closure_count", 2),
     ] {
         expect_u64(
             direct_manifest,

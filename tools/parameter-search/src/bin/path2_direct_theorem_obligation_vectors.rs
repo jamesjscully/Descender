@@ -155,6 +155,8 @@ fn manifest_body() -> Result<Value, String> {
                 direct_report.composition_theorem_instantiated,
             "account_creation_proof_boundary_verified":
                 direct_report.account_creation_proof_boundary_verified,
+            "checked_core_frame_binding_imported":
+                direct_report.checked_core_frame_binding_imported,
             "lifecycle_transition_profile_verified":
                 direct_report.lifecycle_transition_profile_verified,
             "qrom_and_action_bounds_linked_to_theorem":
@@ -248,6 +250,8 @@ fn manifest_body() -> Result<Value, String> {
                 direct_report.composition_theorem_instantiated,
             "account_creation_proof_boundary_verified":
                 direct_report.account_creation_proof_boundary_verified,
+            "checked_core_frame_binding_imported":
+                direct_report.checked_core_frame_binding_imported,
             "lifecycle_transition_profile_verified":
                 direct_report.lifecycle_transition_profile_verified,
             "qrom_and_action_bounds_linked_to_theorem":

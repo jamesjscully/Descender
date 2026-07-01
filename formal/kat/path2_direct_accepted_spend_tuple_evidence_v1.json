@@ -33,7 +33,8 @@
           "accepted_path_evidence_present": true,
           "accepted_path_evidence_source": "accepted tuple public-key identity digest",
           "accepted_tuple_field": "public_key_or_public_key_identity",
-          "all_referenced_direct_obligations_still_open": true,
+          "all_referenced_direct_obligations_open_or_imported": true,
+          "all_referenced_direct_obligations_still_open": false,
           "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
           "closed_by_imported_boundary": false,
           "direct_obligation_ids": [
@@ -48,20 +49,22 @@
           "accepted_path_evidence_present": true,
           "accepted_path_evidence_source": "accepted tuple message digest",
           "accepted_tuple_field": "message_or_message_digest",
-          "all_referenced_direct_obligations_still_open": true,
+          "all_referenced_direct_obligations_open_or_imported": true,
+          "all_referenced_direct_obligations_still_open": false,
           "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
-          "closed_by_imported_boundary": false,
+          "closed_by_imported_boundary": true,
           "direct_obligation_ids": [
             "direct_obligation_checked_core_frame_binding"
           ],
           "imported_boundary_report": "",
-          "separate_closure_required": true
+          "separate_closure_required": false
         },
         {
           "accepted_path_check": "account_id present",
           "accepted_path_evidence_present": true,
           "accepted_path_evidence_source": "accepted tuple account id",
           "accepted_tuple_field": "account_id",
+          "all_referenced_direct_obligations_open_or_imported": true,
           "all_referenced_direct_obligations_still_open": true,
           "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
           "closed_by_imported_boundary": false,
@@ -77,6 +80,7 @@
           "accepted_path_evidence_present": true,
           "accepted_path_evidence_source": "accepted tuple account state root before spend",
           "accepted_tuple_field": "account_state_root_before_spend",
+          "all_referenced_direct_obligations_open_or_imported": true,
           "all_referenced_direct_obligations_still_open": true,
           "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
           "closed_by_imported_boundary": false,
@@ -92,6 +96,7 @@
           "accepted_path_evidence_present": true,
           "accepted_path_evidence_source": "accepted tuple slot id and public result accepted slot id",
           "accepted_tuple_field": "slot_id",
+          "all_referenced_direct_obligations_open_or_imported": true,
           "all_referenced_direct_obligations_still_open": true,
           "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
           "closed_by_imported_boundary": false,
@@ -107,7 +112,8 @@
           "accepted_path_evidence_present": true,
           "accepted_path_evidence_source": "checked-core signature, challenge, proof commitment, and QROM/action boundary digest",
           "accepted_tuple_field": "checked_core_signature_body",
-          "all_referenced_direct_obligations_still_open": true,
+          "all_referenced_direct_obligations_open_or_imported": true,
+          "all_referenced_direct_obligations_still_open": false,
           "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
           "closed_by_imported_boundary": false,
           "direct_obligation_ids": [
@@ -122,6 +128,7 @@
           "accepted_path_evidence_present": true,
           "accepted_path_evidence_source": "accepted tuple prevalidated slot leaf digest",
           "accepted_tuple_field": "prevalidated_slot_leaf_v1",
+          "all_referenced_direct_obligations_open_or_imported": true,
           "all_referenced_direct_obligations_still_open": true,
           "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
           "closed_by_imported_boundary": false,
@@ -136,6 +143,7 @@
           "accepted_path_evidence_present": true,
           "accepted_path_evidence_source": "accepted tuple account-creation evidence transcript and proof-boundary digest",
           "accepted_tuple_field": "account_creation_evidence_v1",
+          "all_referenced_direct_obligations_open_or_imported": true,
           "all_referenced_direct_obligations_still_open": true,
           "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
           "closed_by_imported_boundary": false,
@@ -150,6 +158,7 @@
           "accepted_path_evidence_present": true,
           "accepted_path_evidence_source": "accepted tuple selected account-creation payload digest and proof-boundary digest",
           "accepted_tuple_field": "selected_account_creation_proof_payload",
+          "all_referenced_direct_obligations_open_or_imported": true,
           "all_referenced_direct_obligations_still_open": true,
           "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
           "closed_by_imported_boundary": false,
@@ -164,6 +173,7 @@
           "accepted_path_evidence_present": true,
           "accepted_path_evidence_source": "accepted tuple direct admission namespace record and membership flag",
           "accepted_tuple_field": "direct_admission_namespace_record",
+          "all_referenced_direct_obligations_open_or_imported": true,
           "all_referenced_direct_obligations_still_open": true,
           "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
           "closed_by_imported_boundary": false,
@@ -178,6 +188,7 @@
           "accepted_path_evidence_present": true,
           "accepted_path_evidence_source": "accepted tuple consume-once before/after state digests and insertion flags",
           "accepted_tuple_field": "consume_once_state_before_and_after_spend",
+          "all_referenced_direct_obligations_open_or_imported": true,
           "all_referenced_direct_obligations_still_open": false,
           "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
           "closed_by_imported_boundary": true,
@@ -188,8 +199,8 @@
           "separate_closure_required": false
         }
       ],
-      "accepted_tuple_field_imported_closure_count": 1,
-      "accepted_tuple_field_open_obligation_count": 10,
+      "accepted_tuple_field_imported_closure_count": 2,
+      "accepted_tuple_field_open_obligation_count": 7,
       "accepted_tuple_fields": [
         "public_key_or_public_key_identity",
         "message_or_message_digest",
@@ -216,7 +227,7 @@
       "consume_once_state_before_digest": "f61980b7980643e1a8568a4051e21f374af7c99c8d3624932c56caf96fa4eb6a",
       "consumed_authorization_absent_before": true,
       "consumed_authorization_present_after": true,
-      "digest": "ddac938d355865b72a5f1cad6b947204d881514029accf884e0974f7e827afdd",
+      "digest": "7edd26c220d37f676544298a3c9bb7c214cdcf1735f0474912916f3dd5cac605",
       "direct_admission_namespace_record_digest": "d887a32e2da3a35c1c156f6b1ce77750f41c6b160a6e291694d1b1c50eb78abe",
       "direct_lifecycle_boundary_report_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
       "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
@@ -229,7 +240,7 @@
       "public_key_identity": "58f218aeb259309eeb545345a8f5c715987967b0ec724806d448394da578d0b0",
       "public_result_accepts_same_slot": true,
       "public_result_class_name": "accept_spend_slot",
-      "recomputed_digest": "ddac938d355865b72a5f1cad6b947204d881514029accf884e0974f7e827afdd",
+      "recomputed_digest": "7edd26c220d37f676544298a3c9bb7c214cdcf1735f0474912916f3dd5cac605",
       "replay_rejected_by_consume_once": true,
       "schema": "Descender.Path2.DirectAcceptedSpendTupleEvidence.v1",
       "selected_account_creation_payload_digest": "21795defadb54628226befbcb01ca0666d3c584c5a24e6ba05f4de8ec11cb6e0",
@@ -248,5 +259,5 @@
     "schema": "Descender.Path2.DirectAcceptedSpendTupleDeterministicKatEvidenceManifest.v1",
     "status": "digest_pinned_deterministic_kat_accepted_direct_spend_tuple_evidence"
   },
-  "manifest_digest": "3236edf2155db7a97bf95e8d93903159a600f90fde60e15e09092ec46493d414"
+  "manifest_digest": "2c1ef3516fbde6f2cba0131d073483df65c05fea6a61d4c2fab32fad941e6b98"
 }

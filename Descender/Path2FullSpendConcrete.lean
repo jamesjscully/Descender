@@ -1208,6 +1208,33 @@ def ConcreteSpendVerificationAccepts
       CheckedCoreChallengeBindsAcceptedTuple C spend ∧
         ConcreteConsumeOnceAcceptedTransition C spend
 
+/--
+Closed direct-theorem checked-core frame-binding slice.
+
+The concrete accepted-spend predicate carries the checked-core challenge frame
+binding as the third conjunct.  This theorem gives the direct theorem boundary a
+stable import hook for `direct_obligation_checked_core_frame_binding`; it does
+not close the separate QROM/action-map acceptance-pricing row.
+-/
+theorem checkedCoreFrameBinding_imported_of_concreteSpendAccepts
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hAccept : ConcreteSpendVerificationAccepts C spend) :
+    CheckedCoreChallengeBindsAcceptedTuple C spend :=
+  hAccept.2.2.1
+
+/-- The imported checked-core frame binding exposes the exact accepted frame. -/
+theorem checkedCoreFrameBinding_frame_eq_of_imported
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hChecked : CheckedCoreChallengeBindsAcceptedTuple C spend) :
+    spend.signatureBody.checkedCoreFrame =
+      C.checkedCore.frame spend.leaf.boundary
+        spend.message
+        spend.consumeStateBefore.stateNonce
+        spend.signatureBody.proofCommitment :=
+  hChecked.2.1
+
 /-- Full-game predicates for the concrete native carrier. -/
 def concretePredicates
     (C : ConcreteGameConfig) :
