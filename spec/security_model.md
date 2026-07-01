@@ -441,8 +441,11 @@ the remaining integration path, not closure: it records four open rows and keeps
 `honest_sampler_theorem_instantiated` false.
 `formal/kat/path2_account_creation_proof_obligation_vectors_v1.json`
 turns that row table into a digest-pinned audit corpus bound to both the
-proof-boundary and direct-theorem reports; it records the current 6-open /
-2-closed proof-boundary accounting and keeps deployment fail-closed. A separate
+proof-boundary and direct-theorem reports; its honest-sampler obligation row now
+names the same
+`selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted`
+support package while staying open, records the current 6-open / 2-closed
+proof-boundary accounting, and keeps deployment fail-closed. A separate
 requirement-coverage matrix maps every
 acceptance requirement to its current evidence surface, vector evidence kind,
 current vector case ids where they exist, public rejection classes for rejection

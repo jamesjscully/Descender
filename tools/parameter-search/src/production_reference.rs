@@ -12184,8 +12184,10 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
     Path2AccountCreationProofBoundaryObligationRowV1 {
         obligation_id: "creation_proof_obligation_honest_sampler",
         closure_target: "honest_create_sampler_sound_v1",
-        supporting_surface: "Path2AccountCreationSamplerTimingReportV1",
-        current_evidence: "honest-create sampler support file, construction steps, and source hook labels are pinned",
+        supporting_surface:
+            "Path2AccountCreationSamplerTimingReportV1 + accepted-boundary Lean sampler row package",
+        current_evidence:
+            "selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted packages the private-to-public order, authorization bridge, authorization-class support, accepted-boundary sampler support, and closed timing rows",
         required_closure: "prove the honest-create sampler samples the selected creation relation without bias or hidden postchallenge input",
         named_break: "creation_time_hidden_source_soundness_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
