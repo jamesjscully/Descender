@@ -12196,8 +12196,10 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
     Path2AccountCreationProofBoundaryObligationRowV1 {
         obligation_id: "creation_proof_obligation_authorization_class_binding",
         closure_target: "selected_account_creation_authorization_class_binding_v1",
-        supporting_surface: "Path2AccountCreationSamplerTimingReportV1 and checked-core frame binding",
-        current_evidence: "checked-core challenge binds message, state root, slot authorization digest, and proof commitment",
+        supporting_surface:
+            "Path2AuthorizationClassBindingAuditReportV1 + accepted-boundary Lean authorization-class support + checked-core frame binding",
+        current_evidence:
+            "selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted packages typed compatibility, match to boundary meaning, and same-boundary no-ambiguity while the audit pins p_spend completeness and direct-verifier no-private-material checks",
         required_closure: "prove private authorization-local material cannot change public spend semantics or bypass checked-core binding",
         named_break: "checked_core_message_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,

@@ -445,7 +445,11 @@ proof-boundary and direct-theorem reports; its honest-sampler obligation row now
 names the same
 `selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted`
 support package while staying open, records the current 6-open / 2-closed
-proof-boundary accounting, and keeps deployment fail-closed. A separate
+proof-boundary accounting, and keeps deployment fail-closed. Its
+authorization-class obligation row now names
+`selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted`
+plus the audit report's `p_spend` completeness and no-private-material checks
+while also staying open. A separate
 requirement-coverage matrix maps every
 acceptance requirement to its current evidence surface, vector evidence kind,
 current vector case ids where they exist, public rejection classes for rejection
