@@ -576,5 +576,217 @@ theorem selectedRustActiveNoExportSerializer_instantiation_v1 :
     activeSerializerAllowlist_activeNativeNoExportClosure
       selectedRustActiveNoExport selectedRustActiveSerializerAllowlist
 
+/-!
+## Account-Creation Public Bundle No-Export
+
+The account-creation payload has a narrower public surface than the active
+native accept/reject/storage outputs above.  This certificate only closes the
+implementation-facing public-bundle denylist predicate: selected public bundle
+frames cannot also be private-material frames.  It does not claim the
+zero-knowledge simulator theorem, accepted-bundle simulability, external review,
+or deployment readiness.
+-/
+
+/-- Stable public tag for selected account-creation public bundle frames. -/
+def accountCreationPublicBundleOutputTag : Nat := 10
+
+/-- Private-output tag used to model account-creation private material. -/
+def accountCreationPrivateMaterialTag : Nat := 199
+
+/-- Public fields exported by the selected account-creation public bundle. -/
+def accountCreationPublicBundleFrame
+    (accountId slotId stateRoot verifierVersion packedWitnessCommitment
+      roleRootExportBridge maskedProjectionDigest accountStarkBundleDigest
+      publicReplayPayloadDigest lifecycleIdentity transcriptSurface
+      stateTransitionBoundary accountNamespace authorizationClass : Nat) :
+    List Nat :=
+  [ accountCreationPublicBundleOutputTag,
+    accountId,
+    slotId,
+    stateRoot,
+    verifierVersion,
+    packedWitnessCommitment,
+    roleRootExportBridge,
+    maskedProjectionDigest,
+    accountStarkBundleDigest,
+    publicReplayPayloadDigest,
+    lifecycleIdentity,
+    transcriptSurface,
+    stateTransitionBoundary,
+    accountNamespace,
+    authorizationClass ]
+
+/-- Public account-creation bundle frames are tagged with the public bundle tag. -/
+def accountCreationPublicBundleFramePublic : List Nat -> Prop
+  | tag :: _ => tag = accountCreationPublicBundleOutputTag
+  | [] => False
+
+/-- Account-creation denylisted frames carry a distinct private-material tag. -/
+def accountCreationDenylistedFrame : List Nat -> Prop
+  | tag :: _ => tag = accountCreationPrivateMaterialTag
+  | [] => False
+
+/-- Public account-creation bundle frames cannot also be private-material frames. -/
+theorem accountCreationPublicBundleFrame_not_denylisted
+    {frame : List Nat}
+    (hPublic : accountCreationPublicBundleFramePublic frame) :
+    ¬ accountCreationDenylistedFrame frame := by
+  cases frame with
+  | nil =>
+      simp [accountCreationPublicBundleFramePublic] at hPublic
+  | cons tag rest =>
+      intro hDeny
+      simp [accountCreationPublicBundleFramePublic,
+        accountCreationDenylistedFrame,
+        accountCreationPublicBundleOutputTag,
+        accountCreationPrivateMaterialTag] at hPublic hDeny
+      omega
+
+/-- Selected Rust no-export policy over encoded account-creation bundle frames. -/
+def selectedRustAccountCreationNoExportPolicy : PublicOutputPolicy where
+  outputConforms := fun output =>
+    ∃ frame,
+      accountCreationPublicBundleFramePublic frame ∧
+        output = selectedRustNoExportFrameEncoder.encode frame
+  containsDenylistedField := fun output =>
+    ∃ frame,
+      accountCreationDenylistedFrame frame ∧
+        output = selectedRustNoExportFrameEncoder.encode frame
+
+/-- Selected account-creation public-bundle no-export rule from tag disjointness. -/
+theorem selectedRustAccountCreationPublicBundleNoExport :
+    PublicOutputNoExport selectedRustAccountCreationNoExportPolicy := by
+  refine { no_denylisted_field := ?_ }
+  intro output hConforms hDenylisted
+  rcases hConforms with ⟨publicFrame, hPublic, hPublicOutput⟩
+  rcases hDenylisted with ⟨denyFrame, hDeny, hDenyOutput⟩
+  have hEnc :
+      selectedRustNoExportFrameEncoder.encode publicFrame =
+        selectedRustNoExportFrameEncoder.encode denyFrame := by
+    rw [← hPublicOutput, hDenyOutput]
+  have hFrame : publicFrame = denyFrame :=
+    selectedRustNoExportFrameEncoder.injective hEnc
+  exact accountCreationPublicBundleFrame_not_denylisted hPublic
+    (by simpa [← hFrame] using hDeny)
+
+/-- Concrete selected Rust account-creation public-bundle serializer. -/
+structure AccountCreationPublicBundleSerializer where
+  frameEncoder : OrderedFrameEncoder
+
+namespace AccountCreationPublicBundleSerializer
+
+/-- Encoded account-creation public-bundle output. -/
+def publicBundleOutputOf
+    (S : AccountCreationPublicBundleSerializer)
+    (accountId slotId stateRoot verifierVersion packedWitnessCommitment
+      roleRootExportBridge maskedProjectionDigest accountStarkBundleDigest
+      publicReplayPayloadDigest lifecycleIdentity transcriptSurface
+      stateTransitionBoundary accountNamespace authorizationClass : Nat) :
+    Nat :=
+  S.frameEncoder.encode
+    (accountCreationPublicBundleFrame accountId slotId stateRoot verifierVersion
+      packedWitnessCommitment roleRootExportBridge maskedProjectionDigest
+      accountStarkBundleDigest publicReplayPayloadDigest lifecycleIdentity
+      transcriptSurface stateTransitionBoundary accountNamespace
+      authorizationClass)
+
+/-- Equality surface induced by the selected public-bundle serializer. -/
+def surface (S : AccountCreationPublicBundleSerializer) : Nat -> Prop :=
+  fun output =>
+    ∃ accountId slotId stateRoot verifierVersion packedWitnessCommitment
+      roleRootExportBridge maskedProjectionDigest accountStarkBundleDigest
+      publicReplayPayloadDigest lifecycleIdentity transcriptSurface
+      stateTransitionBoundary accountNamespace authorizationClass,
+      output =
+        S.publicBundleOutputOf accountId slotId stateRoot verifierVersion
+          packedWitnessCommitment roleRootExportBridge maskedProjectionDigest
+          accountStarkBundleDigest publicReplayPayloadDigest lifecycleIdentity
+          transcriptSurface stateTransitionBoundary accountNamespace
+          authorizationClass
+
+end AccountCreationPublicBundleSerializer
+
+/-- Selected Rust account-creation public-bundle serializer. -/
+def selectedRustAccountCreationPublicBundleSerializer :
+    AccountCreationPublicBundleSerializer where
+  frameEncoder := selectedRustNoExportFrameEncoder
+
+/-- Selected public-bundle serializer outputs conform to the public allowlist. -/
+theorem selectedRustAccountCreationPublicBundleOutputConforms
+    (accountId slotId stateRoot verifierVersion packedWitnessCommitment
+      roleRootExportBridge maskedProjectionDigest accountStarkBundleDigest
+      publicReplayPayloadDigest lifecycleIdentity transcriptSurface
+      stateTransitionBoundary accountNamespace authorizationClass : Nat) :
+    selectedRustAccountCreationNoExportPolicy.outputConforms
+      (selectedRustAccountCreationPublicBundleSerializer.publicBundleOutputOf
+        accountId slotId stateRoot verifierVersion packedWitnessCommitment
+        roleRootExportBridge maskedProjectionDigest accountStarkBundleDigest
+        publicReplayPayloadDigest lifecycleIdentity transcriptSurface
+        stateTransitionBoundary accountNamespace authorizationClass) := by
+  refine
+    ⟨accountCreationPublicBundleFrame accountId slotId stateRoot verifierVersion
+      packedWitnessCommitment roleRootExportBridge maskedProjectionDigest
+      accountStarkBundleDigest publicReplayPayloadDigest lifecycleIdentity
+      transcriptSurface stateTransitionBoundary accountNamespace
+      authorizationClass, ?_, rfl⟩
+  simp [accountCreationPublicBundleFramePublic,
+    accountCreationPublicBundleFrame,
+    accountCreationPublicBundleOutputTag]
+
+/-- Lean-side closure for the selected account-creation public-bundle surface. -/
+def AccountCreationPublicBundleNoExportClosure
+    (Policy : PublicOutputPolicy)
+    (Surface : Nat -> Prop) : Prop :=
+  forall {output}, Surface output -> ¬ Policy.containsDenylistedField output
+
+/-- Account-creation public-bundle allowlisting closes the bundle denylist surface. -/
+theorem accountCreationPublicBundleNoExportClosure_from_public_output_no_export
+    {Policy : PublicOutputPolicy}
+    {S : AccountCreationPublicBundleSerializer}
+    (NoExport : PublicOutputNoExport Policy)
+    (Conforms :
+      forall accountId slotId stateRoot verifierVersion packedWitnessCommitment
+        roleRootExportBridge maskedProjectionDigest accountStarkBundleDigest
+        publicReplayPayloadDigest lifecycleIdentity transcriptSurface
+        stateTransitionBoundary accountNamespace authorizationClass,
+        Policy.outputConforms
+          (S.publicBundleOutputOf accountId slotId stateRoot verifierVersion
+            packedWitnessCommitment roleRootExportBridge maskedProjectionDigest
+            accountStarkBundleDigest publicReplayPayloadDigest lifecycleIdentity
+            transcriptSurface stateTransitionBoundary accountNamespace
+            authorizationClass)) :
+    AccountCreationPublicBundleNoExportClosure Policy (S.surface) := by
+  intro output hProduced
+  rcases hProduced with
+    ⟨accountId, slotId, stateRoot, verifierVersion, packedWitnessCommitment,
+      roleRootExportBridge, maskedProjectionDigest, accountStarkBundleDigest,
+      publicReplayPayloadDigest, lifecycleIdentity, transcriptSurface,
+      stateTransitionBoundary, accountNamespace, authorizationClass, hOutput⟩
+  rw [hOutput]
+  exact NoExport.no_denylisted_field
+    (Conforms accountId slotId stateRoot verifierVersion packedWitnessCommitment
+      roleRootExportBridge maskedProjectionDigest accountStarkBundleDigest
+      publicReplayPayloadDigest lifecycleIdentity transcriptSurface
+      stateTransitionBoundary accountNamespace authorizationClass)
+
+/--
+Selected Rust account-creation public-bundle no-export instantiation.
+
+This is intentionally only the public-bundle denylist closure.  The full
+simulator/no-export theorem remains a separate open proof-family obligation.
+-/
+theorem selectedRustAccountCreationPublicBundleNoExport_instantiation_v1 :
+    AccountCreationPublicBundleNoExportClosure
+      selectedRustAccountCreationNoExportPolicy
+      selectedRustAccountCreationPublicBundleSerializer.surface := by
+  let selectedRustAccountCreationNoExport :
+      PublicOutputNoExport selectedRustAccountCreationNoExportPolicy :=
+    selectedRustAccountCreationPublicBundleNoExport
+  intro output hProduced
+  exact
+    (accountCreationPublicBundleNoExportClosure_from_public_output_no_export
+      selectedRustAccountCreationNoExport
+      selectedRustAccountCreationPublicBundleOutputConforms) hProduced
+
 end Path2NoExportConcrete
 end Descender

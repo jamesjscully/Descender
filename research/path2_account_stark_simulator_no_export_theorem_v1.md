@@ -159,8 +159,10 @@ syndrome preimage / gauge / randomizer` beyond the public class — the
   (`R_namespace`).
 - **Honest residual — NOT closed by algebra.** A simulator theorem bounds what
   the *bytes* reveal; it does NOT bound accidental export via reject-path
-  diagnostics or helper APIs. That is an implementation obligation (below), and a
-  Lean public-view predicate + external review remain.
+  diagnostics or helper APIs. That is an implementation obligation (below).
+  The selected Rust public-bundle denylist predicate is now machine-checked by
+  `selectedRustAccountCreationPublicBundleNoExport_instantiation_v1`, while
+  public-anchor simulability and external review remain.
 
 ## Implementation Residual (test surface, not algebra)
 
@@ -182,6 +184,7 @@ following must hold in code and stay regression-tested (owned by
   simulatable from the public allowlist, reducing no-export to A1–A3.
 - **Hands off:** A2′ pad-seed single-use (#9, `DIR-LIFE-001`); the
   implementation no-export scan (#8, `DIR-REJECT-001`/`DIR-PAYLOAD-001`); the
-  Lean public-view/no-export predicate; external review. The frozen vector
-  corpus is now closed separately; `Path2AccountCreationNoExportBoundaryReportV1`
-  keeps its simulator/no-export/deployment flags false pending those.
+  full public-anchor simulator/no-export predicate; external review. The frozen
+  vector corpus and selected Rust public-bundle denylist predicate are now
+  closed separately; `Path2AccountCreationNoExportBoundaryReportV1` keeps its
+  simulator/no-export/deployment flags false pending those.

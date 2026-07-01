@@ -68,7 +68,7 @@ deployment readiness.
 | spend negative | wrong message, wrong account, wrong state root, wrong slot id, wrong lifecycle anchor, wrong proof commitment, and checked-core mutation |
 | lifecycle | admit, spend, replay, burn, recovery, rollback, restore, and recoverable-state cases |
 | rejection | every public rejection class in `spec/consensus_verifier.md` |
-| no-export audit | public payload allowlist, simulator public-input allowlist, private-material denylist absence, and opaque proof-bundle manifest policy |
+| no-export audit | public payload allowlist, simulator public-input allowlist, private-material denylist absence, opaque proof-bundle manifest policy, and selected Rust public-bundle Lean predicate evidence |
 | FRI/QROM domain audit | selected proof-family domain, Poseidon2 width and sponge floor, FRI challenge schedule, checked-core QROM budget import, and fail-closed open theorem flags |
 | signer public API | public slot records, fixed public errors, deterministic test-mode outputs, and diagnostic-build exclusion checks |
 | entropy streams | stream-domain KATs, deterministic test-mode vectors, wrong-profile/domain mutation vectors, and mask-PRF drift checks |

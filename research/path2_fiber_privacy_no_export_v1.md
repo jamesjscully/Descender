@@ -283,7 +283,9 @@ closure. It records that the public payload byte model exports no private
 material and that current public mutation coverage is wired. The open blocker is
 simulator semantics, no-export theorem closure, external review, and deployment
 readiness; the no-export audit vector corpus is frozen by the digest-pinned
-current vectors. The denylist term
+current vectors, and the selected Rust public-bundle denylist predicate is
+machine-checked by
+`selectedRustAccountCreationPublicBundleNoExport_instantiation_v1`. The denylist term
 `private_trace_material` covers private trace material.
 
 The algebra-layer simulator/no-export theorem for the selected payload is now
@@ -292,10 +294,10 @@ stated and proven in
 Real` from the allowlist alone, reducing no-export to {zk-FRI HVZK, Poseidon2
 mask-PRF, Poseidon2 commitment hiding}). It does NOT close the boundary report:
 the implementation no-export scan, pad-seed single-use lifecycle term
-(`DIR-LIFE-001`), the Lean public-view predicate, and external review remain the
-open blockers. The frozen no-export vector flag is closed; simulator,
-no-export, accepted-bundle simulability, review, and deployment flags stay
-false.
+(`DIR-LIFE-001`), public-anchor simulability, and external review remain the
+open blockers. The frozen no-export vector flag and public-bundle denylist
+predicate are closed; simulator, no-export, accepted-bundle simulability,
+review, and deployment flags stay false.
 
 ## Helper API Rule
 
@@ -365,11 +367,12 @@ These are controllable, but they must remain first-class obligations.
 
 ## Next Concrete Move
 
-Update the Lean interface with a public-view/no-export predicate for the active
-native account design, parallel to the older native-boundary no-export interface.
+Promote the public-bundle denylist predicate into the full accepted-bundle
+simulator/no-export closure: public anchors plus allowed commitments must
+simulate the accepted bundle without revealing private creation material.
 
 Then update the tracker so the remaining proof blockers are:
 
-1. public-view no-export/simulation;
+1. public-anchor no-export/simulation;
 2. spend closure final composition;
 3. byte/state model refresh after the added `p_spend` fields.

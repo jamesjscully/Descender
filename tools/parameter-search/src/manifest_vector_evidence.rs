@@ -1529,8 +1529,7 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
         || bool_at(corpus, "/audit_summary/deployment_ready")?
     {
         return Err(
-            "proof-obligation vector corpus is not bound to the current proof boundary"
-                .to_string(),
+            "proof-obligation vector corpus is not bound to the current proof boundary".to_string(),
         );
     }
 
@@ -2026,6 +2025,10 @@ pub fn path2_account_creation_requirement_vector_corpus_evidence_v1() -> Result<
             no_export_vectors,
             "/audit_summary/frozen_no_export_vectors_complete",
         )?
+        || !bool_at(
+            no_export_vectors,
+            "/audit_summary/public_bundle_no_export_predicate_instantiated",
+        )?
         || bool_at(no_export_vectors, "/audit_summary/deployment_ready")?
     {
         return Err(
@@ -2141,6 +2144,10 @@ pub fn path2_account_creation_requirement_vector_corpus_evidence_v1() -> Result<
             )?,
             "simulator_theorem_instantiated": no_export_report.simulator_theorem_instantiated,
             "no_export_theorem_instantiated": no_export_report.no_export_theorem_instantiated,
+            "public_bundle_no_export_lean_theorem":
+                no_export_report.public_bundle_no_export_lean_theorem,
+            "public_bundle_no_export_predicate_instantiated":
+                no_export_report.public_bundle_no_export_predicate_instantiated,
             "deployment_ready": no_export_report.deployment_ready,
             "blocker": no_export_report.blocker
         },

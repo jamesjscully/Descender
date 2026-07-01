@@ -520,6 +520,11 @@ fn main() -> Result<(), String> {
         "/no_export_vector_evidence/frozen_no_export_vectors_complete",
         true,
     )?;
+    require_bool(
+        corpus,
+        "/no_export_vector_evidence/public_bundle_no_export_predicate_instantiated",
+        true,
+    )?;
     require_bool(corpus, "/no_export_vector_evidence/deployment_ready", false)?;
     require_str(
         corpus,
@@ -944,10 +949,16 @@ fn main() -> Result<(), String> {
         str_at(payload_vectors, "/honest_payload/payload_digest")?,
     )?;
 
-    let open_proof_obligation_count =
-        proof_report.proof_obligation_rows.iter().filter(|row| row.open).count() as u64;
-    let closed_proof_obligation_count =
-        proof_report.proof_obligation_rows.iter().filter(|row| !row.open).count() as u64;
+    let open_proof_obligation_count = proof_report
+        .proof_obligation_rows
+        .iter()
+        .filter(|row| row.open)
+        .count() as u64;
+    let closed_proof_obligation_count = proof_report
+        .proof_obligation_rows
+        .iter()
+        .filter(|row| !row.open)
+        .count() as u64;
     if u64_at(corpus, "/case_count")? != proof_report.proof_obligation_count as u64
         || u64_at(corpus, "/audit_summary/proof_obligation_count")?
             != proof_report.proof_obligation_count as u64
@@ -1001,9 +1012,7 @@ fn main() -> Result<(), String> {
         || open_proof_obligation_count != 4
         || closed_proof_obligation_count != 4
     {
-        return Err(
-            "proof-obligation vector corpus lost partial-close row invariants".to_string(),
-        );
+        return Err("proof-obligation vector corpus lost partial-close row invariants".to_string());
     }
     for pointer in [
         "/proof_boundary_report/deployment_ready",
@@ -1024,9 +1033,7 @@ fn main() -> Result<(), String> {
         }
     }
     if !bool_at(corpus, "/audit_summary/frozen_kat_corpus_complete")? {
-        return Err(
-            "proof-obligation vector corpus lost frozen payload KAT evidence".to_string(),
-        );
+        return Err("proof-obligation vector corpus lost frozen payload KAT evidence".to_string());
     }
 
     let proof_obligation_corpus_evidence =
@@ -1126,9 +1133,7 @@ fn main() -> Result<(), String> {
             }
         }
         if case.get("open").and_then(Value::as_bool) != Some(row.open) {
-            return Err(format!(
-                "proof-obligation case {case_id} open flag drifted"
-            ));
+            return Err(format!("proof-obligation case {case_id} open flag drifted"));
         }
         let expected_closed = matches!(
             case_id,

@@ -149,6 +149,10 @@ fn main() -> Result<(), String> {
             report.no_export_theorem_target,
         ),
         (
+            "/manifest/authority_snapshot/public_bundle_no_export_lean_theorem",
+            report.public_bundle_no_export_lean_theorem,
+        ),
+        (
             "/manifest/authority_snapshot/named_break",
             report.named_break,
         ),
@@ -187,6 +191,7 @@ fn main() -> Result<(), String> {
         "/manifest/no_export_boundary/coverage/roundtrip_regression_present",
         "/manifest/no_export_boundary/coverage/production_gate_fail_closed",
         "/manifest/no_export_boundary/coverage/no_export_vectors_present",
+        "/manifest/no_export_boundary/coverage/public_bundle_no_export_predicate_instantiated",
     ] {
         if !bool_at(&manifest, pointer)? {
             return Err(format!(
@@ -200,9 +205,7 @@ fn main() -> Result<(), String> {
         "/manifest/no_export_boundary/no_export_vector_case_ids",
     )?
     .as_array()
-    .ok_or_else(|| {
-        "no-export manifest vector case ids are not an array".to_string()
-    })?;
+    .ok_or_else(|| "no-export manifest vector case ids are not an array".to_string())?;
     if vector_cases.len() != report.no_export_vector_case_ids.len() {
         return Err("no-export manifest vector case count drifted".to_string());
     }
@@ -233,9 +236,14 @@ fn main() -> Result<(), String> {
         &manifest,
         "/manifest/no_export_boundary/coverage/frozen_no_export_vectors_complete",
     )? {
-        return Err(
-            "account-creation no-export manifest lost frozen vector closure".to_string(),
-        );
+        return Err("account-creation no-export manifest lost frozen vector closure".to_string());
+    }
+    if str_at(
+        &manifest,
+        "/manifest/no_export_boundary/public_bundle_no_export_lean_theorem",
+    )? != report.public_bundle_no_export_lean_theorem
+    {
+        return Err("account-creation no-export manifest lost Lean hook".to_string());
     }
 
     let support_doc = load_text(&root, report.support_file)?;
@@ -265,6 +273,7 @@ fn main() -> Result<(), String> {
         "path2_account_creation_no_export_boundary_report_v1",
         "PATH2_ACCOUNT_CREATION_SIMULATOR_THEOREM_TARGET",
         "PATH2_ACCOUNT_CREATION_NO_EXPORT_THEOREM_TARGET",
+        "PATH2_ACCOUNT_CREATION_PUBLIC_BUNDLE_NO_EXPORT_LEAN_THEOREM",
         "PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS",
         "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS",
         "verify_path2_direct_creation_account_stark_payload_boundary",

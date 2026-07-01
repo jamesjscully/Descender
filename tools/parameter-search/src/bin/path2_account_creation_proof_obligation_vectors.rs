@@ -4,7 +4,7 @@ use descender_parameter_search::{
         path2_direct_accepted_composition_evidence_artifact_v1,
     },
     production_reference::{
-        path2_account_creation_no_export_boundary_report_v1,
+        PROFILE, path2_account_creation_no_export_boundary_report_v1,
         path2_account_creation_no_export_boundary_report_v1_digest,
         path2_account_creation_proof_boundary_report_v1,
         path2_account_creation_proof_boundary_report_v1_digest,
@@ -17,10 +17,10 @@ use descender_parameter_search::{
         validate_path2_account_creation_proof_boundary_report_v1,
         validate_path2_account_stark_fri_qrom_residual_report_v1,
         validate_path2_account_stark_payload_kat_boundary_report_v1,
-        validate_path2_direct_theorem_boundary_report_v1, PROFILE,
+        validate_path2_direct_theorem_boundary_report_v1,
     },
 };
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
     fs,
@@ -344,6 +344,10 @@ fn manifest_body() -> Result<Value, String> {
                 no_export_report.simulator_theorem_instantiated,
             "no_export_theorem_instantiated":
                 no_export_report.no_export_theorem_instantiated,
+            "public_bundle_no_export_lean_theorem":
+                no_export_report.public_bundle_no_export_lean_theorem,
+            "public_bundle_no_export_predicate_instantiated":
+                no_export_report.public_bundle_no_export_predicate_instantiated,
             "frozen_no_export_vectors_complete":
                 no_export_report.frozen_no_export_vectors_complete,
             "deployment_ready": no_export_report.deployment_ready,

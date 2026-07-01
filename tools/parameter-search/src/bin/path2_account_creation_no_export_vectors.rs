@@ -42,15 +42,17 @@ fn manifest_body() -> Result<Value, String> {
         .filter(|field| field.public_payload_field)
         .map(|field| field.field_name)
         .collect();
-    let simulator_public_input_fields: Vec<&str> =
-        report.simulator_public_input_fields.to_vec();
-    let private_material_fields: Vec<&str> =
-        report.no_export_private_material_fields.to_vec();
+    let simulator_public_input_fields: Vec<&str> = report.simulator_public_input_fields.to_vec();
+    let private_material_fields: Vec<&str> = report.no_export_private_material_fields.to_vec();
 
-    let payload_denylist_absent =
-        denylist_absent(public_payload_fields.iter().copied(), &private_material_fields);
-    let simulator_denylist_absent =
-        denylist_absent(simulator_public_input_fields.iter().copied(), &private_material_fields);
+    let payload_denylist_absent = denylist_absent(
+        public_payload_fields.iter().copied(),
+        &private_material_fields,
+    );
+    let simulator_denylist_absent = denylist_absent(
+        simulator_public_input_fields.iter().copied(),
+        &private_material_fields,
+    );
     let all_private_material_absent = payload_denylist_absent && simulator_denylist_absent;
     if !all_private_material_absent {
         return Err(
@@ -106,6 +108,17 @@ fn manifest_body() -> Result<Value, String> {
                 byte_model.deterministic_kat_digest_pins_bundle_bytes,
             "all_private_material_absent": true
         }),
+        json!({
+            "case_id": "no_export_public_bundle_lean_predicate",
+            "kind": "audit",
+            "surface": "Descender.Path2NoExportConcrete",
+            "requirement": report.no_export_requirement,
+            "public_bundle_no_export_lean_theorem":
+                report.public_bundle_no_export_lean_theorem,
+            "public_bundle_no_export_predicate_instantiated":
+                report.public_bundle_no_export_predicate_instantiated,
+            "all_private_material_absent": true
+        }),
     ];
 
     if cases.len() != report.no_export_vector_case_ids.len() {
@@ -138,6 +151,10 @@ fn manifest_body() -> Result<Value, String> {
             "no_export_theorem_target": report.no_export_theorem_target,
             "simulator_theorem_instantiated": report.simulator_theorem_instantiated,
             "no_export_theorem_instantiated": report.no_export_theorem_instantiated,
+            "public_bundle_no_export_lean_theorem":
+                report.public_bundle_no_export_lean_theorem,
+            "public_bundle_no_export_predicate_instantiated":
+                report.public_bundle_no_export_predicate_instantiated,
             "frozen_no_export_vectors_complete": report.frozen_no_export_vectors_complete,
             "deployment_ready": report.deployment_ready,
             "blocker": report.blocker
@@ -161,6 +178,8 @@ fn manifest_body() -> Result<Value, String> {
             "all_private_material_absent": all_private_material_absent,
             "simulator_theorem_instantiated": report.simulator_theorem_instantiated,
             "no_export_theorem_instantiated": report.no_export_theorem_instantiated,
+            "public_bundle_no_export_predicate_instantiated":
+                report.public_bundle_no_export_predicate_instantiated,
             "frozen_no_export_vectors_complete": report.frozen_no_export_vectors_complete,
             "deployment_ready": report.deployment_ready
         },

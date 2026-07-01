@@ -7,7 +7,7 @@ use descender_parameter_search::{
         path2_account_creation_requirement_vector_corpus_evidence_v1,
     },
     production_reference::{
-        path2_account_creation_frame_kat_boundary_report_v1,
+        PROFILE, path2_account_creation_frame_kat_boundary_report_v1,
         path2_account_creation_frame_kat_boundary_report_v1_digest,
         path2_account_creation_no_export_boundary_report_v1,
         path2_account_creation_no_export_boundary_report_v1_digest,
@@ -22,10 +22,10 @@ use descender_parameter_search::{
         path2_account_stark_payload_kat_boundary_report_v1,
         path2_account_stark_payload_kat_boundary_report_v1_digest,
         path2_account_stark_residual_matrix_report_v1,
-        path2_account_stark_residual_matrix_report_v1_digest, PROFILE,
+        path2_account_stark_residual_matrix_report_v1_digest,
     },
 };
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
 fn hex_encode(bytes: &[u8]) -> String {
@@ -419,6 +419,10 @@ fn manifest_body() -> Result<Value, String> {
                 "roundtrip_regression_present": no_export_report.roundtrip_regression_present,
                 "production_gate_fail_closed": no_export_report.production_gate_fail_closed,
                 "no_export_vectors_present": no_export_report.no_export_vectors_present,
+                "public_bundle_no_export_lean_theorem":
+                    no_export_report.public_bundle_no_export_lean_theorem,
+                "public_bundle_no_export_predicate_instantiated":
+                    no_export_report.public_bundle_no_export_predicate_instantiated,
                 "simulator_theorem_instantiated":
                     no_export_report.simulator_theorem_instantiated,
                 "no_export_theorem_instantiated":

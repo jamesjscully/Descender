@@ -1104,7 +1104,7 @@ fn check_consistency() -> Result<(), String> {
             "audit_summary",
             "no_export_case_count",
         ],
-        4,
+        5,
     )?;
     expect_u64(
         proof_manifest,

@@ -114,17 +114,13 @@ fn main() -> Result<(), String> {
     if str_at(corpus, "/boundary_report/digest")? != hex_encode(&report.digest) {
         return Err("no-export vector corpus is not bound to boundary report".to_string());
     }
-    if str_at(
-        corpus,
-        "/digests/payload_byte_model_report_digest",
-    )? != hex_encode(&byte_model.digest)
+    if str_at(corpus, "/digests/payload_byte_model_report_digest")?
+        != hex_encode(&byte_model.digest)
     {
         return Err("no-export vector corpus byte-model digest mismatch".to_string());
     }
-    if str_at(
-        corpus,
-        "/digests/payload_kat_boundary_report_digest",
-    )? != hex_encode(&payload_kat.digest)
+    if str_at(corpus, "/digests/payload_kat_boundary_report_digest")?
+        != hex_encode(&payload_kat.digest)
     {
         return Err("no-export vector corpus payload-KAT digest mismatch".to_string());
     }
@@ -137,20 +133,31 @@ fn main() -> Result<(), String> {
     {
         return Err("no-export vector corpus unexpectedly closes theorem status".to_string());
     }
+    if !bool_at(corpus, "/boundary_report/frozen_no_export_vectors_complete")?
+        || !bool_at(corpus, "/audit_summary/frozen_no_export_vectors_complete")?
+    {
+        return Err("no-export vector corpus lost frozen-vector closure".to_string());
+    }
     if !bool_at(
         corpus,
-        "/boundary_report/frozen_no_export_vectors_complete",
+        "/boundary_report/public_bundle_no_export_predicate_instantiated",
     )? || !bool_at(
         corpus,
-        "/audit_summary/frozen_no_export_vectors_complete",
+        "/audit_summary/public_bundle_no_export_predicate_instantiated",
     )? {
-        return Err("no-export vector corpus lost frozen-vector closure".to_string());
+        return Err("no-export vector corpus lost public-bundle Lean hook".to_string());
     }
     if !bool_at(corpus, "/audit_summary/all_private_material_absent")?
         || !bool_at(corpus, "/audit_summary/payload_denylist_absent")?
         || !bool_at(corpus, "/audit_summary/simulator_denylist_absent")?
-        || bool_at(corpus, "/audit_summary/public_payload_exports_private_material")?
-        || bool_at(corpus, "/audit_summary/full_proof_bytes_inlined_in_manifest")?
+        || bool_at(
+            corpus,
+            "/audit_summary/public_payload_exports_private_material",
+        )?
+        || bool_at(
+            corpus,
+            "/audit_summary/full_proof_bytes_inlined_in_manifest",
+        )?
         || !bool_at(
             corpus,
             "/audit_summary/deterministic_kat_digest_pins_bundle_bytes",
@@ -183,9 +190,15 @@ fn main() -> Result<(), String> {
             ));
         }
         if case.get("kind").and_then(Value::as_str) != Some("audit") {
-            return Err(format!("no-export vector case {case_id} is not an audit case"));
+            return Err(format!(
+                "no-export vector case {case_id} is not an audit case"
+            ));
         }
-        if case.get("all_private_material_absent").and_then(Value::as_bool) != Some(true) {
+        if case
+            .get("all_private_material_absent")
+            .and_then(Value::as_bool)
+            != Some(true)
+        {
             return Err(format!(
                 "no-export vector case {case_id} lost private-material absence"
             ));
@@ -200,6 +213,24 @@ fn main() -> Result<(), String> {
         || !denylist_absent(&simulator_fields, &simulator_denylist)
     {
         return Err("no-export vector corpus exposes a denylisted field".to_string());
+    }
+    let public_bundle_case = cases
+        .iter()
+        .find(|case| {
+            case.get("case_id").and_then(Value::as_str)
+                == Some("no_export_public_bundle_lean_predicate")
+        })
+        .ok_or_else(|| "no-export vector corpus lost public-bundle Lean case".to_string())?;
+    if public_bundle_case
+        .get("public_bundle_no_export_lean_theorem")
+        .and_then(Value::as_str)
+        != Some(report.public_bundle_no_export_lean_theorem)
+        || public_bundle_case
+            .get("public_bundle_no_export_predicate_instantiated")
+            .and_then(Value::as_bool)
+            != Some(true)
+    {
+        return Err("no-export public-bundle Lean case drifted".to_string());
     }
 
     println!("Path 2 account-creation no-export vector consistency check passed.");
