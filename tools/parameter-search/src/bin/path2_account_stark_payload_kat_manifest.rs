@@ -37,13 +37,18 @@ fn manifest_body() -> Result<Value, String> {
     if payload_kat_report.payload_byte_model_report_digest != byte_model_report.digest {
         return Err("payload KAT boundary report byte model digest mismatch".to_string());
     }
+    let frozen_status = if payload_kat_report.frozen_corpus_complete {
+        "frozen_boundary_manifest"
+    } else {
+        "draft_boundary_manifest"
+    };
 
     Ok(json!({
         "schema": "Descender.Path2.AccountStarkPayloadKatBoundaryManifest.v1",
         "corpus_id": "Descender.Path2.AccountStarkPayloadKatBoundary.v1",
         "corpus_version": 1,
         "profile_id": PROFILE,
-        "frozen_status": "draft_boundary_manifest",
+        "frozen_status": frozen_status,
         "generator": {
             "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_stark_payload_kat_manifest",
             "source": "tools/parameter-search/src/bin/path2_account_stark_payload_kat_manifest.rs"

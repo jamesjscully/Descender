@@ -929,7 +929,7 @@ fn check_consistency() -> Result<(), String> {
             "coverage",
             "closure_dependency_open_obligation_evidence_count",
         ],
-        7,
+        6,
     )?;
     expect_u64(
         proof_manifest,
@@ -938,7 +938,7 @@ fn check_consistency() -> Result<(), String> {
             "coverage",
             "closure_dependency_open_support_evidence_count",
         ],
-        7,
+        6,
     )?;
     expect_u64(
         proof_manifest,
@@ -1144,7 +1144,7 @@ fn check_consistency() -> Result<(), String> {
             "audit_summary",
             "open_proof_obligation_count",
         ],
-        7,
+        6,
     )?;
     expect_u64(
         proof_manifest,
@@ -1154,7 +1154,7 @@ fn check_consistency() -> Result<(), String> {
             "audit_summary",
             "closed_proof_obligation_count",
         ],
-        1,
+        2,
     )?;
     expect_eq(
         get(
@@ -1312,7 +1312,7 @@ fn check_consistency() -> Result<(), String> {
             "audit_summary",
             "frozen_kat_corpus_complete",
         ],
-        false,
+        true,
     )?;
     expect_bool(
         proof_manifest,
@@ -1418,7 +1418,7 @@ fn check_consistency() -> Result<(), String> {
             "audit_summary",
             "separate_closure_required_count",
         ],
-        10,
+        4,
     )?;
     expect_eq(
         get(

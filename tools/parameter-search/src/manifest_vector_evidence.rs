@@ -656,7 +656,7 @@ pub fn path2_account_creation_accepted_proof_boundary_evidence_artifact_v1() -> 
             artifact,
             "/evidence/boundary_or_audit_requirement_evidence_count",
         )? != 10
-        || u64_at(artifact, "/evidence/separate_closure_required_count")? != 10
+        || u64_at(artifact, "/evidence/separate_closure_required_count")? != 4
         || !bool_at(
             artifact,
             "/evidence/every_applicable_accepting_requirement_has_accepted_path_evidence",
@@ -1523,13 +1523,13 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
             "/audit_summary/fri_aok_extractor_theorem_instantiated",
         )?
         || bool_at(corpus, "/audit_summary/fri_qrom_residual_priced")?
-        || bool_at(corpus, "/audit_summary/frozen_kat_corpus_complete")?
+        || !bool_at(corpus, "/audit_summary/frozen_kat_corpus_complete")?
         || bool_at(corpus, "/audit_summary/external_review_complete")?
         || bool_at(corpus, "/audit_summary/production_gate_open")?
         || bool_at(corpus, "/audit_summary/deployment_ready")?
     {
         return Err(
-            "proof-obligation vector corpus is not bound to the current open proof boundary"
+            "proof-obligation vector corpus is not bound to the current proof boundary"
                 .to_string(),
         );
     }
@@ -1960,9 +1960,9 @@ pub fn path2_account_creation_requirement_vector_corpus_evidence_v1() -> Result<
     if payload_digest != payload_report.digest {
         return Err("payload KAT boundary report digest mismatch".to_string());
     }
-    if payload_report.frozen_corpus_complete || payload_report.deployment_ready {
+    if !payload_report.frozen_corpus_complete || payload_report.deployment_ready {
         return Err(
-            "payload KAT boundary unexpectedly claims frozen/deployment readiness".to_string(),
+            "payload KAT boundary must be frozen while deployment remains closed".to_string(),
         );
     }
 

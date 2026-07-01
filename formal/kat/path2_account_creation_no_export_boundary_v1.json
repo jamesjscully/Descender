@@ -16,12 +16,12 @@
     "corpus_id": "Descender.Path2.AccountCreationNoExportBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_no_export_boundary_report_digest": "7c33591b86134a7513632f0decd6197bdd6351e434700fd2c3777ba65b70e80b",
-      "account_creation_no_export_boundary_report_recomputed_digest": "7c33591b86134a7513632f0decd6197bdd6351e434700fd2c3777ba65b70e80b",
-      "account_creation_proof_boundary_report_digest": "a88024ef8618467fd18ac5ff04aa33679f556b836ebeb26e2299188f8d7298ec",
+      "account_creation_no_export_boundary_report_digest": "ac72e42f992f87708be678abcfd5dee67777341118621692193babedb0c8b8e6",
+      "account_creation_no_export_boundary_report_recomputed_digest": "ac72e42f992f87708be678abcfd5dee67777341118621692193babedb0c8b8e6",
+      "account_creation_proof_boundary_report_digest": "8ef95d17d6ccd942206d753867bff58741cc33c80d3bfd4a0a4b8cb353a9a309",
       "payload_byte_model_report_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
-      "payload_kat_boundary_report_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
-      "proof_boundary_report_no_export_digest": "7c33591b86134a7513632f0decd6197bdd6351e434700fd2c3777ba65b70e80b"
+      "payload_kat_boundary_report_digest": "ab14d77b9401e7c219a85204c19c767b958220517bd64f4a5868189bb8fbbafe",
+      "proof_boundary_report_no_export_digest": "ac72e42f992f87708be678abcfd5dee67777341118621692193babedb0c8b8e6"
     },
     "frozen_status": "draft_no_export_boundary_manifest",
     "generator": {
@@ -86,5 +86,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.AccountCreationNoExportBoundaryManifest.v1"
   },
-  "manifest_digest": "14f011088be55cb45505bce07d563ea878abfdedf7fc0cae66f23fbad64ea5a8"
+  "manifest_digest": "7e305fa3d72bbf1a968f9b335443bfcab1f168f9a3d18a04bd569f8719862fd4"
 }

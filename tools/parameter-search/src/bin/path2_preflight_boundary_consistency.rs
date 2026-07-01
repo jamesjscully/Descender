@@ -938,7 +938,7 @@ fn main() -> Result<(), String> {
         ),
         (
             "/accepted_proof_boundary_evidence_artifact/audit_summary/separate_closure_required_count",
-            10,
+            4,
         ),
     ] {
         if u64_at(proof_boundary, pointer)? != expected {
@@ -977,6 +977,15 @@ fn main() -> Result<(), String> {
         accepted_direct_composition_evidence,
         "production preflight direct theorem boundary",
     )?;
+    if !bool_at(
+        proof_boundary,
+        "/proof_obligation_vector_corpus_evidence/audit_summary/frozen_kat_corpus_complete",
+    )? {
+        return Err(
+            "production preflight proof-boundary manifest lost frozen payload KAT evidence"
+                .to_string(),
+        );
+    }
     for pointer in [
         "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/composition_theorem_instantiated",
         "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/account_creation_proof_boundary_verified",
@@ -984,7 +993,6 @@ fn main() -> Result<(), String> {
         "/proof_obligation_vector_corpus_evidence/audit_summary/simulator_theorem_instantiated",
         "/proof_obligation_vector_corpus_evidence/audit_summary/fri_aok_extractor_theorem_instantiated",
         "/proof_obligation_vector_corpus_evidence/audit_summary/fri_qrom_residual_priced",
-        "/proof_obligation_vector_corpus_evidence/audit_summary/frozen_kat_corpus_complete",
         "/proof_obligation_vector_corpus_evidence/audit_summary/external_review_complete",
         "/proof_obligation_vector_corpus_evidence/audit_summary/production_gate_open",
         "/proof_obligation_vector_corpus_evidence/audit_summary/deployment_ready",
@@ -1088,12 +1096,12 @@ fn main() -> Result<(), String> {
         || proof_report.simulator_theorem_instantiated
         || proof_report.fri_aok_extractor_theorem_instantiated
         || proof_report.fri_qrom_residual_priced
-        || proof_report.frozen_kat_corpus_complete
+        || !proof_report.frozen_kat_corpus_complete
         || proof_report.external_review_complete
         || proof_report.production_gate_open
     {
         return Err(
-            "account-creation proof boundary unexpectedly reports closed obligations".to_string(),
+            "account-creation proof boundary has inconsistent closure status".to_string(),
         );
     }
     let open_proof_closure_dependency_count = proof_report

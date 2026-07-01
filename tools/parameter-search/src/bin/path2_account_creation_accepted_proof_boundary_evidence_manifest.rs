@@ -56,7 +56,7 @@ mod enabled {
             || evidence.accepted_path_applicable_requirement_count != 8
             || evidence.accepted_path_requirement_evidence_count != 8
             || evidence.boundary_or_audit_requirement_evidence_count != 10
-            || evidence.separate_closure_required_count != 10
+            || evidence.separate_closure_required_count != 4
             || !evidence.every_applicable_accepting_requirement_has_accepted_path_evidence
             || !evidence.every_accepting_requirement_has_boundary_or_audit_evidence
             || !evidence.every_separate_closure_requirement_has_open_obligation

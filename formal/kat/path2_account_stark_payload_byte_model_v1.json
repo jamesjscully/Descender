@@ -117,7 +117,7 @@
       "payload_byte_model_report_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
       "payload_byte_model_report_recomputed_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
       "payload_kat_boundary_report_byte_model_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
-      "payload_kat_boundary_report_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d"
+      "payload_kat_boundary_report_digest": "ab14d77b9401e7c219a85204c19c767b958220517bd64f4a5868189bb8fbbafe"
     },
     "frozen_status": "draft_byte_model_manifest",
     "generator": {
@@ -127,5 +127,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.AccountStarkPayloadByteModelManifest.v1"
   },
-  "manifest_digest": "5d6dcabdbf254599a47c5f6899b28aae21f493fcb7852b6fcf599b636b261139"
+  "manifest_digest": "90c56937d74f8085eeea781c9553b35d93ab0721024df129290197b9955c7685"
 }

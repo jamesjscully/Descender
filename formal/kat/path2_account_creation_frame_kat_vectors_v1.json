@@ -1,9 +1,9 @@
 {
   "corpus": {
     "boundary_report": {
-      "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
+      "blocker": "account-STARK residual matrix: KAT and public rejection-class evidence remain non-deployable until proof-family review and production gate closure",
       "deployment_ready": false,
-      "digest": "afccc24cec71e6d1d29688df00e979fd78fa89c1b2c5c5f5cd8b78995e22d79b",
+      "digest": "71a12775b526e364aa332e0de7fa52831dc63c662372170bfdad677d9d87ec38",
       "domain": "Descender.Path2.AccountCreationFrameKatBoundaryReport.v1",
       "every_current_row_has_generated_vector": true,
       "row_count": 17
@@ -206,5 +206,5 @@
     "schema": "Descender.Path2.AccountCreationFrameKatVectors.v1",
     "status": "digest_pinned_boundary_vectors"
   },
-  "corpus_digest": "28d378c1676ddec9d3d9403d2bc5cf19ec9f4c0fb76ed2d5de1ea7b5220ec7d1"
+  "corpus_digest": "f88c0f1db83664208d5fdb8c4e9213dc28e607873ab181be8cfc1b0a456c2092"
 }

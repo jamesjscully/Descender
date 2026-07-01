@@ -204,9 +204,9 @@ fn manifest_body() -> Result<Value, String> {
     if payload_kat_digest != payload_kat_report.digest {
         return Err("payload KAT boundary report digest mismatch".to_string());
     }
-    if payload_kat_report.deployment_ready || payload_kat_report.frozen_corpus_complete {
+    if payload_kat_report.deployment_ready || !payload_kat_report.frozen_corpus_complete {
         return Err(
-            "payload KAT boundary unexpectedly claims frozen/deployment readiness".to_string(),
+            "payload KAT boundary must be frozen while deployment remains closed".to_string(),
         );
     }
     let payload_vectors_file =

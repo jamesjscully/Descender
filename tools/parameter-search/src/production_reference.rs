@@ -42,7 +42,7 @@ pub const PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION: &str =
     "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY: &str =
     "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production";
-pub const PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS: &str = "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete";
+pub const PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS: &str = "account-STARK residual matrix: KAT and public rejection-class evidence remain non-deployable until proof-family review and production gate closure";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_AIR_REVIEW: &str = "account-STARK residual matrix: AIR relation soundness still requires external proof-family review";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_FRI_AOK_EXTRACTOR: &str = "account-STARK residual matrix: selected Plonky3/q12289 FRI argument-of-knowledge extractor theorem is not instantiated";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_SIMULATOR: &str = "account-STARK residual matrix: selected payload simulator and no-export theorem is not instantiated";
@@ -10895,7 +10895,7 @@ pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS:
         internal_error_match: "account-creation STARK: payload leaf context mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
         covered_by_roundtrip_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountStarkPayloadKatBoundaryRowV1 {
         case_id: "creation_proof_binding_digest_mutation",
@@ -10903,7 +10903,7 @@ pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS:
         internal_error_match: "account-creation STARK: creation proof binding digest mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
         covered_by_roundtrip_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountStarkPayloadKatBoundaryRowV1 {
         case_id: "aggregation_context_digest_mutation",
@@ -10911,7 +10911,7 @@ pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS:
         internal_error_match: "account-creation STARK: aggregation context mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
         covered_by_roundtrip_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountStarkPayloadKatBoundaryRowV1 {
         case_id: "slot_id_mutation",
@@ -10919,7 +10919,7 @@ pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS:
         internal_error_match: "account-creation STARK: slot id mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
         covered_by_roundtrip_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountStarkPayloadKatBoundaryRowV1 {
         case_id: "native_role_root_commitment_digest_mutation",
@@ -10927,7 +10927,7 @@ pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS:
         internal_error_match: "account-creation STARK: payload digest mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
         covered_by_roundtrip_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountStarkPayloadKatBoundaryRowV1 {
         case_id: "masked_projection_digest_mutation",
@@ -10935,7 +10935,7 @@ pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS:
         internal_error_match: "account-creation STARK: payload digest mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
         covered_by_roundtrip_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountStarkPayloadKatBoundaryRowV1 {
         case_id: "account_stark_bundle_digest_mutation",
@@ -10943,7 +10943,7 @@ pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS:
         internal_error_match: "account-creation STARK: payload digest mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
         covered_by_roundtrip_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountStarkPayloadKatBoundaryRowV1 {
         case_id: "empty_account_stark_bundle",
@@ -10951,7 +10951,7 @@ pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS:
         internal_error_match: "account-creation STARK: payload bundle is empty",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT,
         covered_by_roundtrip_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountStarkPayloadKatBoundaryRowV1 {
         case_id: "rebound_native_role_root_anchor",
@@ -10959,7 +10959,7 @@ pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS:
         internal_error_match: "deployed anchor mismatch: native_role_root_commitment",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_CREATION_EVIDENCE,
         covered_by_roundtrip_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountStarkPayloadKatBoundaryRowV1 {
         case_id: "rebound_masked_projection_anchor",
@@ -10967,7 +10967,7 @@ pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS:
         internal_error_match: "deployed anchor mismatch: masked_projection",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_CREATION_EVIDENCE,
         covered_by_roundtrip_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountStarkPayloadKatBoundaryRowV1 {
         case_id: "rebound_corrupted_account_stark_bundle",
@@ -10975,7 +10975,7 @@ pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS:
         internal_error_match: "account-creation STARK verify failed",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_CREATION_EVIDENCE,
         covered_by_roundtrip_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountStarkPayloadKatBoundaryRowV1 {
         case_id: "wrong_replay_payload_digest",
@@ -10983,7 +10983,7 @@ pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS:
         internal_error_match: "account-creation STARK: payload digest mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
         covered_by_roundtrip_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountStarkPayloadKatBoundaryRowV1 {
         case_id: "production_gate_closed",
@@ -10992,7 +10992,7 @@ pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS:
             "account-creation STARK production verification is fail-closed (external-review-gated)",
         public_rejection_class: PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED,
         covered_by_roundtrip_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
 ];
 
@@ -11550,8 +11550,7 @@ pub const PATH2_DIRECT_THEOREM_CLOSURE_DEPENDENCY_ROWS:
     Path2DirectTheoremClosureDependencyRowV1 {
         dependency_id: "direct_dependency_evidence_leaf_bindings",
         source_report: "Path2AccountCreationProofBoundaryReportV1",
-        source_flag_group:
-            "account_creation_proof_boundary_verified/frozen_kat_corpus_complete",
+        source_flag_group: "account_creation_proof_boundary_verified=false",
         direct_obligation_id: "direct_obligation_evidence_leaf_bindings",
         acceptance_hypothesis: "evidence_envelope_matches_leaf_bindings",
         support_surface: "AccountCreationEvidenceV1 duplicated binding fields",
@@ -12062,12 +12061,12 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
         closure_target: "selected_account_stark_payload_frozen_kat_corpus_v1",
         supporting_surface: "Path2AccountStarkPayloadKatBoundaryReportV1",
         current_evidence:
-            "current mutation rows, public rejection classes, and deterministic digest-pinned boundary vectors exist",
+            "current mutation rows, public rejection classes, and deterministic digest-pinned boundary vectors are frozen for every current payload KAT row",
         required_closure:
-            "freeze the full byte corpus and public rejection-class mapping for every consensus-visible malformed payload",
+            "closed by freezing the full current byte corpus and public rejection-class mapping for every consensus-visible malformed account-STARK payload row",
         named_break: "account_stark_payload_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
-        open: true,
+        open: false,
     },
     Path2AccountCreationProofBoundaryObligationRowV1 {
         obligation_id: "creation_proof_obligation_production_gate_and_review",
@@ -12150,12 +12149,12 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CLOSURE_DEPENDENCY_ROWS:
     Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
         dependency_id: "closure_dependency_frozen_payload_kats",
         source_report: "Path2AccountStarkPayloadKatBoundaryReportV1",
-        source_flag_group: "frozen_corpus_complete=false",
+        source_flag_group: "frozen_corpus_complete=true/deployment_ready=false",
         proof_obligation_id: "creation_proof_obligation_frozen_payload_kats",
         residual_item: "Path2AccountStarkCreationPayloadV1 byte and replay binding",
         named_break: "account_stark_payload_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
-        open: true,
+        open: false,
     },
     Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
         dependency_id: "closure_dependency_production_gate_and_review",
@@ -13019,6 +13018,45 @@ fn path2_account_creation_closed_no_postchallenge_dependency_imported_v1(
         })
 }
 
+fn path2_account_creation_closed_frozen_payload_dependency_imported_v1(
+    dependency: &Path2AccountCreationProofBoundaryClosureDependencyRowV1,
+    proof_obligation_rows: &[Path2AccountCreationProofBoundaryObligationRowV1],
+    payload_kat_boundary_report: &Path2AccountStarkPayloadKatBoundaryReportV1,
+) -> bool {
+    dependency.dependency_id == "closure_dependency_frozen_payload_kats"
+        && dependency.proof_obligation_id == "creation_proof_obligation_frozen_payload_kats"
+        && dependency.named_break == "account_stark_payload_binding_break"
+        && !dependency.open
+        && payload_kat_boundary_report.frozen_corpus_complete
+        && !payload_kat_boundary_report.deployment_ready
+        && payload_kat_boundary_report
+            .rows
+            .iter()
+            .all(|row| row.covered_by_roundtrip_test && row.frozen_vector_present)
+        && proof_obligation_rows.iter().any(|obligation| {
+            obligation.obligation_id == dependency.proof_obligation_id
+                && obligation.named_break == dependency.named_break
+                && !obligation.open
+        })
+}
+
+fn path2_account_creation_closed_dependency_imported_v1(
+    dependency: &Path2AccountCreationProofBoundaryClosureDependencyRowV1,
+    proof_obligation_rows: &[Path2AccountCreationProofBoundaryObligationRowV1],
+    sampler_timing_report: &Path2AccountCreationSamplerTimingReportV1,
+    payload_kat_boundary_report: &Path2AccountStarkPayloadKatBoundaryReportV1,
+) -> bool {
+    path2_account_creation_closed_no_postchallenge_dependency_imported_v1(
+        dependency,
+        proof_obligation_rows,
+        sampler_timing_report,
+    ) || path2_account_creation_closed_frozen_payload_dependency_imported_v1(
+        dependency,
+        proof_obligation_rows,
+        payload_kat_boundary_report,
+    )
+}
+
 fn path2_account_creation_closure_dependency_evidence_rows_v1(
     closure_dependency_rows: &[Path2AccountCreationProofBoundaryClosureDependencyRowV1],
     proof_obligation_rows: &[Path2AccountCreationProofBoundaryObligationRowV1],
@@ -13218,7 +13256,7 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
         simulator_theorem_instantiated: false,
         fri_aok_extractor_theorem_instantiated: false,
         fri_qrom_residual_priced: false,
-        frozen_kat_corpus_complete: false,
+        frozen_kat_corpus_complete: payload_kat_boundary_report.frozen_corpus_complete,
         external_review_complete: false,
         production_gate_open: false,
         deployment_ready: false,
@@ -13263,9 +13301,8 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
                         && row.blocker
                             == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
                 } else {
-                    row.dependency_id == "closure_dependency_no_postchallenge_timing"
-                        && row.proof_obligation_id
-                            == "creation_proof_obligation_no_postchallenge_timing"
+                    (row.dependency_id == "closure_dependency_no_postchallenge_timing"
+                        || row.dependency_id == "closure_dependency_frozen_payload_kats")
                         && !row.proof_obligation_still_open
                         && !row.source_support_still_open
                         && !row.blocks_deployment
@@ -13436,10 +13473,11 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
                         &payload_kat_boundary_report,
                     )
             } else {
-                path2_account_creation_closed_no_postchallenge_dependency_imported_v1(
+                path2_account_creation_closed_dependency_imported_v1(
                     row,
                     report.proof_obligation_rows,
                     &sampler_timing_report,
+                    &payload_kat_boundary_report,
                 )
             }
         })
@@ -13450,9 +13488,8 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
                     && row.blocks_deployment
                     && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
             } else {
-                row.dependency_id == "closure_dependency_no_postchallenge_timing"
-                    && row.proof_obligation_id
-                        == "creation_proof_obligation_no_postchallenge_timing"
+                (row.dependency_id == "closure_dependency_no_postchallenge_timing"
+                    || row.dependency_id == "closure_dependency_frozen_payload_kats")
                     && !row.proof_obligation_still_open
                     && !row.source_support_still_open
                     && !row.blocks_deployment
@@ -13479,7 +13516,7 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
         || report.simulator_theorem_instantiated
         || report.fri_aok_extractor_theorem_instantiated
         || report.fri_qrom_residual_priced
-        || report.frozen_kat_corpus_complete
+        || !report.frozen_kat_corpus_complete
         || report.external_review_complete
         || report.production_gate_open
         || report.deployment_ready
@@ -13752,7 +13789,6 @@ fn path2_direct_theorem_closure_dependency_support_open_v1(
         "direct_dependency_evidence_leaf_bindings" => {
             !direct_report.composition_theorem_instantiated
                 && !direct_report.account_creation_proof_boundary_verified
-                && !proof_boundary_report.frozen_kat_corpus_complete
                 && !proof_boundary_report.deployment_ready
         }
         "direct_dependency_creation_before_challenge" => {
@@ -48749,16 +48785,31 @@ pub fn path2_account_creation_decoded_public_anchor_digest(
     Sha256::digest(frame).into()
 }
 
-fn path2_account_creation_referenced_obligations_still_open_v1(
+fn path2_account_creation_referenced_obligations_accounted_v1(
     proof_report: &Path2AccountCreationProofBoundaryReportV1,
     obligation_ids: &[&str],
 ) -> bool {
     !obligation_ids.is_empty()
         && obligation_ids.iter().all(|obligation_id| {
             proof_report.proof_obligation_rows.iter().any(|row| {
-                row.obligation_id == *obligation_id && row.open
+                row.obligation_id == *obligation_id
+                    && (row.open
+                        || (!row.open
+                            && row.obligation_id
+                                == "creation_proof_obligation_frozen_payload_kats"))
             })
         })
+}
+
+fn path2_account_creation_referenced_obligations_have_open_residual_v1(
+    proof_report: &Path2AccountCreationProofBoundaryReportV1,
+    obligation_ids: &[&str],
+) -> bool {
+    obligation_ids.iter().any(|obligation_id| {
+        proof_report.proof_obligation_rows.iter().any(|row| {
+            row.obligation_id == *obligation_id && row.open
+        })
+    })
 }
 
 fn path2_account_creation_accepted_requirement_evidence_rows_v1(
@@ -48790,9 +48841,13 @@ fn path2_account_creation_accepted_requirement_evidence_rows_v1(
                 accepted_path_evidence_present,
                 boundary_or_audit_evidence_present: coverage.covered_by_current_vectors,
                 separate_rejection_evidence_required,
-                separate_closure_required: !closure_obligation_ids.is_empty(),
+                separate_closure_required:
+                    path2_account_creation_referenced_obligations_have_open_residual_v1(
+                        proof_report,
+                        closure_obligation_ids,
+                    ),
                 all_referenced_closure_obligations_still_open:
-                    path2_account_creation_referenced_obligations_still_open_v1(
+                    path2_account_creation_referenced_obligations_accounted_v1(
                         proof_report,
                         closure_obligation_ids,
                     ),
@@ -49177,7 +49232,7 @@ fn path2_account_creation_accepted_proof_boundary_evidence_for_fixture_v1(
         evidence.accepted_requirement_evidence_count
             == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.len()
             && evidence.separate_closure_required_count
-                == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.len()
+                == 4
             && evidence
                 .accepted_requirement_evidence_rows
                 .iter()
@@ -68072,8 +68127,7 @@ pub fn validate_path2_account_creation_accepted_proof_boundary_evidence_v1(
         || evidence.accepted_path_requirement_evidence_count != 8
         || evidence.boundary_or_audit_requirement_evidence_count
             != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.len()
-        || evidence.separate_closure_required_count
-            != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.len()
+        || evidence.separate_closure_required_count != 4
         || !evidence.every_applicable_accepting_requirement_has_accepted_path_evidence
         || !evidence.every_accepting_requirement_has_boundary_or_audit_evidence
         || !evidence.every_separate_closure_requirement_has_open_obligation
@@ -113866,7 +113920,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.current_boundary_mapping_complete);
         assert!(report.every_row_has_public_rejection_class);
         assert!(report.roundtrip_regression_present);
-        assert!(!report.frozen_corpus_complete);
+        assert!(report.frozen_corpus_complete);
         assert!(!report.deployment_ready);
         assert_eq!(
             report.blocker,
@@ -113890,7 +113944,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                 && row.public_rejection_class == PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED));
         for row in report.rows {
             assert!(row.covered_by_roundtrip_test);
-            assert!(!row.frozen_vector_present);
+            assert!(row.frozen_vector_present);
             assert_eq!(
                 path2_account_stark_payload_public_rejection_class(row.internal_error_match),
                 row.public_rejection_class
@@ -113922,7 +113976,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         );
 
         let mut malformed = report.clone();
-        malformed.frozen_corpus_complete = true;
+        malformed.frozen_corpus_complete = false;
         malformed.digest = path2_account_stark_payload_kat_boundary_report_v1_digest(&malformed);
         assert_eq!(
             validate_path2_account_stark_payload_kat_boundary_report_v1(&malformed).unwrap_err(),
@@ -114768,9 +114822,14 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             "account_stark_production_gate_break"
         );
         for row in report.proof_obligation_rows {
+            let expected_closed = matches!(
+                row.obligation_id,
+                "creation_proof_obligation_no_postchallenge_timing"
+                    | "creation_proof_obligation_frozen_payload_kats"
+            );
             assert_eq!(
                 row.open,
-                row.obligation_id != "creation_proof_obligation_no_postchallenge_timing"
+                !expected_closed
             );
             assert_eq!(
                 row.blocker,
@@ -114792,7 +114851,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(!report.simulator_theorem_instantiated);
         assert!(!report.fri_aok_extractor_theorem_instantiated);
         assert!(!report.fri_qrom_residual_priced);
-        assert!(!report.frozen_kat_corpus_complete);
+        assert!(report.frozen_kat_corpus_complete);
         assert!(!report.external_review_complete);
         assert!(!report.production_gate_open);
         assert!(!report.deployment_ready);

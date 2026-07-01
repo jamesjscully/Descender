@@ -721,7 +721,7 @@ fn main() -> Result<(), String> {
     require_bool(
         corpus,
         "/payload_kat_vector_evidence/frozen_corpus_complete",
-        false,
+        true,
     )?;
     require_bool(
         corpus,
@@ -993,8 +993,8 @@ fn main() -> Result<(), String> {
     )? || bool_at(corpus, "/audit_summary/all_cases_open")?
         || !bool_at(corpus, "/audit_summary/all_cases_have_named_break")?
         || !bool_at(corpus, "/audit_summary/all_open_cases_block_deployment")?
-        || open_proof_obligation_count != 7
-        || closed_proof_obligation_count != 1
+        || open_proof_obligation_count != 6
+        || closed_proof_obligation_count != 2
     {
         return Err(
             "proof-obligation vector corpus lost partial-close row invariants".to_string(),
@@ -1008,7 +1008,6 @@ fn main() -> Result<(), String> {
         "/audit_summary/simulator_theorem_instantiated",
         "/audit_summary/fri_aok_extractor_theorem_instantiated",
         "/audit_summary/fri_qrom_residual_priced",
-        "/audit_summary/frozen_kat_corpus_complete",
         "/audit_summary/external_review_complete",
         "/audit_summary/production_gate_open",
         "/audit_summary/deployment_ready",
@@ -1018,6 +1017,11 @@ fn main() -> Result<(), String> {
                 "proof-obligation vector corpus unexpectedly closes {pointer}"
             ));
         }
+    }
+    if !bool_at(corpus, "/audit_summary/frozen_kat_corpus_complete")? {
+        return Err(
+            "proof-obligation vector corpus lost frozen payload KAT evidence".to_string(),
+        );
     }
 
     let proof_obligation_corpus_evidence =
@@ -1121,9 +1125,14 @@ fn main() -> Result<(), String> {
                 "proof-obligation case {case_id} open flag drifted"
             ));
         }
-        if !row.open && case_id != "creation_proof_obligation_no_postchallenge_timing" {
+        let expected_closed = matches!(
+            case_id,
+            "creation_proof_obligation_no_postchallenge_timing"
+                | "creation_proof_obligation_frozen_payload_kats"
+        );
+        if !row.open && !expected_closed {
             return Err(format!(
-                "proof-obligation case {case_id} closed without imported timing theorem"
+                "proof-obligation case {case_id} closed without imported evidence"
             ));
         }
     }

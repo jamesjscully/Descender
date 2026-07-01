@@ -357,12 +357,14 @@ classes, the
 closure blockers. It also pins accepted-path binding evidence flags for the
 replay-payload digest chain and deployed-anchor public statement comparison
 without treating those flags as a theorem closure. It also pins a structured
-open proof-obligation row list for honest sampler soundness, authorization-class binding,
+proof-obligation row list for honest sampler soundness, authorization-class binding,
 no-postchallenge timing, simulator/no-export closure, FRI/AoK extraction,
-FRI/QROM residual pricing, frozen payload KATs, and production-gate review;
-each open row carries a named break and the fail-closed account-creation
-proof-boundary blocker. A separate closure-dependency row table maps those
-eight open proof obligations to their source report flag groups and, where
+FRI/QROM residual pricing, frozen payload KATs, and production-gate review. Six
+rows remain open, while the no-postchallenge timing and frozen payload-KAT rows
+are closed by imported evidence. Each open row carries a named break and the
+fail-closed account-creation proof-boundary blocker. A separate
+closure-dependency row table maps those eight proof obligations to their source
+report flag groups and, where
 applicable, the selected account-STARK residual matrix row. Derived
 closure-dependency evidence rows pin each dependency to the open proof
 obligation, open source support surface, named break, and blocker; the production
@@ -392,8 +394,9 @@ flag with real simulator/no-export, FRI/QROM, FRI/AoK, frozen-KAT, and
 production-review evidence.
 `formal/kat/path2_account_creation_proof_obligation_vectors_v1.json`
 turns that row table into a digest-pinned audit corpus bound to both the
-proof-boundary and direct-theorem reports; it keeps every obligation open and
-fail-closed. A separate requirement-coverage matrix maps every
+proof-boundary and direct-theorem reports; it records the current 6-open /
+2-closed proof-boundary accounting and keeps deployment fail-closed. A separate
+requirement-coverage matrix maps every
 acceptance requirement to its current evidence surface, vector evidence kind,
 current vector case ids where they exist, public rejection classes for rejection
 vectors, closure target, and blocker; it records that all ten requirements have
@@ -479,9 +482,10 @@ payload KAT vector corpora before the direct theorem manifest is checked, and
 theorem's open per-hypothesis obligations after that manifest is
 checked. The shared proof-boundary object now also embeds digest-pinned
 requirement-vector-corpus evidence for the frame KAT, no-export, FRI/QROM
-domain, and payload KAT corpora plus the digest-pinned 8-case open
-proof-obligation audit-vector corpus and accepted proof-boundary KAT evidence
-artifact. The direct theorem manifest embeds the same proof-boundary object and
+domain, and payload KAT corpora plus the digest-pinned 8-case
+proof-obligation audit-vector corpus (6 open / 2 closed) and accepted
+proof-boundary KAT evidence artifact. The direct theorem manifest embeds the
+same proof-boundary object and
 binds its own 9-case open direct-obligation audit-vector corpus plus accepted
 direct-composition KAT evidence artifact; `path2_boundary_manifest_consistency`
 requires the standalone proof-boundary and direct theorem manifests to agree on
@@ -522,10 +526,11 @@ and production-gate checks, plus the feature-gated
 `path2_account_creation_accepted_proof_boundary_evidence_pins_selected_payload`
 test for the accepted-boundary evidence object. Open closure items are the
 final composition theorem, honest-create sampler soundness,
-authorization-class binding, no-postchallenge timing, account STARK simulator
-theorem, extractor/soundness theorem, FRI/recursion residual-assumption ledger,
-complete frozen byte-format KATs, signer leakage evidence, external
-proof-family review, and the explicit production-gate decision.
+authorization-class binding, account STARK simulator theorem,
+extractor/soundness theorem, FRI/recursion residual-assumption ledger, full
+consensus-visible malformed-payload KAT coverage beyond the current frozen
+rows, signer leakage evidence, external proof-family review, and the explicit
+production-gate decision.
 
 ## Selected Account-STARK Residual Matrix
 
@@ -593,7 +598,7 @@ checked by `path2_account_stark_fri_aok_boundary_consistency`.
 
 | Residual item | Current evidence | Required closure before deployment | Named break |
 |---|---|---|---|
-| `Path2AccountStarkCreationPayloadV1` byte and replay binding | Wire-format digest frame, certificate/evidence binding, deployed anchor checks, active mutation tests, `Path2AccountStarkPayloadByteModelReportV1` frame/overhead/non-inlined-bundle manifest plus consistency gate, `Path2AccountStarkPayloadKatBoundaryReportV1` public rejection-class mapping, draft manifest regeneration, deterministic digest-pinned current-row boundary vectors, manifest/vector consistency gates, and accepted-path decoded-anchor evidence for replay digest, raw verifier version, masked projection, role-root export bridge, and packed-witness commitment exist. | Full frozen byte corpus and public rejection-class mapping for every consensus-visible malformed payload. | `account_stark_payload_binding_break` |
+| `Path2AccountStarkCreationPayloadV1` byte and replay binding | Wire-format digest frame, certificate/evidence binding, deployed anchor checks, active mutation tests, `Path2AccountStarkPayloadByteModelReportV1` frame/overhead/non-inlined-bundle manifest plus consistency gate, `Path2AccountStarkPayloadKatBoundaryReportV1` public rejection-class mapping, frozen manifest regeneration, deterministic digest-pinned current-row boundary vectors, manifest/vector consistency gates, and accepted-path decoded-anchor evidence for replay digest, raw verifier version, masked projection, role-root export bridge, and packed-witness commitment exist. | Full frozen byte corpus and public rejection-class mapping for every consensus-visible malformed payload beyond the current-row boundary vectors. | `account_stark_payload_binding_break` |
 | AIR relation soundness | `research/path2_account_stark_air_soundness_audit.md` reports all relation classes wired and MED findings remediated. | External proof-family review confirms the AIR constraints match the claimed creation relation and no false statement accepts except with a named proof break. | `account_stark_air_soundness_break` |
 | FRI argument-of-knowledge extractor | The AIR is fully constrained, and `Path2AccountStarkFriAokBoundaryReportV1` plus `formal/kat/path2_account_stark_fri_aok_boundary_v1.json` pin the support audit, selected proof family, FRI/QROM residual digest, residual-matrix digest, AIR coverage counts, MED remediation counts, and open extractor/review/deployment flags. | A concrete extractor theorem for the selected Plonky3/q12289 configuration shows accepting proof implies an extractable account-creation witness or exports a named FRI/AoK break. | `account_stark_fri_aok_extractor_break` |
 | Zero-knowledge simulator and no-export statement | Boundary text forbids export of pad source, projection, syndrome, opening tuple, witness, mask, and private trace material; `Path2AccountCreationNoExportBoundaryReportV1` plus `formal/kat/path2_account_creation_no_export_boundary_v1.json` pin the support file, selected payload endpoints, payload byte-model/KAT-boundary digests, denylist, simulator/no-export theorem targets, accepted-bundle simulator public-input allowlist, public-payload-only byte model, mutation coverage, and fail-closed production gate while leaving simulator, no-export, accepted-bundle simulability, review, and deployment flags false. | Simulator theorem for the selected payload proves the accepted public bundle can be simulated from public anchors and allowed commitments without revealing private creation material. | `account_stark_simulator_or_no_export_break` |
@@ -622,10 +627,10 @@ clear the deployment gate.
 `ADR-0008` commits the deployable bar to hard quantum-128 and is the governing
 decision. The current implementation has landed the q128 parameter profile for
 the active account-STARK/direct path, but a deployment-ready hard-128 claim still
-depends on the frozen KAT corpus, external FRI/QROM and implementation review,
-the production-gate decision, and any selected aggregation/recursion review
-scope. Until those gates close, the project must not claim "hard 128-bit
-deployment readiness."
+depends on the full consensus-visible KAT corpus, external FRI/QROM and
+implementation review, the production-gate decision, and any selected
+aggregation/recursion review scope. Until those gates close, the project must
+not claim "hard 128-bit deployment readiness."
 
 ## Challenge Budget Terminology
 

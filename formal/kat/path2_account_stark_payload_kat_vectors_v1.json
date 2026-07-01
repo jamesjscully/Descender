@@ -10,7 +10,7 @@
       "verifier_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary"
     },
     "boundary_report": {
-      "digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
+      "digest": "ab14d77b9401e7c219a85204c19c767b958220517bd64f4a5868189bb8fbbafe",
       "domain": "Descender.Path2.AccountStarkPayloadKatBoundaryReport.v1",
       "every_current_row_has_generated_vector": true,
       "row_count": 13
@@ -789,5 +789,5 @@
     "schema": "Descender.Path2.AccountStarkPayloadKatVectors.v1",
     "status": "digest_pinned_boundary_vectors"
   },
-  "vector_corpus_digest": "70cdf0f54ff74800914d206cb9c62ef978966574ea915fab13a5bb0ba1544b50"
+  "vector_corpus_digest": "557d8d5788429e99e77f8f1d8df3dfb8d5f5afc788fdfb65b2cb8dc316dde7ad"
 }

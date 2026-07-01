@@ -66,7 +66,7 @@ fn main() -> Result<(), String> {
     {
         return Err("payload KAT boundary manifest schema mismatch".to_string());
     }
-    if str_at(&boundary, "/manifest/frozen_status")? != "draft_boundary_manifest" {
+    if str_at(&boundary, "/manifest/frozen_status")? != "frozen_boundary_manifest" {
         return Err("payload KAT boundary manifest frozen_status drifted".to_string());
     }
     if str_at(&vectors, "/corpus/schema")? != "Descender.Path2.AccountStarkPayloadKatVectors.v1" {
@@ -100,10 +100,8 @@ fn main() -> Result<(), String> {
     )? {
         return Err("payload KAT vectors do not cover every current boundary row".to_string());
     }
-    if bool_at(&boundary, "/manifest/coverage/frozen_corpus_complete")? {
-        return Err(
-            "payload KAT boundary manifest unexpectedly claims frozen corpus complete".to_string(),
-        );
+    if !bool_at(&boundary, "/manifest/coverage/frozen_corpus_complete")? {
+        return Err("payload KAT boundary manifest is not frozen".to_string());
     }
     if bool_at(&boundary, "/manifest/coverage/deployment_ready")? {
         return Err(

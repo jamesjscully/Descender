@@ -243,7 +243,7 @@ mod enabled {
             || evidence.accepted_path_applicable_requirement_count != 8
             || evidence.accepted_path_requirement_evidence_count != 8
             || evidence.boundary_or_audit_requirement_evidence_count != 10
-            || evidence.separate_closure_required_count != 10
+            || evidence.separate_closure_required_count != 4
             || at(body, "/evidence/accepted_requirement_evidence_rows")?
                 != &expected_requirement_rows
         {
@@ -512,6 +512,7 @@ mod enabled {
             "/accepted_proof_boundary_evidence_artifact/audit_summary/production_gate_fail_closed",
             "/proof_obligation_vector_corpus_evidence/audit_summary/all_cases_have_named_break",
             "/proof_obligation_vector_corpus_evidence/audit_summary/all_open_cases_block_deployment",
+            "/proof_obligation_vector_corpus_evidence/audit_summary/frozen_kat_corpus_complete",
             "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/proof_family_obligations_still_open",
             "/coverage/every_closure_dependency_has_open_obligation",
             "/coverage/every_closure_dependency_has_open_support_surface",
@@ -525,7 +526,6 @@ mod enabled {
             "/proof_obligation_vector_corpus_evidence/audit_summary/simulator_theorem_instantiated",
             "/proof_obligation_vector_corpus_evidence/audit_summary/fri_aok_extractor_theorem_instantiated",
             "/proof_obligation_vector_corpus_evidence/audit_summary/fri_qrom_residual_priced",
-            "/proof_obligation_vector_corpus_evidence/audit_summary/frozen_kat_corpus_complete",
             "/proof_obligation_vector_corpus_evidence/audit_summary/production_gate_open",
             "/proof_obligation_vector_corpus_evidence/audit_summary/deployment_ready",
             "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/account_creation_proof_boundary_verified",

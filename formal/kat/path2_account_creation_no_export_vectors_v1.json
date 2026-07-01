@@ -17,7 +17,7 @@
     "boundary_report": {
       "blocker": "account-STARK residual matrix: selected payload simulator and no-export theorem is not instantiated",
       "deployment_ready": false,
-      "digest": "7c33591b86134a7513632f0decd6197bdd6351e434700fd2c3777ba65b70e80b",
+      "digest": "ac72e42f992f87708be678abcfd5dee67777341118621692193babedb0c8b8e6",
       "domain": "Descender.Path2.AccountCreationNoExportBoundaryReport.v1",
       "no_export_requirement": "zero_knowledge_no_export_semantics",
       "no_export_theorem_instantiated": false,
@@ -121,7 +121,7 @@
     "corpus_version": 1,
     "digests": {
       "payload_byte_model_report_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
-      "payload_kat_boundary_report_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d"
+      "payload_kat_boundary_report_digest": "ab14d77b9401e7c219a85204c19c767b958220517bd64f4a5868189bb8fbbafe"
     },
     "generator": {
       "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_no_export_vectors",
@@ -131,5 +131,5 @@
     "schema": "Descender.Path2.AccountCreationNoExportVectors.v1",
     "status": "digest_pinned_no_export_audit_vectors"
   },
-  "corpus_digest": "96dc46d600adcd13b8890be4e30ad7cc772917ebf9de10776c968936d68ddd4e"
+  "corpus_digest": "4a0b26f146e49bef06cf9bbe6c3217ba6eec03561527a7c42ec79ff78c987d37"
 }
