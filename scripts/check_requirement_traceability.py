@@ -83,21 +83,29 @@ ACCOUNT_CREATION_PROOF_BOUNDARY_PREFLIGHT_MARKERS = [
     "PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY",
     "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN",
     "PATH2_ACCOUNT_CREATION_SAMPLER_TIMING_REPORT_DOMAIN",
+    "PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_REPORT_DOMAIN",
     "PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_REPORT_DOMAIN",
     "PATH2_ACCOUNT_CREATION_NO_EXPORT_BOUNDARY_REPORT_DOMAIN",
     "Path2AccountCreationProofBoundaryReportV1",
     "Path2AccountCreationFrameKatBoundaryReportV1",
     "Path2AccountCreationProofBoundaryRequirementCoverageRowV1",
     "Path2AccountCreationSamplerTimingReportV1",
+    "Path2AuthorizationClassBindingAuditReportV1",
+    "Path2AuthorizationClassBindingAuditRowV1",
     "Path2AccountCreationNoExportBoundaryReportV1",
     "sampler_timing_report_digest",
     "no_export_boundary_report_digest",
     "account_stark_residual_matrix_report_digest",
     "PATH2_ACCOUNT_CREATION_SAMPLER_SUPPORT_FILE",
     "PATH2_ACCOUNT_CREATION_TIMING_SUPPORT_FILE",
+    "PATH2_AUTHORIZATION_CLASS_BINDING_SUPPORT_FILE",
+    "PATH2_SPEND_PROJECTION_COMPLETENESS_AUDIT_FILE",
+    "PATH2_AUTHORIZATION_LOCAL_CLASSIFICATION_FILE",
     "PATH2_ACCOUNT_CREATION_NO_EXPORT_SUPPORT_FILE",
     "PATH2_ACCOUNT_CREATION_SAMPLER_THEOREM_TARGET",
     "PATH2_ACCOUNT_CREATION_SAMPLER_CONSTRUCTION_STEPS",
+    "PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_FIELDS",
+    "PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_HOOKS",
     "PATH2_ACCOUNT_CREATION_TIMING_ORDER_STEPS",
     "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_TARGET",
     "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CONCLUSION",
@@ -122,6 +130,8 @@ ACCOUNT_CREATION_PROOF_BOUNDARY_PREFLIGHT_MARKERS = [
     "every_open_proof_obligation_blocks_deployment",
     "path2_account_creation_sampler_timing_report_v1",
     "validate_path2_account_creation_sampler_timing_report_v1",
+    "path2_authorization_class_binding_audit_report_v1",
+    "validate_path2_authorization_class_binding_audit_report_v1",
     "path2_account_creation_no_export_boundary_report_v1",
     "validate_path2_account_creation_no_export_boundary_report_v1",
     "path2_account_creation_proof_boundary_report_v1",
@@ -407,13 +417,61 @@ ACCOUNT_STARK_FRI_AOK_BOUNDARY_MARKERS = {
         "path2_account_stark_fri_aok_boundary_consistency",
     ],
 }
+AUTHORIZATION_CLASS_BINDING_AUDIT_MARKERS = {
+    "tools/parameter-search/src/bin/path2_authorization_class_binding_audit_manifest.rs": [
+        "Descender.Path2.AuthorizationClassBindingAuditManifest.v1",
+        "Descender.Path2.AuthorizationClassBindingAudit.v1",
+        "path2_authorization_class_binding_audit_report_v1",
+        "validate_path2_authorization_class_binding_audit_report_v1",
+        "path2_account_creation_sampler_timing_report_v1",
+        "authorization_class_binding_audit_report_digest",
+        "field_completeness_negative_audit_complete",
+        "no_private_authorization_material_in_direct_verifier",
+    ],
+    "tools/parameter-search/src/bin/path2_authorization_class_binding_audit_consistency.rs": [
+        "formal/kat/path2_authorization_class_binding_audit_v1.json",
+        "PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_FIELDS",
+        "PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_HOOKS",
+        "path2_native_spend_authorization_class_digest_v1",
+        "verify_path2_direct_single_slot_spend_authorization",
+        "AccountCreationAuthorizationClassObligationTracked",
+        "Path 2 authorization-class binding audit consistency check passed.",
+    ],
+    "formal/kat/path2_authorization_class_binding_audit_v1.json": [
+        "Descender.Path2.AuthorizationClassBindingAuditManifest.v1",
+        "Descender.Path2.AuthorizationClassBindingAudit.v1",
+        "draft_authorization_class_binding_audit_manifest",
+        "authorization_class_binding_audit_report_digest",
+        '"p_spend_field_count": 8',
+        '"source_shape_hook_count": 10',
+        '"field_completeness_negative_audit_complete": true',
+        '"theorem_instantiated": false',
+        '"deployment_ready": false',
+    ],
+    "scripts/check_build.sh": [
+        "authorization-class binding audit manifest check",
+        "path2_authorization_class_binding_audit_manifest",
+        "path2_authorization_class_binding_audit_v1.json",
+        "authorization-class binding audit consistency check",
+        "path2_authorization_class_binding_audit_consistency",
+    ],
+    ".github/workflows/ci.yml": [
+        "Authorization-class binding audit manifest check",
+        "path2_authorization_class_binding_audit_manifest",
+        "path2_authorization_class_binding_audit_v1.json",
+        "Authorization-class binding audit consistency check",
+        "path2_authorization_class_binding_audit_consistency",
+    ],
+}
 ACCOUNT_CREATION_SAMPLER_TIMING_MARKERS = {
     "tools/parameter-search/src/bin/path2_account_creation_sampler_timing_manifest.rs": [
         "Descender.Path2.AccountCreationSamplerTimingManifest.v1",
         "Descender.Path2.AccountCreationSamplerTiming.v1",
         "path2_account_creation_sampler_timing_report_v1",
         "validate_path2_account_creation_sampler_timing_report_v1",
+        "path2_authorization_class_binding_audit_report_v1",
         "path2_account_creation_proof_boundary_report_v1",
+        "authorization_class_binding_audit_report_digest",
         "account_creation_sampler_timing_report_digest",
         "proof_boundary_report_sampler_timing_digest",
         "sampler_boundary",
@@ -427,6 +485,9 @@ ACCOUNT_CREATION_SAMPLER_TIMING_MARKERS = {
         "research/path2_no_postchallenge_creation_timing_game.md",
         "path2_account_creation_sampler_timing_report_v1",
         "validate_path2_account_creation_sampler_timing_report_v1",
+        "path2_authorization_class_binding_audit_report_v1",
+        "validate_path2_authorization_class_binding_audit_report_v1",
+        "authorization_class_binding_audit_report_digest",
         "path2_creation_hidden_source_statement_v1_frame",
         "path2_checked_core_authorization_challenge_frame",
         "validate_path2_direct_slot_authorization_state_namespace",
@@ -440,6 +501,7 @@ ACCOUNT_CREATION_SAMPLER_TIMING_MARKERS = {
         "Descender.Path2.AccountCreationSamplerTimingManifest.v1",
         "Descender.Path2.AccountCreationSamplerTiming.v1",
         "draft_sampler_timing_manifest",
+        "authorization_class_binding_audit_report_digest",
         "account_creation_sampler_timing_report_digest",
         "proof_boundary_report_sampler_timing_digest",
         "honest_create_sampler_sound_v1",
@@ -3089,6 +3151,21 @@ def check_account_stark_fri_aok_boundary_markers(errors: list[str]) -> None:
                 )
 
 
+def check_authorization_class_binding_audit_markers(errors: list[str]) -> None:
+    for rel, markers in AUTHORIZATION_CLASS_BINDING_AUDIT_MARKERS.items():
+        path = ROOT / rel
+        if not path.exists():
+            errors.append(f"{rel}: missing authorization-class binding audit artifact")
+            continue
+
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                errors.append(
+                    f"{rel}: missing authorization-class binding audit marker {marker!r}"
+                )
+
+
 def check_account_creation_sampler_timing_markers(errors: list[str]) -> None:
     for rel, markers in ACCOUNT_CREATION_SAMPLER_TIMING_MARKERS.items():
         path = ROOT / rel
@@ -3417,6 +3494,7 @@ def main() -> int:
     check_account_stark_payload_kat_manifest_markers(errors)
     check_account_stark_fri_qrom_residual_markers(errors)
     check_account_stark_fri_aok_boundary_markers(errors)
+    check_authorization_class_binding_audit_markers(errors)
     check_account_creation_sampler_timing_markers(errors)
     check_account_creation_no_export_boundary_markers(errors)
     check_account_creation_proof_boundary_manifest_markers(errors)

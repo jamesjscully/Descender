@@ -94,9 +94,11 @@ Projection):
 | `aggregation_mode` | direct mode = `none` (Mode A consumes no aggregation) | `spec/README.md` Mode A |
 
 Every field the frame binds is in `p_spend(q)`; conversely every `p_spend(q)`
-field is bound by the frame. The residual is the **negative** direction — that no
-acceptance branch reads a field *outside* this set — which is a bounded audit of
-the deployed checked-core verifier (below), not an open algebraic gap. ∎
+field is bound by the frame. The **negative** direction — no acceptance branch
+reads a field *outside* this set — is captured by the digest-pinned
+`Path2AuthorizationClassBindingAuditReportV1` and
+`formal/kat/path2_authorization_class_binding_audit_v1.json`; it is bounded
+verifier/source-shape audit evidence, not the Lean theorem closure. ∎
 
 ## Theorem
 
@@ -132,11 +134,13 @@ and `E_SD` (`p_spend.allowed_state_transition_class = p_state.state_transition_c
   (the doc's "What Must Move Into q" list).
 - **"Compatible" weakened to can-sign-somehow.** Then Lemma A is an assumption,
   not definitional — explicitly rejected; the typed predicate is mandatory.
-- **Honest residual.** (1) Field-completeness negative audit of the deployed
-  checked-core spend verifier (no acceptance branch reads a field outside
-  `p_spend(q)`). (2) The Lean `AuthorizationCompatibleOverClass` instantiation +
-  honest-create wrapper (couples to #7). (3) The projection-completeness bridge
-  `p_spend(q) = meaning_of_boundary`. (4) External review. No flag flipped.
+- **Honest residual.** The field-completeness negative audit of the deployed
+  checked-core spend verifier is now digest-pinned by
+  `Path2AuthorizationClassBindingAuditReportV1` (no acceptance branch reads a
+  field outside `p_spend(q)`). Remaining residuals are (1) the Lean
+  `AuthorizationCompatibleOverClass` instantiation + honest-create wrapper
+  (couples to #7), (2) the projection-completeness bridge `p_spend(q) =
+  meaning_of_boundary`, and (3) external review. No theorem flag flipped.
 
 ## What This Closes And Hands Off
 
@@ -151,8 +155,7 @@ and `E_SD` (`p_spend.allowed_state_transition_class = p_state.state_transition_c
   and leaf share the same boundary, and the admitted leaf's public
   authorization class equals `p_spend(boundary)`. These are boundary hooks, not
   theorem closure.
-- **Hands off:** the field-completeness *negative* audit of the spend verifier;
-  the Lean predicate instantiation (with #7 honest-create); projection-completeness
-  bridge; external review. `DIR-AUTHCLASS-001` keeps
-  `authorization_class_binding_theorem_instantiated` false pending the Lean
-  instantiation + audit.
+- **Hands off:** the Lean predicate instantiation (with #7 honest-create);
+  projection-completeness bridge; external review. `DIR-AUTHCLASS-001` keeps
+  `authorization_class_binding_theorem_instantiated` false pending that theorem
+  closure and review.

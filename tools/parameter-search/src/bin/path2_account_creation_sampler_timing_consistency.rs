@@ -2,7 +2,9 @@ use descender_parameter_search::production_reference::{
     path2_account_creation_proof_boundary_report_v1,
     path2_account_creation_sampler_timing_report_v1,
     path2_account_creation_sampler_timing_report_v1_digest,
+    path2_authorization_class_binding_audit_report_v1,
     validate_path2_account_creation_sampler_timing_report_v1,
+    validate_path2_authorization_class_binding_audit_report_v1,
 };
 use serde_json::Value;
 use std::{
@@ -106,11 +108,14 @@ fn main() -> Result<(), String> {
     let full_spend_lean = load_text(&root, "Descender/Path2FullSpendConcrete.lean")?;
 
     let report = path2_account_creation_sampler_timing_report_v1();
+    let authorization_class_audit = path2_authorization_class_binding_audit_report_v1();
     let proof_report = path2_account_creation_proof_boundary_report_v1();
     validate_path2_account_creation_sampler_timing_report_v1(&report)?;
+    validate_path2_authorization_class_binding_audit_report_v1(&authorization_class_audit)?;
     let report_digest = hex_encode(&report.digest);
-    let recomputed_digest =
-        hex_encode(&path2_account_creation_sampler_timing_report_v1_digest(&report));
+    let recomputed_digest = hex_encode(&path2_account_creation_sampler_timing_report_v1_digest(
+        &report,
+    ));
 
     if str_at(&manifest, "/manifest/schema")?
         != "Descender.Path2.AccountCreationSamplerTimingManifest.v1"
@@ -136,10 +141,23 @@ fn main() -> Result<(), String> {
     }
     if str_at(
         &manifest,
+        "/manifest/digests/authorization_class_binding_audit_report_digest",
+    )? != hex_encode(&authorization_class_audit.digest)
+        || report.authorization_class_binding_audit_report_digest
+            != authorization_class_audit.digest
+    {
+        return Err(
+            "sampler/timing manifest is not bound to authorization-class audit".to_string(),
+        );
+    }
+    if str_at(
+        &manifest,
         "/manifest/digests/proof_boundary_report_sampler_timing_digest",
     )? != hex_encode(&proof_report.sampler_timing_report_digest)
     {
-        return Err("proof-boundary sampler/timing digest is not reflected in manifest".to_string());
+        return Err(
+            "proof-boundary sampler/timing digest is not reflected in manifest".to_string(),
+        );
     }
     if proof_report.sampler_timing_report_digest != report.digest {
         return Err("proof-boundary report is not bound to sampler/timing report".to_string());
@@ -200,7 +218,9 @@ fn main() -> Result<(), String> {
         "/manifest/executable_hooks/direct_spend_composition_hook_present",
     ] {
         if !bool_at(&manifest, pointer)? {
-            return Err(format!("sampler/timing manifest lost required hook flag {pointer}"));
+            return Err(format!(
+                "sampler/timing manifest lost required hook flag {pointer}"
+            ));
         }
     }
     for pointer in [
@@ -209,7 +229,9 @@ fn main() -> Result<(), String> {
         "/manifest/open_obligations/deployment_ready",
     ] {
         if bool_at(&manifest, pointer)? {
-            return Err(format!("sampler/timing manifest unexpectedly closes {pointer}"));
+            return Err(format!(
+                "sampler/timing manifest unexpectedly closes {pointer}"
+            ));
         }
     }
     if !bool_at(
@@ -223,7 +245,10 @@ fn main() -> Result<(), String> {
 
     for (needle, label) in [
         ("honest_create_sampler_sound_v1", "sampler theorem target"),
-        ("authorizationLocal", "authorization-local construction step"),
+        (
+            "authorizationLocal",
+            "authorization-local construction step",
+        ),
         (
             "p_spend(q)=AuthClass_c(authorizationLocal)",
             "authorization class binding law",
@@ -313,8 +338,13 @@ fn main() -> Result<(), String> {
         require_contains(&full_spend_lean, needle, label)?;
     }
 
-    let creation_frame = function_window(&source, "path2_creation_hidden_source_statement_v1_frame")?;
-    require_absent(creation_frame, "b\"message\"", "creation hidden-source statement frame")?;
+    let creation_frame =
+        function_window(&source, "path2_creation_hidden_source_statement_v1_frame")?;
+    require_absent(
+        creation_frame,
+        "b\"message\"",
+        "creation hidden-source statement frame",
+    )?;
     require_absent(
         creation_frame,
         "b\"signature\"",
@@ -330,8 +360,10 @@ fn main() -> Result<(), String> {
     ] {
         require_contains(checked_core_frame, needle, "checked-core challenge frame")?;
     }
-    let state_namespace =
-        function_window(&source, "validate_path2_direct_slot_authorization_state_namespace")?;
+    let state_namespace = function_window(
+        &source,
+        "validate_path2_direct_slot_authorization_state_namespace",
+    )?;
     for needle in [
         "leaf.account_id",
         "leaf.account_state_root_before",
@@ -346,8 +378,10 @@ fn main() -> Result<(), String> {
         "consumed_authorizations.insert(authorization)",
         "consume-once validator",
     )?;
-    let direct_spend =
-        function_window(&source, "verify_path2_direct_single_slot_spend_authorization")?;
+    let direct_spend = function_window(
+        &source,
+        "verify_path2_direct_single_slot_spend_authorization",
+    )?;
     for needle in [
         "validate_path2_direct_slot_authorization_state_namespace",
         "verify_path2_checked_core_authorization",

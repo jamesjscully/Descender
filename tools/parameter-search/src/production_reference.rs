@@ -2,12 +2,12 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     fs::{self, File, OpenOptions},
     io::Write,
-    mem::{MaybeUninit, size_of},
+    mem::{size_of, MaybeUninit},
     path::{Path, PathBuf},
     ptr,
     sync::{
+        atomic::{compiler_fence, Ordering},
         OnceLock,
-        atomic::{Ordering, compiler_fence},
     },
 };
 
@@ -38,10 +38,8 @@ pub const PRODUCTION_SELECTED_PROJECTION_INVALID_CARRIER_REASON: &str =
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_PAD_OPENING_BINDING: &str =
     "pad-opening witness binding is not implemented for the reviewed 262-byte/Fq12 path";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS: &str = "Path 2 account-creation prevalidation proof semantics are not complete; the reviewed 318-byte/Fq12 projection-carrier route remains a fail-closed baseline and negative-control source";
-pub const PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION: &str =
-    "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated";
-pub const PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY: &str =
-    "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production";
+pub const PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION: &str = "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated";
+pub const PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY: &str = "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS: &str = "account-STARK residual matrix: KAT and public rejection-class evidence remain non-deployable until proof-family review and production gate closure";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_AIR_REVIEW: &str = "account-STARK residual matrix: AIR relation soundness still requires external proof-family review";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_FRI_AOK_EXTRACTOR: &str = "account-STARK residual matrix: selected Plonky3/q12289 FRI argument-of-knowledge extractor theorem is not instantiated";
@@ -319,6 +317,8 @@ pub const PATH2_ACCOUNT_CREATION_NO_EXPORT_BOUNDARY_REPORT_DOMAIN: &str =
     "Descender.Path2.AccountCreationNoExportBoundaryReport.v1";
 pub const PATH2_ACCOUNT_CREATION_SAMPLER_TIMING_REPORT_DOMAIN: &str =
     "Descender.Path2.AccountCreationSamplerTimingReport.v1";
+pub const PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_REPORT_DOMAIN: &str =
+    "Descender.Path2.AuthorizationClassBindingAuditReport.v1";
 pub const PATH2_ACCOUNT_STARK_FRI_QROM_RESIDUAL_REPORT_DOMAIN: &str =
     "Descender.Path2.AccountStarkFriQromResidualReport.v1";
 pub const PATH2_ACCOUNT_STARK_FRI_AOK_BOUNDARY_REPORT_DOMAIN: &str =
@@ -4009,8 +4009,8 @@ pub fn verify_path2_native_accepted_spend_numeric_evidence_v1(
     path2_native_accepted_spend_numeric_evidence_v1_digest(evidence)
 }
 
-pub fn path2_native_full_signature_reduction_evidence_v1()
--> Path2NativeFullSignatureReductionEvidenceV1 {
+pub fn path2_native_full_signature_reduction_evidence_v1(
+) -> Path2NativeFullSignatureReductionEvidenceV1 {
     Path2NativeFullSignatureReductionEvidenceV1 {
         schema: PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_EVIDENCE_SCHEMA,
         schema_matches: true,
@@ -4404,8 +4404,8 @@ pub fn path2_native_checked_core_byte_instantiation_evidence_v1(
             .checked_core_frame_domain
             .as_bytes(),
     );
-    let checked_core_challenge_uses_hash_domain_frame =
-        checked_core_challenge == hash_frame_to_challenge_bytes_poseidon2(&checked_core_frame_bytes);
+    let checked_core_challenge_uses_hash_domain_frame = checked_core_challenge
+        == hash_frame_to_challenge_bytes_poseidon2(&checked_core_frame_bytes);
     let checked_core_frame_digest_from_bytes: [u8; DIGEST_BYTES] =
         Sha256::digest(&checked_core_frame_bytes).into();
     let checked_core_frame_digest_matches_hash_domain_frame =
@@ -5993,8 +5993,8 @@ impl Drop for Path2NativeHonestConstructorSecretMaterialV1 {
     }
 }
 
-pub fn path2_native_signer_entropy_root_from_os_v1()
--> Result<Path2NativeSignerEntropyRootV1, String> {
+pub fn path2_native_signer_entropy_root_from_os_v1(
+) -> Result<Path2NativeSignerEntropyRootV1, String> {
     let mut root = Path2NativeSignerEntropyRootV1 {
         root_entropy: [0_u8; DIGEST_BYTES],
         account_nonce: [0_u8; DIGEST_BYTES],
@@ -6412,8 +6412,8 @@ pub fn decode_hidden_source_fallback_projection_carrier(
     })
 }
 
-pub fn hidden_source_fallback_projection_leakage_accounting()
--> HiddenSourceFallbackProjectionLeakageAccounting {
+pub fn hidden_source_fallback_projection_leakage_accounting(
+) -> HiddenSourceFallbackProjectionLeakageAccounting {
     let algebraic_lane_bytes = HIDDEN_SOURCE_FALLBACK_PROJECTION_LANES * 2;
     let charged_projection_bytes =
         algebraic_lane_bytes + HIDDEN_SOURCE_FALLBACK_PROJECTION_CHECK_BYTES;
@@ -6770,8 +6770,8 @@ fn hidden_source_fallback_centered_mod_q(value: u16) -> i16 {
     }
 }
 
-pub fn reviewed_response_link_bounded_kernel_certificate()
--> HiddenSourceFallbackProjectionResponseLinkKernelCertificate {
+pub fn reviewed_response_link_bounded_kernel_certificate(
+) -> HiddenSourceFallbackProjectionResponseLinkKernelCertificate {
     HiddenSourceFallbackProjectionResponseLinkKernelCertificate {
         q: Q,
         coords: REVIEWED_RESPONSE_LINK_COORDS,
@@ -7567,11 +7567,9 @@ pub fn reviewed_fq12_packed_witness_state18_projection_masks(
 /// NOTE: this SHA path is NOT byte-identical to the in-proof Poseidon2
 /// derivation — re-deploying it would re-open the deployed-vs-proof mask drift
 /// that the swap closed. Keep archived for audit / rollback only.
-#[deprecated(
-    note = "archived pre-swap SHA-256 mask PRF; deployed path now uses \
+#[deprecated(note = "archived pre-swap SHA-256 mask PRF; deployed path now uses \
             descender_mask_prf::projection_masks (Poseidon2, proof-identical). \
-            Retained only for reversibility of the deployed-mask-prf-swap."
-)]
+            Retained only for reversibility of the deployed-mask-prf-swap.")]
 #[allow(dead_code)]
 pub fn reviewed_fq12_packed_witness_state18_projection_masks_sha256_legacy(
     pad_seed: &[u8; REVIEWED_FQ12_PAD_SEED_BYTES],
@@ -9492,10 +9490,57 @@ pub struct Path2AccountCreationFrameKatFixtureV1 {
     pub certificate_digest: [u8; DIGEST_BYTES],
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2AuthorizationClassBindingAuditRowV1 {
+    pub semantic_field: &'static str,
+    pub p_spend_surface: &'static str,
+    pub verifier_binding_surface: &'static str,
+    pub current_evidence: &'static str,
+    pub residual: &'static str,
+    pub pinned: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Path2AuthorizationClassBindingAuditReportV1 {
+    pub digest: [u8; DIGEST_BYTES],
+    pub domain: &'static str,
+    pub support_file: &'static str,
+    pub projection_audit_file: &'static str,
+    pub authorization_local_classification_file: &'static str,
+    pub theorem_target: &'static str,
+    pub spend_authorization_class_digest_function: &'static str,
+    pub spend_projection_encoder: &'static str,
+    pub direct_spend_verifier_endpoint: &'static str,
+    pub checked_core_verifier_endpoint: &'static str,
+    pub state_namespace_validator: &'static str,
+    pub consume_once_validator: &'static str,
+    pub lean_boundary_predicate: &'static str,
+    pub rows: &'static [Path2AuthorizationClassBindingAuditRowV1],
+    pub row_count: usize,
+    pub p_spend_field_ids: &'static [&'static str],
+    pub p_spend_field_count: usize,
+    pub source_shape_hook_ids: &'static [&'static str],
+    pub source_shape_hook_count: usize,
+    pub p_spend_digest_covers_revised_fields: bool,
+    pub checked_core_frame_binding_imported: bool,
+    pub slot_authorization_digest_imported: bool,
+    pub consume_once_lifecycle_imported: bool,
+    pub no_private_authorization_material_in_direct_verifier: bool,
+    pub field_completeness_negative_audit_pinned: bool,
+    pub field_completeness_negative_audit_complete: bool,
+    pub lean_boundary_hooks_present: bool,
+    pub existing_negative_tests_present: bool,
+    pub theorem_instantiated: bool,
+    pub external_review_complete: bool,
+    pub deployment_ready: bool,
+    pub blocker: &'static str,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Path2AccountCreationSamplerTimingReportV1 {
     pub digest: [u8; DIGEST_BYTES],
     pub domain: &'static str,
+    pub authorization_class_binding_audit_report_digest: [u8; DIGEST_BYTES],
     pub sampler_support_file: &'static str,
     pub timing_support_file: &'static str,
     pub sampler_theorem_target: &'static str,
@@ -9849,8 +9894,7 @@ pub struct Path2DirectAcceptedSpendTupleEvidenceV1 {
     pub theorem_conclusion: &'static str,
     pub accepted_tuple_fields: &'static [&'static str],
     pub acceptance_hypotheses: &'static [&'static str],
-    pub accepted_tuple_field_evidence_rows:
-        Vec<Path2DirectAcceptedTupleFieldEvidenceRowV1>,
+    pub accepted_tuple_field_evidence_rows: Vec<Path2DirectAcceptedTupleFieldEvidenceRowV1>,
     pub accepted_tuple_field_evidence_count: usize,
     pub accepted_tuple_field_evidence_present_count: usize,
     pub accepted_tuple_field_open_obligation_count: usize,
@@ -10646,8 +10690,7 @@ pub const PRODUCTION_DEPLOYMENT_ACCOUNT_STARK_RESIDUAL_BLOCKERS:
 
 pub const PATH2_PUBLIC_RESULT_ACCEPT_ADMIT_SLOT: &str = "accept_admit_slot";
 pub const PATH2_PUBLIC_RESULT_ACCEPT_SPEND_SLOT: &str = "accept_spend_slot";
-pub const PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT: &str =
-    "reject_malformed_public_input";
+pub const PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT: &str = "reject_malformed_public_input";
 pub const PATH2_PUBLIC_RESULT_REJECT_UNSUPPORTED_VERSION: &str = "reject_unsupported_version";
 pub const PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH: &str = "reject_binding_mismatch";
 pub const PATH2_PUBLIC_RESULT_REJECT_CREATION_EVIDENCE: &str = "reject_creation_evidence";
@@ -10834,8 +10877,7 @@ pub const PATH2_ACCOUNT_STARK_PAYLOAD_BYTE_MODEL_FIELDS:
     Path2AccountStarkPayloadByteModelFieldV1 {
         field_name: "masked_projection_le",
         encoding: "append_frame u16 little-endian lanes",
-        data_bytes: HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES
-            * core::mem::size_of::<u16>(),
+        data_bytes: HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES * core::mem::size_of::<u16>(),
         variable_length: false,
         public_payload_field: true,
     },
@@ -11174,70 +11216,56 @@ pub const PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_ROWS: [Path2AccountStarkResidualMa
     PRODUCTION_DEPLOYMENT_ACCOUNT_STARK_RESIDUAL_BLOCKER_COUNT] = [
     Path2AccountStarkResidualMatrixRowV1 {
         residual_item: "Path2AccountStarkCreationPayloadV1 byte and replay binding",
-        current_evidence:
-            "wire-format digest frame, certificate/evidence binding, deployed anchor checks, and active mutation tests exist",
-        required_closure:
-            "frozen byte corpus, manifest regeneration, and public rejection-class mapping for every consensus-visible malformed payload",
+        current_evidence: "wire-format digest frame, certificate/evidence binding, deployed anchor checks, and active mutation tests exist",
+        required_closure: "frozen byte corpus, manifest regeneration, and public rejection-class mapping for every consensus-visible malformed payload",
         named_break: "account_stark_payload_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS,
         open: true,
     },
     Path2AccountStarkResidualMatrixRowV1 {
         residual_item: "AIR relation soundness",
-        current_evidence:
-            "AIR relation classes are wired and prior MED findings are remediated",
-        required_closure:
-            "external proof-family review confirms the AIR constraints match the claimed creation relation",
+        current_evidence: "AIR relation classes are wired and prior MED findings are remediated",
+        required_closure: "external proof-family review confirms the AIR constraints match the claimed creation relation",
         named_break: "account_stark_air_soundness_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_AIR_REVIEW,
         open: true,
     },
     Path2AccountStarkResidualMatrixRowV1 {
         residual_item: "FRI argument-of-knowledge extractor",
-        current_evidence:
-            "AIR is constrained, but the selected Plonky3/q12289 FRI-IOP extractor theorem is open",
-        required_closure:
-            "concrete extractor theorem shows accepting proof implies extractable witness or named FRI/AoK break",
+        current_evidence: "AIR is constrained, but the selected Plonky3/q12289 FRI-IOP extractor theorem is open",
+        required_closure: "concrete extractor theorem shows accepting proof implies extractable witness or named FRI/AoK break",
         named_break: "account_stark_fri_aok_extractor_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_FRI_AOK_EXTRACTOR,
         open: true,
     },
     Path2AccountStarkResidualMatrixRowV1 {
         residual_item: "Zero-knowledge simulator and no-export statement",
-        current_evidence:
-            "boundary text forbids private material export and tests cover public payload mutations",
-        required_closure:
-            "simulator theorem proves accepted public bundle can be simulated from public anchors and allowed commitments",
+        current_evidence: "boundary text forbids private material export and tests cover public payload mutations",
+        required_closure: "simulator theorem proves accepted public bundle can be simulated from public anchors and allowed commitments",
         named_break: "account_stark_simulator_or_no_export_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_SIMULATOR,
         open: true,
     },
     Path2AccountStarkResidualMatrixRowV1 {
         residual_item: "FRI soundness margin and recursion ledger",
-        current_evidence:
-            "Path2AccountStarkFriQromResidualReportV1 pins the active FRI schedule, degree-8 challenge field, Poseidon2 sponge floor, and checked-core QROM target cap; account-STARK transcript theorem, recursion pricing, and review remain open",
-        required_closure:
-            "residual-assumption ledger prices FRI queries, field size, account-STARK Poseidon2 transcript, recursion if used, and multi-target/QROM terms against the selected deployment profile",
+        current_evidence: "Path2AccountStarkFriQromResidualReportV1 pins the active FRI schedule, degree-8 challenge field, Poseidon2 sponge floor, and checked-core QROM target cap; account-STARK transcript theorem, recursion pricing, and review remain open",
+        required_closure: "residual-assumption ledger prices FRI queries, field size, account-STARK Poseidon2 transcript, recursion if used, and multi-target/QROM terms against the selected deployment profile",
         named_break: "fri_soundness_margin_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_FRI_QROM_RESIDUAL,
         open: true,
     },
     Path2AccountStarkResidualMatrixRowV1 {
         residual_item: "Production admission gate and review disposition",
-        current_evidence:
-            "production account-STARK admission remains fail-closed and regression-tested",
-        required_closure:
-            "external review, tracker disposition, and explicit maintainer decision flip the production gate",
+        current_evidence: "production account-STARK admission remains fail-closed and regression-tested",
+        required_closure: "external review, tracker disposition, and explicit maintainer decision flip the production gate",
         named_break: "account_stark_production_gate_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PRODUCTION_GATE,
         open: true,
     },
     Path2AccountStarkResidualMatrixRowV1 {
         residual_item: "Legacy proof-route disposition",
-        current_evidence:
-            "transparent descent and native-boundary routes are fail-closed support history",
-        required_closure:
-            "route change requires ADR updating this matrix, wire formats, KAT scope, and tracker ownership",
+        current_evidence: "transparent descent and native-boundary routes are fail-closed support history",
+        required_closure: "route change requires ADR updating this matrix, wire formats, KAT scope, and tracker ownership",
         named_break: "proof_route_authority_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_LEGACY_ROUTE_ADR,
         open: true,
@@ -11289,21 +11317,24 @@ pub const PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_ADMISSION_NAMESPACE: [&str; 1] =
     ["direct_obligation_admission_namespace"];
 pub const PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_CONSUME_ONCE: [&str; 1] =
     ["direct_obligation_consume_once"];
-pub const PATH2_DIRECT_THEOREM_TARGET: &str =
-    "direct_mode_selected_tuple_authorization_theorem_v1";
-pub const PATH2_DIRECT_THEOREM_CONCLUSION: &str =
-    "accepted_direct_mode_spend_implies_prior_admission_checked_core_acceptance_consume_once_or_named_break";
+pub const PATH2_DIRECT_THEOREM_TARGET: &str = "direct_mode_selected_tuple_authorization_theorem_v1";
+pub const PATH2_DIRECT_THEOREM_CONCLUSION: &str = "accepted_direct_mode_spend_implies_prior_admission_checked_core_acceptance_consume_once_or_named_break";
 
 pub const PATH2_ACCOUNT_CREATION_SAMPLER_SUPPORT_FILE: &str =
     "research/path2_honest_create_sampler_v1.md";
 pub const PATH2_ACCOUNT_CREATION_TIMING_SUPPORT_FILE: &str =
     "research/path2_no_postchallenge_creation_timing_game.md";
+pub const PATH2_AUTHORIZATION_CLASS_BINDING_SUPPORT_FILE: &str =
+    "research/path2_authorization_class_binding_theorem_v1.md";
+pub const PATH2_SPEND_PROJECTION_COMPLETENESS_AUDIT_FILE: &str =
+    "research/path2_spend_projection_completeness_audit_v1.md";
+pub const PATH2_AUTHORIZATION_LOCAL_CLASSIFICATION_FILE: &str =
+    "research/path2_authorization_local_classification.md";
 pub const PATH2_ACCOUNT_CREATION_NO_EXPORT_SUPPORT_FILE: &str =
     "research/path2_fiber_privacy_no_export_v1.md";
 pub const PATH2_ACCOUNT_STARK_FRI_AOK_SUPPORT_FILE: &str =
     "research/path2_account_stark_air_soundness_audit.md";
-pub const PATH2_ACCOUNT_CREATION_SAMPLER_THEOREM_TARGET: &str =
-    "honest_create_sampler_sound_v1";
+pub const PATH2_ACCOUNT_CREATION_SAMPLER_THEOREM_TARGET: &str = "honest_create_sampler_sound_v1";
 pub const PATH2_ACCOUNT_CREATION_SAMPLER_CONSTRUCTION_STEPS: [&str; 8] = [
     "seed",
     "authorizationLocal",
@@ -11313,6 +11344,28 @@ pub const PATH2_ACCOUNT_CREATION_SAMPLER_CONSTRUCTION_STEPS: [&str; 8] = [
     "canonical liftCore",
     "gauge/randomizer",
     "h",
+];
+pub const PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_FIELDS: [&str; 8] = [
+    "spend_verifier_family",
+    "spend_authorization_class",
+    "checked_core_or_native_verifier_handle",
+    "public_key_identity_or_authorization_identity",
+    "allowed_authorization_local_mode",
+    "allowed_state_transition_class",
+    "aggregation_mode",
+    "spend_domain_separator",
+];
+pub const PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_HOOKS: [&str; 10] = [
+    "path2_native_spend_authorization_class_digest_v1",
+    "path2_native_spend_projection_v1_bytes",
+    "verify_path2_direct_single_slot_spend_authorization",
+    "verify_path2_checked_core_authorization",
+    "validate_path2_direct_slot_authorization_state_namespace",
+    "verify_path2_prevalidated_slot_consume_once",
+    "path2_checked_core_authorization_challenge_frame",
+    "AccountCreationAuthorizationClassObligationTracked",
+    "authorizationClass_matches_pSpend_of_obligationTracked",
+    "path2_native_honest_constructor_rejects_authorization_class_mismatch",
 ];
 pub const PATH2_ACCOUNT_CREATION_TIMING_ORDER_STEPS: [&str; 11] = [
     "account/key/slot namespace is fixed",
@@ -11332,14 +11385,12 @@ pub const PATH2_DIRECT_QROM_ACTION_SUPPORT_FILE: &str =
     "research/path2_hash_qrom_assumption_ledger.md";
 pub const PATH2_DIRECT_LIFECYCLE_SUPPORT_FILE: &str =
     "research/path2_one_use_successor_state_theorem.md";
-pub const PATH2_DIRECT_LIFECYCLE_THEOREM_TARGET: &str =
-    "one_use_successor_state_theorem_v1";
+pub const PATH2_DIRECT_LIFECYCLE_THEOREM_TARGET: &str = "one_use_successor_state_theorem_v1";
 pub const PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_ID: &str =
     "ADR-0010.D2.finalized-head-reorg-window.v1";
 pub const PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_AUTHORITY: &str =
     "decisions/ADR-0010-registry-lifecycle-consensus-wiring-and-finality.md";
-pub const PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_RULE: &str =
-    "permanence boundary equals chain FINALIZED head; admissions and consumptions in [finalized, head] are reorg-freeable by reorg_to(new_head)";
+pub const PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_RULE: &str = "permanence boundary equals chain FINALIZED head; admissions and consumptions in [finalized, head] are reorg-freeable by reorg_to(new_head)";
 pub const PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS: [&str; 12] = [
     "path2_prevalidated_slot_consume_once_rejects_reauthorization",
     "path2_direct_single_slot_spend_composes_admission_signature_and_consume_once",
@@ -11428,10 +11479,8 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         obligation_id: "direct_obligation_leaf_canonical_live",
         acceptance_hypothesis: "leaf_is_canonical_and_live",
         supporting_surface: "PrevalidatedSlotLeafV1 bytes and lifecycle live marker",
-        current_evidence:
-            "wire-format authority, leaf digest helpers, and accepted-tuple evidence for the leaf digest exist; lifecycle target profile and frozen leaf KATs remain open",
-        required_closure:
-            "composition theorem imports canonical leaf parsing plus live-slot lifecycle evidence for the accepted tuple",
+        current_evidence: "wire-format authority, leaf digest helpers, and accepted-tuple evidence for the leaf digest exist; lifecycle target profile and frozen leaf KATs remain open",
+        required_closure: "composition theorem imports canonical leaf parsing plus live-slot lifecycle evidence for the accepted tuple",
         named_break: "prevalidation_leaf_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
         open: true,
@@ -11440,10 +11489,8 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         obligation_id: "direct_obligation_evidence_leaf_bindings",
         acceptance_hypothesis: "evidence_envelope_matches_leaf_bindings",
         supporting_surface: "AccountCreationEvidenceV1 duplicated binding fields",
-        current_evidence:
-            "shared creation-frame verifier checks evidence/leaf field equality; the proof-boundary report pins exact binding fields; accepted-tuple evidence records the evidence transcript and selected payload digest",
-        required_closure:
-            "composition theorem imports the evidence/leaf binding verifier and frozen malformed-field KATs",
+        current_evidence: "shared creation-frame verifier checks evidence/leaf field equality; the proof-boundary report pins exact binding fields; accepted-tuple evidence records the evidence transcript and selected payload digest",
+        required_closure: "composition theorem imports the evidence/leaf binding verifier and frozen malformed-field KATs",
         named_break: "prevalidation_leaf_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
         open: true,
@@ -11452,10 +11499,8 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         obligation_id: "direct_obligation_slot_authorization_digest",
         acceptance_hypothesis: "slot_authorization_digest_matches_canonical_leaf",
         supporting_surface: "slot_authorization_digest domain and leaf-byte frame",
-        current_evidence:
-            "wire-format authority gates the slot authorization domain and digest helper; accepted-tuple evidence records the canonical slot authorization digest; Lean imports SlotAuthorizationDigestFramesLeaf from ConcreteSpendVerificationAccepts",
-        required_closure:
-            "closed by importing canonical slot_authorization_digest equality and byte KAT coverage for the accepted spend tuple into the direct theorem boundary",
+        current_evidence: "wire-format authority gates the slot authorization domain and digest helper; accepted-tuple evidence records the canonical slot authorization digest; Lean imports SlotAuthorizationDigestFramesLeaf from ConcreteSpendVerificationAccepts",
+        required_closure: "closed by importing canonical slot_authorization_digest equality and byte KAT coverage for the accepted spend tuple into the direct theorem boundary",
         named_break: "prevalidation_leaf_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
         open: false,
@@ -11464,10 +11509,8 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         obligation_id: "direct_obligation_creation_before_challenge",
         acceptance_hypothesis: "selected_creation_verifier_accepted_before_spend_challenge",
         supporting_surface: "Path2AccountCreationProofBoundaryReportV1 and admission ordering",
-        current_evidence:
-            "selected account-STARK boundary is implemented, field-pinned, and fail-closed for production",
-        required_closure:
-            "account-creation proof boundary is verified and the final theorem proves admission precedes spend challenge derivation",
+        current_evidence: "selected account-STARK boundary is implemented, field-pinned, and fail-closed for production",
+        required_closure: "account-creation proof boundary is verified and the final theorem proves admission precedes spend challenge derivation",
         named_break: "selected_account_creation_payload_proof_family_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
         open: true,
@@ -11476,10 +11519,8 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         obligation_id: "direct_obligation_admission_namespace",
         acceptance_hypothesis: "direct_admission_namespace_contains_exact_tuple",
         supporting_surface: "direct admission namespace record",
-        current_evidence:
-            "namespace requirement is in the direct theorem boundary; accepted-tuple evidence records the exact account/state-root/authorization namespace digest and membership check; target-chain data-availability profile remains open",
-        required_closure:
-            "composition theorem imports exact account/state-root/slot-authorization tuple membership and DA semantics",
+        current_evidence: "namespace requirement is in the direct theorem boundary; accepted-tuple evidence records the exact account/state-root/authorization namespace digest and membership check; target-chain data-availability profile remains open",
+        required_closure: "composition theorem imports exact account/state-root/slot-authorization tuple membership and DA semantics",
         named_break: "prevalidation_registry_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
         open: true,
@@ -11488,10 +11529,8 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         obligation_id: "direct_obligation_checked_core_frame_binding",
         acceptance_hypothesis: "checked_core_challenge_binds_public_spend_context",
         supporting_surface: "Path2NativeCheckedCoreFrameV1",
-        current_evidence:
-            "DIR-CC-001 is verified for checked-core frame field order, mutation tests, and authorization digest binding; Lean imports CheckedCoreChallengeBindsAcceptedTuple from ConcreteSpendVerificationAccepts through concreteDirectAcceptedSpendSoundness",
-        required_closure:
-            "closed by importing checked-core frame binding for the accepted spend tuple into the direct theorem boundary",
+        current_evidence: "DIR-CC-001 is verified for checked-core frame field order, mutation tests, and authorization digest binding; Lean imports CheckedCoreChallengeBindsAcceptedTuple from ConcreteSpendVerificationAccepts through concreteDirectAcceptedSpendSoundness",
+        required_closure: "closed by importing checked-core frame binding for the accepted spend tuple into the direct theorem boundary",
         named_break: "checked_core_message_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
         open: false,
@@ -11500,10 +11539,8 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         obligation_id: "direct_obligation_checked_core_acceptance",
         acceptance_hypothesis: "checked_core_verification_accepts_poseidon2_and_fq12_action",
         supporting_surface: "checked-core verifier, Poseidon2 Fiat-Shamir, and Fq12 action map",
-        current_evidence:
-            "wire-format authority, accepted-tuple evidence, and concrete-security smoke separate Poseidon2 challenge bytes from the Fq12 action-map term",
-        required_closure:
-            "composition theorem links QROM/action-map numeric bounds to the accepted spend event",
+        current_evidence: "wire-format authority, accepted-tuple evidence, and concrete-security smoke separate Poseidon2 challenge bytes from the Fq12 action-map term",
+        required_closure: "composition theorem links QROM/action-map numeric bounds to the accepted spend event",
         named_break: "qrom_or_domain_separation_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
         open: true,
@@ -11512,10 +11549,8 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         obligation_id: "direct_obligation_consume_once",
         acceptance_hypothesis: "lifecycle_transition_consumes_authorization_once",
         supporting_surface: "consume-once lifecycle state transition",
-        current_evidence:
-            "lifecycle model, consume-once verifier helper, accepted-tuple before/after state evidence, digest-pinned local transition vector corpus, recovery regressions, executable ADR-0010 D2 finalized-head reorg profile evidence, digest-pinned D2 safe-default lifecycle profile review, and digest-pinned D2 lifecycle profile verification are imported by the direct theorem boundary; broader deployment-profile readiness remains open",
-        required_closure:
-            "closed by importing the consume-once successor-state proof and D2 target-chain lifecycle profile into the direct theorem boundary",
+        current_evidence: "lifecycle model, consume-once verifier helper, accepted-tuple before/after state evidence, digest-pinned local transition vector corpus, recovery regressions, executable ADR-0010 D2 finalized-head reorg profile evidence, digest-pinned D2 safe-default lifecycle profile review, and digest-pinned D2 lifecycle profile verification are imported by the direct theorem boundary; broader deployment-profile readiness remains open",
+        required_closure: "closed by importing the consume-once successor-state proof and D2 target-chain lifecycle profile into the direct theorem boundary",
         named_break: "slot_replay_or_rollback_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
         open: false,
@@ -11524,18 +11559,16 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         obligation_id: "direct_obligation_public_rejection",
         acceptance_hypothesis: "rejection_is_deterministic_public_and_state_preserving",
         supporting_surface: "consensus-safe rejection and state-preserving failure mapping",
-        current_evidence:
-            "Path2PublicResultClassV1 pins the consensus result-class names; Path2DirectSpendPublicResultV1 wraps direct spend results without internal diagnostics; account-STARK payload boundary maps current internal errors to public rejection classes; direct spend classifier, no-mutation test, malformed signature panic-free KATs, public leaf/evidence/certificate rejection KATs, and public-result wrapper test cover selected pre-consume failure classes; full consensus rejection KATs remain open",
-        required_closure:
-            "public rejection enum, panic-free malformed-input KATs, and state-no-mutation tests cover every direct-mode rejection",
+        current_evidence: "Path2PublicResultClassV1 pins the consensus result-class names; Path2DirectSpendPublicResultV1 wraps direct spend results without internal diagnostics; account-STARK payload boundary maps current internal errors to public rejection classes; direct spend classifier, no-mutation test, malformed signature panic-free KATs, public leaf/evidence/certificate rejection KATs, and public-result wrapper test cover selected pre-consume failure classes; full consensus rejection KATs remain open",
+        required_closure: "public rejection enum, panic-free malformed-input KATs, and state-no-mutation tests cover every direct-mode rejection",
         named_break: "consensus_rejection_or_state_mutation_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
         open: true,
     },
 ];
 
-pub const PATH2_DIRECT_THEOREM_CLOSURE_DEPENDENCY_ROWS:
-    [Path2DirectTheoremClosureDependencyRowV1; 9] = [
+pub const PATH2_DIRECT_THEOREM_CLOSURE_DEPENDENCY_ROWS: [Path2DirectTheoremClosureDependencyRowV1;
+    9] = [
     Path2DirectTheoremClosureDependencyRowV1 {
         dependency_id: "direct_dependency_leaf_canonical_live",
         source_report: "Path2DirectTheoremBoundaryReportV1",
@@ -11605,8 +11638,7 @@ pub const PATH2_DIRECT_THEOREM_CLOSURE_DEPENDENCY_ROWS:
     Path2DirectTheoremClosureDependencyRowV1 {
         dependency_id: "direct_dependency_checked_core_acceptance",
         source_report: "Path2DirectQromActionBoundaryReportV1",
-        source_flag_group:
-            "qrom_and_action_bounds_linked_to_theorem/theorem_imports_budget/external_qrom_review_complete",
+        source_flag_group: "qrom_and_action_bounds_linked_to_theorem/theorem_imports_budget/external_qrom_review_complete",
         direct_obligation_id: "direct_obligation_checked_core_acceptance",
         acceptance_hypothesis: "checked_core_verification_accepts_poseidon2_and_fq12_action",
         support_surface: "checked-core verifier, Poseidon2 Fiat-Shamir, and Fq12 action map",
@@ -11617,8 +11649,7 @@ pub const PATH2_DIRECT_THEOREM_CLOSURE_DEPENDENCY_ROWS:
     Path2DirectTheoremClosureDependencyRowV1 {
         dependency_id: "direct_dependency_consume_once",
         source_report: "Path2DirectLifecycleBoundaryReportV1",
-        source_flag_group:
-            "lifecycle_transition_profile_verified/target_chain_finality_profile_instantiated",
+        source_flag_group: "lifecycle_transition_profile_verified/target_chain_finality_profile_instantiated",
         direct_obligation_id: "direct_obligation_consume_once",
         acceptance_hypothesis: "lifecycle_transition_consumes_authorization_once",
         support_surface: "consume-once lifecycle state transition",
@@ -11653,8 +11684,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS: [&str; 10] = [
 ];
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_TARGET: &str =
     "selected_account_creation_proof_boundary_v1";
-pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CONCLUSION: &str =
-    "accepted_account_creation_payload_implies_bound_leaf_evidence_selected_account_stark_acceptance_no_export_or_named_break";
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CONCLUSION: &str = "accepted_account_creation_payload_implies_bound_leaf_evidence_selected_account_stark_acceptance_no_export_or_named_break";
 
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_NONE: &str = "no_current_vectors";
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_REJECTION: &str = "rejection_vectors";
@@ -11825,8 +11855,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENT_COVERAGE_ROWS:
         coverage_surface: "Path2AccountStarkPayloadKatBoundaryReportV1",
         vector_evidence_kind: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_REJECTION,
         current_vector_case_ids: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHOR_CASES,
-        public_rejection_classes:
-            &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_EVIDENCE_REJECTION_CLASSES,
+        public_rejection_classes: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_EVIDENCE_REJECTION_CLASSES,
         covered_by_current_vectors: true,
         closure_target: "freeze deployed-anchor rebinding vectors",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS,
@@ -11858,7 +11887,8 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENT_COVERAGE_ROWS:
         requirement: "deterministic_public_rejection",
         coverage_surface: "Path2AccountStarkPayloadKatBoundaryReportV1 and vector corpus",
         vector_evidence_kind: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_REJECTION,
-        current_vector_case_ids: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_ALL_CURRENT_PAYLOAD_KAT_CASES,
+        current_vector_case_ids:
+            &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_ALL_CURRENT_PAYLOAD_KAT_CASES,
         public_rejection_classes: &PATH2_ACCOUNT_STARK_PAYLOAD_PUBLIC_REJECTION_CLASSES,
         covered_by_current_vectors: true,
         closure_target: "full consensus rejection-class KAT surface",
@@ -11982,16 +12012,82 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_OBLIGATION_AUDIT_CASES: [&str; 8] = [
     "creation_proof_obligation_production_gate_and_review",
 ];
 
+pub const PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_ROWS: [Path2AuthorizationClassBindingAuditRowV1;
+    8] = [
+    Path2AuthorizationClassBindingAuditRowV1 {
+        semantic_field: "spend_verifier_family",
+        p_spend_surface: "path2_native_spend_authorization_class_digest_v1",
+        verifier_binding_surface: "Path2NativeCheckedCoreFrameV1 verifier_family_id",
+        current_evidence: "authorization-class digest rejects non-Fq12 verifier families and checked-core frame authority gates verifier_family_id",
+        residual: "external review of the field-completeness audit",
+        pinned: true,
+    },
+    Path2AuthorizationClassBindingAuditRowV1 {
+        semantic_field: "spend_authorization_class",
+        p_spend_surface: "Path2NativeSpendProjectionV1.spend_authorization_class_digest",
+        verifier_binding_surface: "leaf.authorizationClass = pSpend(boundary) Lean hook",
+        current_evidence: "spend projection recomputes the authorization-class digest and Lean carries leaf authorizationClass equality to pSpend(boundary)",
+        residual: "Lean typed compatibility wrapper with honest-create sampler",
+        pinned: true,
+    },
+    Path2AuthorizationClassBindingAuditRowV1 {
+        semantic_field: "checked_core_or_native_verifier_handle",
+        p_spend_surface: "checked_core_verifier_handle_digest",
+        verifier_binding_surface: "checked-core proof commitment / public-key identity challenge binding",
+        current_evidence: "checked-core frame-binding import and direct verifier challenge bind the public key identity and proof commitment",
+        residual: "external review of checked-core frame binding",
+        pinned: true,
+    },
+    Path2AuthorizationClassBindingAuditRowV1 {
+        semantic_field: "public_key_identity_or_authorization_identity",
+        p_spend_surface: "public_key_identity",
+        verifier_binding_surface: "leaf.public_key_identity and checked-core challenge public_key",
+        current_evidence: "direct verifier recomputes public_key_identity from the supplied public key before checked-core verification",
+        residual: "external review of public key identity binding",
+        pinned: true,
+    },
+    Path2AuthorizationClassBindingAuditRowV1 {
+        semantic_field: "allowed_authorization_local_mode",
+        p_spend_surface: "allowed_authorization_local_mode",
+        verifier_binding_surface: "PATH2_NATIVE_AUTHORIZATION_LOCAL_MODE_DIRECT",
+        current_evidence: "authorization-class digest and spend projection reject non-direct authorization-local modes for Mode A",
+        residual: "Mode B refactor must add a new proof-boundary row before changing the mode",
+        pinned: true,
+    },
+    Path2AuthorizationClassBindingAuditRowV1 {
+        semantic_field: "allowed_state_transition_class",
+        p_spend_surface: "allowed_state_transition_class_digest",
+        verifier_binding_surface: "consume-once lifecycle import and state root challenge binding",
+        current_evidence: "direct theorem imports consume-once lifecycle and checked-core challenge binds account_state_root_before",
+        residual: "target-chain deployment-profile review",
+        pinned: true,
+    },
+    Path2AuthorizationClassBindingAuditRowV1 {
+        semantic_field: "aggregation_mode",
+        p_spend_surface: "aggregation_mode",
+        verifier_binding_surface: "Path2NativeCheckedCoreFrameV1 aggregation_mode",
+        current_evidence: "authorization-class digest includes aggregation_mode and Mode A context validation pins direct-mode semantics",
+        residual: "Mode B aggregation theorem before aggregate-compatible deployment",
+        pinned: true,
+    },
+    Path2AuthorizationClassBindingAuditRowV1 {
+        semantic_field: "spend_domain_separator",
+        p_spend_surface: "spend_domain_separator_digest",
+        verifier_binding_surface: "slot_authorization_digest and checked-core challenge domain",
+        current_evidence: "slot-authorization digest import, checked-core frame binding, and direct verifier state namespace check bind the spend domain surface",
+        residual: "external review of domain-separation ledger",
+        pinned: true,
+    },
+];
+
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
     [Path2AccountCreationProofBoundaryObligationRowV1; 8] = [
     Path2AccountCreationProofBoundaryObligationRowV1 {
         obligation_id: "creation_proof_obligation_honest_sampler",
         closure_target: "honest_create_sampler_sound_v1",
         supporting_surface: "Path2AccountCreationSamplerTimingReportV1",
-        current_evidence:
-            "honest-create sampler support file, construction steps, and source hook labels are pinned",
-        required_closure:
-            "prove the honest-create sampler samples the selected creation relation without bias or hidden postchallenge input",
+        current_evidence: "honest-create sampler support file, construction steps, and source hook labels are pinned",
+        required_closure: "prove the honest-create sampler samples the selected creation relation without bias or hidden postchallenge input",
         named_break: "creation_time_hidden_source_soundness_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
         open: true,
@@ -12000,10 +12096,8 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
         obligation_id: "creation_proof_obligation_authorization_class_binding",
         closure_target: "selected_account_creation_authorization_class_binding_v1",
         supporting_surface: "Path2AccountCreationSamplerTimingReportV1 and checked-core frame binding",
-        current_evidence:
-            "checked-core challenge binds message, state root, slot authorization digest, and proof commitment",
-        required_closure:
-            "prove private authorization-local material cannot change public spend semantics or bypass checked-core binding",
+        current_evidence: "checked-core challenge binds message, state root, slot authorization digest, and proof commitment",
+        required_closure: "prove private authorization-local material cannot change public spend semantics or bypass checked-core binding",
         named_break: "checked_core_message_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
         open: true,
@@ -12012,10 +12106,8 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
         obligation_id: "creation_proof_obligation_no_postchallenge_timing",
         closure_target: "no_postchallenge_slot_creation_timing_v1",
         supporting_surface: "Path2AccountCreationSamplerTimingReportV1",
-        current_evidence:
-            "creation statement excludes spend message/signature bytes; spend challenge is derived after the fixed creation statement; Lean proves accepted creation evidence, leaf creation, and leaf freeze precede the spend challenge and that a later admission cannot be the consumed evidence",
-        required_closure:
-            "closed by importing the no-postchallenge timing theorem from the concrete full-spend carrier into the sampler/timing and proof-boundary reports",
+        current_evidence: "creation statement excludes spend message/signature bytes; spend challenge is derived after the fixed creation statement; Lean proves accepted creation evidence, leaf creation, and leaf freeze precede the spend challenge and that a later admission cannot be the consumed evidence",
+        required_closure: "closed by importing the no-postchallenge timing theorem from the concrete full-spend carrier into the sampler/timing and proof-boundary reports",
         named_break: "postchallenge_slot_creation_or_rewrite_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
         open: false,
@@ -12024,10 +12116,8 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
         obligation_id: "creation_proof_obligation_simulator_no_export",
         closure_target: "selected_account_stark_public_bundle_simulator_v1 + selected_account_stark_no_export_v1",
         supporting_surface: "Path2AccountCreationNoExportBoundaryReportV1",
-        current_evidence:
-            "public-input allowlist and private-material denylist are pinned for the selected account-STARK payload",
-        required_closure:
-            "prove accepted public bundles are simulatable from public anchors and allowed commitments without exporting private creation material",
+        current_evidence: "public-input allowlist and private-material denylist are pinned for the selected account-STARK payload",
+        required_closure: "prove accepted public bundles are simulatable from public anchors and allowed commitments without exporting private creation material",
         named_break: "account_stark_simulator_or_no_export_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
         open: true,
@@ -12036,10 +12126,8 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
         obligation_id: "creation_proof_obligation_fri_aok_extractor",
         closure_target: "selected_plonky3_q12289_fri_iop_aok_extractor",
         supporting_surface: "Path2AccountStarkFriAokBoundaryReportV1",
-        current_evidence:
-            "AIR coverage, FRI schedule, challenge field, and extractor theorem target are pinned",
-        required_closure:
-            "prove every accepting proof for the selected Plonky3/q12289 configuration implies an extractable account-creation witness or a named FRI/AoK break",
+        current_evidence: "AIR coverage, FRI schedule, challenge field, and extractor theorem target are pinned",
+        required_closure: "prove every accepting proof for the selected Plonky3/q12289 configuration implies an extractable account-creation witness or a named FRI/AoK break",
         named_break: "account_stark_fri_aok_extractor_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
         open: true,
@@ -12048,10 +12136,8 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
         obligation_id: "creation_proof_obligation_fri_qrom_residual_pricing",
         closure_target: "selected_account_stark_fri_poseidon2_qrom_residual_ledger_v1",
         supporting_surface: "Path2AccountStarkFriQromResidualReportV1",
-        current_evidence:
-            "active FRI parameters, degree-8 challenge field, Poseidon2 sponge floor, and checked-core QROM artifacts are pinned",
-        required_closure:
-            "price the account-STARK FRI transcript theorem, recursion if used, and multi-target/QROM terms against the selected deployment profile",
+        current_evidence: "active FRI parameters, degree-8 challenge field, Poseidon2 sponge floor, and checked-core QROM artifacts are pinned",
+        required_closure: "price the account-STARK FRI transcript theorem, recursion if used, and multi-target/QROM terms against the selected deployment profile",
         named_break: "fri_soundness_margin_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
         open: true,
@@ -12060,10 +12146,8 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
         obligation_id: "creation_proof_obligation_frozen_payload_kats",
         closure_target: "selected_account_stark_payload_frozen_kat_corpus_v1",
         supporting_surface: "Path2AccountStarkPayloadKatBoundaryReportV1",
-        current_evidence:
-            "current mutation rows, public rejection classes, and deterministic digest-pinned boundary vectors are frozen for every current payload KAT row",
-        required_closure:
-            "closed by freezing the full current byte corpus and public rejection-class mapping for every consensus-visible malformed account-STARK payload row",
+        current_evidence: "current mutation rows, public rejection classes, and deterministic digest-pinned boundary vectors are frozen for every current payload KAT row",
+        required_closure: "closed by freezing the full current byte corpus and public rejection-class mapping for every consensus-visible malformed account-STARK payload row",
         named_break: "account_stark_payload_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
         open: false,
@@ -12072,10 +12156,8 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
         obligation_id: "creation_proof_obligation_production_gate_and_review",
         closure_target: "selected_account_stark_production_admission_gate_v1",
         supporting_surface: "production account-STARK payload boundary and external review lane",
-        current_evidence:
-            "production verification remains fail-closed and external proof-family review is incomplete",
-        required_closure:
-            "obtain external review, record tracker disposition, and make an explicit maintainer decision before production admission can open",
+        current_evidence: "production verification remains fail-closed and external proof-family review is incomplete",
+        required_closure: "obtain external review, record tracker disposition, and make an explicit maintainer decision before production admission can open",
         named_break: "account_stark_production_gate_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
         open: true,
@@ -12117,8 +12199,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CLOSURE_DEPENDENCY_ROWS:
     Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
         dependency_id: "closure_dependency_simulator_no_export",
         source_report: "Path2AccountCreationNoExportBoundaryReportV1",
-        source_flag_group:
-            "simulator/no_export/accepted_bundle_simulatable flags remain false",
+        source_flag_group: "simulator/no_export/accepted_bundle_simulatable flags remain false",
         proof_obligation_id: "creation_proof_obligation_simulator_no_export",
         residual_item: "Zero-knowledge simulator and no-export statement",
         named_break: "account_stark_simulator_or_no_export_break",
@@ -12159,7 +12240,8 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CLOSURE_DEPENDENCY_ROWS:
     Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
         dependency_id: "closure_dependency_production_gate_and_review",
         source_report: "Path2AccountStarkResidualMatrixReportV1",
-        source_flag_group: "production_gate_open/external_review/deployment_ready flags remain false",
+        source_flag_group:
+            "production_gate_open/external_review/deployment_ready flags remain false",
         proof_obligation_id: "creation_proof_obligation_production_gate_and_review",
         residual_item: "Production admission gate and review disposition",
         named_break: "account_stark_production_gate_break",
@@ -12169,14 +12251,12 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CLOSURE_DEPENDENCY_ROWS:
 ];
 
 pub const PRODUCTION_DEPLOYMENT_DIRECT_THEOREM_BLOCKERS: [&str;
-    PRODUCTION_DEPLOYMENT_DIRECT_THEOREM_BLOCKER_COUNT] = [
-    PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
-];
+    PRODUCTION_DEPLOYMENT_DIRECT_THEOREM_BLOCKER_COUNT] =
+    [PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION];
 
 pub const PRODUCTION_DEPLOYMENT_ACCOUNT_CREATION_PROOF_BOUNDARY_BLOCKERS: [&str;
-    PRODUCTION_DEPLOYMENT_ACCOUNT_CREATION_PROOF_BOUNDARY_BLOCKER_COUNT] = [
-    PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
-];
+    PRODUCTION_DEPLOYMENT_ACCOUNT_CREATION_PROOF_BOUNDARY_BLOCKER_COUNT] =
+    [PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY];
 
 pub fn production_deployment_direct_theorem_blockers() -> &'static [&'static str] {
     &PRODUCTION_DEPLOYMENT_DIRECT_THEOREM_BLOCKERS
@@ -12298,8 +12378,8 @@ pub fn path2_direct_account_binding_public_result_class_for_reason(
     Path2PublicResultClassV1::InternalErrorFailClosed
 }
 
-pub fn path2_account_stark_payload_byte_model_report_v1()
--> Path2AccountStarkPayloadByteModelReportV1 {
+pub fn path2_account_stark_payload_byte_model_report_v1(
+) -> Path2AccountStarkPayloadByteModelReportV1 {
     let field_order = &PATH2_ACCOUNT_STARK_PAYLOAD_BYTE_MODEL_FIELDS;
     let mut report = Path2AccountStarkPayloadByteModelReportV1 {
         digest: [0_u8; DIGEST_BYTES],
@@ -12335,7 +12415,10 @@ pub fn path2_account_stark_payload_byte_model_report_v1()
 pub fn path2_account_stark_payload_byte_model_report_v1_digest(
     report: &Path2AccountStarkPayloadByteModelReportV1,
 ) -> [u8; DIGEST_BYTES] {
-    Sha256::digest(path2_account_stark_payload_byte_model_report_v1_frame(report)).into()
+    Sha256::digest(path2_account_stark_payload_byte_model_report_v1_frame(
+        report,
+    ))
+    .into()
 }
 
 pub fn validate_path2_account_stark_payload_byte_model_report_v1(
@@ -12364,8 +12447,8 @@ pub fn validate_path2_account_stark_payload_byte_model_report_v1(
     Ok(())
 }
 
-pub fn path2_account_creation_frame_kat_boundary_report_v1()
--> Path2AccountCreationFrameKatBoundaryReportV1 {
+pub fn path2_account_creation_frame_kat_boundary_report_v1(
+) -> Path2AccountCreationFrameKatBoundaryReportV1 {
     let rows = &PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS;
     let mut report = Path2AccountCreationFrameKatBoundaryReportV1 {
         digest: [0_u8; DIGEST_BYTES],
@@ -12410,7 +12493,10 @@ pub fn path2_account_creation_frame_kat_boundary_report_v1()
 pub fn path2_account_creation_frame_kat_boundary_report_v1_digest(
     report: &Path2AccountCreationFrameKatBoundaryReportV1,
 ) -> [u8; DIGEST_BYTES] {
-    Sha256::digest(path2_account_creation_frame_kat_boundary_report_v1_frame(report)).into()
+    Sha256::digest(path2_account_creation_frame_kat_boundary_report_v1_frame(
+        report,
+    ))
+    .into()
 }
 
 pub fn validate_path2_account_creation_frame_kat_boundary_report_v1(
@@ -12418,9 +12504,7 @@ pub fn validate_path2_account_creation_frame_kat_boundary_report_v1(
 ) -> Result<(), String> {
     let expected = path2_account_creation_frame_kat_boundary_report_v1();
     if expected != *report {
-        return Err(
-            "Path 2 account-creation frame KAT boundary report mismatch".to_string(),
-        );
+        return Err("Path 2 account-creation frame KAT boundary report mismatch".to_string());
     }
     if path2_account_creation_frame_kat_boundary_report_v1_digest(report) != report.digest {
         return Err(
@@ -12429,15 +12513,14 @@ pub fn validate_path2_account_creation_frame_kat_boundary_report_v1(
     }
     if report.deployment_ready || report.frozen_corpus_complete {
         return Err(
-            "Path 2 account-creation frame KAT boundary unexpectedly claims readiness"
-                .to_string(),
+            "Path 2 account-creation frame KAT boundary unexpectedly claims readiness".to_string(),
         );
     }
     Ok(())
 }
 
-pub fn path2_account_stark_payload_kat_boundary_report_v1()
--> Path2AccountStarkPayloadKatBoundaryReportV1 {
+pub fn path2_account_stark_payload_kat_boundary_report_v1(
+) -> Path2AccountStarkPayloadKatBoundaryReportV1 {
     let rows = &PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS;
     let byte_model_report = path2_account_stark_payload_byte_model_report_v1();
     let mut report = Path2AccountStarkPayloadKatBoundaryReportV1 {
@@ -12472,9 +12555,7 @@ pub fn path2_account_stark_payload_kat_boundary_report_v1()
         every_row_has_public_rejection_class: rows
             .iter()
             .all(|row| !row.public_rejection_class.is_empty()),
-        roundtrip_regression_present: rows
-            .iter()
-            .all(|row| row.covered_by_roundtrip_test),
+        roundtrip_regression_present: rows.iter().all(|row| row.covered_by_roundtrip_test),
         frozen_corpus_complete: rows.iter().all(|row| row.frozen_vector_present),
         deployment_ready: false,
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS,
@@ -12486,7 +12567,10 @@ pub fn path2_account_stark_payload_kat_boundary_report_v1()
 pub fn path2_account_stark_payload_kat_boundary_report_v1_digest(
     report: &Path2AccountStarkPayloadKatBoundaryReportV1,
 ) -> [u8; DIGEST_BYTES] {
-    Sha256::digest(path2_account_stark_payload_kat_boundary_report_v1_frame(report)).into()
+    Sha256::digest(path2_account_stark_payload_kat_boundary_report_v1_frame(
+        report,
+    ))
+    .into()
 }
 
 pub fn validate_path2_account_stark_payload_kat_boundary_report_v1(
@@ -12508,8 +12592,8 @@ pub fn validate_path2_account_stark_payload_kat_boundary_report_v1(
     Ok(())
 }
 
-pub fn path2_account_stark_fri_qrom_residual_report_v1()
--> Path2AccountStarkFriQromResidualReportV1 {
+pub fn path2_account_stark_fri_qrom_residual_report_v1() -> Path2AccountStarkFriQromResidualReportV1
+{
     let mut report = Path2AccountStarkFriQromResidualReportV1 {
         digest: [0_u8; DIGEST_BYTES],
         domain: PATH2_ACCOUNT_STARK_FRI_QROM_RESIDUAL_REPORT_DOMAIN,
@@ -12532,8 +12616,7 @@ pub fn path2_account_stark_fri_qrom_residual_report_v1()
         checked_core_qrom_algebraic_challenge_bits:
             PATH2_CHECKED_CORE_QROM_ALGEBRAIC_CHALLENGE_BITS,
         checked_core_qrom_hardening_bits: PATH2_CHECKED_CORE_QROM_HARDENING_BITS,
-        checked_core_qrom_total_transcript_bits:
-            PATH2_CHECKED_CORE_QROM_TOTAL_TRANSCRIPT_BITS,
+        checked_core_qrom_total_transcript_bits: PATH2_CHECKED_CORE_QROM_TOTAL_TRANSCRIPT_BITS,
         checked_core_qrom_quantum_hash_query_bound_log2:
             PATH2_CHECKED_CORE_QROM_QUANTUM_HASH_QUERY_BOUND_LOG2,
         checked_core_qrom_classical_hash_query_bound_log2:
@@ -12564,7 +12647,10 @@ pub fn path2_account_stark_fri_qrom_residual_report_v1()
 pub fn path2_account_stark_fri_qrom_residual_report_v1_digest(
     report: &Path2AccountStarkFriQromResidualReportV1,
 ) -> [u8; DIGEST_BYTES] {
-    Sha256::digest(path2_account_stark_fri_qrom_residual_report_v1_frame(report)).into()
+    Sha256::digest(path2_account_stark_fri_qrom_residual_report_v1_frame(
+        report,
+    ))
+    .into()
 }
 
 pub fn validate_path2_account_stark_fri_qrom_residual_report_v1(
@@ -12580,9 +12666,7 @@ pub fn validate_path2_account_stark_fri_qrom_residual_report_v1(
     if report.qrom_domain_vector_case_ids != PATH2_ACCOUNT_STARK_FRI_QROM_DOMAIN_CASES.as_ref()
         || report.qrom_domain_vector_case_count != report.qrom_domain_vector_case_ids.len()
     {
-        return Err(
-            "Path 2 account-STARK FRI/QROM residual vector case drift".to_string(),
-        );
+        return Err("Path 2 account-STARK FRI/QROM residual vector case drift".to_string());
     }
     if report.residual_pricing_complete
         || report.deployment_ready
@@ -12600,8 +12684,7 @@ pub fn validate_path2_account_stark_fri_qrom_residual_report_v1(
     Ok(())
 }
 
-pub fn path2_account_stark_fri_aok_boundary_report_v1()
--> Path2AccountStarkFriAokBoundaryReportV1 {
+pub fn path2_account_stark_fri_aok_boundary_report_v1() -> Path2AccountStarkFriAokBoundaryReportV1 {
     let fri_qrom_residual_report = path2_account_stark_fri_qrom_residual_report_v1();
     let mut report = Path2AccountStarkFriAokBoundaryReportV1 {
         digest: [0_u8; DIGEST_BYTES],
@@ -12666,15 +12749,13 @@ pub fn validate_path2_account_stark_fri_aok_boundary_report_v1(
         || report.deployment_ready
     {
         return Err(
-            "Path 2 account-STARK FRI/AoK boundary unexpectedly changes closure status"
-                .to_string(),
+            "Path 2 account-STARK FRI/AoK boundary unexpectedly changes closure status".to_string(),
         );
     }
     Ok(())
 }
 
-pub fn path2_account_stark_residual_matrix_report_v1()
--> Path2AccountStarkResidualMatrixReportV1 {
+pub fn path2_account_stark_residual_matrix_report_v1() -> Path2AccountStarkResidualMatrixReportV1 {
     let rows = &PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_ROWS;
     let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
     let fri_qrom_residual_report = path2_account_stark_fri_qrom_residual_report_v1();
@@ -12695,8 +12776,7 @@ pub fn path2_account_stark_residual_matrix_report_v1()
             .zip(PRODUCTION_DEPLOYMENT_ACCOUNT_STARK_RESIDUAL_BLOCKERS.iter())
             .all(|(row, blocker)| row.blocker == *blocker),
         production_gate_fail_closed: rows.iter().any(|row| {
-            row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PRODUCTION_GATE
-                && row.open
+            row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PRODUCTION_GATE && row.open
         }),
         legacy_routes_non_authoritative: rows.iter().any(|row| {
             row.named_break == "proof_route_authority_break"
@@ -12732,10 +12812,104 @@ pub fn validate_path2_account_stark_residual_matrix_report_v1(
     Ok(())
 }
 
-pub fn path2_account_creation_sampler_timing_report_v1() -> Path2AccountCreationSamplerTimingReportV1 {
+pub fn path2_authorization_class_binding_audit_report_v1(
+) -> Path2AuthorizationClassBindingAuditReportV1 {
+    let rows = &PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_ROWS;
+    let mut report = Path2AuthorizationClassBindingAuditReportV1 {
+        digest: [0_u8; DIGEST_BYTES],
+        domain: PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_REPORT_DOMAIN,
+        support_file: PATH2_AUTHORIZATION_CLASS_BINDING_SUPPORT_FILE,
+        projection_audit_file: PATH2_SPEND_PROJECTION_COMPLETENESS_AUDIT_FILE,
+        authorization_local_classification_file: PATH2_AUTHORIZATION_LOCAL_CLASSIFICATION_FILE,
+        theorem_target: "selected_account_creation_authorization_class_binding_v1",
+        spend_authorization_class_digest_function:
+            "path2_native_spend_authorization_class_digest_v1",
+        spend_projection_encoder: "path2_native_spend_projection_v1_bytes",
+        direct_spend_verifier_endpoint: "verify_path2_direct_single_slot_spend_authorization",
+        checked_core_verifier_endpoint: "verify_path2_checked_core_authorization",
+        state_namespace_validator: "validate_path2_direct_slot_authorization_state_namespace",
+        consume_once_validator: "verify_path2_prevalidated_slot_consume_once",
+        lean_boundary_predicate: "AccountCreationAuthorizationClassObligationTracked",
+        rows,
+        row_count: rows.len(),
+        p_spend_field_ids: &PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_FIELDS,
+        p_spend_field_count: PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_FIELDS.len(),
+        source_shape_hook_ids: &PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_HOOKS,
+        source_shape_hook_count: PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_HOOKS.len(),
+        p_spend_digest_covers_revised_fields: true,
+        checked_core_frame_binding_imported: true,
+        slot_authorization_digest_imported: true,
+        consume_once_lifecycle_imported: true,
+        no_private_authorization_material_in_direct_verifier: true,
+        field_completeness_negative_audit_pinned: true,
+        field_completeness_negative_audit_complete: true,
+        lean_boundary_hooks_present: true,
+        existing_negative_tests_present: true,
+        theorem_instantiated: false,
+        external_review_complete: false,
+        deployment_ready: false,
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
+    };
+    report.digest = path2_authorization_class_binding_audit_report_v1_digest(&report);
+    report
+}
+
+pub fn path2_authorization_class_binding_audit_report_v1_digest(
+    report: &Path2AuthorizationClassBindingAuditReportV1,
+) -> [u8; DIGEST_BYTES] {
+    Sha256::digest(path2_authorization_class_binding_audit_report_v1_frame(
+        report,
+    ))
+    .into()
+}
+
+pub fn validate_path2_authorization_class_binding_audit_report_v1(
+    report: &Path2AuthorizationClassBindingAuditReportV1,
+) -> Result<(), String> {
+    let expected = path2_authorization_class_binding_audit_report_v1();
+    if expected != *report {
+        return Err("Path 2 authorization-class binding audit report mismatch".to_string());
+    }
+    if path2_authorization_class_binding_audit_report_v1_digest(report) != report.digest {
+        return Err("Path 2 authorization-class binding audit report digest mismatch".to_string());
+    }
+    if report.rows != PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_ROWS.as_ref()
+        || report.row_count != report.rows.len()
+        || report.p_spend_field_ids != PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_FIELDS.as_ref()
+        || report.p_spend_field_count != report.p_spend_field_ids.len()
+        || report.source_shape_hook_ids != PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_HOOKS.as_ref()
+        || report.source_shape_hook_count != report.source_shape_hook_ids.len()
+        || !report.rows.iter().all(|row| row.pinned)
+        || !report.p_spend_digest_covers_revised_fields
+        || !report.checked_core_frame_binding_imported
+        || !report.slot_authorization_digest_imported
+        || !report.consume_once_lifecycle_imported
+        || !report.no_private_authorization_material_in_direct_verifier
+        || !report.field_completeness_negative_audit_pinned
+        || !report.field_completeness_negative_audit_complete
+        || !report.lean_boundary_hooks_present
+        || !report.existing_negative_tests_present
+        || report.theorem_instantiated
+        || report.external_review_complete
+        || report.deployment_ready
+    {
+        return Err(
+            "Path 2 authorization-class binding audit unexpectedly changes closure status"
+                .to_string(),
+        );
+    }
+    Ok(())
+}
+
+pub fn path2_account_creation_sampler_timing_report_v1() -> Path2AccountCreationSamplerTimingReportV1
+{
+    let authorization_class_binding_audit_report =
+        path2_authorization_class_binding_audit_report_v1();
     let mut report = Path2AccountCreationSamplerTimingReportV1 {
         digest: [0_u8; DIGEST_BYTES],
         domain: PATH2_ACCOUNT_CREATION_SAMPLER_TIMING_REPORT_DOMAIN,
+        authorization_class_binding_audit_report_digest: authorization_class_binding_audit_report
+            .digest,
         sampler_support_file: PATH2_ACCOUNT_CREATION_SAMPLER_SUPPORT_FILE,
         timing_support_file: PATH2_ACCOUNT_CREATION_TIMING_SUPPORT_FILE,
         sampler_theorem_target: PATH2_ACCOUNT_CREATION_SAMPLER_THEOREM_TARGET,
@@ -12774,7 +12948,10 @@ pub fn path2_account_creation_sampler_timing_report_v1() -> Path2AccountCreation
 pub fn path2_account_creation_sampler_timing_report_v1_digest(
     report: &Path2AccountCreationSamplerTimingReportV1,
 ) -> [u8; DIGEST_BYTES] {
-    Sha256::digest(path2_account_creation_sampler_timing_report_v1_frame(report)).into()
+    Sha256::digest(path2_account_creation_sampler_timing_report_v1_frame(
+        report,
+    ))
+    .into()
 }
 
 pub fn validate_path2_account_creation_sampler_timing_report_v1(
@@ -12786,6 +12963,16 @@ pub fn validate_path2_account_creation_sampler_timing_report_v1(
     }
     if path2_account_creation_sampler_timing_report_v1_digest(report) != report.digest {
         return Err("Path 2 account-creation sampler/timing report digest mismatch".to_string());
+    }
+    let authorization_class_binding_audit_report =
+        path2_authorization_class_binding_audit_report_v1();
+    if report.authorization_class_binding_audit_report_digest
+        != authorization_class_binding_audit_report.digest
+    {
+        return Err(
+            "Path 2 account-creation sampler/timing authorization-class audit digest mismatch"
+                .to_string(),
+        );
     }
     if report.spend_challenge_derived_at_step <= report.prechallenge_fixed_through_step {
         return Err(
@@ -12834,8 +13021,7 @@ pub fn path2_account_creation_no_export_boundary_report_v1(
         simulator_theorem_target: PATH2_ACCOUNT_CREATION_SIMULATOR_THEOREM_TARGET,
         no_export_theorem_target: PATH2_ACCOUNT_CREATION_NO_EXPORT_THEOREM_TARGET,
         named_break: "account_stark_simulator_or_no_export_break",
-        simulator_public_input_fields:
-            &PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS,
+        simulator_public_input_fields: &PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS,
         no_export_private_material_fields:
             &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS,
         no_export_vector_case_ids: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES,
@@ -12844,14 +13030,15 @@ pub fn path2_account_creation_no_export_boundary_report_v1(
             .iter()
             .filter(|field| field.public_payload_field)
             .count(),
-        public_payload_field_mutation_count:
-            payload_kat_boundary_report.public_payload_field_mutation_count,
+        public_payload_field_mutation_count: payload_kat_boundary_report
+            .public_payload_field_mutation_count,
         no_export_vector_case_count: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES.len(),
-        public_payload_exports_private_material:
-            payload_byte_model_report.public_payload_exports_private_material,
+        public_payload_exports_private_material: payload_byte_model_report
+            .public_payload_exports_private_material,
         no_export_field_denylist_pinned: true,
         simulator_input_allowlist_pinned: true,
-        byte_model_public_payload_only: !payload_byte_model_report.public_payload_exports_private_material,
+        byte_model_public_payload_only: !payload_byte_model_report
+            .public_payload_exports_private_material,
         boundary_mapping_complete: true,
         roundtrip_regression_present: true,
         production_gate_fail_closed: true,
@@ -12871,7 +13058,10 @@ pub fn path2_account_creation_no_export_boundary_report_v1(
 pub fn path2_account_creation_no_export_boundary_report_v1_digest(
     report: &Path2AccountCreationNoExportBoundaryReportV1,
 ) -> [u8; DIGEST_BYTES] {
-    Sha256::digest(path2_account_creation_no_export_boundary_report_v1_frame(report)).into()
+    Sha256::digest(path2_account_creation_no_export_boundary_report_v1_frame(
+        report,
+    ))
+    .into()
 }
 
 pub fn validate_path2_account_creation_no_export_boundary_report_v1(
@@ -12902,9 +13092,7 @@ pub fn validate_path2_account_creation_no_export_boundary_report_v1(
         != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES.as_ref()
         || report.no_export_vector_case_count != report.no_export_vector_case_ids.len()
     {
-        return Err(
-            "Path 2 account-creation no-export boundary vector case drift".to_string(),
-        );
+        return Err("Path 2 account-creation no-export boundary vector case drift".to_string());
     }
     if !report.no_export_field_denylist_pinned
         || !report.simulator_input_allowlist_pinned
@@ -13069,8 +13257,8 @@ fn path2_account_creation_closure_dependency_evidence_rows_v1(
 ) -> Vec<Path2AccountCreationProofBoundaryClosureDependencyEvidenceRowV1> {
     closure_dependency_rows
         .iter()
-        .map(|row| {
-            Path2AccountCreationProofBoundaryClosureDependencyEvidenceRowV1 {
+        .map(
+            |row| Path2AccountCreationProofBoundaryClosureDependencyEvidenceRowV1 {
                 dependency_id: row.dependency_id,
                 source_report: row.source_report,
                 source_flag_group: row.source_flag_group,
@@ -13093,27 +13281,25 @@ fn path2_account_creation_closure_dependency_evidence_rows_v1(
                     ),
                 closure_dependency_open: row.open,
                 blocks_deployment: row.open
-                    && row.blocker
-                        == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
+                    && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
                 named_break: row.named_break,
                 blocker: row.blocker,
-            }
-        })
+            },
+        )
         .collect()
 }
 
-pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreationProofBoundaryReportV1 {
+pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreationProofBoundaryReportV1
+{
     let sampler_timing_report = path2_account_creation_sampler_timing_report_v1();
     let no_export_boundary_report = path2_account_creation_no_export_boundary_report_v1();
-    let account_stark_residual_matrix_report =
-        path2_account_stark_residual_matrix_report_v1();
+    let account_stark_residual_matrix_report = path2_account_stark_residual_matrix_report_v1();
     let fri_qrom_residual_report = path2_account_stark_fri_qrom_residual_report_v1();
     let fri_aok_boundary_report = path2_account_stark_fri_aok_boundary_report_v1();
     let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
     let frame_kat_boundary_report = path2_account_creation_frame_kat_boundary_report_v1();
     let proof_obligation_rows = &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS;
-    let closure_dependency_rows =
-        &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CLOSURE_DEPENDENCY_ROWS;
+    let closure_dependency_rows = &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CLOSURE_DEPENDENCY_ROWS;
     let requirement_coverage_rows =
         &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENT_COVERAGE_ROWS;
     let mut report = Path2AccountCreationProofBoundaryReportV1 {
@@ -13121,8 +13307,7 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
         domain: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN,
         sampler_timing_report_digest: sampler_timing_report.digest,
         no_export_boundary_report_digest: no_export_boundary_report.digest,
-        account_stark_residual_matrix_report_digest:
-            account_stark_residual_matrix_report.digest,
+        account_stark_residual_matrix_report_digest: account_stark_residual_matrix_report.digest,
         frame_kat_boundary_report_digest: frame_kat_boundary_report.digest,
         proof_boundary_target: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_TARGET,
         proof_boundary_conclusion: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CONCLUSION,
@@ -13189,18 +13374,17 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
                     || PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS
                         .iter()
                         .any(|frame_row| frame_row.case_id == *case_id)
-                    || PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES
-                        .contains(case_id)
+                    || PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES.contains(case_id)
                     || PATH2_ACCOUNT_STARK_FRI_QROM_DOMAIN_CASES.contains(case_id)
             })
         }),
-        every_requirement_public_rejection_class_is_known: requirement_coverage_rows
-            .iter()
-            .all(|row| {
+        every_requirement_public_rejection_class_is_known: requirement_coverage_rows.iter().all(
+            |row| {
                 row.public_rejection_classes.iter().all(|class| {
                     PATH2_ACCOUNT_STARK_PAYLOAD_PUBLIC_REJECTION_CLASSES.contains(class)
                 })
-            }),
+            },
+        ),
         every_proof_obligation_has_named_break: proof_obligation_rows.iter().all(|row| {
             !row.named_break.is_empty()
                 && PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NAMED_BREAK_CLASSES
@@ -13236,8 +13420,7 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
         every_open_closure_dependency_blocks_deployment: closure_dependency_rows.iter().all(
             |row| {
                 !row.open
-                    || row.blocker
-                        == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
+                    || row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
             },
         ),
         every_closure_dependency_has_evidence: false,
@@ -13273,8 +13456,7 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
             &fri_aok_boundary_report,
             &payload_kat_boundary_report,
         );
-    report.closure_dependency_evidence_count =
-        report.closure_dependency_evidence_rows.len();
+    report.closure_dependency_evidence_count = report.closure_dependency_evidence_rows.len();
     report.closure_dependency_open_obligation_evidence_count = report
         .closure_dependency_evidence_rows
         .iter()
@@ -13285,31 +13467,31 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
         .iter()
         .filter(|row| row.source_support_still_open)
         .count();
-    let open_closure_dependency_count =
-        report.closure_dependency_rows.iter().filter(|row| row.open).count();
-    report.every_closure_dependency_has_evidence =
-        report.closure_dependency_evidence_count == report.closure_dependency_count
-            && report.closure_dependency_open_obligation_evidence_count
-                == open_closure_dependency_count
-            && report.closure_dependency_open_support_evidence_count
-                == open_closure_dependency_count
-            && report.closure_dependency_evidence_rows.iter().all(|row| {
-                if row.closure_dependency_open {
-                    row.proof_obligation_still_open
-                        && row.source_support_still_open
-                        && row.blocks_deployment
-                        && row.blocker
-                            == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
-                } else {
-                    (row.dependency_id == "closure_dependency_no_postchallenge_timing"
-                        || row.dependency_id == "closure_dependency_frozen_payload_kats")
-                        && !row.proof_obligation_still_open
-                        && !row.source_support_still_open
-                        && !row.blocks_deployment
-                        && row.blocker
-                            == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
-                }
-            });
+    let open_closure_dependency_count = report
+        .closure_dependency_rows
+        .iter()
+        .filter(|row| row.open)
+        .count();
+    report.every_closure_dependency_has_evidence = report.closure_dependency_evidence_count
+        == report.closure_dependency_count
+        && report.closure_dependency_open_obligation_evidence_count
+            == open_closure_dependency_count
+        && report.closure_dependency_open_support_evidence_count == open_closure_dependency_count
+        && report.closure_dependency_evidence_rows.iter().all(|row| {
+            if row.closure_dependency_open {
+                row.proof_obligation_still_open
+                    && row.source_support_still_open
+                    && row.blocks_deployment
+                    && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
+            } else {
+                (row.dependency_id == "closure_dependency_no_postchallenge_timing"
+                    || row.dependency_id == "closure_dependency_frozen_payload_kats")
+                    && !row.proof_obligation_still_open
+                    && !row.source_support_still_open
+                    && !row.blocks_deployment
+                    && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
+            }
+        });
     report.digest = path2_account_creation_proof_boundary_report_v1_digest(&report);
     report
 }
@@ -13317,7 +13499,10 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
 pub fn path2_account_creation_proof_boundary_report_v1_digest(
     report: &Path2AccountCreationProofBoundaryReportV1,
 ) -> [u8; DIGEST_BYTES] {
-    Sha256::digest(path2_account_creation_proof_boundary_report_v1_frame(report)).into()
+    Sha256::digest(path2_account_creation_proof_boundary_report_v1_frame(
+        report,
+    ))
+    .into()
 }
 
 pub fn validate_path2_account_creation_proof_boundary_report_v1(
@@ -13338,12 +13523,9 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
     }
     let no_export_boundary_report = path2_account_creation_no_export_boundary_report_v1();
     if report.no_export_boundary_report_digest != no_export_boundary_report.digest {
-        return Err(
-            "Path 2 account-creation proof boundary no-export digest mismatch".to_string(),
-        );
+        return Err("Path 2 account-creation proof boundary no-export digest mismatch".to_string());
     }
-    let account_stark_residual_matrix_report =
-        path2_account_stark_residual_matrix_report_v1();
+    let account_stark_residual_matrix_report = path2_account_stark_residual_matrix_report_v1();
     if report.account_stark_residual_matrix_report_digest
         != account_stark_residual_matrix_report.digest
     {
@@ -13356,9 +13538,7 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
     let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
     let frame_kat_boundary_report = path2_account_creation_frame_kat_boundary_report_v1();
     if report.frame_kat_boundary_report_digest != frame_kat_boundary_report.digest {
-        return Err(
-            "Path 2 account-creation proof boundary frame-KAT digest mismatch".to_string(),
-        );
+        return Err("Path 2 account-creation proof boundary frame-KAT digest mismatch".to_string());
     }
     if report.proof_boundary_target != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_TARGET
         || report.proof_boundary_conclusion != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CONCLUSION
@@ -13383,9 +13563,7 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
         || !report.every_requirement_public_rejection_class_is_known
         || !report.requirement_coverage_matrix_pinned
     {
-        return Err(
-            "Path 2 account-creation proof boundary lost requirement coverage".to_string(),
-        );
+        return Err("Path 2 account-creation proof boundary lost requirement coverage".to_string());
     }
     if !report.requirement_coverage_rows.iter().all(|row| {
         matches!(
@@ -13396,11 +13574,11 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
         )
     }) {
         return Err(
-            "Path 2 account-creation proof boundary has unknown vector evidence kind"
-                .to_string(),
+            "Path 2 account-creation proof boundary has unknown vector evidence kind".to_string(),
         );
     }
-    if report.proof_obligation_rows != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS.as_ref()
+    if report.proof_obligation_rows
+        != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS.as_ref()
         || report.proof_obligation_count != report.proof_obligation_rows.len()
         || report.proof_obligation_audit_vector_case_ids
             != PATH2_ACCOUNT_CREATION_PROOF_OBLIGATION_AUDIT_CASES.as_ref()
@@ -13430,20 +13608,20 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
             &fri_aok_boundary_report,
             &payload_kat_boundary_report,
         );
-    let open_closure_dependency_count =
-        report.closure_dependency_rows.iter().filter(|row| row.open).count();
+    let open_closure_dependency_count = report
+        .closure_dependency_rows
+        .iter()
+        .filter(|row| row.open)
+        .count();
     if report.closure_dependency_rows
         != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CLOSURE_DEPENDENCY_ROWS.as_ref()
         || report.closure_dependency_count != report.closure_dependency_rows.len()
         || report.closure_dependency_count != report.proof_obligation_rows.len()
         || report.closure_dependency_evidence_rows != expected_closure_dependency_evidence_rows
         || report.closure_dependency_evidence_count != report.closure_dependency_rows.len()
-        || report.closure_dependency_evidence_count
-            != report.closure_dependency_evidence_rows.len()
-        || report.closure_dependency_open_obligation_evidence_count
-            != open_closure_dependency_count
-        || report.closure_dependency_open_support_evidence_count
-            != open_closure_dependency_count
+        || report.closure_dependency_evidence_count != report.closure_dependency_evidence_rows.len()
+        || report.closure_dependency_open_obligation_evidence_count != open_closure_dependency_count
+        || report.closure_dependency_open_support_evidence_count != open_closure_dependency_count
         || !report
             .closure_dependency_rows
             .iter()
@@ -13493,14 +13671,12 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
                     && !row.proof_obligation_still_open
                     && !row.source_support_still_open
                     && !row.blocks_deployment
-                    && row.blocker
-                        == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
+                    && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
             }
         })
     {
         return Err(
-            "Path 2 account-creation proof boundary lost closure-dependency coverage"
-                .to_string(),
+            "Path 2 account-creation proof boundary lost closure-dependency coverage".to_string(),
         );
     }
     if !report.boundary_statement_pinned
@@ -13544,8 +13720,7 @@ pub fn path2_direct_qrom_action_boundary_report_v1() -> Path2DirectQromActionBou
         fq12_action_domain: REVIEWED_FQ12_ACCOUNT_CARRIED_CHALLENGE_ACTION_DOMAIN,
         checked_core_qrom_artifacts: &PATH2_CHECKED_CORE_QROM_ARTIFACTS,
         target_security_bits: budget.target_security_bits,
-        deployment_quantum_hash_query_bound_log2: budget
-            .deployment_quantum_hash_query_bound_log2,
+        deployment_quantum_hash_query_bound_log2: budget.deployment_quantum_hash_query_bound_log2,
         deployment_classical_hash_query_bound_log2: budget
             .deployment_classical_hash_query_bound_log2,
         qrom_quadratic_loss_bits_at_deployment_bound: budget
@@ -13616,8 +13791,8 @@ pub fn validate_path2_direct_qrom_action_boundary_report_v1(
     {
         return Err("Path 2 direct QROM/action boundary lost pinned budget evidence".to_string());
     }
-    if report.transcript_term_bits_after_qrom_loss < report.target_security_bits
-            + report.minimum_deployment_margin_bits
+    if report.transcript_term_bits_after_qrom_loss
+        < report.target_security_bits + report.minimum_deployment_margin_bits
         || report.action_collision_floor_bits < report.target_security_bits
         || report.action_collision_quantum_bits_at_union_bound < report.target_security_bits
         || report.action_collision_classical_bits_at_union_bound < report.target_security_bits
@@ -13629,7 +13804,9 @@ pub fn validate_path2_direct_qrom_action_boundary_report_v1(
         || report.qrom_and_action_bounds_linked_to_theorem
         || report.deployment_ready
     {
-        return Err("Path 2 direct QROM/action boundary unexpectedly closes open obligations".to_string());
+        return Err(
+            "Path 2 direct QROM/action boundary unexpectedly closes open obligations".to_string(),
+        );
     }
     Ok(())
 }
@@ -13678,8 +13855,7 @@ pub fn path2_direct_lifecycle_boundary_report_v1() -> Path2DirectLifecycleBounda
         file_store_recovery_support_present: true,
         target_chain_finality_profile_selected: true,
         target_chain_finality_profile_id: PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_ID,
-        target_chain_finality_profile_authority:
-            PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_AUTHORITY,
+        target_chain_finality_profile_authority: PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_AUTHORITY,
         target_chain_finality_profile_rule: PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_RULE,
         target_chain_finality_profile_instantiated: true,
         lifecycle_transition_profile_verified: true,
@@ -13833,9 +14009,7 @@ fn path2_direct_checked_core_frame_binding_imported_v1() -> bool {
     path2_direct_checked_core_frame_binding_imported_in_source_v1(full_spend_source)
 }
 
-fn path2_direct_checked_core_frame_binding_imported_in_source_v1(
-    full_spend_source: &str,
-) -> bool {
+fn path2_direct_checked_core_frame_binding_imported_in_source_v1(full_spend_source: &str) -> bool {
     let Some(predicate_start) =
         full_spend_source.find("\ndef CheckedCoreChallengeBindsAcceptedTuple")
     else {
@@ -13848,8 +14022,7 @@ fn path2_direct_checked_core_frame_binding_imported_in_source_v1(
     };
     let predicate_window = &full_spend_source[predicate_start..predicate_start + predicate_end];
 
-    let Some(accept_start) =
-        full_spend_source.find("\ndef ConcreteSpendVerificationAccepts")
+    let Some(accept_start) = full_spend_source.find("\ndef ConcreteSpendVerificationAccepts")
     else {
         return false;
     };
@@ -13884,12 +14057,13 @@ fn path2_direct_checked_core_frame_binding_imported_in_source_v1(
     };
     let frame_eq_window = &full_spend_source[frame_eq_start..frame_eq_start + frame_eq_end];
 
-    let Some(soundness_start) = full_spend_source.find("\ndef concreteDirectAcceptedSpendSoundness")
+    let Some(soundness_start) =
+        full_spend_source.find("\ndef concreteDirectAcceptedSpendSoundness")
     else {
         return false;
     };
-    let Some(soundness_end) = full_spend_source[soundness_start..]
-        .find("\n/--\nConcrete direct-mode theorem")
+    let Some(soundness_end) =
+        full_spend_source[soundness_start..].find("\n/--\nConcrete direct-mode theorem")
     else {
         return false;
     };
@@ -13955,34 +14129,29 @@ fn path2_direct_slot_authorization_digest_imported_v1() -> bool {
     path2_direct_slot_authorization_digest_imported_in_source_v1(full_spend_source)
 }
 
-fn path2_direct_slot_authorization_digest_imported_in_source_v1(
-    full_spend_source: &str,
-) -> bool {
-    let Some(predicate_start) =
-        full_spend_source.find("\ndef SlotAuthorizationDigestFramesLeaf")
+fn path2_direct_slot_authorization_digest_imported_in_source_v1(full_spend_source: &str) -> bool {
+    let Some(predicate_start) = full_spend_source.find("\ndef SlotAuthorizationDigestFramesLeaf")
     else {
         return false;
     };
-    let Some(predicate_end) = full_spend_source[predicate_start..]
-        .find("\n/-- Replayable direct certificate")
+    let Some(predicate_end) =
+        full_spend_source[predicate_start..].find("\n/-- Replayable direct certificate")
     else {
         return false;
     };
     let predicate_window = &full_spend_source[predicate_start..predicate_start + predicate_end];
 
-    let Some(bound_start) = full_spend_source.find("\ndef BoundConcretePrevalidatedSlot")
-    else {
+    let Some(bound_start) = full_spend_source.find("\ndef BoundConcretePrevalidatedSlot") else {
         return false;
     };
-    let Some(bound_end) = full_spend_source[bound_start..]
-        .find("\n/-- Concrete prechallenge admission package")
+    let Some(bound_end) =
+        full_spend_source[bound_start..].find("\n/-- Concrete prechallenge admission package")
     else {
         return false;
     };
     let bound_window = &full_spend_source[bound_start..bound_start + bound_end];
 
-    let Some(accept_start) =
-        full_spend_source.find("\ndef ConcreteSpendVerificationAccepts")
+    let Some(accept_start) = full_spend_source.find("\ndef ConcreteSpendVerificationAccepts")
     else {
         return false;
     };
@@ -14005,8 +14174,8 @@ fn path2_direct_slot_authorization_digest_imported_in_source_v1(
     };
     let import_window = &full_spend_source[import_start..import_start + import_end];
 
-    let Some(eq_start) = full_spend_source
-        .find("\ntheorem slotAuthorizationDigest_eq_leafDigest_of_imported")
+    let Some(eq_start) =
+        full_spend_source.find("\ntheorem slotAuthorizationDigest_eq_leafDigest_of_imported")
     else {
         return false;
     };
@@ -14103,18 +14272,14 @@ fn path2_direct_theorem_closure_dependency_evidence_rows_v1(
             acceptance_hypothesis: row.acceptance_hypothesis,
             support_surface: row.support_surface,
             direct_obligation_still_open:
-                path2_direct_theorem_closure_dependency_has_open_obligation_v1(
-                    row,
-                    obligations,
-                ),
-            source_support_still_open:
-                path2_direct_theorem_closure_dependency_support_open_v1(
-                    row,
-                    direct_report,
-                    qrom_action_report,
-                    lifecycle_report,
-                    proof_boundary_report,
-                ),
+                path2_direct_theorem_closure_dependency_has_open_obligation_v1(row, obligations),
+            source_support_still_open: path2_direct_theorem_closure_dependency_support_open_v1(
+                row,
+                direct_report,
+                qrom_action_report,
+                lifecycle_report,
+                proof_boundary_report,
+            ),
             closure_dependency_open: row.open,
             blocks_deployment: row.open
                 && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
@@ -14127,28 +14292,24 @@ fn path2_direct_theorem_closure_dependency_evidence_rows_v1(
 pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryReportV1 {
     let direct_qrom_action_boundary_report = path2_direct_qrom_action_boundary_report_v1();
     let direct_lifecycle_boundary_report = path2_direct_lifecycle_boundary_report_v1();
-    let account_creation_proof_boundary_report =
-        path2_account_creation_proof_boundary_report_v1();
+    let account_creation_proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
     let obligation_rows = &PATH2_DIRECT_THEOREM_OBLIGATION_ROWS;
     let closure_dependency_rows = &PATH2_DIRECT_THEOREM_CLOSURE_DEPENDENCY_ROWS;
-    let lifecycle_transition_profile_verified =
-        direct_lifecycle_boundary_report.target_chain_finality_profile_instantiated
-            && direct_lifecycle_boundary_report.lifecycle_transition_profile_verified
-            && direct_lifecycle_boundary_report.target_chain_lifecycle_profile_review_pinned
-            && direct_lifecycle_boundary_report
-                .target_chain_lifecycle_profile_verification_pinned
-            && !direct_lifecycle_boundary_report.deployment_ready;
-    let checked_core_frame_binding_imported =
-        path2_direct_checked_core_frame_binding_imported_v1();
-    let slot_authorization_digest_imported =
-        path2_direct_slot_authorization_digest_imported_v1();
+    let lifecycle_transition_profile_verified = direct_lifecycle_boundary_report
+        .target_chain_finality_profile_instantiated
+        && direct_lifecycle_boundary_report.lifecycle_transition_profile_verified
+        && direct_lifecycle_boundary_report.target_chain_lifecycle_profile_review_pinned
+        && direct_lifecycle_boundary_report.target_chain_lifecycle_profile_verification_pinned
+        && !direct_lifecycle_boundary_report.deployment_ready;
+    let checked_core_frame_binding_imported = path2_direct_checked_core_frame_binding_imported_v1();
+    let slot_authorization_digest_imported = path2_direct_slot_authorization_digest_imported_v1();
     let mut report = Path2DirectTheoremBoundaryReportV1 {
         digest: [0_u8; DIGEST_BYTES],
         domain: PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN,
         direct_qrom_action_boundary_report_digest: direct_qrom_action_boundary_report.digest,
         direct_lifecycle_boundary_report_digest: direct_lifecycle_boundary_report.digest,
-        account_creation_proof_boundary_report_digest:
-            account_creation_proof_boundary_report.digest,
+        account_creation_proof_boundary_report_digest: account_creation_proof_boundary_report
+            .digest,
         theorem_target: PATH2_DIRECT_THEOREM_TARGET,
         theorem_conclusion: PATH2_DIRECT_THEOREM_CONCLUSION,
         accepted_tuple_fields: &PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS,
@@ -14201,12 +14362,16 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
         deployment_ready: false,
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
     };
-    report.every_closure_dependency_has_open_obligation =
-        closure_dependency_rows.iter().filter(|row| row.open).all(|row| {
+    report.every_closure_dependency_has_open_obligation = closure_dependency_rows
+        .iter()
+        .filter(|row| row.open)
+        .all(|row| {
             path2_direct_theorem_closure_dependency_has_open_obligation_v1(row, obligation_rows)
         });
-    report.every_closure_dependency_has_open_support_surface =
-        closure_dependency_rows.iter().filter(|row| row.open).all(|row| {
+    report.every_closure_dependency_has_open_support_surface = closure_dependency_rows
+        .iter()
+        .filter(|row| row.open)
+        .all(|row| {
             path2_direct_theorem_closure_dependency_support_open_v1(
                 row,
                 &report,
@@ -14228,8 +14393,7 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
             &direct_lifecycle_boundary_report,
             &account_creation_proof_boundary_report,
         );
-    report.closure_dependency_evidence_count =
-        report.closure_dependency_evidence_rows.len();
+    report.closure_dependency_evidence_count = report.closure_dependency_evidence_rows.len();
     report.closure_dependency_open_obligation_evidence_count = report
         .closure_dependency_evidence_rows
         .iter()
@@ -14240,29 +14404,33 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
         .iter()
         .filter(|row| row.source_support_still_open)
         .count();
-    report.every_closure_dependency_has_evidence =
-        report.closure_dependency_evidence_count == report.closure_dependency_count
-            && report.closure_dependency_open_obligation_evidence_count
-                == closure_dependency_rows.iter().filter(|row| row.open).count()
-            && report.closure_dependency_open_support_evidence_count
-                == closure_dependency_rows.iter().filter(|row| row.open).count()
-            && report.closure_dependency_evidence_rows.iter().all(|row| {
-                if row.closure_dependency_open {
-                    row.direct_obligation_still_open
-                        && row.source_support_still_open
-                        && row.blocks_deployment
-                        && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
-                } else {
-                    !row.direct_obligation_still_open
-                        && !row.source_support_still_open
-                        && !row.blocks_deployment
-                        && (row.dependency_id == "direct_dependency_consume_once"
-                            || row.dependency_id
-                                == "direct_dependency_checked_core_frame_binding"
-                            || row.dependency_id
-                                == "direct_dependency_slot_authorization_digest")
-                }
-            });
+    report.every_closure_dependency_has_evidence = report.closure_dependency_evidence_count
+        == report.closure_dependency_count
+        && report.closure_dependency_open_obligation_evidence_count
+            == closure_dependency_rows
+                .iter()
+                .filter(|row| row.open)
+                .count()
+        && report.closure_dependency_open_support_evidence_count
+            == closure_dependency_rows
+                .iter()
+                .filter(|row| row.open)
+                .count()
+        && report.closure_dependency_evidence_rows.iter().all(|row| {
+            if row.closure_dependency_open {
+                row.direct_obligation_still_open
+                    && row.source_support_still_open
+                    && row.blocks_deployment
+                    && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
+            } else {
+                !row.direct_obligation_still_open
+                    && !row.source_support_still_open
+                    && !row.blocks_deployment
+                    && (row.dependency_id == "direct_dependency_consume_once"
+                        || row.dependency_id == "direct_dependency_checked_core_frame_binding"
+                        || row.dependency_id == "direct_dependency_slot_authorization_digest")
+            }
+        });
     report.digest = path2_direct_theorem_boundary_report_v1_digest(&report);
     report
 }
@@ -14292,24 +14460,23 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
     if report.direct_lifecycle_boundary_report_digest != direct_lifecycle_boundary_report.digest {
         return Err("Path 2 direct theorem boundary lifecycle digest mismatch".to_string());
     }
-    let account_creation_proof_boundary_report =
-        path2_account_creation_proof_boundary_report_v1();
+    let account_creation_proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
     if report.account_creation_proof_boundary_report_digest
         != account_creation_proof_boundary_report.digest
     {
-        return Err(
-            "Path 2 direct theorem boundary proof-boundary digest mismatch".to_string(),
-        );
+        return Err("Path 2 direct theorem boundary proof-boundary digest mismatch".to_string());
     }
-    let expected_open_closure_dependency_count =
-        report.closure_dependency_rows.iter().filter(|row| row.open).count();
+    let expected_open_closure_dependency_count = report
+        .closure_dependency_rows
+        .iter()
+        .filter(|row| row.open)
+        .count();
     if report.theorem_target != PATH2_DIRECT_THEOREM_TARGET
         || report.theorem_conclusion != PATH2_DIRECT_THEOREM_CONCLUSION
     {
         return Err("Path 2 direct theorem boundary target mismatch".to_string());
     }
-    if report.accepted_tuple_evidence_schema
-        != PATH2_DIRECT_ACCEPTED_SPEND_TUPLE_EVIDENCE_SCHEMA
+    if report.accepted_tuple_evidence_schema != PATH2_DIRECT_ACCEPTED_SPEND_TUPLE_EVIDENCE_SCHEMA
         || report.accepted_tuple_evidence_endpoint
             != "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1"
         || report.accepted_composition_evidence_schema
@@ -14335,15 +14502,13 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
         || report.acceptance_hypotheses != PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES.as_ref()
         || report.named_break_classes != PATH2_DIRECT_THEOREM_NAMED_BREAK_CLASSES.as_ref()
         || report.obligation_rows != PATH2_DIRECT_THEOREM_OBLIGATION_ROWS.as_ref()
-        || report.closure_dependency_rows
-            != PATH2_DIRECT_THEOREM_CLOSURE_DEPENDENCY_ROWS.as_ref()
+        || report.closure_dependency_rows != PATH2_DIRECT_THEOREM_CLOSURE_DEPENDENCY_ROWS.as_ref()
         || report.obligation_count != report.obligation_rows.len()
         || report.closure_dependency_count != report.closure_dependency_rows.len()
         || report.closure_dependency_count != report.obligation_rows.len()
         || report.closure_dependency_evidence_rows != expected_closure_dependency_evidence_rows
         || report.closure_dependency_evidence_count != report.closure_dependency_rows.len()
-        || report.closure_dependency_evidence_count
-            != report.closure_dependency_evidence_rows.len()
+        || report.closure_dependency_evidence_count != report.closure_dependency_evidence_rows.len()
         || report.closure_dependency_open_obligation_evidence_count
             != expected_open_closure_dependency_count
         || report.closure_dependency_open_support_evidence_count
@@ -14400,11 +14565,9 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
                     report,
                     &direct_lifecycle_boundary_report,
                 ) || path2_direct_theorem_closed_checked_core_frame_dependency_imported_v1(
-                    row,
-                    report,
+                    row, report,
                 ) || path2_direct_theorem_closed_slot_authorization_dependency_imported_v1(
-                    row,
-                    report,
+                    row, report,
                 )
             }
         })
@@ -14428,8 +14591,7 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
         })
     {
         return Err(
-            "Path 2 direct theorem boundary obligation or closure-dependency mismatch"
-                .to_string(),
+            "Path 2 direct theorem boundary obligation or closure-dependency mismatch".to_string(),
         );
     }
     if !report.theorem_statement_pinned
@@ -14879,8 +15041,8 @@ fn lean_path2_reviewed_fq12_source_route_endpoint_surface_present_v1() -> bool {
             .all(|marker| byte_bridge.contains(marker))
 }
 
-fn lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present_v1()
--> bool {
+fn lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present_v1(
+) -> bool {
     let source =
         include_str!("../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean");
     [
@@ -18098,15 +18260,15 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     }
 }
 
-pub fn path2_selected_rust_model_source_record_subcheck_v1()
--> Path2SelectedRustModelSourceRecordSubcheckV1 {
+pub fn path2_selected_rust_model_source_record_subcheck_v1(
+) -> Path2SelectedRustModelSourceRecordSubcheckV1 {
     let boundary_source =
         include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
     path2_selected_rust_model_source_record_subcheck_from_source_v1(boundary_source)
 }
 
-pub fn path2_selected_rust_model_concrete_definition_checklist_v1()
--> Path2SelectedRustModelConcreteDefinitionChecklistV1 {
+pub fn path2_selected_rust_model_concrete_definition_checklist_v1(
+) -> Path2SelectedRustModelConcreteDefinitionChecklistV1 {
     let boundary_source =
         include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
     path2_selected_rust_model_concrete_definition_checklist_from_source_v1(boundary_source)
@@ -21367,8 +21529,8 @@ fn path2_reviewed_fq12_extraction_certificate_availability_source_present_v1() -
             .all(|marker| test_source.contains(marker))
 }
 
-pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
--> Path2ReviewedFq12HiddenSourceSemanticsBridgeAudit {
+pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
+) -> Path2ReviewedFq12HiddenSourceSemanticsBridgeAudit {
     let lean_payload_interface_pinned = lean_path2_reviewed_fq12_payload_interface_pinned_v1();
     let hidden_source_payload_binding_source_present =
         path2_reviewed_fq12_hidden_source_payload_binding_source_present_v1();
@@ -21671,8 +21833,8 @@ pub fn validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
     Ok(())
 }
 
-pub fn path2_reviewed_fq12_five_source_closure_evidence_v1()
--> Result<Path2ReviewedFq12FiveSourceClosureEvidenceV1, String> {
+pub fn path2_reviewed_fq12_five_source_closure_evidence_v1(
+) -> Result<Path2ReviewedFq12FiveSourceClosureEvidenceV1, String> {
     let audit = path2_reviewed_fq12_hidden_source_semantics_bridge_audit();
     validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(&audit)?;
     let hash_byte_domain_evidence = path2_native_hash_byte_domain_evidence_v1();
@@ -22343,8 +22505,8 @@ pub fn verify_path2_reviewed_fq12_five_source_closure_evidence_v1(
     Ok(digest)
 }
 
-pub fn path2_reviewed_fq12_boundary_base_evidence_v1()
--> Result<Path2ReviewedFq12BoundaryBaseEvidenceV1, String> {
+pub fn path2_reviewed_fq12_boundary_base_evidence_v1(
+) -> Result<Path2ReviewedFq12BoundaryBaseEvidenceV1, String> {
     let payload_projection_law_pinned =
         path2_reviewed_fq12_payload_projection_law_source_present_v1();
     let extraction_certificate_availability_pinned =
@@ -22459,8 +22621,8 @@ pub fn verify_path2_reviewed_fq12_boundary_base_evidence_v1(
     Ok(digest)
 }
 
-pub fn path2_reviewed_fq12_role_root_lift_evidence_v1()
--> Result<Path2ReviewedFq12RoleRootLiftEvidenceV1, String> {
+pub fn path2_reviewed_fq12_role_root_lift_evidence_v1(
+) -> Result<Path2ReviewedFq12RoleRootLiftEvidenceV1, String> {
     let concrete_role_root_field_binding_pinned =
         path2_reviewed_fq12_concrete_role_root_field_binding_source_present_v1();
     let selected_lift_functionality_pinned =
@@ -22572,8 +22734,8 @@ pub fn verify_path2_reviewed_fq12_role_root_lift_evidence_v1(
     Ok(digest)
 }
 
-pub fn path2_reviewed_fq12_field_local_evidence_v1()
--> Result<Path2ReviewedFq12FieldLocalEvidenceV1, String> {
+pub fn path2_reviewed_fq12_field_local_evidence_v1(
+) -> Result<Path2ReviewedFq12FieldLocalEvidenceV1, String> {
     let assembly_components_pinned =
         path2_reviewed_fq12_assembly_field_local_native_components_present_v1();
     let compatibility_components_pinned =
@@ -22706,8 +22868,8 @@ pub fn verify_path2_reviewed_fq12_field_local_evidence_v1(
     Ok(digest)
 }
 
-pub fn path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1()
--> Result<Path2ReviewedFq12SharedDigestFrameWitnessEvidenceV1, String> {
+pub fn path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1(
+) -> Result<Path2ReviewedFq12SharedDigestFrameWitnessEvidenceV1, String> {
     let canonical_witness_pinned =
         path2_reviewed_fq12_full_native_opening_canonical_representative_witness_source_present_v1(
         );
@@ -22866,8 +23028,8 @@ pub fn verify_path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1(
     Ok(digest)
 }
 
-pub fn path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1()
--> Result<Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1, String> {
+pub fn path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1(
+) -> Result<Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1, String> {
     let parser_frame_certificates_present =
         path2_reviewed_fq12_source_route_byte_parser_frame_certificates_present_v1();
     let field_evidence_present =
@@ -23022,8 +23184,8 @@ pub fn verify_path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1(
     Ok(digest)
 }
 
-pub fn path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1()
--> Result<Path2ReviewedFq12NativeBoundaryPredicateModelEvidenceV1, String> {
+pub fn path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1(
+) -> Result<Path2ReviewedFq12NativeBoundaryPredicateModelEvidenceV1, String> {
     let source_record_subcheck = path2_selected_rust_model_source_record_subcheck_v1();
     let concrete_predicate_model_present =
         source_record_subcheck.native_boundary_concrete_predicate_model_present;
@@ -25903,8 +26065,8 @@ fn path2_reviewed_fq12_full_native_opening_canonical_representative_source_prese
         && path2_reviewed_fq12_native_representative_digest_frame_source_present_v1()
 }
 
-fn path2_reviewed_fq12_full_native_opening_canonical_representative_witness_source_present_v1()
--> bool {
+fn path2_reviewed_fq12_full_native_opening_canonical_representative_witness_source_present_v1(
+) -> bool {
     let source = include_str!("production_reference.rs");
     let witness_start = source
         .find(
@@ -29164,8 +29326,8 @@ fn path2_native_boundary_trace_column_class(
     })
 }
 
-pub fn path2_native_boundary_trace_column_manifest_v1()
--> Result<Path2NativeBoundaryTraceColumnManifestV1, String> {
+pub fn path2_native_boundary_trace_column_manifest_v1(
+) -> Result<Path2NativeBoundaryTraceColumnManifestV1, String> {
     let manifest = Path2NativeBoundaryTraceColumnManifestV1 {
         schema: PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA,
         profile_id: PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_PROFILE_ID,
@@ -29616,8 +29778,8 @@ pub fn verify_path2_transparent_query_schedule_count(query_count: u16) -> Result
     }
 }
 
-pub fn path2_native_boundary_trace_proof_family_interface_v1()
--> Result<Path2NativeBoundaryTraceProofFamilyInterfaceV1, String> {
+pub fn path2_native_boundary_trace_proof_family_interface_v1(
+) -> Result<Path2NativeBoundaryTraceProofFamilyInterfaceV1, String> {
     let interface = Path2NativeBoundaryTraceProofFamilyInterfaceV1 {
         schema: PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_SCHEMA,
         profile_id: PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_PROFILE_ID,
@@ -29998,8 +30160,8 @@ pub fn verify_path2_native_boundary_trace_proof_family_interface(
     Ok(())
 }
 
-pub fn path2_native_boundary_trace_proof_family_interface_v1_digest()
--> Result<[u8; DIGEST_BYTES], String> {
+pub fn path2_native_boundary_trace_proof_family_interface_v1_digest(
+) -> Result<[u8; DIGEST_BYTES], String> {
     let interface = path2_native_boundary_trace_proof_family_interface_v1()?;
     let mut frame = Vec::new();
     append_frame(
@@ -30252,8 +30414,8 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1_digest()
     Ok(Sha256::digest(frame).into())
 }
 
-pub fn path2_transparent_proof_friendly_inner_commitment_plan_v1()
--> Path2TransparentProofFriendlyInnerCommitmentPlanV1 {
+pub fn path2_transparent_proof_friendly_inner_commitment_plan_v1(
+) -> Path2TransparentProofFriendlyInnerCommitmentPlanV1 {
     let proof_friendly_inner_commitment_bindings_pinned = true;
     let inner_commitment_scheme_id =
         path2_transparent_proof_friendly_inner_commitment_scheme_id_v1();
@@ -30519,8 +30681,8 @@ pub fn validate_path2_transparent_proof_friendly_inner_commitment_plan_v1(
     Ok(())
 }
 
-pub fn path2_transparent_hidden_relation_constraint_plan_v1()
--> Path2TransparentHiddenRelationConstraintPlanV1 {
+pub fn path2_transparent_hidden_relation_constraint_plan_v1(
+) -> Path2TransparentHiddenRelationConstraintPlanV1 {
     let inner_commitment_plan = path2_transparent_proof_friendly_inner_commitment_plan_v1();
     let reference_constraint_check_profile_digest =
         path2_transparent_hidden_relation_reference_constraint_check_profile_digest_v1();
@@ -30577,8 +30739,8 @@ pub fn path2_transparent_hidden_relation_constraint_plan_v1()
     plan
 }
 
-pub fn path2_transparent_hidden_relation_reference_constraint_check_profile_digest_v1()
--> [u8; DIGEST_BYTES] {
+pub fn path2_transparent_hidden_relation_reference_constraint_check_profile_digest_v1(
+) -> [u8; DIGEST_BYTES] {
     let mut frame = Vec::new();
     append_frame(
         &mut frame,
@@ -30805,8 +30967,8 @@ pub fn validate_path2_transparent_hidden_relation_constraint_plan_v1(
     Ok(())
 }
 
-pub fn path2_transparent_trace_to_binding_relation_layer_v1()
--> Path2TransparentTraceToBindingRelationLayerV1 {
+pub fn path2_transparent_trace_to_binding_relation_layer_v1(
+) -> Path2TransparentTraceToBindingRelationLayerV1 {
     let relation_layout_digest = path2_transparent_relation_layout_v1_digest()
         .expect("Path 2 transparent relation layout must hash");
     let hidden_relation_plan = path2_transparent_hidden_relation_constraint_plan_v1();
@@ -31155,8 +31317,8 @@ pub fn validate_path2_transparent_trace_to_binding_relation_layer_v1(
     Ok(())
 }
 
-pub fn path2_transparent_current_core_negative_target_v1()
--> Path2TransparentCurrentCoreNegativeTargetV1 {
+pub fn path2_transparent_current_core_negative_target_v1(
+) -> Path2TransparentCurrentCoreNegativeTargetV1 {
     let mut target = Path2TransparentCurrentCoreNegativeTargetV1 {
         digest: [0_u8; DIGEST_BYTES],
         schema: PATH2_TRANSPARENT_CURRENT_CORE_NEGATIVE_TARGET_SCHEMA,
@@ -31294,8 +31456,8 @@ pub fn validate_path2_transparent_current_core_negative_target_v1(
     Ok(())
 }
 
-pub fn path2_transparent_full_relation_backend_certificate_obligations_v1_digest()
--> [u8; DIGEST_BYTES] {
+pub fn path2_transparent_full_relation_backend_certificate_obligations_v1_digest(
+) -> [u8; DIGEST_BYTES] {
     let mut frame = Vec::new();
     append_frame(
         &mut frame,
@@ -31322,8 +31484,8 @@ pub fn path2_transparent_full_relation_backend_certificate_obligations_v1_digest
     Sha256::digest(frame).into()
 }
 
-pub fn validate_path2_transparent_full_relation_backend_certificate_obligation_set_v1()
--> Result<(), String> {
+pub fn validate_path2_transparent_full_relation_backend_certificate_obligation_set_v1(
+) -> Result<(), String> {
     if PATH2_TRANSPARENT_FULL_RELATION_BACKEND_CERTIFICATE_OBLIGATION_FIELDS.len()
         != PATH2_TRANSPARENT_FULL_RELATION_BACKEND_CERTIFICATE_OBLIGATION_COUNT
     {
@@ -31381,8 +31543,8 @@ pub fn validate_path2_transparent_full_relation_backend_certificate_obligation_s
     Ok(())
 }
 
-pub fn path2_transparent_full_relation_backend_sufficiency_target_v1()
--> Path2TransparentFullRelationBackendSufficiencyTargetV1 {
+pub fn path2_transparent_full_relation_backend_sufficiency_target_v1(
+) -> Path2TransparentFullRelationBackendSufficiencyTargetV1 {
     let hidden_relation_plan = path2_transparent_hidden_relation_constraint_plan_v1();
     let certificate_obligations_digest =
         path2_transparent_full_relation_backend_certificate_obligations_v1_digest();
@@ -31541,8 +31703,8 @@ pub fn validate_path2_transparent_full_relation_backend_sufficiency_target_v1(
     Ok(())
 }
 
-pub fn path2_transparent_full_hidden_relation_backend_payload_contract_v1()
--> Path2TransparentFullHiddenRelationBackendPayloadContractV1 {
+pub fn path2_transparent_full_hidden_relation_backend_payload_contract_v1(
+) -> Path2TransparentFullHiddenRelationBackendPayloadContractV1 {
     let backend_sufficiency_target =
         path2_transparent_full_relation_backend_sufficiency_target_v1();
     let backend_proof_system_id =
@@ -31691,16 +31853,16 @@ pub fn path2_transparent_full_hidden_relation_backend_acceptance_verifier_digest
     Sha256::digest(frame).into()
 }
 
-pub fn path2_transparent_full_hidden_relation_disabled_backend_proof_payload_digest_v1()
--> [u8; DIGEST_BYTES] {
+pub fn path2_transparent_full_hidden_relation_disabled_backend_proof_payload_digest_v1(
+) -> [u8; DIGEST_BYTES] {
     path2_transparent_full_hidden_relation_backend_proof_payload_digest(
         path2_transparent_full_hidden_relation_disabled_backend_proof_payload_bytes_v1(),
     )
     .expect("disabled backend proof payload marker is nonempty")
 }
 
-pub fn path2_transparent_full_hidden_relation_disabled_backend_proof_payload_bytes_v1()
--> &'static [u8] {
+pub fn path2_transparent_full_hidden_relation_disabled_backend_proof_payload_bytes_v1(
+) -> &'static [u8] {
     b"DESCENDER_PATH2_TRANSPARENT_FULL_HIDDEN_RELATION_DISABLED_BACKEND_PROOF_PAYLOAD_V1"
 }
 
@@ -32013,8 +32175,8 @@ pub fn validate_path2_transparent_full_hidden_relation_backend_payload_contract_
     Ok(())
 }
 
-pub fn path2_transparent_full_hidden_relation_proof_contract_v1()
--> Path2TransparentFullHiddenRelationProofContractV1 {
+pub fn path2_transparent_full_hidden_relation_proof_contract_v1(
+) -> Path2TransparentFullHiddenRelationProofContractV1 {
     let hidden_relation_plan = path2_transparent_hidden_relation_constraint_plan_v1();
     let trace_to_binding_layer = path2_transparent_trace_to_binding_relation_layer_v1();
     let current_core_negative_target = path2_transparent_current_core_negative_target_v1();
@@ -35641,8 +35803,8 @@ pub(crate) fn decode_path2_transparent_full_hidden_relation_subproof_statement_v
     Ok(statement)
 }
 
-pub fn path2_transparent_full_hidden_relation_verifier_key_v1()
--> Result<Path2TransparentFullHiddenRelationVerifierKeyV1, String> {
+pub fn path2_transparent_full_hidden_relation_verifier_key_v1(
+) -> Result<Path2TransparentFullHiddenRelationVerifierKeyV1, String> {
     let contract = path2_transparent_full_hidden_relation_proof_contract_v1();
     validate_path2_transparent_full_hidden_relation_proof_contract_v1(&contract)?;
     let hidden_relation_plan = path2_transparent_hidden_relation_constraint_plan_v1();
@@ -36011,8 +36173,8 @@ pub(crate) fn path2_transparent_full_hidden_relation_verifier_key_v1_digest(
     Ok(Sha256::digest(frame).into())
 }
 
-pub fn path2_transparent_full_relation_backend_certificate_obligation_digests_v1()
--> [[u8; DIGEST_BYTES]; PATH2_TRANSPARENT_FULL_RELATION_BACKEND_CERTIFICATE_OBLIGATION_COUNT] {
+pub fn path2_transparent_full_relation_backend_certificate_obligation_digests_v1(
+) -> [[u8; DIGEST_BYTES]; PATH2_TRANSPARENT_FULL_RELATION_BACKEND_CERTIFICATE_OBLIGATION_COUNT] {
     let mut obligation_digests = [[0_u8; DIGEST_BYTES];
         PATH2_TRANSPARENT_FULL_RELATION_BACKEND_CERTIFICATE_OBLIGATION_COUNT];
     for (index, field) in PATH2_TRANSPARENT_FULL_RELATION_BACKEND_CERTIFICATE_OBLIGATION_FIELDS
@@ -42759,8 +42921,8 @@ fn path2_hidden_range_extractor_interface_bound(
         && interface.range_rows_to_norm_required
 }
 
-pub fn path2_transparent_production_soundness_obligations_v1()
--> Path2TransparentProductionSoundnessObligationsV1 {
+pub fn path2_transparent_production_soundness_obligations_v1(
+) -> Path2TransparentProductionSoundnessObligationsV1 {
     let sampled_row_same_representative_enforced = true;
     let aggregate_cancellation_regression_covered = true;
     let hidden_relation_plan = path2_transparent_hidden_relation_constraint_plan_v1();
@@ -43630,8 +43792,8 @@ pub fn validate_path2_transparent_production_soundness_obligations_v1(
     Ok(())
 }
 
-pub fn path2_transparent_proof_family_capability_v1()
--> Result<Path2TransparentProofFamilyCapabilityV1, String> {
+pub fn path2_transparent_proof_family_capability_v1(
+) -> Result<Path2TransparentProofFamilyCapabilityV1, String> {
     let trace_column_manifest = path2_native_boundary_trace_column_manifest_v1()?;
     let hidden_relation_plan = path2_transparent_hidden_relation_constraint_plan_v1();
     validate_path2_transparent_hidden_relation_constraint_plan_v1(&hidden_relation_plan)?;
@@ -47286,8 +47448,8 @@ fn path2_account_creation_frame_kat_digest(label: &str) -> [u8; DIGEST_BYTES] {
         .into()
 }
 
-pub fn path2_account_creation_frame_kat_fixture_v1()
--> Result<Path2AccountCreationFrameKatFixtureV1, String> {
+pub fn path2_account_creation_frame_kat_fixture_v1(
+) -> Result<Path2AccountCreationFrameKatFixtureV1, String> {
     let mut leaf = Path2PrevalidatedSlotLeafV1 {
         frame_version: PATH2_PREVALIDATED_SLOT_LEAF_FRAME_VERSION,
         profile_version_digest: path2_account_creation_frame_kat_digest("profile"),
@@ -47318,9 +47480,7 @@ pub fn path2_account_creation_frame_kat_fixture_v1()
             "reviewed-active-lane-statement",
         ),
         lifecycle_anchor: leaf.lifecycle_anchor,
-        relation_transcript_digest: path2_account_creation_frame_kat_digest(
-            "relation-transcript",
-        ),
+        relation_transcript_digest: path2_account_creation_frame_kat_digest("relation-transcript"),
         public_replay_payload_digest: path2_account_creation_frame_kat_digest(
             "public-replay-payload",
         ),
@@ -48382,8 +48542,8 @@ fn path2_account_stark_refresh_leaf_digest_bindings(
 }
 
 #[cfg(feature = "account-creation-stark-verifier")]
-fn path2_reviewed_fq12_packed_witness_kat_fixture_v1()
--> Result<Path2ReviewedFq12PackedWitnessKatFixtureV1, String> {
+fn path2_reviewed_fq12_packed_witness_kat_fixture_v1(
+) -> Result<Path2ReviewedFq12PackedWitnessKatFixtureV1, String> {
     let public_key = ProductionPublicKey::new(vec![0_u8; PK_BYTES])?;
     let message = b"reviewed Fq12 packed witness reject fixture";
     let slot_id = 0_u32;
@@ -48411,10 +48571,8 @@ fn path2_reviewed_fq12_packed_witness_kat_fixture_v1()
         active_free: [[0_u16; LOCAL_FREE]; REPS],
     };
     for rep in 0..REPS {
-        openings.active_free[rep] = reviewed_fq12_pad_residues_from_seed(
-            &pad_seed,
-            decoded_challenge.active_block[rep],
-        );
+        openings.active_free[rep] =
+            reviewed_fq12_pad_residues_from_seed(&pad_seed, decoded_challenge.active_block[rep]);
     }
     let proof = ProductionReviewedFq12AccountCarriedProof {
         proof_commitment: randomizer_commitment,
@@ -48466,11 +48624,10 @@ fn path2_reviewed_fq12_packed_witness_kat_fixture_v1()
     .map_err(ProductionAccountBindingError::into_reason)?;
     opening.account_witness_commitment = statement.witness_commitment;
 
-    let projection_lanes =
-        hidden_source_fallback_projection_values_from_hidden_material(
-            &account_witness_opening,
-            &pad_seed,
-        )?;
+    let projection_lanes = hidden_source_fallback_projection_values_from_hidden_material(
+        &account_witness_opening,
+        &pad_seed,
+    )?;
     let (check_bytes, transcript_binding) =
         reviewed_fq12_state_assisted_projection_carrier_binding(
             &opening_commitment,
@@ -48567,13 +48724,10 @@ fn path2_account_stark_creation_relation_replay_kat_fixture_v1() -> Result<
         state_root_before: leaf.account_state_root_before,
         lifecycle_anchor: leaf.lifecycle_anchor,
         relation_transcript_digest: certificate.relation_transcript_digest,
-        evidence_payload_digest: path2_direct_replayable_relation_certificate_digest(
-            &certificate,
-        ),
+        evidence_payload_digest: path2_direct_replayable_relation_certificate_digest(&certificate),
     };
-    leaf.prevalidation_transcript_digest = path2_account_creation_evidence_transcript_digest(
-        &evidence,
-    )?;
+    leaf.prevalidation_transcript_digest =
+        path2_account_creation_evidence_transcript_digest(&evidence)?;
     path2_account_stark_refresh_leaf_digest_bindings(&leaf, &mut evidence)?;
     certificate.hidden_source_statement_digest = leaf.hidden_source_statement_digest;
     certificate.reviewed_active_lane_statement_digest = fixture.statement.digest;
@@ -48614,8 +48768,7 @@ fn path2_account_stark_payload_kat_fixture_with_reviewed_v1() -> Result<
         path2_account_stark_payload_kat_digest("path2-account-stark-gauge"),
         path2_account_stark_payload_kat_digest("path2-account-stark-aggregation"),
     );
-    let blinding_seed =
-        path2_account_stark_payload_kat_digest("path2-account-stark-blinding-seed");
+    let blinding_seed = path2_account_stark_payload_kat_digest("path2-account-stark-blinding-seed");
 
     let payload = path2_account_stark_prove_creation_with_mask_seed_v1(
         &leaf,
@@ -48666,8 +48819,8 @@ fn path2_account_stark_payload_kat_fixture_with_reviewed_v1() -> Result<
 }
 
 #[cfg(feature = "account-creation-stark-verifier")]
-pub fn path2_account_stark_payload_kat_fixture_v1()
--> Result<Path2AccountStarkPayloadKatFixtureV1, String> {
+pub fn path2_account_stark_payload_kat_fixture_v1(
+) -> Result<Path2AccountStarkPayloadKatFixtureV1, String> {
     Ok(path2_account_stark_payload_kat_fixture_with_reviewed_v1()?.1)
 }
 
@@ -48806,9 +48959,10 @@ fn path2_account_creation_referenced_obligations_have_open_residual_v1(
     obligation_ids: &[&str],
 ) -> bool {
     obligation_ids.iter().any(|obligation_id| {
-        proof_report.proof_obligation_rows.iter().any(|row| {
-            row.obligation_id == *obligation_id && row.open
-        })
+        proof_report
+            .proof_obligation_rows
+            .iter()
+            .any(|row| row.obligation_id == *obligation_id && row.open)
     })
 }
 
@@ -48816,44 +48970,43 @@ fn path2_account_creation_accepted_requirement_evidence_rows_v1(
     evidence: &Path2AccountCreationAcceptedProofBoundaryEvidenceV1,
     proof_report: &Path2AccountCreationProofBoundaryReportV1,
 ) -> Vec<Path2AccountCreationAcceptedRequirementEvidenceRowV1> {
-    let row =
-        |requirement: &'static str,
-         closure_obligation_ids: &'static [&'static str],
-         accepted_path_applicable: bool,
-         accepted_path_evidence_source: &'static str,
-         accepted_path_check: &'static str,
-         accepted_path_evidence_present: bool,
-         separate_rejection_evidence_required: bool| {
-            let coverage = proof_report
-                .requirement_coverage_rows
-                .iter()
-                .find(|row| row.requirement == requirement)
-                .expect("accepted proof-boundary requirement coverage row exists");
-            Path2AccountCreationAcceptedRequirementEvidenceRowV1 {
-                requirement,
-                coverage_surface: coverage.coverage_surface,
-                vector_evidence_kind: coverage.vector_evidence_kind,
-                current_vector_case_ids: coverage.current_vector_case_ids,
-                closure_obligation_ids,
-                accepted_path_applicable,
-                accepted_path_evidence_source,
-                accepted_path_check,
-                accepted_path_evidence_present,
-                boundary_or_audit_evidence_present: coverage.covered_by_current_vectors,
-                separate_rejection_evidence_required,
-                separate_closure_required:
-                    path2_account_creation_referenced_obligations_have_open_residual_v1(
-                        proof_report,
-                        closure_obligation_ids,
-                    ),
-                all_referenced_closure_obligations_still_open:
-                    path2_account_creation_referenced_obligations_accounted_v1(
-                        proof_report,
-                        closure_obligation_ids,
-                    ),
-                blocker: coverage.blocker,
-            }
-        };
+    let row = |requirement: &'static str,
+               closure_obligation_ids: &'static [&'static str],
+               accepted_path_applicable: bool,
+               accepted_path_evidence_source: &'static str,
+               accepted_path_check: &'static str,
+               accepted_path_evidence_present: bool,
+               separate_rejection_evidence_required: bool| {
+        let coverage = proof_report
+            .requirement_coverage_rows
+            .iter()
+            .find(|row| row.requirement == requirement)
+            .expect("accepted proof-boundary requirement coverage row exists");
+        Path2AccountCreationAcceptedRequirementEvidenceRowV1 {
+            requirement,
+            coverage_surface: coverage.coverage_surface,
+            vector_evidence_kind: coverage.vector_evidence_kind,
+            current_vector_case_ids: coverage.current_vector_case_ids,
+            closure_obligation_ids,
+            accepted_path_applicable,
+            accepted_path_evidence_source,
+            accepted_path_check,
+            accepted_path_evidence_present,
+            boundary_or_audit_evidence_present: coverage.covered_by_current_vectors,
+            separate_rejection_evidence_required,
+            separate_closure_required:
+                path2_account_creation_referenced_obligations_have_open_residual_v1(
+                    proof_report,
+                    closure_obligation_ids,
+                ),
+            all_referenced_closure_obligations_still_open:
+                path2_account_creation_referenced_obligations_accounted_v1(
+                    proof_report,
+                    closure_obligation_ids,
+                ),
+            blocker: coverage.blocker,
+        }
+    };
 
     vec![
         row(
@@ -48871,8 +49024,7 @@ fn path2_account_creation_accepted_requirement_evidence_rows_v1(
             true,
             "accepted leaf digest and evidence transcript binding",
             "leaf_transcript_bound_to_evidence && leaf_digest_bound_to_evidence",
-            evidence.leaf_transcript_bound_to_evidence
-                && evidence.leaf_digest_bound_to_evidence,
+            evidence.leaf_transcript_bound_to_evidence && evidence.leaf_digest_bound_to_evidence,
             false,
         ),
         row(
@@ -48891,8 +49043,7 @@ fn path2_account_creation_accepted_requirement_evidence_rows_v1(
             true,
             "accepted account-STARK payload frame and non-empty proof bundle",
             "account_stark_bundle_nonempty && payload_digest_bound_to_certificate",
-            evidence.account_stark_bundle_nonempty
-                && evidence.payload_digest_bound_to_certificate,
+            evidence.account_stark_bundle_nonempty && evidence.payload_digest_bound_to_certificate,
             false,
         ),
         row(
@@ -49043,55 +49194,48 @@ fn path2_account_creation_accepted_proof_boundary_evidence_for_fixture_v1(
         fixture.leaf.prevalidation_transcript_digest == evidence_transcript_digest;
     let leaf_digest_bound_to_evidence = fixture.evidence.slot_leaf_digest == leaf_digest;
     let leaf_context_bound = fixture.payload.leaf_context_digest == leaf_context_digest;
-    let binding_digest_bound =
-        fixture.binding.digest == binding_digest
-            && fixture.payload.creation_proof_binding_digest == binding_digest;
-    let payload_binding_fields_match_report =
-        proof_boundary_report.payload_binding_fields
-            == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_PAYLOAD_BINDING_FIELDS.as_ref()
-            && leaf_context_bound
-            && binding_digest_bound
-            && fixture.payload.aggregation_context_digest
-                == fixture.binding.aggregation_context_digest
-            && fixture.payload.slot_id == fixture.leaf.slot_id
-            && payload_digest_bound_to_certificate
-            && account_stark_bundle_nonempty;
+    let binding_digest_bound = fixture.binding.digest == binding_digest
+        && fixture.payload.creation_proof_binding_digest == binding_digest;
+    let payload_binding_fields_match_report = proof_boundary_report.payload_binding_fields
+        == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_PAYLOAD_BINDING_FIELDS.as_ref()
+        && leaf_context_bound
+        && binding_digest_bound
+        && fixture.payload.aggregation_context_digest == fixture.binding.aggregation_context_digest
+        && fixture.payload.slot_id == fixture.leaf.slot_id
+        && payload_digest_bound_to_certificate
+        && account_stark_bundle_nonempty;
     let deployed_anchor_account_id_bound =
         decoded_public_anchors.account_id == fixture.leaf.account_id;
-    let deployed_anchor_slot_id_bound =
-        decoded_public_anchors.slot_id == fixture.leaf.slot_id
-            && decoded_public_anchors.slot_id == fixture.payload.slot_id
-            && decoded_public_anchors.slot_id == fixture.binding.slot_id;
-    let deployed_anchor_state_root_bound =
-        decoded_public_anchors.account_state_root == fixture.leaf.account_state_root_before
-            && decoded_public_anchors.account_state_root
-                == fixture.binding.account_state_root_before;
-    let deployed_anchor_lifecycle_anchor_bound =
-        decoded_public_anchors.lifecycle_anchor == fixture.leaf.lifecycle_anchor
-            && decoded_public_anchors.lifecycle_anchor == fixture.binding.lifecycle_anchor;
+    let deployed_anchor_slot_id_bound = decoded_public_anchors.slot_id == fixture.leaf.slot_id
+        && decoded_public_anchors.slot_id == fixture.payload.slot_id
+        && decoded_public_anchors.slot_id == fixture.binding.slot_id;
+    let deployed_anchor_state_root_bound = decoded_public_anchors.account_state_root
+        == fixture.leaf.account_state_root_before
+        && decoded_public_anchors.account_state_root == fixture.binding.account_state_root_before;
+    let deployed_anchor_lifecycle_anchor_bound = decoded_public_anchors.lifecycle_anchor
+        == fixture.leaf.lifecycle_anchor
+        && decoded_public_anchors.lifecycle_anchor == fixture.binding.lifecycle_anchor;
     let deployed_anchor_verifier_version_bound =
         decoded_public_anchors.verifier_version == PATH2_ACCOUNT_STARK_VERIFIER_VERSION;
     let deployed_anchor_masked_projection_bound =
         decoded_public_anchors.masked_projection == fixture.payload.masked_projection;
-    let deployed_anchor_role_root_export_bridge_bound =
-        decoded_public_anchors.native_role_root_commitment
-            == fixture.payload.native_role_root_commitment;
-    let deployed_anchor_packed_witness_commitment_bound =
-        decoded_public_anchors.packed_witness_commitment
-            == fixture.binding.packed_witness_commitment;
-    let decoded_public_anchors_match_deployed_anchors =
-        deployed_anchor_account_id_bound
-            && deployed_anchor_slot_id_bound
-            && deployed_anchor_state_root_bound
-            && deployed_anchor_lifecycle_anchor_bound
-            && deployed_anchor_verifier_version_bound
-            && deployed_anchor_masked_projection_bound
-            && deployed_anchor_role_root_export_bridge_bound
-            && deployed_anchor_packed_witness_commitment_bound;
-    let deployed_anchor_fields_match_report =
-        proof_boundary_report.deployed_anchor_fields
-            == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHORS.as_ref()
-            && decoded_public_anchors_match_deployed_anchors;
+    let deployed_anchor_role_root_export_bridge_bound = decoded_public_anchors
+        .native_role_root_commitment
+        == fixture.payload.native_role_root_commitment;
+    let deployed_anchor_packed_witness_commitment_bound = decoded_public_anchors
+        .packed_witness_commitment
+        == fixture.binding.packed_witness_commitment;
+    let decoded_public_anchors_match_deployed_anchors = deployed_anchor_account_id_bound
+        && deployed_anchor_slot_id_bound
+        && deployed_anchor_state_root_bound
+        && deployed_anchor_lifecycle_anchor_bound
+        && deployed_anchor_verifier_version_bound
+        && deployed_anchor_masked_projection_bound
+        && deployed_anchor_role_root_export_bridge_bound
+        && deployed_anchor_packed_witness_commitment_bound;
+    let deployed_anchor_fields_match_report = proof_boundary_report.deployed_anchor_fields
+        == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHORS.as_ref()
+        && decoded_public_anchors_match_deployed_anchors;
     if !payload_binding_fields_match_report
         || !deployed_anchor_fields_match_report
         || !payload_digest_bound_to_certificate
@@ -49160,8 +49304,8 @@ fn path2_account_creation_accepted_proof_boundary_evidence_for_fixture_v1(
         verifier_boundary_accepts: true,
         production_gate_fail_closed: true,
         proof_boundary_report_validated: true,
-        public_payload_exports_private_material:
-            payload_byte_model_report.public_payload_exports_private_material,
+        public_payload_exports_private_material: payload_byte_model_report
+            .public_payload_exports_private_material,
         payload_digest_bound_to_certificate,
         evidence_digest_bound_to_certificate,
         leaf_transcript_bound_to_evidence,
@@ -49213,31 +49357,30 @@ fn path2_account_creation_accepted_proof_boundary_evidence_for_fixture_v1(
         .iter()
         .filter(|row| row.separate_closure_required)
         .count();
-    evidence.every_applicable_accepting_requirement_has_accepted_path_evidence =
-        evidence.accepted_requirement_evidence_count
-            == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.len()
-            && evidence.accepted_path_applicable_requirement_count == 8
-            && evidence.accepted_path_requirement_evidence_count == 8
-            && evidence
-                .accepted_requirement_evidence_rows
-                .iter()
-                .filter(|row| row.accepted_path_applicable)
-                .all(|row| row.accepted_path_evidence_present);
-    evidence.every_accepting_requirement_has_boundary_or_audit_evidence =
-        evidence.accepted_requirement_evidence_count
-            == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.len()
-            && evidence.boundary_or_audit_requirement_evidence_count
-                == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.len();
-    evidence.every_separate_closure_requirement_has_open_obligation =
-        evidence.accepted_requirement_evidence_count
-            == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.len()
-            && evidence.separate_closure_required_count
-                == 4
-            && evidence
-                .accepted_requirement_evidence_rows
-                .iter()
-                .filter(|row| row.separate_closure_required)
-                .all(|row| row.all_referenced_closure_obligations_still_open);
+    evidence.every_applicable_accepting_requirement_has_accepted_path_evidence = evidence
+        .accepted_requirement_evidence_count
+        == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.len()
+        && evidence.accepted_path_applicable_requirement_count == 8
+        && evidence.accepted_path_requirement_evidence_count == 8
+        && evidence
+            .accepted_requirement_evidence_rows
+            .iter()
+            .filter(|row| row.accepted_path_applicable)
+            .all(|row| row.accepted_path_evidence_present);
+    evidence.every_accepting_requirement_has_boundary_or_audit_evidence = evidence
+        .accepted_requirement_evidence_count
+        == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.len()
+        && evidence.boundary_or_audit_requirement_evidence_count
+            == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.len();
+    evidence.every_separate_closure_requirement_has_open_obligation = evidence
+        .accepted_requirement_evidence_count
+        == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.len()
+        && evidence.separate_closure_required_count == 4
+        && evidence
+            .accepted_requirement_evidence_rows
+            .iter()
+            .filter(|row| row.separate_closure_required)
+            .all(|row| row.all_referenced_closure_obligations_still_open);
     evidence.deterministic_rejection_requirement_deferred_to_rejection_kats = evidence
         .accepted_requirement_evidence_rows
         .iter()
@@ -51027,8 +51170,8 @@ fn path2_full_signature_execution_source_boundary_present_in_source_v1(
         .iter()
         .all(|marker| account_creation_window.contains(marker))
         && source_checks
-        .iter()
-        .all(|marker| source_window.contains(marker))
+            .iter()
+            .all(|marker| source_window.contains(marker))
         && predicate_checks
             .iter()
             .all(|marker| execution_predicates_window.contains(marker))
@@ -55691,7 +55834,8 @@ pub fn path2_native_signer_execution_report_from_entropy_root_v1(
                     output.constructed.boundary_meaning.native_boundary_digest,
                 ),
                 checked_core_proof_digest: Some(proof_digest),
-                cleanup_policy: "owned secret material drops through zeroize; public report is digest-only",
+                cleanup_policy:
+                    "owned secret material drops through zeroize; public report is digest-only",
                 entropy_q_fixed_attempts: PATH2_NATIVE_SIGNER_ENTROPY_Q_FIXED_ATTEMPTS,
                 deployment_preflight,
             }
@@ -55931,8 +56075,8 @@ pub fn path2_native_signer_execution_report_v1_frame(
     Ok(frame)
 }
 
-pub fn path2_native_signer_constant_time_stage_labels_v1()
--> [&'static str; PATH2_NATIVE_SIGNER_CT_STAGE_COUNT] {
+pub fn path2_native_signer_constant_time_stage_labels_v1(
+) -> [&'static str; PATH2_NATIVE_SIGNER_CT_STAGE_COUNT] {
     [
         "deployment_preflight_snapshot",
         "entropy_root_acquisition",
@@ -56478,8 +56622,8 @@ pub fn path2_native_signer_sha256_boundary_audit_v1() -> Path2NativeSignerSha256
     }
 }
 
-pub fn path2_native_signer_sha256_call_schedule_audit_v1()
--> Path2NativeSignerSha256CallScheduleAuditV1 {
+pub fn path2_native_signer_sha256_call_schedule_audit_v1(
+) -> Path2NativeSignerSha256CallScheduleAuditV1 {
     let derivation_source = path2_native_secret_material_derivation_source_window_v1();
     let q_sampler_source = path2_native_signer_entropy_q_source_window_v1();
     let secret_component_source = path2_native_secret_component_digest_source_window_v1();
@@ -56746,8 +56890,8 @@ fn path2_native_signer_os_entropy_source_window_v1() -> &'static str {
     &source[start..end]
 }
 
-pub fn path2_native_signer_os_entropy_boundary_audit_v1()
--> Path2NativeSignerOsEntropyBoundaryAuditV1 {
+pub fn path2_native_signer_os_entropy_boundary_audit_v1(
+) -> Path2NativeSignerOsEntropyBoundaryAuditV1 {
     let source_window = path2_native_signer_os_entropy_source_window_v1();
     let root_call = "getrandom::getrandom(&mut root.root_entropy)";
     let nonce_call = "getrandom::getrandom(&mut root.account_nonce)";
@@ -57823,8 +57967,8 @@ pub fn path2_native_honest_constructor_scope_v1_frame(
     frame
 }
 
-pub fn path2_native_signer_keygen_productization_scope_v1()
--> Path2NativeSignerKeygenProductizationScopeV1 {
+pub fn path2_native_signer_keygen_productization_scope_v1(
+) -> Path2NativeSignerKeygenProductizationScopeV1 {
     Path2NativeSignerKeygenProductizationScopeV1 {
         schema: PATH2_NATIVE_SIGNER_KEYGEN_PRODUCTIZATION_SCOPE_SCHEMA,
         productized: false,
@@ -57997,8 +58141,8 @@ pub fn path2_native_constant_time_audit_scope_v1_frame(
     frame
 }
 
-pub fn path2_native_storage_lifecycle_hardening_scope_v1()
--> Path2NativeStorageLifecycleHardeningScopeV1 {
+pub fn path2_native_storage_lifecycle_hardening_scope_v1(
+) -> Path2NativeStorageLifecycleHardeningScopeV1 {
     Path2NativeStorageLifecycleHardeningScopeV1 {
         schema: PATH2_NATIVE_STORAGE_LIFECYCLE_HARDENING_SCOPE_SCHEMA,
         hardening_complete: false,
@@ -61139,8 +61283,8 @@ pub struct ProductionSelectedProjectionCandidateTimingFixture {
     pub carrier: HiddenSourceFallbackProjectionCarrier,
 }
 
-pub fn production_selected_projection_candidate_timing_fixture()
--> ProductionSelectedProjectionCandidateTimingFixture {
+pub fn production_selected_projection_candidate_timing_fixture(
+) -> ProductionSelectedProjectionCandidateTimingFixture {
     let public_key = ProductionPublicKey::new(vec![0_u8; PK_BYTES]).unwrap();
     let message = b"selected 318-byte/Fq12 timing fixture".to_vec();
     let slot_id = 0_u32;
@@ -66684,9 +66828,7 @@ pub fn legacy_stateful_challenge_hash_frame(
 /// on any production FS path (the full spend FS — transaction, authorization, and
 /// relation challenges — was re-hosted to Poseidon2 on 2026-06-18). Do NOT route a
 /// new FS caller here: that would silently re-introduce SHA-based Fiat–Shamir.
-#[deprecated(
-    note = "not on the FS path; Poseidon2 re-host 2026-06-18. SHA-era anchor only."
-)]
+#[deprecated(note = "not on the FS path; Poseidon2 re-host 2026-06-18. SHA-era anchor only.")]
 pub fn hash_frame_to_challenge_bytes_sha256_legacy(frame: &[u8]) -> [u8; CHALLENGE_BYTES] {
     let digest = Sha256::digest(frame);
     let mut out = [0_u8; CHALLENGE_BYTES];
@@ -67075,9 +67217,9 @@ pub fn path2_direct_consume_once_authorization_set_digest(
 fn path2_direct_referenced_obligations_still_open_v1(obligation_ids: &[&str]) -> bool {
     !obligation_ids.is_empty()
         && obligation_ids.iter().all(|obligation_id| {
-            PATH2_DIRECT_THEOREM_OBLIGATION_ROWS.iter().any(|row| {
-                row.obligation_id == *obligation_id && row.open
-            })
+            PATH2_DIRECT_THEOREM_OBLIGATION_ROWS
+                .iter()
+                .any(|row| row.obligation_id == *obligation_id && row.open)
         })
 }
 
@@ -67123,36 +67265,32 @@ fn path2_direct_accepted_tuple_field_evidence_rows_v1(
     evidence: &Path2DirectAcceptedSpendTupleEvidenceV1,
 ) -> Vec<Path2DirectAcceptedTupleFieldEvidenceRowV1> {
     let nonzero = |digest: &[u8; DIGEST_BYTES]| *digest != [0_u8; DIGEST_BYTES];
-    let row =
-        |accepted_tuple_field: &'static str,
-         direct_obligation_ids: &'static [&'static str],
-         accepted_path_evidence_source: &'static str,
-         accepted_path_check: &'static str,
-         accepted_path_evidence_present: bool,
-         imported_boundary_report: &'static str| {
-            Path2DirectAcceptedTupleFieldEvidenceRowV1 {
-                accepted_tuple_field,
+    let row = |accepted_tuple_field: &'static str,
+               direct_obligation_ids: &'static [&'static str],
+               accepted_path_evidence_source: &'static str,
+               accepted_path_check: &'static str,
+               accepted_path_evidence_present: bool,
+               imported_boundary_report: &'static str| {
+        Path2DirectAcceptedTupleFieldEvidenceRowV1 {
+            accepted_tuple_field,
+            direct_obligation_ids,
+            accepted_path_evidence_source,
+            accepted_path_check,
+            accepted_path_evidence_present,
+            imported_boundary_report,
+            separate_closure_required: !path2_direct_referenced_obligations_closed_by_import_v1(
                 direct_obligation_ids,
-                accepted_path_evidence_source,
-                accepted_path_check,
-                accepted_path_evidence_present,
-                imported_boundary_report,
-                separate_closure_required: !path2_direct_referenced_obligations_closed_by_import_v1(
-                    direct_obligation_ids,
-                ),
-                all_referenced_direct_obligations_still_open:
-                    path2_direct_referenced_obligations_still_open_v1(direct_obligation_ids),
-                all_referenced_direct_obligations_open_or_imported:
-                    path2_direct_referenced_obligations_open_or_imported_v1(
-                        direct_obligation_ids,
-                    ),
-                closed_by_imported_boundary:
-                    path2_direct_referenced_obligations_closed_by_import_v1(
-                        direct_obligation_ids,
-                    ),
-                blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
-            }
-        };
+            ),
+            all_referenced_direct_obligations_still_open:
+                path2_direct_referenced_obligations_still_open_v1(direct_obligation_ids),
+            all_referenced_direct_obligations_open_or_imported:
+                path2_direct_referenced_obligations_open_or_imported_v1(direct_obligation_ids),
+            closed_by_imported_boundary: path2_direct_referenced_obligations_closed_by_import_v1(
+                direct_obligation_ids,
+            ),
+            blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+        }
+    };
 
     vec![
         row(
@@ -67294,8 +67432,7 @@ pub fn path2_direct_accepted_spend_tuple_evidence_v1(
         leaf.account_state_root_before,
         slot_authorization_digest,
     );
-    let state_namespace_record_present =
-        admitted_state_authorizations.contains(&namespace_record);
+    let state_namespace_record_present = admitted_state_authorizations.contains(&namespace_record);
     if !state_namespace_record_present {
         return Err(ProductionAccountBindingError::new(
             None,
@@ -67326,8 +67463,7 @@ pub fn path2_direct_accepted_spend_tuple_evidence_v1(
 
     let consumed_authorization_absent_before =
         !consumed_before.contains(&slot_authorization_digest);
-    let consumed_authorization_present_after =
-        consumed_after.contains(&slot_authorization_digest);
+    let consumed_authorization_present_after = consumed_after.contains(&slot_authorization_digest);
     let mut expected_after = consumed_before.clone();
     expected_after.insert(slot_authorization_digest);
     let consume_once_inserted_exactly_one_authorization =
@@ -67368,20 +67504,18 @@ pub fn path2_direct_accepted_spend_tuple_evidence_v1(
         .map_err(|err| ProductionAccountBindingError::new(None, err))?;
     let direct_qrom_action_boundary_report = path2_direct_qrom_action_boundary_report_v1();
     let direct_lifecycle_boundary_report = path2_direct_lifecycle_boundary_report_v1();
-    let account_creation_proof_boundary_report =
-        path2_account_creation_proof_boundary_report_v1();
+    let account_creation_proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
     let signature_bytes = signature.as_bytes();
     let challenge_bytes = &signature_bytes[SLOT_ID_BYTES..SLOT_ID_BYTES + CHALLENGE_BYTES];
-    let tuple_fields_match_theorem_boundary =
-        PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len() == 11
-            && PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS
-                .contains(&"public_key_or_public_key_identity")
-            && PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS
-                .contains(&"message_or_message_digest")
-            && PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS
-                .contains(&"direct_admission_namespace_record")
-            && PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS
-                .contains(&"consume_once_state_before_and_after_spend");
+    let tuple_fields_match_theorem_boundary = PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
+        == 11
+        && PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS
+            .contains(&"public_key_or_public_key_identity")
+        && PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.contains(&"message_or_message_digest")
+        && PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS
+            .contains(&"direct_admission_namespace_record")
+        && PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS
+            .contains(&"consume_once_state_before_and_after_spend");
     if !tuple_fields_match_theorem_boundary {
         return Err(ProductionAccountBindingError::new(
             Some(accepted_parts.slot_id),
@@ -67406,8 +67540,8 @@ pub fn path2_direct_accepted_spend_tuple_evidence_v1(
         every_accepted_tuple_field_has_open_or_imported_direct_obligation: false,
         direct_qrom_action_boundary_report_digest: direct_qrom_action_boundary_report.digest,
         direct_lifecycle_boundary_report_digest: direct_lifecycle_boundary_report.digest,
-        account_creation_proof_boundary_report_digest:
-            account_creation_proof_boundary_report.digest,
+        account_creation_proof_boundary_report_digest: account_creation_proof_boundary_report
+            .digest,
         public_key_identity,
         message_digest: Sha256::digest(message).into(),
         account_id: leaf.account_id,
@@ -67416,10 +67550,8 @@ pub fn path2_direct_accepted_spend_tuple_evidence_v1(
         accepted_slot_id: accepted_parts.slot_id,
         checked_core_signature_digest: Sha256::digest(signature.as_bytes()).into(),
         checked_core_challenge_digest: Sha256::digest(challenge_bytes).into(),
-        checked_core_proof_commitment_digest: Sha256::digest(
-            accepted_parts.proof.proof_commitment,
-        )
-        .into(),
+        checked_core_proof_commitment_digest: Sha256::digest(accepted_parts.proof.proof_commitment)
+            .into(),
         prevalidated_slot_leaf_digest: leaf_digest,
         account_creation_evidence_transcript_digest: evidence_transcript_digest,
         selected_account_creation_payload_digest: certificate.public_replay_payload_digest,
@@ -67462,30 +67594,30 @@ pub fn path2_direct_accepted_spend_tuple_evidence_v1(
         .iter()
         .filter(|row| row.closed_by_imported_boundary)
         .count();
-    tuple_evidence.every_accepted_tuple_field_has_evidence =
-        tuple_evidence.accepted_tuple_field_evidence_count
+    tuple_evidence.every_accepted_tuple_field_has_evidence = tuple_evidence
+        .accepted_tuple_field_evidence_count
+        == PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
+        && tuple_evidence.accepted_tuple_field_evidence_present_count
             == PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
-            && tuple_evidence.accepted_tuple_field_evidence_present_count
-                == PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
-            && PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS
-                .iter()
-                .zip(tuple_evidence.accepted_tuple_field_evidence_rows.iter())
-                .all(|(field, row)| {
-                    row.accepted_tuple_field == *field && row.accepted_path_evidence_present
-                });
-    tuple_evidence.every_accepted_tuple_field_has_open_direct_obligation =
-        tuple_evidence.accepted_tuple_field_evidence_count
+        && PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS
+            .iter()
+            .zip(tuple_evidence.accepted_tuple_field_evidence_rows.iter())
+            .all(|(field, row)| {
+                row.accepted_tuple_field == *field && row.accepted_path_evidence_present
+            });
+    tuple_evidence.every_accepted_tuple_field_has_open_direct_obligation = tuple_evidence
+        .accepted_tuple_field_evidence_count
+        == PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
+        && tuple_evidence.accepted_tuple_field_open_obligation_count
             == PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
-            && tuple_evidence.accepted_tuple_field_open_obligation_count
-                == PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
-            && tuple_evidence
-                .accepted_tuple_field_evidence_rows
-                .iter()
-                .all(|row| {
-                    row.separate_closure_required
-                        && row.all_referenced_direct_obligations_still_open
-                        && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
-                });
+        && tuple_evidence
+            .accepted_tuple_field_evidence_rows
+            .iter()
+            .all(|row| {
+                row.separate_closure_required
+                    && row.all_referenced_direct_obligations_still_open
+                    && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
+            });
     tuple_evidence.every_accepted_tuple_field_has_open_or_imported_direct_obligation =
         tuple_evidence.accepted_tuple_field_evidence_count
             == PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
@@ -67493,8 +67625,7 @@ pub fn path2_direct_accepted_spend_tuple_evidence_v1(
                 .accepted_tuple_field_evidence_rows
                 .iter()
                 .all(|row| row.all_referenced_direct_obligations_open_or_imported);
-    tuple_evidence.digest =
-        path2_direct_accepted_spend_tuple_evidence_v1_digest(&tuple_evidence);
+    tuple_evidence.digest = path2_direct_accepted_spend_tuple_evidence_v1_digest(&tuple_evidence);
     Ok(tuple_evidence)
 }
 
@@ -67703,32 +67834,29 @@ fn path2_direct_accepted_composition_hypothesis_evidence_rows_v1(
     evidence: &Path2DirectAcceptedCompositionEvidenceV1,
     direct_report: &Path2DirectTheoremBoundaryReportV1,
 ) -> Vec<Path2DirectAcceptedCompositionHypothesisEvidenceRowV1> {
-    let row =
-        |acceptance_hypothesis: &'static str,
-         direct_obligation_id: &'static str,
-         accepted_path_evidence_source: &'static str,
-         accepted_path_check: &'static str,
-         accepted_path_evidence_present: bool,
-         separate_rejection_evidence_required: bool| {
-            Path2DirectAcceptedCompositionHypothesisEvidenceRowV1 {
-                acceptance_hypothesis,
+    let row = |acceptance_hypothesis: &'static str,
+               direct_obligation_id: &'static str,
+               accepted_path_evidence_source: &'static str,
+               accepted_path_check: &'static str,
+               accepted_path_evidence_present: bool,
+               separate_rejection_evidence_required: bool| {
+        Path2DirectAcceptedCompositionHypothesisEvidenceRowV1 {
+            acceptance_hypothesis,
+            direct_obligation_id,
+            accepted_path_evidence_source,
+            accepted_path_check,
+            accepted_path_evidence_present,
+            separate_rejection_evidence_required,
+            theorem_obligation_still_open: path2_direct_obligation_still_open_for_hypothesis_v1(
+                direct_report,
                 direct_obligation_id,
-                accepted_path_evidence_source,
-                accepted_path_check,
-                accepted_path_evidence_present,
-                separate_rejection_evidence_required,
-                theorem_obligation_still_open:
-                    path2_direct_obligation_still_open_for_hypothesis_v1(
-                        direct_report,
-                        direct_obligation_id,
-                        acceptance_hypothesis,
-                    ),
-                closed_by_imported_boundary:
-                    path2_direct_referenced_obligations_closed_by_import_v1(&[
-                        direct_obligation_id,
-                    ]),
-            }
-        };
+                acceptance_hypothesis,
+            ),
+            closed_by_imported_boundary: path2_direct_referenced_obligations_closed_by_import_v1(
+                &[direct_obligation_id],
+            ),
+        }
+    };
 
     vec![
         row(
@@ -67786,7 +67914,8 @@ fn path2_direct_accepted_composition_hypothesis_evidence_rows_v1(
             "direct_obligation_checked_core_acceptance",
             "accepted direct spend tuple and QROM/action boundary digest",
             "direct_spend_tuple_accepts && qrom_action_digest_matches_direct_theorem",
-            evidence.direct_spend_tuple_accepts && evidence.qrom_action_digest_matches_direct_theorem,
+            evidence.direct_spend_tuple_accepts
+                && evidence.qrom_action_digest_matches_direct_theorem,
             false,
         ),
         row(
@@ -67825,45 +67954,41 @@ fn path2_direct_accepted_composition_evidence_unpooled_v1(
         ..
     } = path2_direct_accepted_spend_tuple_kat_context_v1()?;
 
-    let creation_evidence_matches_direct_tuple =
-        creation_evidence.account_id == tuple_evidence.account_id
-            && creation_evidence.public_key_identity == tuple_evidence.public_key_identity
-            && creation_evidence.account_state_root_before
-                == tuple_evidence.account_state_root_before
-            && creation_evidence.slot_id == tuple_evidence.slot_id
-            && creation_evidence.prevalidated_slot_leaf_digest
-                == tuple_evidence.prevalidated_slot_leaf_digest
-            && creation_evidence.account_creation_evidence_transcript_digest
-                == tuple_evidence.account_creation_evidence_transcript_digest
-            && creation_evidence.selected_account_creation_payload_digest
-                == tuple_evidence.selected_account_creation_payload_digest
-            && creation_evidence.slot_authorization_digest
-                == tuple_evidence.slot_authorization_digest;
-    let proof_boundary_digest_matches_direct_theorem =
-        direct_report.account_creation_proof_boundary_report_digest == proof_report.digest
-            && tuple_evidence.account_creation_proof_boundary_report_digest
-                == proof_report.digest
-            && creation_evidence.account_creation_proof_boundary_report_digest
-                == proof_report.digest;
+    let creation_evidence_matches_direct_tuple = creation_evidence.account_id
+        == tuple_evidence.account_id
+        && creation_evidence.public_key_identity == tuple_evidence.public_key_identity
+        && creation_evidence.account_state_root_before == tuple_evidence.account_state_root_before
+        && creation_evidence.slot_id == tuple_evidence.slot_id
+        && creation_evidence.prevalidated_slot_leaf_digest
+            == tuple_evidence.prevalidated_slot_leaf_digest
+        && creation_evidence.account_creation_evidence_transcript_digest
+            == tuple_evidence.account_creation_evidence_transcript_digest
+        && creation_evidence.selected_account_creation_payload_digest
+            == tuple_evidence.selected_account_creation_payload_digest
+        && creation_evidence.slot_authorization_digest == tuple_evidence.slot_authorization_digest;
+    let proof_boundary_digest_matches_direct_theorem = direct_report
+        .account_creation_proof_boundary_report_digest
+        == proof_report.digest
+        && tuple_evidence.account_creation_proof_boundary_report_digest == proof_report.digest
+        && creation_evidence.account_creation_proof_boundary_report_digest == proof_report.digest;
     let qrom_action_digest_matches_direct_theorem =
         direct_report.direct_qrom_action_boundary_report_digest == qrom_report.digest
             && tuple_evidence.direct_qrom_action_boundary_report_digest == qrom_report.digest;
     let lifecycle_digest_matches_direct_theorem =
         direct_report.direct_lifecycle_boundary_report_digest == lifecycle_report.digest
             && tuple_evidence.direct_lifecycle_boundary_report_digest == lifecycle_report.digest;
-    let direct_admission_namespace_matches_authorization =
-        tuple_evidence.direct_admission_namespace_record_digest
-            == path2_direct_admission_namespace_record_digest(
-                &stark_fixture.leaf.account_id,
-                &stark_fixture.leaf.account_state_root_before,
-                &authorization,
-            );
-    let consume_once_transition_matches_tuple =
-        tuple_evidence.consume_once_state_after_digest
-            == path2_direct_consume_once_authorization_set_digest(&consumed)
-            && tuple_evidence.consumed_authorization_absent_before
-            && tuple_evidence.consumed_authorization_present_after
-            && tuple_evidence.consume_once_inserted_exactly_one_authorization;
+    let direct_admission_namespace_matches_authorization = tuple_evidence
+        .direct_admission_namespace_record_digest
+        == path2_direct_admission_namespace_record_digest(
+            &stark_fixture.leaf.account_id,
+            &stark_fixture.leaf.account_state_root_before,
+            &authorization,
+        );
+    let consume_once_transition_matches_tuple = tuple_evidence.consume_once_state_after_digest
+        == path2_direct_consume_once_authorization_set_digest(&consumed)
+        && tuple_evidence.consumed_authorization_absent_before
+        && tuple_evidence.consumed_authorization_present_after
+        && tuple_evidence.consume_once_inserted_exactly_one_authorization;
     let direct_spend_tuple_accepts =
         tuple_evidence.public_result_class_name == PATH2_PUBLIC_RESULT_ACCEPT_SPEND_SLOT;
     let public_result_accepts_same_slot = tuple_evidence.public_result_accepts_same_slot;
@@ -67882,9 +68007,7 @@ fn path2_direct_accepted_composition_evidence_unpooled_v1(
         || !direct_theorem_obligations_still_open
         || !creation_evidence.proof_family_obligations_still_open
     {
-        return Err(
-            "Path 2 direct accepted composition evidence boundary mismatch".to_string(),
-        );
+        return Err("Path 2 direct accepted composition evidence boundary mismatch".to_string());
     }
 
     let mut evidence = Path2DirectAcceptedCompositionEvidenceV1 {
@@ -67906,13 +68029,13 @@ fn path2_direct_accepted_composition_evidence_unpooled_v1(
         account_state_root_before: tuple_evidence.account_state_root_before,
         slot_id: tuple_evidence.slot_id,
         prevalidated_slot_leaf_digest: tuple_evidence.prevalidated_slot_leaf_digest,
-        account_creation_evidence_transcript_digest:
-            tuple_evidence.account_creation_evidence_transcript_digest,
-        selected_account_creation_payload_digest:
-            tuple_evidence.selected_account_creation_payload_digest,
+        account_creation_evidence_transcript_digest: tuple_evidence
+            .account_creation_evidence_transcript_digest,
+        selected_account_creation_payload_digest: tuple_evidence
+            .selected_account_creation_payload_digest,
         slot_authorization_digest: tuple_evidence.slot_authorization_digest,
-        direct_admission_namespace_record_digest:
-            tuple_evidence.direct_admission_namespace_record_digest,
+        direct_admission_namespace_record_digest: tuple_evidence
+            .direct_admission_namespace_record_digest,
         consume_once_state_before_digest: tuple_evidence.consume_once_state_before_digest,
         consume_once_state_after_digest: tuple_evidence.consume_once_state_after_digest,
         creation_evidence_matches_direct_tuple,
@@ -67930,16 +68053,14 @@ fn path2_direct_accepted_composition_evidence_unpooled_v1(
         every_positive_acceptance_hypothesis_has_accepted_path_evidence: false,
         public_rejection_hypothesis_deferred_to_rejection_kats: false,
         direct_theorem_obligations_still_open,
-        proof_family_obligations_still_open: creation_evidence
-            .proof_family_obligations_still_open,
+        proof_family_obligations_still_open: creation_evidence.proof_family_obligations_still_open,
         composition_theorem_instantiated: false,
         account_creation_proof_boundary_verified: false,
         deployment_ready: false,
     };
     evidence.accepted_hypothesis_evidence_rows =
         path2_direct_accepted_composition_hypothesis_evidence_rows_v1(&evidence, &direct_report);
-    evidence.accepted_hypothesis_evidence_count =
-        evidence.accepted_hypothesis_evidence_rows.len();
+    evidence.accepted_hypothesis_evidence_count = evidence.accepted_hypothesis_evidence_rows.len();
     evidence.positive_acceptance_hypothesis_evidence_count = evidence
         .accepted_hypothesis_evidence_rows
         .iter()
@@ -67947,17 +68068,18 @@ fn path2_direct_accepted_composition_evidence_unpooled_v1(
             row.accepted_path_evidence_present && !row.separate_rejection_evidence_required
         })
         .count();
-    evidence.every_positive_acceptance_hypothesis_has_accepted_path_evidence =
-        evidence.accepted_hypothesis_evidence_count == PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES.len()
-            && evidence.positive_acceptance_hypothesis_evidence_count == 8
-            && evidence
-                .accepted_hypothesis_evidence_rows
-                .iter()
-                .filter(|row| !row.separate_rejection_evidence_required)
-                .all(|row| {
-                    row.accepted_path_evidence_present
-                        && (row.theorem_obligation_still_open || row.closed_by_imported_boundary)
-                });
+    evidence.every_positive_acceptance_hypothesis_has_accepted_path_evidence = evidence
+        .accepted_hypothesis_evidence_count
+        == PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES.len()
+        && evidence.positive_acceptance_hypothesis_evidence_count == 8
+        && evidence
+            .accepted_hypothesis_evidence_rows
+            .iter()
+            .filter(|row| !row.separate_rejection_evidence_required)
+            .all(|row| {
+                row.accepted_path_evidence_present
+                    && (row.theorem_obligation_still_open || row.closed_by_imported_boundary)
+            });
     evidence.public_rejection_hypothesis_deferred_to_rejection_kats = evidence
         .accepted_hypothesis_evidence_rows
         .iter()
@@ -67989,8 +68111,7 @@ pub fn validate_path2_account_creation_accepted_proof_boundary_evidence_v1(
         != evidence.digest
     {
         return Err(
-            "Path 2 account-creation accepted proof-boundary evidence digest mismatch"
-                .to_string(),
+            "Path 2 account-creation accepted proof-boundary evidence digest mismatch".to_string(),
         );
     }
 
@@ -68018,7 +68139,8 @@ pub fn validate_path2_account_creation_accepted_proof_boundary_evidence_v1(
         || evidence.proof_boundary_conclusion != proof_boundary_report.proof_boundary_conclusion
         || evidence.selected_payload_type != proof_boundary_report.selected_payload_type
         || evidence.verifier_boundary_endpoint != proof_boundary_report.verifier_boundary_endpoint
-        || evidence.production_boundary_endpoint != proof_boundary_report.production_boundary_endpoint
+        || evidence.production_boundary_endpoint
+            != proof_boundary_report.production_boundary_endpoint
         || evidence.replay_payload_digest_function
             != proof_boundary_report.replay_payload_digest_function
         || evidence.accepting_requirements != proof_boundary_report.accepting_requirements
@@ -68113,11 +68235,10 @@ pub fn validate_path2_account_creation_accepted_proof_boundary_evidence_v1(
         }
     }
 
-    let expected_requirement_rows =
-        path2_account_creation_accepted_requirement_evidence_rows_v1(
-            evidence,
-            &proof_boundary_report,
-        );
+    let expected_requirement_rows = path2_account_creation_accepted_requirement_evidence_rows_v1(
+        evidence,
+        &proof_boundary_report,
+    );
     if evidence.accepted_requirement_evidence_rows != expected_requirement_rows
         || evidence.accepted_requirement_evidence_count
             != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.len()
@@ -68325,8 +68446,7 @@ pub fn validate_path2_direct_accepted_spend_tuple_evidence_v1(
             != evidence.accepted_tuple_field_evidence_rows.len()
         || evidence.accepted_tuple_field_evidence_present_count
             != PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
-        || evidence.accepted_tuple_field_open_obligation_count
-            != 6
+        || evidence.accepted_tuple_field_open_obligation_count != 6
         || evidence.accepted_tuple_field_imported_closure_count != 2
         || !evidence.every_accepted_tuple_field_has_evidence
         || evidence.every_accepted_tuple_field_has_open_direct_obligation
@@ -68359,8 +68479,7 @@ pub fn validate_path2_direct_accepted_spend_tuple_kat_evidence_v1(
     }
     if kat != &path2_direct_accepted_spend_tuple_kat_evidence_v1()? {
         return Err(
-            "Path 2 direct accepted spend tuple KAT evidence fixture binding mismatch"
-                .to_string(),
+            "Path 2 direct accepted spend tuple KAT evidence fixture binding mismatch".to_string(),
         );
     }
     Ok(())
@@ -68390,15 +68509,16 @@ pub fn validate_path2_direct_accepted_composition_evidence_v1(
         || evidence.direct_lifecycle_boundary_report_digest != lifecycle_report.digest
         || evidence.account_creation_proof_boundary_report_digest != proof_report.digest
         || evidence.direct_accepted_spend_tuple_evidence_digest == [0_u8; DIGEST_BYTES]
-        || evidence.account_creation_accepted_proof_boundary_evidence_digest
-            == [0_u8; DIGEST_BYTES]
+        || evidence.account_creation_accepted_proof_boundary_evidence_digest == [0_u8; DIGEST_BYTES]
     {
         return Err("Path 2 direct accepted composition evidence authority mismatch".to_string());
     }
 
     let direct_obligations_still_open = direct_report.obligation_rows.iter().any(|row| row.open);
-    let proof_family_obligations_still_open =
-        proof_report.proof_obligation_rows.iter().any(|row| row.open);
+    let proof_family_obligations_still_open = proof_report
+        .proof_obligation_rows
+        .iter()
+        .any(|row| row.open);
     if evidence.direct_theorem_obligations_still_open != direct_obligations_still_open
         || evidence.proof_family_obligations_still_open != proof_family_obligations_still_open
     {
@@ -68429,8 +68549,7 @@ pub fn validate_path2_direct_accepted_composition_evidence_v1(
         || !evidence.public_rejection_hypothesis_deferred_to_rejection_kats
     {
         return Err(
-            "Path 2 direct accepted composition evidence lost hypothesis evidence rows"
-                .to_string(),
+            "Path 2 direct accepted composition evidence lost hypothesis evidence rows".to_string(),
         );
     }
 
@@ -68506,8 +68625,7 @@ pub fn validate_path2_direct_accepted_composition_evidence_v1(
     {
         if evidence != &path2_direct_accepted_composition_evidence_v1()? {
             return Err(
-                "Path 2 direct accepted composition evidence fixture binding mismatch"
-                    .to_string(),
+                "Path 2 direct accepted composition evidence fixture binding mismatch".to_string(),
             );
         }
     }
@@ -69372,7 +69490,11 @@ fn path2_account_stark_payload_byte_model_report_v1_frame(
         b"selected_payload_type",
         report.selected_payload_type.as_bytes(),
     );
-    append_frame(&mut frame, b"payload_schema", report.payload_schema.as_bytes());
+    append_frame(
+        &mut frame,
+        b"payload_schema",
+        report.payload_schema.as_bytes(),
+    );
     append_u64(&mut frame, b"payload_version", report.payload_version);
     append_u64(
         &mut frame,
@@ -69709,9 +69831,17 @@ fn path2_account_stark_fri_qrom_residual_report_v1_frame(
         report.account_stark_config_source.as_bytes(),
     );
     append_frame(&mut frame, b"proof_system", report.proof_system.as_bytes());
-    append_u64(&mut frame, b"poseidon2_width", report.poseidon2_width as u64);
+    append_u64(
+        &mut frame,
+        b"poseidon2_width",
+        report.poseidon2_width as u64,
+    );
     append_u64(&mut frame, b"fri_log_blowup", report.fri_log_blowup as u64);
-    append_u64(&mut frame, b"fri_num_queries", report.fri_num_queries as u64);
+    append_u64(
+        &mut frame,
+        b"fri_num_queries",
+        report.fri_num_queries as u64,
+    );
     append_u64(
         &mut frame,
         b"fri_query_pow_bits",
@@ -69748,7 +69878,11 @@ fn path2_account_stark_fri_qrom_residual_report_v1_frame(
         report.poseidon2_sponge_floor_bits as u64,
     );
     for (index, artifact) in report.checked_core_qrom_artifacts.iter().enumerate() {
-        append_u64(&mut frame, b"checked_core_qrom_artifact_index", index as u64);
+        append_u64(
+            &mut frame,
+            b"checked_core_qrom_artifact_index",
+            index as u64,
+        );
         append_frame(
             &mut frame,
             b"checked_core_qrom_artifact",
@@ -69885,7 +70019,11 @@ fn path2_account_stark_fri_aok_boundary_report_v1_frame(
         report.account_stark_config_source.as_bytes(),
     );
     append_frame(&mut frame, b"proof_system", report.proof_system.as_bytes());
-    append_frame(&mut frame, b"residual_item", report.residual_item.as_bytes());
+    append_frame(
+        &mut frame,
+        b"residual_item",
+        report.residual_item.as_bytes(),
+    );
     append_frame(
         &mut frame,
         b"extractor_theorem_target",
@@ -70047,11 +70185,7 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
             b"leaf_evidence_binding_field_index",
             index as u64,
         );
-        append_frame(
-            &mut frame,
-            b"leaf_evidence_binding_field",
-            field.as_bytes(),
-        );
+        append_frame(&mut frame, b"leaf_evidence_binding_field", field.as_bytes());
     }
     for (index, field) in report
         .certificate_evidence_binding_fields
@@ -70075,29 +70209,17 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
             b"binding_leaf_context_field_index",
             index as u64,
         );
-        append_frame(
-            &mut frame,
-            b"binding_leaf_context_field",
-            field.as_bytes(),
-        );
+        append_frame(&mut frame, b"binding_leaf_context_field", field.as_bytes());
     }
     for (index, field) in report.payload_binding_fields.iter().enumerate() {
-        append_u64(
-            &mut frame,
-            b"payload_binding_field_index",
-            index as u64,
-        );
+        append_u64(&mut frame, b"payload_binding_field_index", index as u64);
         append_frame(&mut frame, b"payload_binding_field", field.as_bytes());
     }
     for (index, anchor) in report.deployed_anchor_fields.iter().enumerate() {
         append_u64(&mut frame, b"deployed_anchor_field_index", index as u64);
         append_frame(&mut frame, b"deployed_anchor_field", anchor.as_bytes());
     }
-    for (index, field) in report
-        .no_export_private_material_fields
-        .iter()
-        .enumerate()
-    {
+    for (index, field) in report.no_export_private_material_fields.iter().enumerate() {
         append_u64(
             &mut frame,
             b"no_export_private_material_field_index",
@@ -70110,11 +70232,7 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
         );
     }
     for (index, row) in report.requirement_coverage_rows.iter().enumerate() {
-        append_u64(
-            &mut frame,
-            b"requirement_coverage_row_index",
-            index as u64,
-        );
+        append_u64(&mut frame, b"requirement_coverage_row_index", index as u64);
         append_frame(
             &mut frame,
             b"requirement_coverage_requirement",
@@ -70239,18 +70357,10 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
             b"proof_obligation_blocker",
             row.blocker.as_bytes(),
         );
-        append_u64(
-            &mut frame,
-            b"proof_obligation_open",
-            u64::from(row.open),
-        );
+        append_u64(&mut frame, b"proof_obligation_open", u64::from(row.open));
     }
     for (index, row) in report.closure_dependency_rows.iter().enumerate() {
-        append_u64(
-            &mut frame,
-            b"closure_dependency_row_index",
-            index as u64,
-        );
+        append_u64(&mut frame, b"closure_dependency_row_index", index as u64);
         append_frame(
             &mut frame,
             b"closure_dependency_id",
@@ -70286,17 +70396,9 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
             b"closure_dependency_blocker",
             row.blocker.as_bytes(),
         );
-        append_u64(
-            &mut frame,
-            b"closure_dependency_open",
-            u64::from(row.open),
-        );
+        append_u64(&mut frame, b"closure_dependency_open", u64::from(row.open));
     }
-    for (index, row) in report
-        .closure_dependency_evidence_rows
-        .iter()
-        .enumerate()
-    {
+    for (index, row) in report.closure_dependency_evidence_rows.iter().enumerate() {
         append_u64(
             &mut frame,
             b"closure_dependency_evidence_row_index",
@@ -70612,11 +70714,7 @@ fn path2_account_creation_no_export_boundary_report_v1_frame(
             field.as_bytes(),
         );
     }
-    for (index, field) in report
-        .no_export_private_material_fields
-        .iter()
-        .enumerate()
-    {
+    for (index, field) in report.no_export_private_material_fields.iter().enumerate() {
         append_u64(
             &mut frame,
             b"no_export_private_material_field_index",
@@ -70630,11 +70728,7 @@ fn path2_account_creation_no_export_boundary_report_v1_frame(
     }
     for (index, case_id) in report.no_export_vector_case_ids.iter().enumerate() {
         append_u64(&mut frame, b"no_export_vector_case_index", index as u64);
-        append_frame(
-            &mut frame,
-            b"no_export_vector_case_id",
-            case_id.as_bytes(),
-        );
+        append_frame(&mut frame, b"no_export_vector_case_id", case_id.as_bytes());
     }
     append_u64(
         &mut frame,
@@ -70725,12 +70819,182 @@ fn path2_account_creation_no_export_boundary_report_v1_frame(
     frame
 }
 
+fn path2_authorization_class_binding_audit_report_v1_frame(
+    report: &Path2AuthorizationClassBindingAuditReportV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"domain", report.domain.as_bytes());
+    append_frame(&mut frame, b"profile", PROFILE.as_bytes());
+    append_frame(&mut frame, b"support_file", report.support_file.as_bytes());
+    append_frame(
+        &mut frame,
+        b"projection_audit_file",
+        report.projection_audit_file.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"authorization_local_classification_file",
+        report.authorization_local_classification_file.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"theorem_target",
+        report.theorem_target.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"spend_authorization_class_digest_function",
+        report.spend_authorization_class_digest_function.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"spend_projection_encoder",
+        report.spend_projection_encoder.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"direct_spend_verifier_endpoint",
+        report.direct_spend_verifier_endpoint.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"checked_core_verifier_endpoint",
+        report.checked_core_verifier_endpoint.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"state_namespace_validator",
+        report.state_namespace_validator.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"consume_once_validator",
+        report.consume_once_validator.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"lean_boundary_predicate",
+        report.lean_boundary_predicate.as_bytes(),
+    );
+    for (index, row) in report.rows.iter().enumerate() {
+        append_u64(
+            &mut frame,
+            b"authorization_class_audit_row_index",
+            index as u64,
+        );
+        append_frame(&mut frame, b"semantic_field", row.semantic_field.as_bytes());
+        append_frame(
+            &mut frame,
+            b"p_spend_surface",
+            row.p_spend_surface.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"verifier_binding_surface",
+            row.verifier_binding_surface.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"current_evidence",
+            row.current_evidence.as_bytes(),
+        );
+        append_frame(&mut frame, b"residual", row.residual.as_bytes());
+        append_u64(&mut frame, b"pinned", u64::from(row.pinned));
+    }
+    append_u64(&mut frame, b"row_count", report.row_count as u64);
+    for (index, field) in report.p_spend_field_ids.iter().enumerate() {
+        append_u64(&mut frame, b"p_spend_field_index", index as u64);
+        append_frame(&mut frame, b"p_spend_field", field.as_bytes());
+    }
+    append_u64(
+        &mut frame,
+        b"p_spend_field_count",
+        report.p_spend_field_count as u64,
+    );
+    for (index, hook) in report.source_shape_hook_ids.iter().enumerate() {
+        append_u64(&mut frame, b"source_shape_hook_index", index as u64);
+        append_frame(&mut frame, b"source_shape_hook", hook.as_bytes());
+    }
+    append_u64(
+        &mut frame,
+        b"source_shape_hook_count",
+        report.source_shape_hook_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"p_spend_digest_covers_revised_fields",
+        u64::from(report.p_spend_digest_covers_revised_fields),
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_frame_binding_imported",
+        u64::from(report.checked_core_frame_binding_imported),
+    );
+    append_u64(
+        &mut frame,
+        b"slot_authorization_digest_imported",
+        u64::from(report.slot_authorization_digest_imported),
+    );
+    append_u64(
+        &mut frame,
+        b"consume_once_lifecycle_imported",
+        u64::from(report.consume_once_lifecycle_imported),
+    );
+    append_u64(
+        &mut frame,
+        b"no_private_authorization_material_in_direct_verifier",
+        u64::from(report.no_private_authorization_material_in_direct_verifier),
+    );
+    append_u64(
+        &mut frame,
+        b"field_completeness_negative_audit_pinned",
+        u64::from(report.field_completeness_negative_audit_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"field_completeness_negative_audit_complete",
+        u64::from(report.field_completeness_negative_audit_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"lean_boundary_hooks_present",
+        u64::from(report.lean_boundary_hooks_present),
+    );
+    append_u64(
+        &mut frame,
+        b"existing_negative_tests_present",
+        u64::from(report.existing_negative_tests_present),
+    );
+    append_u64(
+        &mut frame,
+        b"theorem_instantiated",
+        u64::from(report.theorem_instantiated),
+    );
+    append_u64(
+        &mut frame,
+        b"external_review_complete",
+        u64::from(report.external_review_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"deployment_ready",
+        u64::from(report.deployment_ready),
+    );
+    append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
+    frame
+}
+
 fn path2_account_creation_sampler_timing_report_v1_frame(
     report: &Path2AccountCreationSamplerTimingReportV1,
 ) -> Vec<u8> {
     let mut frame = Vec::new();
     append_frame(&mut frame, b"domain", report.domain.as_bytes());
     append_frame(&mut frame, b"profile", PROFILE.as_bytes());
+    append_frame(
+        &mut frame,
+        b"authorization_class_binding_audit_report_digest",
+        &report.authorization_class_binding_audit_report_digest,
+    );
     append_u64(&mut frame, b"q", Q as u64);
     append_u64(&mut frame, b"groups", GROUPS as u64);
     append_u64(&mut frame, b"local_pivot", LOCAL_PIVOT as u64);
@@ -70922,7 +71186,11 @@ fn path2_direct_qrom_action_boundary_report_v1_frame(
         report.fq12_action_domain.as_bytes(),
     );
     for (index, artifact) in report.checked_core_qrom_artifacts.iter().enumerate() {
-        append_u64(&mut frame, b"checked_core_qrom_artifact_index", index as u64);
+        append_u64(
+            &mut frame,
+            b"checked_core_qrom_artifact_index",
+            index as u64,
+        );
         append_frame(
             &mut frame,
             b"checked_core_qrom_artifact",
@@ -71190,7 +71458,9 @@ fn path2_direct_lifecycle_boundary_report_v1_frame(
     append_frame(
         &mut frame,
         b"target_chain_lifecycle_profile_verification_id",
-        report.target_chain_lifecycle_profile_verification_id.as_bytes(),
+        report
+            .target_chain_lifecycle_profile_verification_id
+            .as_bytes(),
     );
     append_frame(
         &mut frame,
@@ -71770,10 +72040,8 @@ pub fn path2_account_creation_accepted_proof_boundary_evidence_v1_frame(
 pub fn path2_account_creation_accepted_proof_boundary_evidence_v1_digest(
     evidence: &Path2AccountCreationAcceptedProofBoundaryEvidenceV1,
 ) -> [u8; DIGEST_BYTES] {
-    Sha256::digest(path2_account_creation_accepted_proof_boundary_evidence_v1_frame(
-        evidence,
-    ))
-    .into()
+    Sha256::digest(path2_account_creation_accepted_proof_boundary_evidence_v1_frame(evidence))
+        .into()
 }
 
 pub fn path2_direct_accepted_spend_tuple_evidence_v1_frame(
@@ -72033,7 +72301,10 @@ pub fn path2_direct_accepted_spend_tuple_evidence_v1_frame(
 pub fn path2_direct_accepted_spend_tuple_evidence_v1_digest(
     evidence: &Path2DirectAcceptedSpendTupleEvidenceV1,
 ) -> [u8; DIGEST_BYTES] {
-    Sha256::digest(path2_direct_accepted_spend_tuple_evidence_v1_frame(evidence)).into()
+    Sha256::digest(path2_direct_accepted_spend_tuple_evidence_v1_frame(
+        evidence,
+    ))
+    .into()
 }
 
 pub fn path2_direct_accepted_composition_evidence_v1_frame(
@@ -72288,7 +72559,10 @@ pub fn path2_direct_accepted_composition_evidence_v1_frame(
 pub fn path2_direct_accepted_composition_evidence_v1_digest(
     evidence: &Path2DirectAcceptedCompositionEvidenceV1,
 ) -> [u8; DIGEST_BYTES] {
-    Sha256::digest(path2_direct_accepted_composition_evidence_v1_frame(evidence)).into()
+    Sha256::digest(path2_direct_accepted_composition_evidence_v1_frame(
+        evidence,
+    ))
+    .into()
 }
 
 fn path2_direct_theorem_boundary_report_v1_frame(
@@ -72399,11 +72673,7 @@ fn path2_direct_theorem_boundary_report_v1_frame(
         append_u64(&mut frame, b"open", u64::from(row.open));
     }
     for (index, row) in report.closure_dependency_rows.iter().enumerate() {
-        append_u64(
-            &mut frame,
-            b"direct_closure_dependency_index",
-            index as u64,
-        );
+        append_u64(&mut frame, b"direct_closure_dependency_index", index as u64);
         append_frame(
             &mut frame,
             b"direct_closure_dependency_id",
@@ -72450,11 +72720,7 @@ fn path2_direct_theorem_boundary_report_v1_frame(
             u64::from(row.open),
         );
     }
-    for (index, row) in report
-        .closure_dependency_evidence_rows
-        .iter()
-        .enumerate()
-    {
+    for (index, row) in report.closure_dependency_evidence_rows.iter().enumerate() {
         append_u64(
             &mut frame,
             b"direct_closure_dependency_evidence_index",
@@ -72521,7 +72787,11 @@ fn path2_direct_theorem_boundary_report_v1_frame(
             row.blocker.as_bytes(),
         );
     }
-    append_u64(&mut frame, b"obligation_count", report.obligation_count as u64);
+    append_u64(
+        &mut frame,
+        b"obligation_count",
+        report.obligation_count as u64,
+    );
     append_u64(
         &mut frame,
         b"closure_dependency_count",
@@ -73992,7 +74262,11 @@ fn sub_mod(lhs: u16, rhs: u16) -> u16 {
 }
 
 fn negate_mod(value: u16) -> u16 {
-    if value == 0 { 0 } else { Q - value }
+    if value == 0 {
+        0
+    } else {
+        Q - value
+    }
 }
 
 fn challenge_mul(coeff: i8, value: u16) -> Result<u16, String> {
@@ -76264,11 +76538,9 @@ mod tests {
 
         let mut bad_response = signature.clone();
         bad_response[response_start] = (2 * RESPONSE_BOUND) as u8 + 1;
-        assert!(
-            decode_production_signature(&bad_response)
-                .unwrap_err()
-                .contains("active response coordinate 0 in round 0 is non-canonical")
-        );
+        assert!(decode_production_signature(&bad_response)
+            .unwrap_err()
+            .contains("active response coordinate 0 in round 0 is non-canonical"));
 
         let mut bad_opening = signature;
         bad_opening[opening_start..opening_start + 2].copy_from_slice(&Q.to_le_bytes());
@@ -78256,7 +78528,10 @@ mod tests {
             ([0x00; REVIEWED_FQ12_PAD_SEED_BYTES], 0),
             ([0xFF; REVIEWED_FQ12_PAD_SEED_BYTES], u64::MAX),
             (core::array::from_fn(|i| (i as u8).wrapping_mul(31)), 12289),
-            (core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(3)), 1),
+            (
+                core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(3)),
+                1,
+            ),
         ];
         for (pad_seed, slot_id) in cases {
             let deployed =
@@ -78688,35 +78963,27 @@ mod tests {
         let base = path2_native_checked_core_frame_fixture();
         let mut frame = base;
         frame.native_boundary_version += 1;
-        assert!(
-            validate_path2_native_checked_core_frame_v1(&frame)
-                .unwrap_err()
-                .contains("version mismatch")
-        );
+        assert!(validate_path2_native_checked_core_frame_v1(&frame)
+            .unwrap_err()
+            .contains("version mismatch"));
 
         let mut frame = base;
         frame.parameter_set_id += 1;
-        assert!(
-            validate_path2_native_checked_core_frame_v1(&frame)
-                .unwrap_err()
-                .contains("parameter set mismatch")
-        );
+        assert!(validate_path2_native_checked_core_frame_v1(&frame)
+            .unwrap_err()
+            .contains("parameter set mismatch"));
 
         let mut frame = base;
         frame.verifier_family_id += 1;
-        assert!(
-            validate_path2_native_checked_core_frame_v1(&frame)
-                .unwrap_err()
-                .contains("verifier family mismatch")
-        );
+        assert!(validate_path2_native_checked_core_frame_v1(&frame)
+            .unwrap_err()
+            .contains("verifier family mismatch"));
 
         let mut frame = base;
         frame.aggregation_mode = 2;
-        assert!(
-            validate_path2_native_checked_core_frame_v1(&frame)
-                .unwrap_err()
-                .contains("reserved")
-        );
+        assert!(validate_path2_native_checked_core_frame_v1(&frame)
+            .unwrap_err()
+            .contains("reserved"));
 
         let mut bytes = path2_native_checked_core_frame_v1_bytes(&base).unwrap();
         bytes[0] ^= 1;
@@ -78821,26 +79088,24 @@ mod tests {
         }
         assert_no_active_native_private_material(&serialized);
 
-        assert!(
-            public_native_account_view_v1(
-                PATH2_NATIVE_CHECKED_CORE_FRAME_VERSION + 1,
-                PATH2_NATIVE_CHECKED_CORE_PARAMETER_SET_Q12289,
-                PATH2_NATIVE_CHECKED_CORE_VERIFIER_FAMILY_FQ12,
-                PATH2_NATIVE_AGGREGATION_MODE_DIRECT,
-                repeated_digest(0x21),
-                repeated_digest(0x20),
-                repeated_digest(0x22),
-                repeated_digest(0x23),
-                repeated_digest(0x24),
-                repeated_digest(0x25),
-                repeated_digest(0x26),
-                1,
-                repeated_digest(0x32),
-                repeated_digest(0x40),
-            )
-            .unwrap_err()
-            .contains("version mismatch")
-        );
+        assert!(public_native_account_view_v1(
+            PATH2_NATIVE_CHECKED_CORE_FRAME_VERSION + 1,
+            PATH2_NATIVE_CHECKED_CORE_PARAMETER_SET_Q12289,
+            PATH2_NATIVE_CHECKED_CORE_VERIFIER_FAMILY_FQ12,
+            PATH2_NATIVE_AGGREGATION_MODE_DIRECT,
+            repeated_digest(0x21),
+            repeated_digest(0x20),
+            repeated_digest(0x22),
+            repeated_digest(0x23),
+            repeated_digest(0x24),
+            repeated_digest(0x25),
+            repeated_digest(0x26),
+            1,
+            repeated_digest(0x32),
+            repeated_digest(0x40),
+        )
+        .unwrap_err()
+        .contains("version mismatch"));
     }
 
     #[test]
@@ -78885,18 +79150,14 @@ mod tests {
 
         let mut bad_frame = frame;
         bad_frame.aggregation_mode = 9;
-        assert!(
-            public_native_spend_view_v1(&bad_frame, &proof_bytes)
-                .unwrap_err()
-                .contains("reserved")
-        );
+        assert!(public_native_spend_view_v1(&bad_frame, &proof_bytes)
+            .unwrap_err()
+            .contains("reserved"));
 
         let bad_len_proof = [0xa1_u8; PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES + 1];
-        assert!(
-            public_native_spend_view_v1(&frame, &bad_len_proof)
-                .unwrap_err()
-                .contains("checked-core proof has")
-        );
+        assert!(public_native_spend_view_v1(&frame, &bad_len_proof)
+            .unwrap_err()
+            .contains("checked-core proof has"));
     }
 
     #[test]
@@ -79630,11 +79891,9 @@ mod tests {
 
         let spend_bytes = path2_native_spend_projection_v1_bytes(&spend).unwrap();
         assert!(spend_bytes.starts_with(PATH2_NATIVE_PROJECTION_SPEND_DOMAIN.as_bytes()));
-        assert!(
-            spend_bytes
-                .windows(DIGEST_BYTES)
-                .any(|w| w == spend.spend_authorization_class_digest)
-        );
+        assert!(spend_bytes
+            .windows(DIGEST_BYTES)
+            .any(|w| w == spend.spend_authorization_class_digest));
         let expected_spend_digest: [u8; DIGEST_BYTES] = Sha256::digest(&spend_bytes).into();
         assert_eq!(
             path2_native_spend_projection_v1_digest(&spend).unwrap(),
@@ -79712,18 +79971,14 @@ mod tests {
 
         let mut bad_context = context;
         bad_context.aggregation_mode = 9;
-        assert!(
-            path2_native_context_projection_v1_digest(&bad_context)
-                .unwrap_err()
-                .contains("reserved")
-        );
+        assert!(path2_native_context_projection_v1_digest(&bad_context)
+            .unwrap_err()
+            .contains("reserved"));
         let mut bad_spend = spend;
         bad_spend.spend_verifier_family_id = 9;
-        assert!(
-            path2_native_spend_projection_v1_digest(&bad_spend)
-                .unwrap_err()
-                .contains("verifier family mismatch")
-        );
+        assert!(path2_native_spend_projection_v1_digest(&bad_spend)
+            .unwrap_err()
+            .contains("verifier family mismatch"));
     }
 
     #[test]
@@ -80048,11 +80303,9 @@ mod tests {
         let mut bad = bundle;
         bad.spend.allowed_authorization_local_mode =
             PATH2_NATIVE_AUTHORIZATION_LOCAL_MODE_DIRECT + 1;
-        assert!(
-            assemble_path2_native_boundary_v1(&bad, &proof_bytes)
-                .unwrap_err()
-                .contains("authorization-local mode mismatch")
-        );
+        assert!(assemble_path2_native_boundary_v1(&bad, &proof_bytes)
+            .unwrap_err()
+            .contains("authorization-local mode mismatch"));
 
         let mut bad = bundle;
         bad.spend.spend_authorization_class_digest[0] ^= 1;
@@ -80305,19 +80558,15 @@ mod tests {
 
         let mut bad = carrier;
         bad.carrier_version += 1;
-        assert!(
-            validate_path2_native_consensus_carrier_v1(&bad)
-                .unwrap_err()
-                .contains("carrier version mismatch")
-        );
+        assert!(validate_path2_native_consensus_carrier_v1(&bad)
+            .unwrap_err()
+            .contains("carrier version mismatch"));
 
         let mut bad = carrier;
         bad.aggregation_mode = 9;
-        assert!(
-            validate_path2_native_consensus_carrier_v1(&bad)
-                .unwrap_err()
-                .contains("reserved")
-        );
+        assert!(validate_path2_native_consensus_carrier_v1(&bad)
+            .unwrap_err()
+            .contains("reserved"));
 
         let mut bytes = path2_native_consensus_carrier_v1_bytes(&carrier).unwrap();
         bytes[0] ^= 1;
@@ -83122,11 +83371,9 @@ mod tests {
             binding.digest,
             path2_creation_proof_binding_v1_digest(&binding)
         );
-        assert!(
-            path2_creation_proof_binding_v1_frame(&binding)
-                .windows(PATH2_CREATION_PROOF_BINDING_SCHEMA.len())
-                .any(|window| window == PATH2_CREATION_PROOF_BINDING_SCHEMA.as_bytes())
-        );
+        assert!(path2_creation_proof_binding_v1_frame(&binding)
+            .windows(PATH2_CREATION_PROOF_BINDING_SCHEMA.len())
+            .any(|window| window == PATH2_CREATION_PROOF_BINDING_SCHEMA.as_bytes()));
 
         let mut mutations: Vec<(&str, Path2CreationProofBindingV1)> = Vec::new();
 
@@ -83537,14 +83784,13 @@ mod tests {
             ..
         } = path2_account_stark_payload_kat_fixture_v1().expect("STARK payload KAT fixture");
         let recomputed_payload_frame_digest: [u8; DIGEST_BYTES] =
-            Sha256::digest(path2_account_stark_creation_payload_v1_frame(&payload).unwrap())
-                .into();
-        assert_eq!(
-            payload_frame_digest,
-            recomputed_payload_frame_digest
-        );
+            Sha256::digest(path2_account_stark_creation_payload_v1_frame(&payload).unwrap()).into();
+        assert_eq!(payload_frame_digest, recomputed_payload_frame_digest);
         assert!(payload_frame_bytes > payload.account_stark_bundle.len());
-        assert_eq!(account_stark_bundle_bytes, payload.account_stark_bundle.len());
+        assert_eq!(
+            account_stark_bundle_bytes,
+            payload.account_stark_bundle.len()
+        );
         assert_eq!(
             payload.leaf_context_digest,
             path2_prevalidated_slot_leaf_context_digest(&leaf, &evidence, &certificate).unwrap()
@@ -83754,16 +84000,14 @@ mod tests {
         // Verify against a DIFFERENT leaf (slot mismatch) -> reject.
         let mut other_leaf = leaf;
         other_leaf.slot_id ^= 1;
-        assert!(
-            verify_path2_direct_creation_account_stark_payload_boundary(
-                &other_leaf,
-                &evidence,
-                &certificate,
-                &binding,
-                &payload
-            )
-            .is_err()
-        );
+        assert!(verify_path2_direct_creation_account_stark_payload_boundary(
+            &other_leaf,
+            &evidence,
+            &certificate,
+            &binding,
+            &payload
+        )
+        .is_err());
     }
 
     #[cfg(feature = "account-creation-stark-verifier")]
@@ -83802,11 +84046,11 @@ mod tests {
             evidence.account_creation_proof_boundary_report_digest,
             report.digest
         );
-        assert_eq!(evidence.accepting_requirements, report.accepting_requirements);
         assert_eq!(
-            evidence.fixture_id,
-            "Path2AccountStarkPayloadKatFixture.v1"
+            evidence.accepting_requirements,
+            report.accepting_requirements
         );
+        assert_eq!(evidence.fixture_id, "Path2AccountStarkPayloadKatFixture.v1");
         assert_eq!(
             evidence.proof_mask_seed,
             PATH2_ACCOUNT_STARK_PAYLOAD_KAT_MASK_SEED_V1
@@ -83845,8 +84089,7 @@ mod tests {
             path2_account_creation_accepted_proof_boundary_evidence_v1_digest(&evidence),
             evidence.digest
         );
-        validate_path2_account_creation_accepted_proof_boundary_evidence_v1(&evidence)
-            .unwrap();
+        validate_path2_account_creation_accepted_proof_boundary_evidence_v1(&evidence).unwrap();
         let mut malformed = evidence.clone();
         malformed.deployment_ready = true;
         malformed.digest =
@@ -83861,10 +84104,8 @@ mod tests {
         malformed_account.digest =
             path2_account_creation_accepted_proof_boundary_evidence_v1_digest(&malformed_account);
         assert_eq!(
-            validate_path2_account_creation_accepted_proof_boundary_evidence_v1(
-                &malformed_account
-            )
-            .unwrap_err(),
+            validate_path2_account_creation_accepted_proof_boundary_evidence_v1(&malformed_account)
+                .unwrap_err(),
             "Path 2 account-creation accepted proof-boundary evidence fixture binding mismatch"
         );
         let mut malformed_authorization = evidence.clone();
@@ -83911,10 +84152,7 @@ mod tests {
             PATH2_DIRECT_ACCEPTED_COMPOSITION_EVIDENCE_SCHEMA
         );
         assert_eq!(evidence.theorem_target, PATH2_DIRECT_THEOREM_TARGET);
-        assert_eq!(
-            evidence.theorem_conclusion,
-            PATH2_DIRECT_THEOREM_CONCLUSION
-        );
+        assert_eq!(evidence.theorem_conclusion, PATH2_DIRECT_THEOREM_CONCLUSION);
         assert_eq!(
             evidence.direct_theorem_boundary_report_digest,
             direct_report.digest
@@ -83997,8 +84235,7 @@ mod tests {
         malformed_message.digest =
             path2_direct_accepted_composition_evidence_v1_digest(&malformed_message);
         assert_eq!(
-            validate_path2_direct_accepted_composition_evidence_v1(&malformed_message)
-                .unwrap_err(),
+            validate_path2_direct_accepted_composition_evidence_v1(&malformed_message).unwrap_err(),
             "Path 2 direct accepted composition evidence fixture binding mismatch"
         );
     }
@@ -85954,14 +86191,12 @@ mod tests {
             &split_body,
         )
         .unwrap();
-        assert!(
-            path2_transparent_descent_verify_zk_opening_v1(
-                view,
-                &out.query_opening_manifest,
-                &rewrapped,
-            )
-            .is_err()
-        );
+        assert!(path2_transparent_descent_verify_zk_opening_v1(
+            view,
+            &out.query_opening_manifest,
+            &rewrapped,
+        )
+        .is_err());
     }
 
     #[test]
@@ -86612,11 +86847,9 @@ mod tests {
         let preflight = production_deployment_preflight();
         assert!(!preflight.deployment_ready);
         assert!(!preflight.blockers.is_empty());
-        assert!(
-            preflight
-                .blockers
-                .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS)
-        );
+        assert!(preflight
+            .blockers
+            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS));
         let direct_theorem_blockers = production_deployment_direct_theorem_blockers();
         assert_eq!(
             &preflight.blockers[1..1 + direct_theorem_blockers.len()],
@@ -86649,11 +86882,9 @@ mod tests {
         for &blocker in account_stark_residual_blockers {
             assert!(preflight.blockers.contains(&blocker));
         }
-        assert!(
-            preflight
-                .blockers
-                .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_EXTERNAL_REVIEW)
-        );
+        assert!(preflight
+            .blockers
+            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_EXTERNAL_REVIEW));
     }
 
     #[test]
@@ -86683,49 +86914,33 @@ mod tests {
         assert!(budget.active_query_symbols.contains(&"q_leaf"));
         assert!(budget.active_query_symbols.contains(&"q_auth"));
         assert!(budget.active_query_symbols.contains(&"q_chal"));
-        assert!(
-            budget
-                .active_query_symbols
-                .contains(&"q_transparent_trace_commit")
-        );
-        assert!(
-            budget
-                .active_query_symbols
-                .contains(&"q_transparent_query_row")
-        );
-        assert!(
-            budget
-                .active_query_symbols
-                .contains(&"q_transparent_merkle_open")
-        );
-        assert!(
-            budget
-                .active_query_symbols
-                .contains(&"q_transparent_consistency")
-        );
-        assert!(
-            budget
-                .active_query_symbols
-                .contains(&"q_transparent_extractor")
-        );
-        assert!(
-            budget
-                .active_query_symbols
-                .contains(&"q_transparent_simulator")
-        );
+        assert!(budget
+            .active_query_symbols
+            .contains(&"q_transparent_trace_commit"));
+        assert!(budget
+            .active_query_symbols
+            .contains(&"q_transparent_query_row"));
+        assert!(budget
+            .active_query_symbols
+            .contains(&"q_transparent_merkle_open"));
+        assert!(budget
+            .active_query_symbols
+            .contains(&"q_transparent_consistency"));
+        assert!(budget
+            .active_query_symbols
+            .contains(&"q_transparent_extractor"));
+        assert!(budget
+            .active_query_symbols
+            .contains(&"q_transparent_simulator"));
         assert_eq!(budget.inactive_query_symbols, ["q_batch"]);
-        assert!(
-            budget
-                .direct_advantage_terms
-                .iter()
-                .all(|term| !term.contains("optional_aggregation"))
-        );
-        assert!(
-            budget
-                .optional_aggregation_terms
-                .iter()
-                .all(|term| term.contains("q_batch"))
-        );
+        assert!(budget
+            .direct_advantage_terms
+            .iter()
+            .all(|term| !term.contains("optional_aggregation")));
+        assert!(budget
+            .optional_aggregation_terms
+            .iter()
+            .all(|term| term.contains("q_batch")));
         let serialized = serde_json::to_string(&budget).unwrap();
         assert!(serialized.contains(PATH2_DIRECT_QUERY_BUDGET_SCHEMA));
         assert!(serialized.contains("q_transparent_trace_commit"));
@@ -86931,43 +87146,29 @@ def marker :=
             review.consensus_carrier_body_bytes as usize,
             PATH2_NATIVE_CONSENSUS_CARRIER_BODY_BYTES
         );
-        assert!(
-            review
-                .active_native_query_symbols
-                .contains(&"q_native_public_key_identity")
-        );
-        assert!(
-            review
-                .active_native_query_symbols
-                .contains(&"q_native_authorization_class")
-        );
-        assert!(
-            review
-                .active_native_query_symbols
-                .contains(&"q_native_no_obstruction_flags")
-        );
-        assert!(
-            review
-                .active_native_query_symbols
-                .contains(&"q_native_consensus_carrier")
-        );
-        assert!(
-            review
-                .active_native_query_symbols
-                .contains(&"q_native_projection_preimage_da")
-        );
-        assert!(
-            review
-                .ordinary_hash_assumptions
-                .iter()
-                .all(|assumption| !assumption.contains("witness"))
-        );
-        assert!(
-            review
-                .hidden_witness_obligations_not_discharged_by_hash
-                .iter()
-                .any(|obligation| obligation.contains("checked-core"))
-        );
+        assert!(review
+            .active_native_query_symbols
+            .contains(&"q_native_public_key_identity"));
+        assert!(review
+            .active_native_query_symbols
+            .contains(&"q_native_authorization_class"));
+        assert!(review
+            .active_native_query_symbols
+            .contains(&"q_native_no_obstruction_flags"));
+        assert!(review
+            .active_native_query_symbols
+            .contains(&"q_native_consensus_carrier"));
+        assert!(review
+            .active_native_query_symbols
+            .contains(&"q_native_projection_preimage_da"));
+        assert!(review
+            .ordinary_hash_assumptions
+            .iter()
+            .all(|assumption| !assumption.contains("witness")));
+        assert!(review
+            .hidden_witness_obligations_not_discharged_by_hash
+            .iter()
+            .any(|obligation| obligation.contains("checked-core")));
         let rendered = serde_json::to_string(&review).unwrap();
         assert_no_active_native_private_material(&rendered);
         assert!(rendered.contains(PATH2_NATIVE_HASH_QROM_REVIEW_SCHEMA));
@@ -90902,11 +91103,9 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE,
             ]
         );
-        assert!(
-            !preflight
-                .internal_blockers
-                .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_EXTERNAL_REVIEW)
-        );
+        assert!(!preflight
+            .internal_blockers
+            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_EXTERNAL_REVIEW));
         assert_ne!(
             path2_native_deployment_preflight_v1_digest(&preflight).unwrap(),
             [0_u8; DIGEST_BYTES]
@@ -90923,9 +91122,7 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         assert!(!rendered.contains("QROM multi-target horizon"));
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS));
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION));
-        assert!(
-            !rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE)
-        );
+        assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND));
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS));
         assert!(rendered.contains("active native signer/verifier pipeline"));
@@ -91071,24 +91268,18 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             output.signer_pipeline_ready,
             output.deployment_preflight.internal_deployment_ready
         );
-        assert!(
-            !output
-                .deployment_preflight
-                .internal_blockers
-                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION)
-        );
-        assert!(
-            !output
-                .deployment_preflight
-                .internal_blockers
-                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE)
-        );
-        assert!(
-            output
-                .deployment_preflight
-                .internal_blockers
-                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND)
-        );
+        assert!(!output
+            .deployment_preflight
+            .internal_blockers
+            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION));
+        assert!(!output
+            .deployment_preflight
+            .internal_blockers
+            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE));
+        assert!(output
+            .deployment_preflight
+            .internal_blockers
+            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND));
         assert_eq!(
             output.native_boundary_digest,
             assembly.native_boundary_digest
@@ -91257,25 +91448,21 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         let (_, checked_core_frame) = path2_native_derive_boundary_frame_v1(&bundle).unwrap();
 
         assert_eq!(proof_bytes.len(), PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES);
-        assert!(
-            path2_native_checked_core_accept_v1(
-                &checked_core_frame,
-                &bundle.spend.checked_core_verifier_handle_digest,
-                &proof_bytes,
-            )
-            .is_ok()
-        );
+        assert!(path2_native_checked_core_accept_v1(
+            &checked_core_frame,
+            &bundle.spend.checked_core_verifier_handle_digest,
+            &proof_bytes,
+        )
+        .is_ok());
 
         let short_proof = &proof_bytes[..PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES - 1];
-        assert!(
-            path2_native_checked_core_accept_v1(
-                &checked_core_frame,
-                &bundle.spend.checked_core_verifier_handle_digest,
-                short_proof,
-            )
-            .unwrap_err()
-            .contains("Path 2 native checked-core proof has")
-        );
+        assert!(path2_native_checked_core_accept_v1(
+            &checked_core_frame,
+            &bundle.spend.checked_core_verifier_handle_digest,
+            short_proof,
+        )
+        .unwrap_err()
+        .contains("Path 2 native checked-core proof has"));
 
         let mut noncanonical_proof = proof_bytes;
         noncanonical_proof[PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES - 1] |= 0xc0;
@@ -91350,13 +91537,11 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         let (_, checked_core_frame) = path2_native_derive_boundary_frame_v1(&bundle).unwrap();
         let checked_core_frame_bytes =
             path2_native_checked_core_frame_v1_bytes(&checked_core_frame).unwrap();
-        assert!(
-            checked_core_frame_bytes.starts_with(
-                hash_byte_domain_evidence
-                    .checked_core_frame_domain
-                    .as_bytes()
-            )
-        );
+        assert!(checked_core_frame_bytes.starts_with(
+            hash_byte_domain_evidence
+                .checked_core_frame_domain
+                .as_bytes()
+        ));
         assert_eq!(
             evidence.checked_core_challenge,
             hash_frame_to_challenge_bytes_poseidon2(&checked_core_frame_bytes)
@@ -91652,14 +91837,10 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         assert!(zeroize_source.contains("ptr::write_volatile(word, 0)"));
         assert!(zeroize_source.contains("fn path2_native_zeroize_signer_digest_frame_v1"));
         assert!(zeroize_source.contains("compiler_fence(Ordering::SeqCst);"));
-        assert!(
-            path2_native_signer_entropy_digest_source_window_v1()
-                .contains("Path2NativeSignerDigestFrameV1::new();")
-        );
-        assert!(
-            path2_native_secret_component_digest_source_window_v1()
-                .contains("Path2NativeSignerDigestFrameV1::new();")
-        );
+        assert!(path2_native_signer_entropy_digest_source_window_v1()
+            .contains("Path2NativeSignerDigestFrameV1::new();"));
+        assert!(path2_native_secret_component_digest_source_window_v1()
+            .contains("Path2NativeSignerDigestFrameV1::new();"));
         assert!(path2_native_signer_entropy_digest_source_window_v1().contains("frame.zeroize();"));
         assert!(
             path2_native_secret_component_digest_source_window_v1().contains("frame.zeroize();")
@@ -91735,18 +91916,14 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         assert_ne!(secret.authorization_local_seed, secret.gauge_seed);
         assert_ne!(secret.authorization_local_seed, secret.randomizer_seed);
         assert_ne!(secret.gauge_seed, secret.wallet_recovery_seed);
-        assert!(
-            secret
-                .proof_randomizer_syndrome
-                .iter()
-                .all(|value| *value < Q)
-        );
-        assert!(
-            secret
-                .proof_randomizer_syndrome
-                .iter()
-                .any(|value| *value != 0)
-        );
+        assert!(secret
+            .proof_randomizer_syndrome
+            .iter()
+            .all(|value| *value < Q));
+        assert!(secret
+            .proof_randomizer_syndrome
+            .iter()
+            .any(|value| *value != 0));
         bundle.proof_commitment =
             pack_reviewed_fq12_account_carried_syndrome_digest(&secret.proof_randomizer_syndrome)
                 .unwrap();
@@ -91802,12 +91979,10 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         let secret = path2_native_secret_material_from_entropy_root_v1(root, &bundle).unwrap();
         assert_ne!(secret.authorization_local_seed, [0_u8; DIGEST_BYTES]);
         assert_ne!(secret.authorization_local_seed, secret.gauge_seed);
-        assert!(
-            secret
-                .proof_randomizer_syndrome
-                .iter()
-                .all(|value| *value < Q)
-        );
+        assert!(secret
+            .proof_randomizer_syndrome
+            .iter()
+            .all(|value| *value < Q));
     }
 
     #[test]
@@ -92262,56 +92437,36 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             evidence.smallest_remaining_productization_gate,
             PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE
         );
-        assert!(
-            !evidence
-                .deployment_blockers
-                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS)
-        );
-        assert!(
-            !evidence
-                .deployment_blockers
-                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION)
-        );
-        assert!(
-            evidence
-                .deployment_blockers
-                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE)
-        );
-        assert!(
-            !evidence
-                .deployment_blockers
-                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE)
-        );
-        assert!(
-            evidence
-                .deployment_blockers
-                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND)
-        );
-        assert!(
-            !evidence
-                .deployment_blockers
-                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS)
-        );
-        assert!(
-            evidence
-                .deployment_blockers
-                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME)
-        );
-        assert!(
-            evidence
-                .deployment_blockers
-                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE)
-        );
-        assert!(
-            evidence
-                .explicit_non_claims
-                .contains(&"no constant-time claim for private signing or keygen")
-        );
-        assert!(
-            evidence
-                .explicit_non_claims
-                .contains(&"no target-chain storage lifecycle hardening claim")
-        );
+        assert!(!evidence
+            .deployment_blockers
+            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS));
+        assert!(!evidence
+            .deployment_blockers
+            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION));
+        assert!(evidence
+            .deployment_blockers
+            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE));
+        assert!(!evidence
+            .deployment_blockers
+            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE));
+        assert!(evidence
+            .deployment_blockers
+            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND));
+        assert!(!evidence
+            .deployment_blockers
+            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS));
+        assert!(evidence
+            .deployment_blockers
+            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME));
+        assert!(evidence
+            .deployment_blockers
+            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE));
+        assert!(evidence
+            .explicit_non_claims
+            .contains(&"no constant-time claim for private signing or keygen"));
+        assert!(evidence
+            .explicit_non_claims
+            .contains(&"no target-chain storage lifecycle hardening claim"));
         let evidence_frame = path2_native_signer_verifier_pipeline_evidence_v1_frame(&evidence);
         assert!(!evidence_frame.is_empty());
         let evidence_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&evidence_frame).into();
@@ -92323,9 +92478,7 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON));
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS));
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION));
-        assert!(
-            !rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE)
-        );
+        assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE));
         assert!(
             rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE)
         );
@@ -92712,10 +92865,8 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         assert!(digest_source.contains("Path2NativeSignerDigestFrameV1::new()"));
         assert!(digest_source.contains("frame.append_frame(b\"label\", label)"));
         assert!(digest_source.contains("frame.append_frame(b\"public_binding\", public_binding)"));
-        assert!(
-            digest_source
-                .contains("path2_native_private_sha256_digest_v1(frame.as_slice(), &mut digest)")
-        );
+        assert!(digest_source
+            .contains("path2_native_private_sha256_digest_v1(frame.as_slice(), &mut digest)"));
         assert!(digest_source.contains("frame.zeroize();"));
         let derivation_source = path2_native_secret_material_derivation_source_window_v1();
         assert_eq!(
@@ -92910,16 +93061,12 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         }
 
         let scope = path2_native_constant_time_audit_scope_v1();
-        assert!(
-            scope
-                .required_artifacts
-                .contains(&"sampler_no_runtime_modulo_or_division")
-        );
-        assert!(
-            scope
-                .required_artifacts
-                .contains(&"sampler_constant_schedule_with_deterministic_fallback")
-        );
+        assert!(scope
+            .required_artifacts
+            .contains(&"sampler_no_runtime_modulo_or_division"));
+        assert!(scope
+            .required_artifacts
+            .contains(&"sampler_constant_schedule_with_deterministic_fallback"));
     }
 
     #[test]
@@ -92989,53 +93136,35 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             scope.blocker,
             PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE
         );
-        assert!(
-            scope
-                .private_fiber_components
-                .contains(&"AuthorizationLocal_c(q)")
-        );
+        assert!(scope
+            .private_fiber_components
+            .contains(&"AuthorizationLocal_c(q)"));
         assert!(scope.private_fiber_components.contains(&"Gauge_c(q)"));
-        assert!(
-            scope
-                .public_boundary_outputs
-                .contains(&"Path2NativeProjectionBundleV1")
-        );
-        assert!(
-            scope
-                .public_boundary_outputs
-                .contains(&"Path2NativeBoundaryAssemblyV1")
-        );
-        assert!(
-            scope
-                .meaning_invariance_laws
-                .contains(&"authorization_local_class_equals_p_spend")
-        );
-        assert!(
-            scope
-                .meaning_invariance_laws
-                .contains(&"gauge_changes_no_public_projection_digest")
-        );
-        assert!(
-            scope
-                .required_artifacts
-                .contains(&"honest_create_q_h_constructor_spec")
-        );
-        assert!(
-            scope
-                .required_harnesses
-                .contains(&"same_q_randomizer_invariance_harness")
-        );
-        assert!(
-            scope
-                .required_harnesses
-                .contains(&"honest_constructor_verifier_compatibility_harness")
-        );
-        assert!(
-            scope
-                .explicit_non_claims
-                .iter()
-                .any(|claim| claim.contains("consensus extracts private fiber"))
-        );
+        assert!(scope
+            .public_boundary_outputs
+            .contains(&"Path2NativeProjectionBundleV1"));
+        assert!(scope
+            .public_boundary_outputs
+            .contains(&"Path2NativeBoundaryAssemblyV1"));
+        assert!(scope
+            .meaning_invariance_laws
+            .contains(&"authorization_local_class_equals_p_spend"));
+        assert!(scope
+            .meaning_invariance_laws
+            .contains(&"gauge_changes_no_public_projection_digest"));
+        assert!(scope
+            .required_artifacts
+            .contains(&"honest_create_q_h_constructor_spec"));
+        assert!(scope
+            .required_harnesses
+            .contains(&"same_q_randomizer_invariance_harness"));
+        assert!(scope
+            .required_harnesses
+            .contains(&"honest_constructor_verifier_compatibility_harness"));
+        assert!(scope
+            .explicit_non_claims
+            .iter()
+            .any(|claim| claim.contains("consensus extracts private fiber")));
         assert_ne!(
             path2_native_honest_constructor_scope_v1_digest(&scope).unwrap(),
             [0_u8; DIGEST_BYTES]
@@ -93067,42 +93196,28 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             scope.blocker,
             PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE
         );
-        assert!(
-            scope
-                .entropy_sources
-                .contains(&"domain_separated_account_keygen_stream")
-        );
-        assert!(
-            scope
-                .secret_ownership_rules
-                .contains(&"no_debug_or_serialize_for_secret_material")
-        );
-        assert!(
-            scope
-                .constructor_contracts
-                .contains(&"generate_checked_core_proof_from_shared_native_frame_derivation")
-        );
-        assert!(
-            scope
-                .constructor_contracts
-                .contains(&"construct_from_os_entropy_root_without_public_secret_export")
-        );
-        assert!(
-            scope
-                .zeroization_requirements
-                .contains(&"proof_randomizer_syndrome_zeroized_or_consumed")
-        );
-        assert!(
-            scope
-                .required_harnesses
-                .contains(&"generated_proof_assembly_frame_equality_harness")
-        );
-        assert!(
-            scope
-                .explicit_non_claims
-                .iter()
-                .any(|claim| claim.contains("fixture secret material"))
-        );
+        assert!(scope
+            .entropy_sources
+            .contains(&"domain_separated_account_keygen_stream"));
+        assert!(scope
+            .secret_ownership_rules
+            .contains(&"no_debug_or_serialize_for_secret_material"));
+        assert!(scope
+            .constructor_contracts
+            .contains(&"generate_checked_core_proof_from_shared_native_frame_derivation"));
+        assert!(scope
+            .constructor_contracts
+            .contains(&"construct_from_os_entropy_root_without_public_secret_export"));
+        assert!(scope
+            .zeroization_requirements
+            .contains(&"proof_randomizer_syndrome_zeroized_or_consumed"));
+        assert!(scope
+            .required_harnesses
+            .contains(&"generated_proof_assembly_frame_equality_harness"));
+        assert!(scope
+            .explicit_non_claims
+            .iter()
+            .any(|claim| claim.contains("fixture secret material")));
         assert_ne!(
             path2_native_signer_keygen_productization_scope_v1_digest(&scope).unwrap(),
             [0_u8; DIGEST_BYTES]
@@ -93127,47 +93242,31 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         assert_eq!(scope.schema, PATH2_NATIVE_CONSTANT_TIME_AUDIT_SCOPE_SCHEMA);
         assert!(!scope.audit_complete);
         assert_eq!(scope.blocker, PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME);
-        assert!(
-            scope
-                .secret_dependent_operations
-                .contains(&"active_native_keygen_secret_sampling")
-        );
-        assert!(
-            scope
-                .secret_dependent_operations
-                .contains(&"active_native_checked_core_proof_generation")
-        );
-        assert!(
-            scope
-                .public_variable_length_operations
-                .contains(&"public_message_digesting")
-        );
-        assert!(
-            scope
-                .required_artifacts
-                .contains(&"secret_independent_memory_access_audit")
-        );
-        assert!(
-            scope
-                .required_artifacts
-                .contains(&"sampler_constant_schedule_with_deterministic_fallback")
-        );
-        assert!(
-            scope
-                .required_artifacts
-                .contains(&"sampler_no_runtime_modulo_or_division")
-        );
-        assert!(
-            scope
-                .required_artifacts
-                .contains(&"verifier_rejection_equivalence_harness")
-        );
-        assert!(
-            scope
-                .explicit_non_claims
-                .iter()
-                .any(|claim| claim.contains("public message length"))
-        );
+        assert!(scope
+            .secret_dependent_operations
+            .contains(&"active_native_keygen_secret_sampling"));
+        assert!(scope
+            .secret_dependent_operations
+            .contains(&"active_native_checked_core_proof_generation"));
+        assert!(scope
+            .public_variable_length_operations
+            .contains(&"public_message_digesting"));
+        assert!(scope
+            .required_artifacts
+            .contains(&"secret_independent_memory_access_audit"));
+        assert!(scope
+            .required_artifacts
+            .contains(&"sampler_constant_schedule_with_deterministic_fallback"));
+        assert!(scope
+            .required_artifacts
+            .contains(&"sampler_no_runtime_modulo_or_division"));
+        assert!(scope
+            .required_artifacts
+            .contains(&"verifier_rejection_equivalence_harness"));
+        assert!(scope
+            .explicit_non_claims
+            .iter()
+            .any(|claim| claim.contains("public message length")));
         assert_ne!(
             path2_native_constant_time_audit_scope_v1_digest(&scope).unwrap(),
             [0_u8; DIGEST_BYTES]
@@ -93260,37 +93359,25 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         );
         assert!(!scope.hardening_complete);
         assert_eq!(scope.blocker, PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE);
-        assert!(
-            scope
-                .target_chain_storage_artifacts
-                .contains(&"single_transaction_state_transition")
-        );
-        assert!(
-            scope
-                .lifecycle_safety_artifacts
-                .contains(&"consume_once_spent_slot_write")
-        );
-        assert!(
-            scope
-                .data_availability_artifacts
-                .contains(&"projection_preimage_da_bytes_retrieval")
-        );
-        assert!(
-            scope
-                .restore_reorg_artifacts
-                .contains(&"fork_epoch_scope_revalidation")
-        );
-        assert!(
-            scope
-                .required_harnesses
-                .contains(&"atomic_consume_once_replay_harness")
-        );
-        assert!(
-            scope
-                .explicit_non_claims
-                .iter()
-                .any(|claim| claim.contains("in-memory stores"))
-        );
+        assert!(scope
+            .target_chain_storage_artifacts
+            .contains(&"single_transaction_state_transition"));
+        assert!(scope
+            .lifecycle_safety_artifacts
+            .contains(&"consume_once_spent_slot_write"));
+        assert!(scope
+            .data_availability_artifacts
+            .contains(&"projection_preimage_da_bytes_retrieval"));
+        assert!(scope
+            .restore_reorg_artifacts
+            .contains(&"fork_epoch_scope_revalidation"));
+        assert!(scope
+            .required_harnesses
+            .contains(&"atomic_consume_once_replay_harness"));
+        assert!(scope
+            .explicit_non_claims
+            .iter()
+            .any(|claim| claim.contains("in-memory stores")));
         assert_ne!(
             path2_native_storage_lifecycle_hardening_scope_v1_digest(&scope).unwrap(),
             [0_u8; DIGEST_BYTES]
@@ -93321,11 +93408,9 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         validate_production_target_chain_database_adapter_profile(&profile).unwrap();
         let frame = production_target_chain_database_adapter_profile_frame(&profile);
         assert!(!frame.is_empty());
-        assert!(
-            frame
-                .windows(b"schema".len())
-                .any(|window| window == b"schema")
-        );
+        assert!(frame
+            .windows(b"schema".len())
+            .any(|window| window == b"schema"));
         let expected_digest: [u8; DIGEST_BYTES] = Sha256::digest(&frame).into();
         assert_eq!(
             production_target_chain_database_adapter_profile_digest(&profile),
@@ -93771,13 +93856,11 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         blinding_overflow[pad_layout.semantic_columns] =
             path2_descent_sis_centered_to_residue(-(PATH2_DESCENT_SIS_BLINDING_CENTERED_BOUND + 1))
                 .unwrap();
-        assert!(
-            verify_path2_descent_sis_opening_norm_range(
-                PATH2_DESCENT_SIS_ROLE_PAD_SOURCE,
-                &blinding_overflow,
-            )
-            .is_err()
-        );
+        assert!(verify_path2_descent_sis_opening_norm_range(
+            PATH2_DESCENT_SIS_ROLE_PAD_SOURCE,
+            &blinding_overflow,
+        )
+        .is_err());
 
         let mut noncanonical = pad_opening.clone();
         noncanonical[0] = Q;
@@ -94027,66 +94110,60 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
 
         let mut wrong_projection = masked_projection;
         wrong_projection[0] = Q;
-        assert!(
-            path2_transparent_descent_transcript_digest(
-                &proof_system_id,
-                256,
-                16,
-                PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
-                &leaf_context_digest,
-                &creation_proof_binding_digest,
-                slot_id,
-                &hidden_source_statement_digest,
-                &native_role_root_commitment,
-                &matrix_domain_transcript_digest,
-                &wrong_projection,
-                &aggregation_context_digest,
-                &trace_commitment_root,
-                &constraint_commitment_root,
-                0,
-            )
-            .is_err()
-        );
-        assert!(
-            path2_transparent_descent_transcript_digest(
-                &proof_system_id,
-                255,
-                16,
-                PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
-                &leaf_context_digest,
-                &creation_proof_binding_digest,
-                slot_id,
-                &hidden_source_statement_digest,
-                &native_role_root_commitment,
-                &matrix_domain_transcript_digest,
-                &masked_projection,
-                &aggregation_context_digest,
-                &trace_commitment_root,
-                &constraint_commitment_root,
-                0,
-            )
-            .is_err()
-        );
-        assert!(
-            path2_transparent_descent_transcript_digest(
-                &proof_system_id,
-                256,
-                0,
-                PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
-                &leaf_context_digest,
-                &creation_proof_binding_digest,
-                slot_id,
-                &hidden_source_statement_digest,
-                &native_role_root_commitment,
-                &matrix_domain_transcript_digest,
-                &masked_projection,
-                &aggregation_context_digest,
-                &trace_commitment_root,
-                &constraint_commitment_root,
-                0,
-            )
-            .is_err()
-        );
+        assert!(path2_transparent_descent_transcript_digest(
+            &proof_system_id,
+            256,
+            16,
+            PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+            &leaf_context_digest,
+            &creation_proof_binding_digest,
+            slot_id,
+            &hidden_source_statement_digest,
+            &native_role_root_commitment,
+            &matrix_domain_transcript_digest,
+            &wrong_projection,
+            &aggregation_context_digest,
+            &trace_commitment_root,
+            &constraint_commitment_root,
+            0,
+        )
+        .is_err());
+        assert!(path2_transparent_descent_transcript_digest(
+            &proof_system_id,
+            255,
+            16,
+            PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+            &leaf_context_digest,
+            &creation_proof_binding_digest,
+            slot_id,
+            &hidden_source_statement_digest,
+            &native_role_root_commitment,
+            &matrix_domain_transcript_digest,
+            &masked_projection,
+            &aggregation_context_digest,
+            &trace_commitment_root,
+            &constraint_commitment_root,
+            0,
+        )
+        .is_err());
+        assert!(path2_transparent_descent_transcript_digest(
+            &proof_system_id,
+            256,
+            0,
+            PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+            &leaf_context_digest,
+            &creation_proof_binding_digest,
+            slot_id,
+            &hidden_source_statement_digest,
+            &native_role_root_commitment,
+            &matrix_domain_transcript_digest,
+            &masked_projection,
+            &aggregation_context_digest,
+            &trace_commitment_root,
+            &constraint_commitment_root,
+            0,
+        )
+        .is_err());
         assert_eq!(
             path2_transparent_descent_transcript_digest(
                 &proof_system_id,
@@ -94536,12 +94613,10 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         assert_eq!(schedule.entries[1].query_count, 20);
         assert_eq!(schedule.entries[2].trace_rows, 1024);
         assert_eq!(schedule.entries[2].query_count, 24);
-        assert!(
-            schedule
-                .entries
-                .iter()
-                .all(|entry| entry.native_stress_floor_bytes < schedule.fallback_threshold_bytes)
-        );
+        assert!(schedule
+            .entries
+            .iter()
+            .all(|entry| entry.native_stress_floor_bytes < schedule.fallback_threshold_bytes));
         assert_ne!(
             path2_transparent_query_schedule_v1_digest().unwrap(),
             [0_u8; DIGEST_BYTES]
@@ -103689,8 +103764,7 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             path2_account_creation_proof_boundary_report_v1().digest
         );
         assert_eq!(tuple_evidence.public_key_identity, leaf.public_key_identity);
-        let expected_message_digest: [u8; DIGEST_BYTES] =
-            Sha256::digest(fixture.message).into();
+        let expected_message_digest: [u8; DIGEST_BYTES] = Sha256::digest(fixture.message).into();
         assert_eq!(tuple_evidence.message_digest, expected_message_digest);
         assert_eq!(tuple_evidence.account_id, leaf.account_id);
         assert_eq!(
@@ -103720,7 +103794,10 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
                 &authorization,
             )
         );
-        assert_eq!(tuple_evidence.consume_once_state_before_digest, before_digest);
+        assert_eq!(
+            tuple_evidence.consume_once_state_before_digest,
+            before_digest
+        );
         assert_eq!(
             tuple_evidence.consume_once_state_after_digest,
             path2_direct_consume_once_authorization_set_digest(&consumed)
@@ -103745,8 +103822,7 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         malformed_tuple.digest =
             path2_direct_accepted_spend_tuple_evidence_v1_digest(&malformed_tuple);
         assert_eq!(
-            validate_path2_direct_accepted_spend_tuple_evidence_v1(&malformed_tuple)
-                .unwrap_err(),
+            validate_path2_direct_accepted_spend_tuple_evidence_v1(&malformed_tuple).unwrap_err(),
             "Path 2 direct accepted spend tuple evidence lost required flag public_result_accepts_same_slot"
         );
 
@@ -103874,45 +103950,44 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         )
         .unwrap();
 
-        let assert_rejects_without_consuming = |
-            label: &str,
-            leaf: &Path2PrevalidatedSlotLeafV1,
-            evidence: &Path2AccountCreationEvidenceV1,
-            certificate: &Path2DirectReplayableRelationCertificateV1,
-            message: &[u8],
-            signature: &ProductionSignature,
-            admitted_state_authorizations: &BTreeSet<(
+        let assert_rejects_without_consuming =
+            |label: &str,
+             leaf: &Path2PrevalidatedSlotLeafV1,
+             evidence: &Path2AccountCreationEvidenceV1,
+             certificate: &Path2DirectReplayableRelationCertificateV1,
+             message: &[u8],
+             signature: &ProductionSignature,
+             admitted_state_authorizations: &BTreeSet<(
                 [u8; DIGEST_BYTES],
                 [u8; DIGEST_BYTES],
                 [u8; DIGEST_BYTES],
             )>,
-            expected: &str,
-            expected_class: Path2PublicResultClassV1,
-        | {
-            let mut consumed = BTreeSet::new();
-            let err = verify_path2_direct_single_slot_spend_authorization(
-                leaf,
-                evidence,
-                certificate,
-                &fixture.public_key,
-                message,
-                &fixture.account,
-                signature,
-                admitted_state_authorizations,
-                &mut consumed,
-            )
-            .unwrap_err();
-            assert_eq!(err.reason(), expected, "{label}");
-            assert_eq!(
-                path2_direct_account_binding_public_result_class(&err),
-                expected_class,
-                "{label}"
-            );
-            assert!(
-                consumed.is_empty(),
-                "direct rejection {label} mutated consume-once state"
-            );
-        };
+             expected: &str,
+             expected_class: Path2PublicResultClassV1| {
+                let mut consumed = BTreeSet::new();
+                let err = verify_path2_direct_single_slot_spend_authorization(
+                    leaf,
+                    evidence,
+                    certificate,
+                    &fixture.public_key,
+                    message,
+                    &fixture.account,
+                    signature,
+                    admitted_state_authorizations,
+                    &mut consumed,
+                )
+                .unwrap_err();
+                assert_eq!(err.reason(), expected, "{label}");
+                assert_eq!(
+                    path2_direct_account_binding_public_result_class(&err),
+                    expected_class,
+                    "{label}"
+                );
+                assert!(
+                    consumed.is_empty(),
+                    "direct rejection {label} mutated consume-once state"
+                );
+            };
 
         let mut wrong_public_key_leaf = leaf;
         wrong_public_key_leaf.public_key_identity[0] ^= 1;
@@ -104173,17 +104248,16 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         )
         .unwrap();
 
-        let rebind_payload_certificate = |
-            leaf: &mut Path2PrevalidatedSlotLeafV1,
-            evidence: &mut Path2AccountCreationEvidenceV1,
-            certificate: &Path2DirectReplayableRelationCertificateV1,
-        | {
-            evidence.evidence_payload_digest =
-                path2_direct_replayable_relation_certificate_digest(certificate);
-            leaf.prevalidation_transcript_digest =
-                path2_account_creation_evidence_transcript_digest(evidence).unwrap();
-            refresh_path2_leaf_digest_bindings(leaf, evidence);
-        };
+        let rebind_payload_certificate =
+            |leaf: &mut Path2PrevalidatedSlotLeafV1,
+             evidence: &mut Path2AccountCreationEvidenceV1,
+             certificate: &Path2DirectReplayableRelationCertificateV1| {
+                evidence.evidence_payload_digest =
+                    path2_direct_replayable_relation_certificate_digest(certificate);
+                leaf.prevalidation_transcript_digest =
+                    path2_account_creation_evidence_transcript_digest(evidence).unwrap();
+                refresh_path2_leaf_digest_bindings(leaf, evidence);
+            };
 
         let mut invalid_leaf_version = leaf;
         invalid_leaf_version.frame_version += 1;
@@ -104398,18 +104472,17 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         .unwrap();
 
         let mut accepted_consumed = BTreeSet::new();
-        let accepted =
-            verify_path2_direct_single_slot_spend_authorization_public_result_v1(
-                &leaf,
-                &evidence,
-                &certificate,
-                &fixture.public_key,
-                fixture.message,
-                &fixture.account,
-                &signature,
-                &admitted_state_authorizations,
-                &mut accepted_consumed,
-            );
+        let accepted = verify_path2_direct_single_slot_spend_authorization_public_result_v1(
+            &leaf,
+            &evidence,
+            &certificate,
+            &fixture.public_key,
+            fixture.message,
+            &fixture.account,
+            &signature,
+            &admitted_state_authorizations,
+            &mut accepted_consumed,
+        );
         assert_eq!(
             accepted,
             Path2DirectSpendPublicResultV1::accepted_spend(leaf.slot_id as u32)
@@ -104418,18 +104491,17 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         assert!(accepted_consumed.contains(&authorization));
 
         let before_replay = accepted_consumed.clone();
-        let replay_rejection =
-            verify_path2_direct_single_slot_spend_authorization_public_result_v1(
-                &leaf,
-                &evidence,
-                &certificate,
-                &fixture.public_key,
-                fixture.message,
-                &fixture.account,
-                &signature,
-                &admitted_state_authorizations,
-                &mut accepted_consumed,
-            );
+        let replay_rejection = verify_path2_direct_single_slot_spend_authorization_public_result_v1(
+            &leaf,
+            &evidence,
+            &certificate,
+            &fixture.public_key,
+            fixture.message,
+            &fixture.account,
+            &signature,
+            &admitted_state_authorizations,
+            &mut accepted_consumed,
+        );
         assert_eq!(
             replay_rejection,
             Path2DirectSpendPublicResultV1::rejected(
@@ -104443,48 +104515,41 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         );
 
         let mut malformed_consumed = BTreeSet::new();
-        let malformed =
-            verify_path2_direct_single_slot_spend_authorization_public_result_v1(
-                &leaf,
-                &evidence,
-                &certificate,
-                &fixture.public_key,
-                fixture.message,
-                &fixture.account,
-                &ProductionSignature::new(vec![0_u8; 7]),
-                &admitted_state_authorizations,
-                &mut malformed_consumed,
-            );
+        let malformed = verify_path2_direct_single_slot_spend_authorization_public_result_v1(
+            &leaf,
+            &evidence,
+            &certificate,
+            &fixture.public_key,
+            fixture.message,
+            &fixture.account,
+            &ProductionSignature::new(vec![0_u8; 7]),
+            &admitted_state_authorizations,
+            &mut malformed_consumed,
+        );
         assert_eq!(
             malformed,
             Path2DirectSpendPublicResultV1::rejected(
                 Path2PublicResultClassV1::RejectMalformedPublicInput
             )
         );
-        assert_eq!(
-            malformed.result_class_name,
-            "reject_malformed_public_input"
-        );
+        assert_eq!(malformed.result_class_name, "reject_malformed_public_input");
         assert!(malformed_consumed.is_empty());
 
         let mut checked_core_consumed = BTreeSet::new();
-        let checked_core =
-            verify_path2_direct_single_slot_spend_authorization_public_result_v1(
-                &leaf,
-                &evidence,
-                &certificate,
-                &fixture.public_key,
-                b"path2-wrong-message",
-                &fixture.account,
-                &signature,
-                &admitted_state_authorizations,
-                &mut checked_core_consumed,
-            );
+        let checked_core = verify_path2_direct_single_slot_spend_authorization_public_result_v1(
+            &leaf,
+            &evidence,
+            &certificate,
+            &fixture.public_key,
+            b"path2-wrong-message",
+            &fixture.account,
+            &signature,
+            &admitted_state_authorizations,
+            &mut checked_core_consumed,
+        );
         assert_eq!(
             checked_core,
-            Path2DirectSpendPublicResultV1::rejected(
-                Path2PublicResultClassV1::RejectCheckedCore
-            )
+            Path2DirectSpendPublicResultV1::rejected(Path2PublicResultClassV1::RejectCheckedCore)
         );
         assert_eq!(checked_core.result_class_name, "reject_checked_core");
         assert!(checked_core_consumed.is_empty());
@@ -104535,12 +104600,18 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
                 "internal_error_fail_closed",
             ),
         ];
-        assert_eq!(Path2PublicResultClassV1::all(), expected.map(|(class, _)| class));
+        assert_eq!(
+            Path2PublicResultClassV1::all(),
+            expected.map(|(class, _)| class)
+        );
         for (class, name) in expected {
             assert_eq!(class.as_str(), name);
             assert_eq!(Path2PublicResultClassV1::from_str(name), Some(class));
         }
-        assert_eq!(Path2PublicResultClassV1::from_str("reject_private_detail"), None);
+        assert_eq!(
+            Path2PublicResultClassV1::from_str("reject_private_detail"),
+            None
+        );
     }
 
     #[test]
@@ -104690,21 +104761,15 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             statement.digest,
             path2_creation_hidden_source_statement_v1_digest(&statement)
         );
-        assert!(
-            frame
-                .windows(PATH2_CREATION_HIDDEN_SOURCE_STATEMENT_DOMAIN.len())
-                .any(|window| window == PATH2_CREATION_HIDDEN_SOURCE_STATEMENT_DOMAIN.as_bytes())
-        );
-        assert!(
-            !frame
-                .windows(b"message_digest".len())
-                .any(|window| window == b"message_digest")
-        );
-        assert!(
-            !frame
-                .windows(b"signature_digest".len())
-                .any(|window| window == b"signature_digest")
-        );
+        assert!(frame
+            .windows(PATH2_CREATION_HIDDEN_SOURCE_STATEMENT_DOMAIN.len())
+            .any(|window| window == PATH2_CREATION_HIDDEN_SOURCE_STATEMENT_DOMAIN.as_bytes()));
+        assert!(!frame
+            .windows(b"message_digest".len())
+            .any(|window| window == b"message_digest"));
+        assert!(!frame
+            .windows(b"signature_digest".len())
+            .any(|window| window == b"signature_digest"));
 
         let mut signature_rebound = fixture.statement;
         signature_rebound.signature_digest[0] ^= 1;
@@ -105033,11 +105098,9 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             certificate.packed_witness_opening.account_projection,
             fixture.account_projection
         );
-        assert!(
-            !certificate
-                .account_witness_projection_opening_frame
-                .is_empty()
-        );
+        assert!(!certificate
+            .account_witness_projection_opening_frame
+            .is_empty());
 
         let mut wrong_pad_seed = fixture.pad_seed;
         wrong_pad_seed[0] ^= 1;
@@ -106167,13 +106230,11 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             assert!(classification.deployment_facing);
         }
         assert!(production_callback_boundary_classification("unknown").is_none());
-        assert!(
-            PRODUCTION_CALLBACK_BOUNDARIES
-                .iter()
-                .filter(|classification| classification.deployment_facing)
-                .all(|classification| classification.error_policy
-                    == ProductionCallbackErrorPolicy::SanitizedFixedPublicErrors)
-        );
+        assert!(PRODUCTION_CALLBACK_BOUNDARIES
+            .iter()
+            .filter(|classification| classification.deployment_facing)
+            .all(|classification| classification.error_policy
+                == ProductionCallbackErrorPolicy::SanitizedFixedPublicErrors));
     }
 
     #[test]
@@ -106365,10 +106426,8 @@ structure ReviewedFq12SelectedRustFieldLocalPackagedSourceRouteInputs where
         assert!(handoff_source.contains(
             "full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_source_inputs"
         ));
-        assert!(
-            !handoff_source
-                .contains("structure ReviewedFq12SelectedRustModelFiveSourceClosureInputs")
-        );
+        assert!(!handoff_source
+            .contains("structure ReviewedFq12SelectedRustModelFiveSourceClosureInputs"));
     }
 
     #[test]
@@ -110254,10 +110313,8 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                 .hidden_source_proof_domain
                 .as_bytes(),
         );
-        assert!(
-            hidden_source_proof_transcript_frame
-                .starts_with(&hidden_source_proof_expected_domain_field)
-        );
+        assert!(hidden_source_proof_transcript_frame
+            .starts_with(&hidden_source_proof_expected_domain_field));
         let hidden_source_proof_transcript_frame_digest: [u8; DIGEST_BYTES] =
             Sha256::digest(&hidden_source_proof_transcript_frame).into();
         assert_eq!(
@@ -110340,10 +110397,8 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                 .account_witness_opening_domain
                 .as_bytes(),
         );
-        assert!(
-            account_witness_opening_digest_frame
-                .starts_with(&account_witness_opening_expected_domain_field)
-        );
+        assert!(account_witness_opening_digest_frame
+            .starts_with(&account_witness_opening_expected_domain_field));
         let account_witness_opening_frame_digest: [u8; DIGEST_BYTES] =
             Sha256::digest(&account_witness_opening_digest_frame).into();
         assert_eq!(
@@ -112895,14 +112950,12 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                 &extraction_cert,
             )
         );
-        assert!(
-            path2_reviewed_fq12_field_evidence_is_adapter_only_v1(
-                &field_evidence,
-                &assembly_cert,
-                &compatibility_cert,
-            )
-            .unwrap()
-        );
+        assert!(path2_reviewed_fq12_field_evidence_is_adapter_only_v1(
+            &field_evidence,
+            &assembly_cert,
+            &compatibility_cert,
+        )
+        .unwrap());
         let source_route = path2_reviewed_fq12_full_opening_field_source_route_v1(
             &payload_binding,
             &extraction_cert,
@@ -113829,8 +113882,14 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.domain,
             PATH2_ACCOUNT_STARK_PAYLOAD_BYTE_MODEL_REPORT_DOMAIN
         );
-        assert_eq!(report.selected_payload_type, "Path2AccountStarkCreationPayloadV1");
-        assert_eq!(report.payload_schema, PATH2_ACCOUNT_STARK_CREATION_PAYLOAD_SCHEMA);
+        assert_eq!(
+            report.selected_payload_type,
+            "Path2AccountStarkCreationPayloadV1"
+        );
+        assert_eq!(
+            report.payload_schema,
+            PATH2_ACCOUNT_STARK_CREATION_PAYLOAD_SCHEMA
+        );
         assert_eq!(report.payload_version, 1);
         assert_eq!(
             report.account_stark_verifier_version,
@@ -113898,7 +113957,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.payload_byte_model_report_digest,
             byte_model_report.digest
         );
-        assert_eq!(report.selected_payload_type, "Path2AccountStarkCreationPayloadV1");
+        assert_eq!(
+            report.selected_payload_type,
+            "Path2AccountStarkCreationPayloadV1"
+        );
         assert_eq!(
             report.payload_digest_function,
             "path2_account_stark_creation_payload_v1_digest"
@@ -114073,8 +114135,14 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.selected_proof_family,
             "Plonky3/q12289 account-creation STARK"
         );
-        assert_eq!(report.selected_payload_type, "Path2AccountStarkCreationPayloadV1");
-        assert_eq!(report.account_stark_config_source, PATH2_ACCOUNT_STARK_CONFIG_SOURCE);
+        assert_eq!(
+            report.selected_payload_type,
+            "Path2AccountStarkCreationPayloadV1"
+        );
+        assert_eq!(
+            report.account_stark_config_source,
+            PATH2_ACCOUNT_STARK_CONFIG_SOURCE
+        );
         assert_eq!(report.proof_system, PATH2_ACCOUNT_STARK_PROOF_SYSTEM);
         assert_eq!(report.poseidon2_width, 16);
         assert_eq!(report.fri_log_blowup, 4);
@@ -114086,7 +114154,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert_eq!(report.challenge_extension_degree, 8);
         assert_eq!(report.challenge_field_bits_floor, 247);
         assert_eq!(report.poseidon2_sponge_floor_bits, 139);
-        assert_eq!(report.checked_core_qrom_artifacts, PATH2_CHECKED_CORE_QROM_ARTIFACTS.as_ref());
+        assert_eq!(
+            report.checked_core_qrom_artifacts,
+            PATH2_CHECKED_CORE_QROM_ARTIFACTS.as_ref()
+        );
         assert_eq!(
             report.qrom_domain_vector_case_ids,
             PATH2_ACCOUNT_STARK_FRI_QROM_DOMAIN_CASES.as_ref()
@@ -114164,10 +114235,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             PATH2_ACCOUNT_STARK_CONFIG_SOURCE
         );
         assert_eq!(report.proof_system, PATH2_ACCOUNT_STARK_PROOF_SYSTEM);
-        assert_eq!(
-            report.residual_item,
-            "FRI argument-of-knowledge extractor"
-        );
+        assert_eq!(report.residual_item, "FRI argument-of-knowledge extractor");
         assert_eq!(
             report.extractor_theorem_target,
             "selected_plonky3_q12289_fri_iop_aok_extractor"
@@ -114298,7 +114366,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         let fri_aok_boundary_report = path2_account_stark_fri_aok_boundary_report_v1();
         let report = path2_account_stark_residual_matrix_report_v1();
         assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
-        assert_eq!(report.domain, PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_REPORT_DOMAIN);
+        assert_eq!(
+            report.domain,
+            PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_REPORT_DOMAIN
+        );
         assert_eq!(
             report.payload_kat_boundary_report_digest,
             payload_kat_boundary_report.digest
@@ -114315,7 +114386,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.selected_proof_family,
             "Plonky3/q12289 account-creation STARK"
         );
-        assert_eq!(report.selected_payload_type, "Path2AccountStarkCreationPayloadV1");
+        assert_eq!(
+            report.selected_payload_type,
+            "Path2AccountStarkCreationPayloadV1"
+        );
         assert_eq!(
             report.rows,
             PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_ROWS.as_ref()
@@ -114354,10 +114428,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.rows[5].blocker,
             PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PRODUCTION_GATE
         );
-        assert_eq!(
-            report.rows[6].named_break,
-            "proof_route_authority_break"
-        );
+        assert_eq!(report.rows[6].named_break, "proof_route_authority_break");
         for (row, blocker) in report
             .rows
             .iter()
@@ -114497,7 +114568,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.support_file,
             PATH2_ACCOUNT_CREATION_NO_EXPORT_SUPPORT_FILE
         );
-        assert_eq!(report.selected_payload_type, "Path2AccountStarkCreationPayloadV1");
+        assert_eq!(
+            report.selected_payload_type,
+            "Path2AccountStarkCreationPayloadV1"
+        );
         assert_eq!(
             report.verifier_boundary_endpoint,
             "verify_path2_direct_creation_account_stark_payload_boundary"
@@ -114514,7 +114588,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.payload_kat_boundary_report_digest,
             payload_kat_boundary_report.digest
         );
-        assert_eq!(report.no_export_requirement, "zero_knowledge_no_export_semantics");
+        assert_eq!(
+            report.no_export_requirement,
+            "zero_knowledge_no_export_semantics"
+        );
         assert_eq!(
             report.simulator_theorem_target,
             PATH2_ACCOUNT_CREATION_SIMULATOR_THEOREM_TARGET
@@ -114622,7 +114699,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.proof_boundary_conclusion.contains("account_stark"));
         assert!(report.proof_boundary_conclusion.contains("no_export"));
         assert!(report.proof_boundary_conclusion.contains("named_break"));
-        assert_eq!(report.selected_payload_type, "Path2AccountStarkCreationPayloadV1");
+        assert_eq!(
+            report.selected_payload_type,
+            "Path2AccountStarkCreationPayloadV1"
+        );
         assert_eq!(
             report.verifier_boundary_endpoint,
             "verify_path2_direct_creation_account_stark_payload_boundary"
@@ -114714,7 +114794,9 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report
             .deployed_anchor_fields
             .contains(&"packed_witness_commitment"));
-        assert!(report.deployed_anchor_fields.contains(&"role_root_export_bridge"));
+        assert!(report
+            .deployed_anchor_fields
+            .contains(&"role_root_export_bridge"));
         assert!(report
             .no_export_private_material_fields
             .contains(&"private_trace_material"));
@@ -114785,7 +114867,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS.as_ref()
         );
         assert_eq!(report.proof_obligation_count, 8);
-        assert_eq!(report.proof_obligation_count, report.proof_obligation_rows.len());
+        assert_eq!(
+            report.proof_obligation_count,
+            report.proof_obligation_rows.len()
+        );
         assert_eq!(
             report.proof_obligation_audit_vector_case_ids,
             PATH2_ACCOUNT_CREATION_PROOF_OBLIGATION_AUDIT_CASES.as_ref()
@@ -114827,10 +114912,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                 "creation_proof_obligation_no_postchallenge_timing"
                     | "creation_proof_obligation_frozen_payload_kats"
             );
-            assert_eq!(
-                row.open,
-                !expected_closed
-            );
+            assert_eq!(row.open, !expected_closed);
             assert_eq!(
                 row.blocker,
                 PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
@@ -114900,11 +114982,11 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
         assert_eq!(report.domain, PATH2_DIRECT_LIFECYCLE_BOUNDARY_REPORT_DOMAIN);
         assert_eq!(report.support_file, PATH2_DIRECT_LIFECYCLE_SUPPORT_FILE);
+        assert_eq!(report.theorem_target, PATH2_DIRECT_LIFECYCLE_THEOREM_TARGET);
         assert_eq!(
-            report.theorem_target,
-            PATH2_DIRECT_LIFECYCLE_THEOREM_TARGET
+            report.direct_obligation_id,
+            "direct_obligation_consume_once"
         );
-        assert_eq!(report.direct_obligation_id, "direct_obligation_consume_once");
         assert_eq!(
             report.acceptance_hypothesis,
             "lifecycle_transition_consumes_authorization_once"
@@ -114931,7 +115013,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.target_chain_adapter_type,
             "ProductionSelectedProjectionTargetChainDbAdapter"
         );
-        assert_eq!(report.chain_file_store_type, "ProductionChainStateFileStores");
+        assert_eq!(
+            report.chain_file_store_type,
+            "ProductionChainStateFileStores"
+        );
         assert_eq!(
             report.executable_tests,
             PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS.as_ref()
@@ -114996,9 +115081,9 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report
             .executable_tests
             .contains(&"lifecycle_file_store_roundtrips_and_recovers_reserved_slots"));
-        assert!(report.executable_tests.contains(
-            &"path2_d2_finality_profile_reorg_frees_window_but_preserves_finalized"
-        ));
+        assert!(report
+            .executable_tests
+            .contains(&"path2_d2_finality_profile_reorg_frees_window_but_preserves_finalized"));
         assert!(report.local_successor_state_model_pinned);
         assert!(report.consume_once_insert_after_public_checks);
         assert!(report.replay_rejected_by_consume_set);
@@ -115059,7 +115144,11 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             .record_at_height(Path2D2FinalityRecordKind::Admission, pending_admission, 2)
             .unwrap();
         profile
-            .record_at_height(Path2D2FinalityRecordKind::Consumption, pending_consumption, 3)
+            .record_at_height(
+                Path2D2FinalityRecordKind::Consumption,
+                pending_consumption,
+                3,
+            )
             .unwrap();
 
         assert_eq!(profile.finalized_head(), 1);
@@ -115088,7 +115177,11 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             .record_at_height(Path2D2FinalityRecordKind::Admission, pending_admission, 2)
             .unwrap();
         profile
-            .record_at_height(Path2D2FinalityRecordKind::Consumption, pending_consumption, 2)
+            .record_at_height(
+                Path2D2FinalityRecordKind::Consumption,
+                pending_consumption,
+                2,
+            )
             .unwrap();
         assert_eq!(
             profile
@@ -115119,10 +115212,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             proof_boundary_report.digest
         );
         assert_eq!(report.theorem_target, PATH2_DIRECT_THEOREM_TARGET);
-        assert_eq!(
-            report.theorem_conclusion,
-            PATH2_DIRECT_THEOREM_CONCLUSION
-        );
+        assert_eq!(report.theorem_conclusion, PATH2_DIRECT_THEOREM_CONCLUSION);
         assert!(report.theorem_conclusion.contains("consume_once"));
         assert!(report.theorem_conclusion.contains("named_break"));
         assert_eq!(
@@ -115337,26 +115427,18 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         ));
         assert!(!preflight.executable_matches_reviewed_target);
         assert!(!preflight.deployment_ready);
-        assert!(
-            !preflight
-                .blockers
-                .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_CALLBACK_BOUNDARIES)
-        );
-        assert!(
-            !preflight
-                .blockers
-                .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_FINAL_VERIFIER)
-        );
-        assert!(
-            !preflight
-                .blockers
-                .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_PAD_OPENING_BINDING)
-        );
-        assert!(
-            preflight
-                .blockers
-                .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS)
-        );
+        assert!(!preflight
+            .blockers
+            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_CALLBACK_BOUNDARIES));
+        assert!(!preflight
+            .blockers
+            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_FINAL_VERIFIER));
+        assert!(!preflight
+            .blockers
+            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_PAD_OPENING_BINDING));
+        assert!(preflight
+            .blockers
+            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS));
         let direct_theorem_blockers = production_deployment_direct_theorem_blockers();
         assert_eq!(
             &preflight.blockers[1..1 + direct_theorem_blockers.len()],
@@ -115389,21 +115471,15 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         for &blocker in account_stark_residual_blockers {
             assert!(preflight.blockers.contains(&blocker));
         }
-        assert!(
-            preflight
-                .blockers
-                .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_CONSTANT_TIME)
-        );
-        assert!(
-            preflight
-                .blockers
-                .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_STORAGE)
-        );
-        assert!(
-            preflight
-                .blockers
-                .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_EXTERNAL_REVIEW)
-        );
+        assert!(preflight
+            .blockers
+            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_CONSTANT_TIME));
+        assert!(preflight
+            .blockers
+            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_STORAGE));
+        assert!(preflight
+            .blockers
+            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_EXTERNAL_REVIEW));
         let report = production_deployment_preflight_report();
         assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
         assert_eq!(report.preflight, preflight);
@@ -116163,14 +116239,12 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         let mut restored = store.load_manager().unwrap().unwrap();
         assert!(restored.is_reserved(0));
         assert_eq!(restored.snapshot_sequence(), 1);
-        assert!(
-            store
-                .load_manager_with_restore_anchor(ProductionLifecycleRestoreAnchor {
-                    minimum_snapshot_sequence: 1,
-                })
-                .unwrap()
-                .is_some()
-        );
+        assert!(store
+            .load_manager_with_restore_anchor(ProductionLifecycleRestoreAnchor {
+                minimum_snapshot_sequence: 1,
+            })
+            .unwrap()
+            .is_some());
         assert_eq!(
             store
                 .load_manager_with_restore_anchor(ProductionLifecycleRestoreAnchor {
@@ -116307,21 +116381,15 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         let frame = challenge_hash_frame(&public_key, message, 3, &digest, &proof_commitment);
         let legacy = legacy_stateful_challenge_hash_frame(&public_key, message, 3, &digest);
         assert!(frame.len() > legacy.len());
-        assert!(
-            frame
-                .windows(CHALLENGE_HASH_DOMAIN.len())
-                .any(|window| { window == CHALLENGE_HASH_DOMAIN.as_bytes() })
-        );
-        assert!(
-            frame
-                .windows(PROFILE.len())
-                .any(|window| window == PROFILE.as_bytes())
-        );
-        assert!(
-            frame
-                .windows("proof_commitment".len())
-                .any(|window| window == b"proof_commitment")
-        );
+        assert!(frame
+            .windows(CHALLENGE_HASH_DOMAIN.len())
+            .any(|window| { window == CHALLENGE_HASH_DOMAIN.as_bytes() }));
+        assert!(frame
+            .windows(PROFILE.len())
+            .any(|window| window == PROFILE.as_bytes()));
+        assert!(frame
+            .windows("proof_commitment".len())
+            .any(|window| window == b"proof_commitment"));
 
         // Full spend FS Poseidon2 re-host (2026-06-18): the transaction challenge now
         // derives via the TXN-domain Poseidon2 sponge, not the archived SHA-256 body.

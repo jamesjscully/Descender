@@ -351,8 +351,8 @@ verifier endpoints, replay-payload digest function, accepted-boundary evidence
 schema and endpoint, acceptance requirements, exact leaf/evidence binding
 fields, certificate/evidence binding fields, binding/leaf context fields,
 payload-binding fields, deployed-anchor fields, no-export private-material field
-classes, the
-`Path2AccountCreationSamplerTimingReportV1` digest, and the
+classes, the `Path2AccountCreationSamplerTimingReportV1` digest, the
+`Path2AuthorizationClassBindingAuditReportV1` digest, the
 `Path2AccountCreationNoExportBoundaryReportV1` digest, and current proof-family
 closure blockers. It also pins accepted-path binding evidence flags for the
 replay-payload digest chain and deployed-anchor public statement comparison
@@ -392,6 +392,16 @@ defines a proof-family closure witness that is impossible for the current
 selected accepted boundary; deployable closure must replace the open residual
 flag with real simulator/no-export, FRI/QROM, FRI/AoK, frozen-KAT, and
 production-review evidence.
+`Path2AuthorizationClassBindingAuditReportV1` pins the current
+authorization-class field-completeness audit: every revised `p_spend` field is
+named, every row maps to the deployed projection/check surface, the direct spend
+verifier is checked for absence of private authorization-local material reads,
+and the source-shape hook list covers the Rust and Lean boundary hooks. The
+sampler/timing report imports that audit digest, and
+`formal/kat/path2_authorization_class_binding_audit_v1.json` is regenerated and
+checked before sampler/timing and proof-boundary manifests. This is executable
+audit evidence for the authorization-class binding residual; it keeps the
+authorization-class theorem, external review, and deployment readiness false.
 `formal/kat/path2_account_creation_proof_obligation_vectors_v1.json`
 turns that row table into a digest-pinned audit corpus bound to both the
 proof-boundary and direct-theorem reports; it records the current 6-open /

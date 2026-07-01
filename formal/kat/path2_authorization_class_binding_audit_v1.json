@@ -1,0 +1,145 @@
+{
+  "manifest": {
+    "authority_snapshot": {
+      "audit_report_domain": "Descender.Path2.AuthorizationClassBindingAuditReport.v1",
+      "authorization_local_classification_file": "research/path2_authorization_local_classification.md",
+      "checked_core_verifier_endpoint": "verify_path2_checked_core_authorization",
+      "consume_once_validator": "verify_path2_prevalidated_slot_consume_once",
+      "direct_spend_verifier_endpoint": "verify_path2_direct_single_slot_spend_authorization",
+      "lean_boundary_predicate": "AccountCreationAuthorizationClassObligationTracked",
+      "projection_audit_file": "research/path2_spend_projection_completeness_audit_v1.md",
+      "proof_boundary_blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+      "sampler_timing_report_domain": "Descender.Path2.AccountCreationSamplerTimingReport.v1",
+      "spend_authorization_class_digest_function": "path2_native_spend_authorization_class_digest_v1",
+      "spend_projection_encoder": "path2_native_spend_projection_v1_bytes",
+      "state_namespace_validator": "validate_path2_direct_slot_authorization_state_namespace",
+      "support_file": "research/path2_authorization_class_binding_theorem_v1.md",
+      "theorem_target": "selected_account_creation_authorization_class_binding_v1"
+    },
+    "corpus_id": "Descender.Path2.AuthorizationClassBindingAudit.v1",
+    "corpus_version": 1,
+    "digests": {
+      "authorization_class_binding_audit_report_digest": "2db1974f6e581ceaa85fa0adda92c27b526f6540960f9bc57016751469e53828",
+      "authorization_class_binding_audit_report_recomputed_digest": "2db1974f6e581ceaa85fa0adda92c27b526f6540960f9bc57016751469e53828",
+      "sampler_timing_report_authorization_class_audit_digest": "2db1974f6e581ceaa85fa0adda92c27b526f6540960f9bc57016751469e53828",
+      "sampler_timing_report_digest": "6d4a1cd853fc420264da53eb5c0f864b9b9d24db21da355ed014f2b45e8f135c"
+    },
+    "field_completeness": {
+      "field_completeness_negative_audit_complete": true,
+      "field_completeness_negative_audit_pinned": true,
+      "p_spend_digest_covers_revised_fields": true,
+      "p_spend_field_count": 8,
+      "p_spend_field_ids": [
+        "spend_verifier_family",
+        "spend_authorization_class",
+        "checked_core_or_native_verifier_handle",
+        "public_key_identity_or_authorization_identity",
+        "allowed_authorization_local_mode",
+        "allowed_state_transition_class",
+        "aggregation_mode",
+        "spend_domain_separator"
+      ],
+      "row_count": 8,
+      "rows": [
+        {
+          "current_evidence": "authorization-class digest rejects non-Fq12 verifier families and checked-core frame authority gates verifier_family_id",
+          "p_spend_surface": "path2_native_spend_authorization_class_digest_v1",
+          "pinned": true,
+          "residual": "external review of the field-completeness audit",
+          "semantic_field": "spend_verifier_family",
+          "verifier_binding_surface": "Path2NativeCheckedCoreFrameV1 verifier_family_id"
+        },
+        {
+          "current_evidence": "spend projection recomputes the authorization-class digest and Lean carries leaf authorizationClass equality to pSpend(boundary)",
+          "p_spend_surface": "Path2NativeSpendProjectionV1.spend_authorization_class_digest",
+          "pinned": true,
+          "residual": "Lean typed compatibility wrapper with honest-create sampler",
+          "semantic_field": "spend_authorization_class",
+          "verifier_binding_surface": "leaf.authorizationClass = pSpend(boundary) Lean hook"
+        },
+        {
+          "current_evidence": "checked-core frame-binding import and direct verifier challenge bind the public key identity and proof commitment",
+          "p_spend_surface": "checked_core_verifier_handle_digest",
+          "pinned": true,
+          "residual": "external review of checked-core frame binding",
+          "semantic_field": "checked_core_or_native_verifier_handle",
+          "verifier_binding_surface": "checked-core proof commitment / public-key identity challenge binding"
+        },
+        {
+          "current_evidence": "direct verifier recomputes public_key_identity from the supplied public key before checked-core verification",
+          "p_spend_surface": "public_key_identity",
+          "pinned": true,
+          "residual": "external review of public key identity binding",
+          "semantic_field": "public_key_identity_or_authorization_identity",
+          "verifier_binding_surface": "leaf.public_key_identity and checked-core challenge public_key"
+        },
+        {
+          "current_evidence": "authorization-class digest and spend projection reject non-direct authorization-local modes for Mode A",
+          "p_spend_surface": "allowed_authorization_local_mode",
+          "pinned": true,
+          "residual": "Mode B refactor must add a new proof-boundary row before changing the mode",
+          "semantic_field": "allowed_authorization_local_mode",
+          "verifier_binding_surface": "PATH2_NATIVE_AUTHORIZATION_LOCAL_MODE_DIRECT"
+        },
+        {
+          "current_evidence": "direct theorem imports consume-once lifecycle and checked-core challenge binds account_state_root_before",
+          "p_spend_surface": "allowed_state_transition_class_digest",
+          "pinned": true,
+          "residual": "target-chain deployment-profile review",
+          "semantic_field": "allowed_state_transition_class",
+          "verifier_binding_surface": "consume-once lifecycle import and state root challenge binding"
+        },
+        {
+          "current_evidence": "authorization-class digest includes aggregation_mode and Mode A context validation pins direct-mode semantics",
+          "p_spend_surface": "aggregation_mode",
+          "pinned": true,
+          "residual": "Mode B aggregation theorem before aggregate-compatible deployment",
+          "semantic_field": "aggregation_mode",
+          "verifier_binding_surface": "Path2NativeCheckedCoreFrameV1 aggregation_mode"
+        },
+        {
+          "current_evidence": "slot-authorization digest import, checked-core frame binding, and direct verifier state namespace check bind the spend domain surface",
+          "p_spend_surface": "spend_domain_separator_digest",
+          "pinned": true,
+          "residual": "external review of domain-separation ledger",
+          "semantic_field": "spend_domain_separator",
+          "verifier_binding_surface": "slot_authorization_digest and checked-core challenge domain"
+        }
+      ]
+    },
+    "frozen_status": "draft_authorization_class_binding_audit_manifest",
+    "generator": {
+      "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_authorization_class_binding_audit_manifest",
+      "source": "tools/parameter-search/src/bin/path2_authorization_class_binding_audit_manifest.rs"
+    },
+    "open_obligations": {
+      "deployment_ready": false,
+      "external_review_complete": false,
+      "theorem_instantiated": false
+    },
+    "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
+    "schema": "Descender.Path2.AuthorizationClassBindingAuditManifest.v1",
+    "source_shape_audit": {
+      "checked_core_frame_binding_imported": true,
+      "consume_once_lifecycle_imported": true,
+      "existing_negative_tests_present": true,
+      "lean_boundary_hooks_present": true,
+      "no_private_authorization_material_in_direct_verifier": true,
+      "slot_authorization_digest_imported": true,
+      "source_shape_hook_count": 10,
+      "source_shape_hook_ids": [
+        "path2_native_spend_authorization_class_digest_v1",
+        "path2_native_spend_projection_v1_bytes",
+        "verify_path2_direct_single_slot_spend_authorization",
+        "verify_path2_checked_core_authorization",
+        "validate_path2_direct_slot_authorization_state_namespace",
+        "verify_path2_prevalidated_slot_consume_once",
+        "path2_checked_core_authorization_challenge_frame",
+        "AccountCreationAuthorizationClassObligationTracked",
+        "authorizationClass_matches_pSpend_of_obligationTracked",
+        "path2_native_honest_constructor_rejects_authorization_class_mismatch"
+      ]
+    }
+  },
+  "manifest_digest": "0bc436bb5a9e4153b6e5200a885684ca36eb7758eb1b6bae65890573fcb27e33"
+}

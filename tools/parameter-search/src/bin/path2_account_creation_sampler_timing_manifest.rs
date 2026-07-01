@@ -1,11 +1,13 @@
 use descender_parameter_search::production_reference::{
-    PROFILE, path2_account_creation_proof_boundary_report_v1,
+    path2_account_creation_proof_boundary_report_v1,
     path2_account_creation_proof_boundary_report_v1_digest,
     path2_account_creation_sampler_timing_report_v1,
     path2_account_creation_sampler_timing_report_v1_digest,
+    path2_authorization_class_binding_audit_report_v1,
     validate_path2_account_creation_sampler_timing_report_v1,
+    validate_path2_authorization_class_binding_audit_report_v1, PROFILE,
 };
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 
 fn hex_encode(bytes: &[u8]) -> String {
@@ -21,7 +23,12 @@ fn hex_encode(bytes: &[u8]) -> String {
 fn manifest_body() -> Result<Value, String> {
     let sampler_timing_report = path2_account_creation_sampler_timing_report_v1();
     let proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
+    let authorization_class_binding_audit_report =
+        path2_authorization_class_binding_audit_report_v1();
     validate_path2_account_creation_sampler_timing_report_v1(&sampler_timing_report)?;
+    validate_path2_authorization_class_binding_audit_report_v1(
+        &authorization_class_binding_audit_report,
+    )?;
 
     let recomputed_sampler_timing_digest =
         path2_account_creation_sampler_timing_report_v1_digest(&sampler_timing_report);
@@ -37,6 +44,11 @@ fn manifest_body() -> Result<Value, String> {
         return Err(
             "proof boundary report is not bound to the current sampler/timing report".to_string(),
         );
+    }
+    if sampler_timing_report.authorization_class_binding_audit_report_digest
+        != authorization_class_binding_audit_report.digest
+    {
+        return Err("sampler/timing report is not bound to authorization-class audit".to_string());
     }
 
     Ok(json!({
@@ -72,6 +84,9 @@ fn manifest_body() -> Result<Value, String> {
             "account_creation_sampler_timing_report_recomputed_digest": hex_encode(
                 &recomputed_sampler_timing_digest
             ),
+            "authorization_class_binding_audit_report_digest": hex_encode(
+                &sampler_timing_report.authorization_class_binding_audit_report_digest
+            ),
             "account_creation_proof_boundary_report_digest": hex_encode(
                 &proof_boundary_report.digest
             ),
@@ -86,6 +101,9 @@ fn manifest_body() -> Result<Value, String> {
             "support_file": sampler_timing_report.sampler_support_file,
             "theorem_target": sampler_timing_report.sampler_theorem_target,
             "construction_steps": sampler_timing_report.sampler_construction_steps,
+            "authorization_class_binding_audit_report_digest": hex_encode(
+                &sampler_timing_report.authorization_class_binding_audit_report_digest
+            ),
             "authorization_class_binding_theorem_instantiated":
                 sampler_timing_report.authorization_class_binding_theorem_instantiated,
             "honest_sampler_theorem_instantiated":

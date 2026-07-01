@@ -17,11 +17,12 @@
     "corpus_id": "Descender.Path2.AccountCreationSamplerTiming.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "8ef95d17d6ccd942206d753867bff58741cc33c80d3bfd4a0a4b8cb353a9a309",
-      "account_creation_proof_boundary_report_recomputed_digest": "8ef95d17d6ccd942206d753867bff58741cc33c80d3bfd4a0a4b8cb353a9a309",
-      "account_creation_sampler_timing_report_digest": "8eec7a7b2e9f784bc3fd2b2be81980d888bffba40d3c7ff425338ec5fe29e844",
-      "account_creation_sampler_timing_report_recomputed_digest": "8eec7a7b2e9f784bc3fd2b2be81980d888bffba40d3c7ff425338ec5fe29e844",
-      "proof_boundary_report_sampler_timing_digest": "8eec7a7b2e9f784bc3fd2b2be81980d888bffba40d3c7ff425338ec5fe29e844"
+      "account_creation_proof_boundary_report_digest": "eb52b705a4d6b7ce06d8243c67e462cc6cae83d156863e37b8844fb1dbbfc283",
+      "account_creation_proof_boundary_report_recomputed_digest": "eb52b705a4d6b7ce06d8243c67e462cc6cae83d156863e37b8844fb1dbbfc283",
+      "account_creation_sampler_timing_report_digest": "6d4a1cd853fc420264da53eb5c0f864b9b9d24db21da355ed014f2b45e8f135c",
+      "account_creation_sampler_timing_report_recomputed_digest": "6d4a1cd853fc420264da53eb5c0f864b9b9d24db21da355ed014f2b45e8f135c",
+      "authorization_class_binding_audit_report_digest": "2db1974f6e581ceaa85fa0adda92c27b526f6540960f9bc57016751469e53828",
+      "proof_boundary_report_sampler_timing_digest": "6d4a1cd853fc420264da53eb5c0f864b9b9d24db21da355ed014f2b45e8f135c"
     },
     "executable_hooks": {
       "checked_core_challenge_binds_message": true,
@@ -53,6 +54,7 @@
     },
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "sampler_boundary": {
+      "authorization_class_binding_audit_report_digest": "2db1974f6e581ceaa85fa0adda92c27b526f6540960f9bc57016751469e53828",
       "authorization_class_binding_theorem_instantiated": false,
       "construction_steps": [
         "seed",
@@ -92,5 +94,5 @@
       ]
     }
   },
-  "manifest_digest": "1f2cd4e100158459840638b5a88c874f69c540e7b646cda94613e04a9c581b72"
+  "manifest_digest": "4640ca855ee5b4928c27fde06357b53bffeb6848454090b4b0fea2465869176a"
 }

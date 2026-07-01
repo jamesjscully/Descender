@@ -253,6 +253,22 @@ GATES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
         ("path2_account_stark_fri_aok_boundary_consistency",),
     ),
     (
+        "authorization-class binding audit manifest check",
+        (
+            "path2_authorization_class_binding_audit_manifest",
+            "path2_authorization_class_binding_audit_v1.json",
+        ),
+        (
+            "path2_authorization_class_binding_audit_manifest",
+            "path2_authorization_class_binding_audit_v1.json",
+        ),
+    ),
+    (
+        "authorization-class binding audit consistency check",
+        ("path2_authorization_class_binding_audit_consistency",),
+        ("path2_authorization_class_binding_audit_consistency",),
+    ),
+    (
         "account-creation sampler timing manifest check",
         (
             "path2_account_creation_sampler_timing_manifest",
@@ -573,6 +589,16 @@ GATE_TRACKER_ROWS: dict[str, tuple[str, ...]] = {
         "DIR-PROOF-002",
         "DIR-STARK-001",
         "DIR-REVIEW-001",
+    ),
+    "authorization-class binding audit manifest check": (
+        "DIR-AUTHCLASS-001",
+        "DIR-CREATE-001",
+        "DIR-SEC-001",
+    ),
+    "authorization-class binding audit consistency check": (
+        "DIR-AUTHCLASS-001",
+        "DIR-CREATE-001",
+        "DIR-SEC-001",
     ),
     "account-creation sampler timing manifest check": (
         "DIR-SEC-001",
