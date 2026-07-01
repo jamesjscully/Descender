@@ -9554,6 +9554,8 @@ pub struct Path2AccountCreationSamplerTimingReportV1 {
     pub direct_state_namespace_validator: &'static str,
     pub consume_once_validator: &'static str,
     pub direct_spend_composition_endpoint: &'static str,
+    pub sampler_authorization_bridge_hook_ids: &'static [&'static str],
+    pub sampler_authorization_bridge_hook_count: usize,
     pub creation_statement_excludes_spend_message: bool,
     pub creation_statement_excludes_signature_bytes: bool,
     pub checked_core_challenge_binds_message: bool,
@@ -9563,6 +9565,8 @@ pub struct Path2AccountCreationSamplerTimingReportV1 {
     pub state_namespace_membership_required: bool,
     pub consume_once_required: bool,
     pub direct_spend_composition_hook_present: bool,
+    pub selected_rust_honest_create_bridge_present: bool,
+    pub selected_rust_projection_bridge_present: bool,
     pub sampler_boundary_pinned: bool,
     pub timing_boundary_pinned: bool,
     pub honest_sampler_theorem_instantiated: bool,
@@ -11345,6 +11349,15 @@ pub const PATH2_ACCOUNT_CREATION_SAMPLER_CONSTRUCTION_STEPS: [&str; 8] = [
     "gauge/randomizer",
     "h",
 ];
+pub const PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS: [&str; 7] = [
+    "selectedRustHonestCreationPredicates",
+    "selectedRustHonestCreationSoundness",
+    "selectedRustHonestCreate_authorization_over_class",
+    "selectedRustAuthorizationCompatibleOverClass_of_compatible",
+    "selectedRustAuthorizationClassBinding",
+    "selectedRustProjectionCompleteness",
+    "selectedRustMeaningProjection_spendAuthorizationClass_eq_pSpend",
+];
 pub const PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_FIELDS: [&str; 8] = [
     "spend_verifier_family",
     "spend_authorization_class",
@@ -12935,6 +12948,10 @@ pub fn path2_account_creation_sampler_timing_report_v1() -> Path2AccountCreation
             "validate_path2_direct_slot_authorization_state_namespace",
         consume_once_validator: "verify_path2_prevalidated_slot_consume_once",
         direct_spend_composition_endpoint: "verify_path2_direct_single_slot_spend_authorization",
+        sampler_authorization_bridge_hook_ids:
+            &PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS,
+        sampler_authorization_bridge_hook_count:
+            PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS.len(),
         creation_statement_excludes_spend_message: true,
         creation_statement_excludes_signature_bytes: true,
         checked_core_challenge_binds_message: true,
@@ -12944,6 +12961,8 @@ pub fn path2_account_creation_sampler_timing_report_v1() -> Path2AccountCreation
         state_namespace_membership_required: true,
         consume_once_required: true,
         direct_spend_composition_hook_present: true,
+        selected_rust_honest_create_bridge_present: true,
+        selected_rust_projection_bridge_present: true,
         sampler_boundary_pinned: true,
         timing_boundary_pinned: true,
         honest_sampler_theorem_instantiated: false,
@@ -12999,6 +13018,12 @@ pub fn validate_path2_account_creation_sampler_timing_report_v1(
         || !report.state_namespace_membership_required
         || !report.consume_once_required
         || !report.direct_spend_composition_hook_present
+        || report.sampler_authorization_bridge_hook_ids
+            != PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS.as_ref()
+        || report.sampler_authorization_bridge_hook_count
+            != report.sampler_authorization_bridge_hook_ids.len()
+        || !report.selected_rust_honest_create_bridge_present
+        || !report.selected_rust_projection_bridge_present
         || !report.sampler_boundary_pinned
         || !report.timing_boundary_pinned
         || report.honest_sampler_theorem_instantiated
@@ -71074,6 +71099,27 @@ fn path2_account_creation_sampler_timing_report_v1_frame(
         b"direct_spend_composition_endpoint",
         report.direct_spend_composition_endpoint.as_bytes(),
     );
+    for (index, hook) in report
+        .sampler_authorization_bridge_hook_ids
+        .iter()
+        .enumerate()
+    {
+        append_u64(
+            &mut frame,
+            b"sampler_authorization_bridge_hook_index",
+            index as u64,
+        );
+        append_frame(
+            &mut frame,
+            b"sampler_authorization_bridge_hook",
+            hook.as_bytes(),
+        );
+    }
+    append_u64(
+        &mut frame,
+        b"sampler_authorization_bridge_hook_count",
+        report.sampler_authorization_bridge_hook_count as u64,
+    );
     append_u64(
         &mut frame,
         b"creation_statement_excludes_spend_message",
@@ -71118,6 +71164,16 @@ fn path2_account_creation_sampler_timing_report_v1_frame(
         &mut frame,
         b"direct_spend_composition_hook_present",
         u64::from(report.direct_spend_composition_hook_present),
+    );
+    append_u64(
+        &mut frame,
+        b"selected_rust_honest_create_bridge_present",
+        u64::from(report.selected_rust_honest_create_bridge_present),
+    );
+    append_u64(
+        &mut frame,
+        b"selected_rust_projection_bridge_present",
+        u64::from(report.selected_rust_projection_bridge_present),
     );
     append_u64(
         &mut frame,
@@ -114531,6 +114587,17 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.direct_spend_composition_endpoint,
             "verify_path2_direct_single_slot_spend_authorization"
         );
+        assert_eq!(
+            report.sampler_authorization_bridge_hook_ids,
+            PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS.as_ref()
+        );
+        assert_eq!(report.sampler_authorization_bridge_hook_count, 7);
+        assert!(report
+            .sampler_authorization_bridge_hook_ids
+            .contains(&"selectedRustHonestCreate_authorization_over_class"));
+        assert!(report
+            .sampler_authorization_bridge_hook_ids
+            .contains(&"selectedRustMeaningProjection_spendAuthorizationClass_eq_pSpend"));
         assert!(report.creation_statement_excludes_spend_message);
         assert!(report.creation_statement_excludes_signature_bytes);
         assert!(report.checked_core_challenge_binds_message);
@@ -114540,6 +114607,8 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.state_namespace_membership_required);
         assert!(report.consume_once_required);
         assert!(report.direct_spend_composition_hook_present);
+        assert!(report.selected_rust_honest_create_bridge_present);
+        assert!(report.selected_rust_projection_bridge_present);
         assert!(report.sampler_boundary_pinned);
         assert!(report.timing_boundary_pinned);
         assert!(!report.honest_sampler_theorem_instantiated);

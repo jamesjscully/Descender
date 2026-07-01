@@ -101,6 +101,10 @@ fn manifest_body() -> Result<Value, String> {
             "support_file": sampler_timing_report.sampler_support_file,
             "theorem_target": sampler_timing_report.sampler_theorem_target,
             "construction_steps": sampler_timing_report.sampler_construction_steps,
+            "authorization_bridge_hook_ids":
+                sampler_timing_report.sampler_authorization_bridge_hook_ids,
+            "authorization_bridge_hook_count":
+                sampler_timing_report.sampler_authorization_bridge_hook_count,
             "authorization_class_binding_audit_report_digest": hex_encode(
                 &sampler_timing_report.authorization_class_binding_audit_report_digest
             ),
@@ -108,6 +112,10 @@ fn manifest_body() -> Result<Value, String> {
                 sampler_timing_report.authorization_class_binding_theorem_instantiated,
             "honest_sampler_theorem_instantiated":
                 sampler_timing_report.honest_sampler_theorem_instantiated,
+            "selected_rust_honest_create_bridge_present":
+                sampler_timing_report.selected_rust_honest_create_bridge_present,
+            "selected_rust_projection_bridge_present":
+                sampler_timing_report.selected_rust_projection_bridge_present,
             "sampler_boundary_pinned": sampler_timing_report.sampler_boundary_pinned
         },
         "timing_boundary": {

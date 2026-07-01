@@ -347,14 +347,18 @@ Reject this sampler design if:
 
 ## Next Proof Move
 
-Prove the authorization class binding theorem:
+Lift the selected-Rust sampler bridge hooks into the full honest-create sampler
+evidence path, then finish the authorization class binding theorem:
 
 ```text
 auth_compatible_c(q,auth)
   => AuthClass_c(auth)=p_spend(q)
 ```
 
-for the construction order above.
+for the construction order above. The current sampler/timing manifest now pins
+the selected-Rust support hooks for the typed compatibility/projection bridge,
+but keeps the honest sampler theorem flag false until the full evidence path and
+review are complete.
 
 This is now the highest-risk proof item. If it fails, private authorization
 material still changes public spend semantics, and that semantic class must

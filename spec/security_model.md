@@ -419,10 +419,12 @@ QROM budget import, and fail-closed open theorem flags; it is not an
 account-STARK transcript QROM theorem or residual-pricing closure. The
 sampler/timing report pins the honest-create
 sampler support file, no-postchallenge timing game, construction order,
-prechallenge fixed-through step, spend-challenge derivation step, and executable
-hooks showing that the creation hidden-source statement excludes the spend
-message/signature while the checked-core challenge binds message, state root,
-slot authorization digest, and proof commitment. The no-export boundary report
+selected-Rust honest-create authorization bridge hooks, prechallenge
+fixed-through step, spend-challenge derivation step, and executable hooks showing
+that the creation hidden-source statement excludes the spend message/signature
+while the checked-core challenge binds message, state root, slot authorization
+digest, and proof commitment. Those bridge hooks are support evidence, not the
+full honest-sampler theorem closure. The no-export boundary report
 pins the support file, selected account-STARK payload endpoints, public
 payload byte-model digest, payload KAT-boundary digest, forbidden
 private-material field denylist, simulator theorem target,

@@ -5,6 +5,7 @@ use descender_parameter_search::production_reference::{
     path2_authorization_class_binding_audit_report_v1,
     validate_path2_account_creation_sampler_timing_report_v1,
     validate_path2_authorization_class_binding_audit_report_v1,
+    PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS,
 };
 use serde_json::Value;
 use std::{
@@ -56,6 +57,12 @@ fn bool_at(value: &Value, pointer: &str) -> Result<bool, String> {
     at(value, pointer)?
         .as_bool()
         .ok_or_else(|| format!("JSON pointer {pointer} is not a bool"))
+}
+
+fn u64_at(value: &Value, pointer: &str) -> Result<u64, String> {
+    at(value, pointer)?
+        .as_u64()
+        .ok_or_else(|| format!("JSON pointer {pointer} is not a u64"))
 }
 
 fn require_contains(haystack: &str, needle: &str, label: &str) -> Result<(), String> {
@@ -205,6 +212,43 @@ fn main() -> Result<(), String> {
             return Err(format!("sampler/timing manifest drifted at {pointer}"));
         }
     }
+    if u64_at(
+        &manifest,
+        "/manifest/sampler_boundary/authorization_bridge_hook_count",
+    )? != PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS.len() as u64
+        || u64_at(
+            &manifest,
+            "/manifest/sampler_boundary/authorization_bridge_hook_count",
+        )? != report.sampler_authorization_bridge_hook_count as u64
+    {
+        return Err("sampler/timing authorization bridge hook count drift".to_string());
+    }
+    for hook in PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS {
+        require_contains(
+            &serde_json::to_string(at(
+                &manifest,
+                "/manifest/sampler_boundary/authorization_bridge_hook_ids",
+            )?)
+            .map_err(|err| format!("serialize sampler bridge hook ids: {err}"))?,
+            hook,
+            "sampler/timing authorization bridge manifest hooks",
+        )?;
+        require_contains(
+            &full_spend_lean,
+            hook,
+            "Lean sampler authorization bridge hooks",
+        )?;
+    }
+    for hook in [
+        "selectedRustHonestCreate_authorization_over_class",
+        "selectedRustMeaningProjection_spendAuthorizationClass_eq_pSpend",
+    ] {
+        require_contains(
+            &full_spend_lean,
+            hook,
+            "required selected-Rust sampler bridge hook",
+        )?;
+    }
 
     for pointer in [
         "/manifest/executable_hooks/creation_statement_excludes_spend_message",
@@ -216,6 +260,8 @@ fn main() -> Result<(), String> {
         "/manifest/executable_hooks/state_namespace_membership_required",
         "/manifest/executable_hooks/consume_once_required",
         "/manifest/executable_hooks/direct_spend_composition_hook_present",
+        "/manifest/sampler_boundary/selected_rust_honest_create_bridge_present",
+        "/manifest/sampler_boundary/selected_rust_projection_bridge_present",
     ] {
         if !bool_at(&manifest, pointer)? {
             return Err(format!(

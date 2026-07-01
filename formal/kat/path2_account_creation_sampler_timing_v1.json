@@ -17,12 +17,12 @@
     "corpus_id": "Descender.Path2.AccountCreationSamplerTiming.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "b11cffffccb7793c6dde2ff3e34b3657f1a7f4344a63184005ec04fafb24b175",
-      "account_creation_proof_boundary_report_recomputed_digest": "b11cffffccb7793c6dde2ff3e34b3657f1a7f4344a63184005ec04fafb24b175",
-      "account_creation_sampler_timing_report_digest": "04a00240b2f5de85c1574790b413c9ff041a5c67171414885d3155502da3ed04",
-      "account_creation_sampler_timing_report_recomputed_digest": "04a00240b2f5de85c1574790b413c9ff041a5c67171414885d3155502da3ed04",
+      "account_creation_proof_boundary_report_digest": "d93373012f26e2c3db4aee2f93a17d8a2df317298d629760dc97af2952954d7a",
+      "account_creation_proof_boundary_report_recomputed_digest": "d93373012f26e2c3db4aee2f93a17d8a2df317298d629760dc97af2952954d7a",
+      "account_creation_sampler_timing_report_digest": "2571e1bba6b4f3d809c12a14f8cf8ee4164ca9087935d168a3b52d716102ad50",
+      "account_creation_sampler_timing_report_recomputed_digest": "2571e1bba6b4f3d809c12a14f8cf8ee4164ca9087935d168a3b52d716102ad50",
       "authorization_class_binding_audit_report_digest": "8a7fcd555ca01d557145b94c5a0660f767749fa228788898d4ed5cc8610b155b",
-      "proof_boundary_report_sampler_timing_digest": "04a00240b2f5de85c1574790b413c9ff041a5c67171414885d3155502da3ed04"
+      "proof_boundary_report_sampler_timing_digest": "2571e1bba6b4f3d809c12a14f8cf8ee4164ca9087935d168a3b52d716102ad50"
     },
     "executable_hooks": {
       "checked_core_challenge_binds_message": true,
@@ -54,6 +54,16 @@
     },
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "sampler_boundary": {
+      "authorization_bridge_hook_count": 7,
+      "authorization_bridge_hook_ids": [
+        "selectedRustHonestCreationPredicates",
+        "selectedRustHonestCreationSoundness",
+        "selectedRustHonestCreate_authorization_over_class",
+        "selectedRustAuthorizationCompatibleOverClass_of_compatible",
+        "selectedRustAuthorizationClassBinding",
+        "selectedRustProjectionCompleteness",
+        "selectedRustMeaningProjection_spendAuthorizationClass_eq_pSpend"
+      ],
       "authorization_class_binding_audit_report_digest": "8a7fcd555ca01d557145b94c5a0660f767749fa228788898d4ed5cc8610b155b",
       "authorization_class_binding_theorem_instantiated": false,
       "construction_steps": [
@@ -68,6 +78,8 @@
       ],
       "honest_sampler_theorem_instantiated": false,
       "sampler_boundary_pinned": true,
+      "selected_rust_honest_create_bridge_present": true,
+      "selected_rust_projection_bridge_present": true,
       "support_file": "research/path2_honest_create_sampler_v1.md",
       "theorem_target": "honest_create_sampler_sound_v1"
     },
@@ -94,5 +106,5 @@
       ]
     }
   },
-  "manifest_digest": "50f4cd53c73fd8ae2089b5df4a525e2fd2e32d8531aab99cf3899c5d89cf0b6a"
+  "manifest_digest": "cdfc67e106a2dbe4c8b40e417d7b0de521a97c607e205d77749bf6bc731927f6"
 }
