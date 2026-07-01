@@ -273,7 +273,7 @@
         "deterministic_public_rejection"
       ],
       "account_creation_evidence_transcript_digest": "ef18960db93f1bf9e4e244059226549805092f6d5433186c0edd1a1f405743a0",
-      "account_creation_proof_boundary_report_digest": "67e127cd05b706f042375b2c72e73611d5e769d331e59e767af4910b3848db5a",
+      "account_creation_proof_boundary_report_digest": "1c1e8cdecd8c8fc14dc4eb2df950d0598f695b55cc967470492f15d69f83af8a",
       "account_id": "e7e9c407d51a153ae517b874c3da8d828943c0eb4ccc8800423bf164fc4d4baf",
       "account_stark_bundle_bytes": 10700945,
       "account_stark_bundle_digest": "018aa9d16435afedb30bc28b3c2aadbbb1f9d9ab1a689077b45c3f299c6778e3",
@@ -298,7 +298,7 @@
       "deployed_anchor_verifier_version_bound": true,
       "deployment_ready": false,
       "deterministic_rejection_requirement_deferred_to_rejection_kats": true,
-      "digest": "6b9c8a59a6330007d0a3bee47e146f67ad1e2ed757d8fe470bd277d9048af0d9",
+      "digest": "9b0b552de3fbe4eec69838a73898c36a601c900d87b0328f1218a7f563792569",
       "direct_replayable_relation_certificate_digest": "6093362302ab49f072d2cbc10020bf58dc091d116438615e844528e30b8e32b7",
       "every_accepting_requirement_has_boundary_or_audit_evidence": true,
       "every_applicable_accepting_requirement_has_accepted_path_evidence": true,
@@ -332,7 +332,7 @@
       "public_key_identity": "58f218aeb259309eeb545345a8f5c715987967b0ec724806d448394da578d0b0",
       "public_payload_exports_private_material": false,
       "qrom_requirement_deferred_to_residual_theorem": true,
-      "recomputed_digest": "6b9c8a59a6330007d0a3bee47e146f67ad1e2ed757d8fe470bd277d9048af0d9",
+      "recomputed_digest": "9b0b552de3fbe4eec69838a73898c36a601c900d87b0328f1218a7f563792569",
       "replay_payload_digest_function": "path2_account_stark_creation_payload_v1_digest",
       "sampler_timing_report_digest": "b55c8d9c4486a9fbabaf13c7e3027a2a9da6f8e5d5187d9086d4418d2ce268f0",
       "schema": "Descender.Path2.AccountCreationAcceptedProofBoundaryEvidence.v1",
@@ -352,5 +352,5 @@
     "schema": "Descender.Path2.AccountCreationAcceptedProofBoundaryDeterministicKatEvidenceManifest.v1",
     "status": "digest_pinned_deterministic_kat_accepted_account_creation_proof_boundary_evidence"
   },
-  "manifest_digest": "a2f7f09e27be11f495cf9b0f61976f1a6f1c040a7b5d607f56a794bba355aff0"
+  "manifest_digest": "182803421d4db4e487ae02949558330fb3609e84d76071012c101bd6afb0a4c9"
 }

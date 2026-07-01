@@ -12218,8 +12218,10 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
     Path2AccountCreationProofBoundaryObligationRowV1 {
         obligation_id: "creation_proof_obligation_simulator_no_export",
         closure_target: "selected_account_stark_public_bundle_simulator_v1 + selected_account_stark_no_export_v1",
-        supporting_surface: "Path2AccountCreationNoExportBoundaryReportV1",
-        current_evidence: "public-input allowlist and private-material denylist are pinned for the selected account-STARK payload",
+        supporting_surface:
+            "Path2AccountCreationNoExportBoundaryReportV1 + accepted-boundary Lean no-export support",
+        current_evidence:
+            "selectedRustAcceptedBoundaryNoExportSupport_of_boundaryAccepted packages no-export boundary digest/nonzero, simulator/no-export tracking, direct proof-family break mapping, and the still-open proof-family flag while the report pins public-input allowlist, private-material denylist, no-export vectors, and fail-closed flags",
         required_closure: "prove accepted public bundles are simulatable from public anchors and allowed commitments without exporting private creation material",
         named_break: "account_stark_simulator_or_no_export_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
@@ -51322,6 +51324,8 @@ fn path2_full_signature_execution_source_boundary_present_in_source_v1(
         "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted",
         "SelectedRustAcceptedBoundarySamplerIntegrationRowsSupported",
         "selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted",
+        "SelectedRustAcceptedBoundaryNoExportSupport",
+        "selectedRustAcceptedBoundaryNoExportSupport_of_boundaryAccepted",
     ];
 
     account_creation_checks
