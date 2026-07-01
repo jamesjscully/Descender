@@ -354,9 +354,12 @@ fn main() -> Result<(), String> {
         "selectedRustMeaningProjection_spendAuthorizationClass_eq_pSpend",
         "selectedRustAuthorizationCompatibleOverClass_of_compatible",
         "selectedRustAuthorizationClassBinding",
+        "selectedRustAuthorizationCompatibleOverClass_noAmbiguity",
         "selectedRustHonestCreate_authorization_over_class",
         "selectedRust_accountCreationAuthorizationCompatibleOverClass_of_obligationTracked",
         "selectedRust_accountCreationAuthorizationClass_matchesMeaning_of_obligationTracked",
+        "SelectedRustAcceptedBoundaryAuthorizationClassBindingSupport",
+        "selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted",
         "spend.leaf.authorizationClass =",
         "C.nativeProjections.pSpend spend.creationEvidence.boundary",
     ] {

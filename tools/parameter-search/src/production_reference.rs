@@ -11435,7 +11435,7 @@ pub const PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_FIELDS: [&str; 8] = [
     "aggregation_mode",
     "spend_domain_separator",
 ];
-pub const PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_HOOKS: [&str; 21] = [
+pub const PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_HOOKS: [&str; 24] = [
     "path2_native_spend_authorization_class_digest_v1",
     "path2_native_spend_projection_v1_bytes",
     "verify_path2_direct_single_slot_spend_authorization",
@@ -11450,12 +11450,15 @@ pub const PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_HOOKS: [&str; 21] = [
     "selectedRustPrivateFiberPredicates",
     "selectedRustAuthorizationCompatibleOverClass_of_compatible",
     "selectedRustAuthorizationClassBinding",
+    "selectedRustAuthorizationCompatibleOverClass_noAmbiguity",
     "selectedRustHonestCreationPredicates",
     "selectedRustHonestCreationSoundness",
     "selectedRustHonestCreate_authorization_over_class",
     "concreteLeafAuthorizationFiber",
     "selectedRust_accountCreationAuthorizationCompatibleOverClass_of_obligationTracked",
     "selectedRust_accountCreationAuthorizationClass_matchesMeaning_of_obligationTracked",
+    "SelectedRustAcceptedBoundaryAuthorizationClassBindingSupport",
+    "selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted",
     "path2_native_honest_constructor_rejects_authorization_class_mismatch",
 ];
 pub const PATH2_ACCOUNT_CREATION_TIMING_ORDER_STEPS: [&str; 11] = [
@@ -51304,6 +51307,9 @@ fn path2_full_signature_execution_source_boundary_present_in_source_v1(
         "selectedRustAcceptedBoundaryHonestCreate_of_boundaryAccepted",
         "SelectedRustAcceptedBoundaryPrivateToPublicOrderRealized",
         "selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted",
+        "selectedRustAuthorizationCompatibleOverClass_noAmbiguity",
+        "SelectedRustAcceptedBoundaryAuthorizationClassBindingSupport",
+        "selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted",
         "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted",
     ];
 

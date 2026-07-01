@@ -18,7 +18,7 @@
     "digests": {
       "account_creation_no_export_boundary_report_digest": "ac72e42f992f87708be678abcfd5dee67777341118621692193babedb0c8b8e6",
       "account_creation_no_export_boundary_report_recomputed_digest": "ac72e42f992f87708be678abcfd5dee67777341118621692193babedb0c8b8e6",
-      "account_creation_proof_boundary_report_digest": "ae75930653b27c7a39294c7669017455e874c2f21e01af2193aa9b77f514fc3f",
+      "account_creation_proof_boundary_report_digest": "ebf8d8be1f950e5f316f4b21b05cd32fff7c49d582ca445ee3a880f8315b0c57",
       "payload_byte_model_report_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
       "payload_kat_boundary_report_digest": "ab14d77b9401e7c219a85204c19c767b958220517bd64f4a5868189bb8fbbafe",
       "proof_boundary_report_no_export_digest": "ac72e42f992f87708be678abcfd5dee67777341118621692193babedb0c8b8e6"
@@ -86,5 +86,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.AccountCreationNoExportBoundaryManifest.v1"
   },
-  "manifest_digest": "5064b92546055bf8ff819daf827c15aba78649cac72a8284f08aa373769dbf4c"
+  "manifest_digest": "f52c10a633589354cf09ba9247dfa0433e92f64cc89750b88f5c95e55dd6af54"
 }

@@ -447,7 +447,7 @@ AUTHORIZATION_CLASS_BINDING_AUDIT_MARKERS = {
         "draft_authorization_class_binding_audit_manifest",
         "authorization_class_binding_audit_report_digest",
         '"p_spend_field_count": 8',
-        '"source_shape_hook_count": 21',
+        '"source_shape_hook_count": 24',
         "selectedRust_accountCreationAuthorizationCompatibleOverClass_of_obligationTracked",
         '"field_completeness_negative_audit_complete": true',
         '"theorem_instantiated": false',

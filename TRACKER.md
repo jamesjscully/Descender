@@ -129,7 +129,7 @@ diffed by the local and CI gates from `Path2AuthorizationClassBindingAuditReport
 pins the revised 8-field `p_spend` completeness map, checks the direct verifier
 does not read private authorization-local material, imports Rust/Lean
 source-shape hooks including the selected-Rust typed compatibility/projection
-bridge, and is digest-imported by
+bridge plus the accepted-boundary no-ambiguity support hook, and is digest-imported by
 `Path2AccountCreationSamplerTimingReportV1`; it leaves
 `authorization_class_binding_theorem_instantiated`, full honest-create sampler
 integration, external review, and deployment readiness false. The sampler/timing

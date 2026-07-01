@@ -397,7 +397,12 @@ authorization-class field-completeness audit: every revised `p_spend` field is
 named, every row maps to the deployed projection/check surface, the direct spend
 verifier is checked for absence of private authorization-local material reads,
 and the source-shape hook list covers the Rust hooks, Lean boundary hooks, and
-selected-Rust typed compatibility/projection bridge hooks. The
+selected-Rust typed compatibility/projection bridge hooks. The concrete Lean
+carrier also now packages the selected-Rust typed no-ambiguity consequence in
+`selectedRustAuthorizationCompatibleOverClass_noAmbiguity` and imports it into
+the accepted-boundary support hook
+`selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted`.
+The
 sampler/timing report imports that audit digest, and
 `formal/kat/path2_authorization_class_binding_audit_v1.json` is regenerated and
 checked before sampler/timing and proof-boundary manifests. This is executable

@@ -19,10 +19,10 @@
     "corpus_id": "Descender.Path2.AuthorizationClassBindingAudit.v1",
     "corpus_version": 1,
     "digests": {
-      "authorization_class_binding_audit_report_digest": "8a7fcd555ca01d557145b94c5a0660f767749fa228788898d4ed5cc8610b155b",
-      "authorization_class_binding_audit_report_recomputed_digest": "8a7fcd555ca01d557145b94c5a0660f767749fa228788898d4ed5cc8610b155b",
-      "sampler_timing_report_authorization_class_audit_digest": "8a7fcd555ca01d557145b94c5a0660f767749fa228788898d4ed5cc8610b155b",
-      "sampler_timing_report_digest": "7c9f8825c4595b946c49bc366149ba21cd7b6270b7f4ea7e8e1cfd3bb71d98f1"
+      "authorization_class_binding_audit_report_digest": "19d2d50f2838c4cab7b7ce2d81ca58b5a5e6bfa575c35813727d88ea6faacb0b",
+      "authorization_class_binding_audit_report_recomputed_digest": "19d2d50f2838c4cab7b7ce2d81ca58b5a5e6bfa575c35813727d88ea6faacb0b",
+      "sampler_timing_report_authorization_class_audit_digest": "19d2d50f2838c4cab7b7ce2d81ca58b5a5e6bfa575c35813727d88ea6faacb0b",
+      "sampler_timing_report_digest": "b186e17808c4507bbe0ea685e8d06b0ed200d2a549a0c5e0db8b20cd03ccc622"
     },
     "field_completeness": {
       "field_completeness_negative_audit_complete": true,
@@ -126,7 +126,7 @@
       "lean_boundary_hooks_present": true,
       "no_private_authorization_material_in_direct_verifier": true,
       "slot_authorization_digest_imported": true,
-      "source_shape_hook_count": 21,
+      "source_shape_hook_count": 24,
       "source_shape_hook_ids": [
         "path2_native_spend_authorization_class_digest_v1",
         "path2_native_spend_projection_v1_bytes",
@@ -142,15 +142,18 @@
         "selectedRustPrivateFiberPredicates",
         "selectedRustAuthorizationCompatibleOverClass_of_compatible",
         "selectedRustAuthorizationClassBinding",
+        "selectedRustAuthorizationCompatibleOverClass_noAmbiguity",
         "selectedRustHonestCreationPredicates",
         "selectedRustHonestCreationSoundness",
         "selectedRustHonestCreate_authorization_over_class",
         "concreteLeafAuthorizationFiber",
         "selectedRust_accountCreationAuthorizationCompatibleOverClass_of_obligationTracked",
         "selectedRust_accountCreationAuthorizationClass_matchesMeaning_of_obligationTracked",
+        "SelectedRustAcceptedBoundaryAuthorizationClassBindingSupport",
+        "selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted",
         "path2_native_honest_constructor_rejects_authorization_class_mismatch"
       ]
     }
   },
-  "manifest_digest": "4d044ae2fc56005dbe972d08e11f38d3efceb7abc02161a0cf00523bb84ef1ff"
+  "manifest_digest": "d6b1a3b723486fa62c9c4d688230a647b7e8473a0fa06231fbfaabc94baf8e84"
 }

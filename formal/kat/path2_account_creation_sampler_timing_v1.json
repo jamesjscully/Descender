@@ -17,12 +17,12 @@
     "corpus_id": "Descender.Path2.AccountCreationSamplerTiming.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "ae75930653b27c7a39294c7669017455e874c2f21e01af2193aa9b77f514fc3f",
-      "account_creation_proof_boundary_report_recomputed_digest": "ae75930653b27c7a39294c7669017455e874c2f21e01af2193aa9b77f514fc3f",
-      "account_creation_sampler_timing_report_digest": "7c9f8825c4595b946c49bc366149ba21cd7b6270b7f4ea7e8e1cfd3bb71d98f1",
-      "account_creation_sampler_timing_report_recomputed_digest": "7c9f8825c4595b946c49bc366149ba21cd7b6270b7f4ea7e8e1cfd3bb71d98f1",
-      "authorization_class_binding_audit_report_digest": "8a7fcd555ca01d557145b94c5a0660f767749fa228788898d4ed5cc8610b155b",
-      "proof_boundary_report_sampler_timing_digest": "7c9f8825c4595b946c49bc366149ba21cd7b6270b7f4ea7e8e1cfd3bb71d98f1"
+      "account_creation_proof_boundary_report_digest": "ebf8d8be1f950e5f316f4b21b05cd32fff7c49d582ca445ee3a880f8315b0c57",
+      "account_creation_proof_boundary_report_recomputed_digest": "ebf8d8be1f950e5f316f4b21b05cd32fff7c49d582ca445ee3a880f8315b0c57",
+      "account_creation_sampler_timing_report_digest": "b186e17808c4507bbe0ea685e8d06b0ed200d2a549a0c5e0db8b20cd03ccc622",
+      "account_creation_sampler_timing_report_recomputed_digest": "b186e17808c4507bbe0ea685e8d06b0ed200d2a549a0c5e0db8b20cd03ccc622",
+      "authorization_class_binding_audit_report_digest": "19d2d50f2838c4cab7b7ce2d81ca58b5a5e6bfa575c35813727d88ea6faacb0b",
+      "proof_boundary_report_sampler_timing_digest": "b186e17808c4507bbe0ea685e8d06b0ed200d2a549a0c5e0db8b20cd03ccc622"
     },
     "executable_hooks": {
       "checked_core_challenge_binds_message": true,
@@ -65,7 +65,7 @@
         "selectedRustProjectionCompleteness",
         "selectedRustMeaningProjection_spendAuthorizationClass_eq_pSpend"
       ],
-      "authorization_class_binding_audit_report_digest": "8a7fcd555ca01d557145b94c5a0660f767749fa228788898d4ed5cc8610b155b",
+      "authorization_class_binding_audit_report_digest": "19d2d50f2838c4cab7b7ce2d81ca58b5a5e6bfa575c35813727d88ea6faacb0b",
       "authorization_class_binding_theorem_instantiated": false,
       "construction_steps": [
         "seed",
@@ -154,5 +154,5 @@
       ]
     }
   },
-  "manifest_digest": "3a7d1a4b7b60103d81fa6f9e7e7a64c71b99dea23d5f6f8def788df912511a0a"
+  "manifest_digest": "945f1d46cf7a9298cdfdbef8fd5626daf7f1da9bb8272f2e97c2bfd91dd354a3"
 }

@@ -160,9 +160,15 @@ and `E_SD` (`p_spend.allowed_state_transition_class = p_state.state_transition_c
   selected-Rust typed compatibility/projection bridge through
   `selectedRustProjectionCompleteness`,
   `selectedRustHonestCreate_authorization_over_class`,
+  `selectedRustAuthorizationCompatibleOverClass_noAmbiguity`,
   `selectedRust_accountCreationAuthorizationCompatibleOverClass_of_obligationTracked`,
   and
   `selectedRust_accountCreationAuthorizationClass_matchesMeaning_of_obligationTracked`.
+  The accepted-boundary support hook
+  `selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted`
+  packages the concrete leaf fiber's compatibility, match to boundary meaning,
+  and same-boundary no-ambiguity consequence for every other compatible private
+  fiber.
   These are support hooks, not theorem closure.
 - **Hands off:** full honest-create sampler integration/evidence path that
   consumes the row-pinned checklist, and external review. `DIR-AUTHCLASS-001` keeps

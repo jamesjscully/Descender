@@ -302,6 +302,33 @@ def selectedRustAuthorizationClassBinding :
     intro q h hauth
     exact hauth
 
+/--
+Selected Rust no-ambiguity consequence for typed authorization compatibility:
+two private authorization locals compatible with the same public boundary have
+the same public authorization class. This is the local Lemma A support hook; it
+does not close the deployed field-completeness/review residual.
+-/
+theorem selectedRustAuthorizationCompatibleOverClass_noAmbiguity
+    {q : Path2NativeAccountDesign.Boundary}
+    {h h' : Path2NativeAccountDesign.PrivateFiber}
+    (hCompatible :
+      Path2NativeAccountDesign.AuthorizationCompatibleOverClass
+        selectedRustPrivateFiberPredicates selectedRustPublicProjections q h)
+    (hCompatible' :
+      Path2NativeAccountDesign.AuthorizationCompatibleOverClass
+        selectedRustPrivateFiberPredicates selectedRustPublicProjections q h') :
+    selectedRustPrivateFiberPredicates.authClass h =
+      selectedRustPrivateFiberPredicates.authClass h' := by
+  have hClass :
+      Path2NativeAccountDesign.AuthorizationClassMatches
+        selectedRustPrivateFiberPredicates selectedRustPublicProjections q h :=
+    selectedRustAuthorizationClassBinding.auth_class_matches hCompatible.1
+  have hClass' :
+      Path2NativeAccountDesign.AuthorizationClassMatches
+        selectedRustPrivateFiberPredicates selectedRustPublicProjections q h' :=
+    selectedRustAuthorizationClassBinding.auth_class_matches hCompatible'.1
+  exact hClass.trans hClass'.symm
+
 /-- Selected Rust honest-create relation used by the authorization-class slice. -/
 def selectedRustHonestCreationPredicates :
     Path2NativeAccountDesign.HonestCreationPredicates where
@@ -1114,6 +1141,69 @@ theorem selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted
     rfl,
     hBoundary,
     by simpa [selectedRustConcreteGameConfig] using hClass⟩
+
+/--
+Accepted-boundary authorization-class support for the selected Rust carrier.
+The concrete leaf fiber is compatible with the accepted boundary, its local
+authorization class matches both `pSpend(q)` and the boundary meaning, and any
+other private fiber compatible with the same boundary has the same public class.
+This packages the no-ambiguity support consequence without closing the full
+authorization-class theorem or external review flag.
+-/
+def SelectedRustAcceptedBoundaryAuthorizationClassBindingSupport
+    (spend : ConcreteSpendTuple) : Prop :=
+  let h := concreteLeafAuthorizationFiber spend.leaf
+  Path2NativeAccountDesign.AuthorizationCompatibleOverClass
+      selectedRustPrivateFiberPredicates
+      selectedRustPublicProjections
+      spend.creationEvidence.boundary
+      h ∧
+    Path2NativeAccountDesign.AuthorizationClassMatches
+        selectedRustPrivateFiberPredicates
+        selectedRustPublicProjections
+        spend.creationEvidence.boundary
+        h ∧
+      selectedRustPrivateFiberPredicates.authClass h =
+          (selectedRustMeaningProjection.meaningOfBoundary
+            spend.creationEvidence.boundary).spendAuthorizationClass ∧
+        ∀ h',
+          Path2NativeAccountDesign.AuthorizationCompatibleOverClass
+            selectedRustPrivateFiberPredicates
+            selectedRustPublicProjections
+            spend.creationEvidence.boundary
+            h' ->
+          selectedRustPrivateFiberPredicates.authClass h' =
+            selectedRustPrivateFiberPredicates.authClass h
+
+/--
+Accepted selected-Rust proof-boundary evidence imports the current
+authorization-class no-ambiguity support slice for the accepted leaf fiber. The
+hook consumes only the carried authorization-class obligation plus the local
+selected-Rust binding certificate.
+-/
+theorem selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted
+    {spend : ConcreteSpendTuple}
+    (hAccepted :
+      AccountCreationProofBoundaryEvidenceAccepted
+        selectedRustConcreteGameConfig spend) :
+    SelectedRustAcceptedBoundaryAuthorizationClassBindingSupport spend := by
+  dsimp [SelectedRustAcceptedBoundaryAuthorizationClassBindingSupport]
+  have hAuthTracked :
+      AccountCreationAuthorizationClassObligationTracked
+        selectedRustConcreteGameConfig spend :=
+    hAccepted.2.2.1
+  have hCompatible :=
+    selectedRust_accountCreationAuthorizationCompatibleOverClass_of_obligationTracked
+      hAuthTracked
+  have hMeaning :=
+    selectedRust_accountCreationAuthorizationClass_matchesMeaning_of_obligationTracked
+      hAuthTracked
+  refine ⟨hCompatible, hCompatible.2, ?_, ?_⟩
+  · simpa [concreteLeafAuthorizationFiber, selectedRustPrivateFiberPredicates] using
+      hMeaning
+  · intro h' hCompatible'
+    exact selectedRustAuthorizationCompatibleOverClass_noAmbiguity
+      hCompatible' hCompatible
 
 /--
 Accepted selected-Rust proof-boundary evidence alone gives the spend-specific
