@@ -407,7 +407,12 @@ review, and deployment readiness false.
 The sampler/timing report also pins a five-row honest-create sampler integration
 checklist over the private-to-public construction order, selected-Rust bridge
 hooks, authorization-class audit import, accepted proof-boundary import, and
-closed no-postchallenge timing slice. The accepted-boundary row now points at
+closed no-postchallenge timing slice. The private-to-public row now points at
+`selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted`,
+the Lean support hook that packages the accepted-boundary authorization-class
+facts, concrete leaf fiber, and namespace seed into the selected-Rust
+private-to-public sampler order for the accepted spend. The accepted-boundary
+row now points at
 `selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted`,
 the Lean support hook that consumes accepted-boundary evidence, the carried
 authorization-class/timing imports, the selected-Rust honest-create

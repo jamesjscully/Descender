@@ -135,7 +135,10 @@ bridge, and is digest-imported by
 integration, external review, and deployment readiness false. The sampler/timing
 report now also digest-pins the selected-Rust honest-create authorization bridge
 hook list plus a five-row sampler-integration checklist with 4-open/1-closed
-accounting while keeping `honest_sampler_theorem_instantiated` false. The accepted-spend numeric
+accounting; its private-to-public row now points at
+`selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted` for the
+accepted-boundary construction-order support hook while keeping
+`honest_sampler_theorem_instantiated` false. The accepted-spend numeric
 evidence report now routes its structural digest verification through
 `SelectedRustAcceptedSpendNumericDigestSlotsCertificate`, so the selected report
 proof must carry the aggregate numeric-evidence verification bit and every

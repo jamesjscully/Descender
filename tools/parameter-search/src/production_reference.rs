@@ -11380,7 +11380,8 @@ pub const PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS:
     Path2AccountCreationSamplerIntegrationRowV1 {
         integration_id: "sampler_integration_private_to_public_order",
         support_surface: "research/path2_honest_create_sampler_v1.md#Construction Order",
-        current_evidence: "PATH2_ACCOUNT_CREATION_SAMPLER_CONSTRUCTION_STEPS",
+        current_evidence:
+            "selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted",
         required_closure:
             "mechanize honest_create_sampler_sound_v1 over the selected private-to-public construction order",
         named_break: "creation_time_hidden_source_soundness_break",
@@ -51301,6 +51302,8 @@ fn path2_full_signature_execution_source_boundary_present_in_source_v1(
         "SelectedRustAcceptedBoundaryHonestSamplerSound",
         "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted_honestCreate",
         "selectedRustAcceptedBoundaryHonestCreate_of_boundaryAccepted",
+        "SelectedRustAcceptedBoundaryPrivateToPublicOrderRealized",
+        "selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted",
         "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted",
     ];
 
@@ -114765,6 +114768,15 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         );
         assert_eq!(report.sampler_integration_row_count, 5);
         assert_eq!(report.sampler_integration_open_count, 4);
+        assert!(report
+            .sampler_integration_rows
+            .iter()
+            .any(
+                |row| row.integration_id == "sampler_integration_private_to_public_order"
+                    && row.current_evidence
+                        == "selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted"
+                    && row.open
+            ));
         assert!(report
             .sampler_integration_rows
             .iter()

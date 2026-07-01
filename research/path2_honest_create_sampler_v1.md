@@ -360,8 +360,12 @@ for the construction order above. The current sampler/timing manifest now pins
 the selected-Rust support hooks for the typed compatibility/projection bridge
 and a five-row integration checklist covering the private-to-public order,
 authorization bridge hooks, authorization-class audit import, accepted-boundary
-import, and closed no-postchallenge timing slice. The accepted-boundary row now
+import, and closed no-postchallenge timing slice. The private-to-public row now
 requires
+`selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted`,
+which machine-checks the accepted-boundary authorization-class facts, concrete
+leaf fiber, and namespace seed as the selected-Rust construction-order support
+slice. The accepted-boundary row now requires
 `selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted`,
 which consumes the imported accepted-boundary/timing facts together with the
 selected-Rust honest-create authorization bridge, pinned to the accepted spend's

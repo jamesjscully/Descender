@@ -17,12 +17,12 @@
     "corpus_id": "Descender.Path2.AccountCreationSamplerTiming.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "217dd04ec6c9738e141c7c5f456dc1d8132bdc31fb511da4bad9670a547d1083",
-      "account_creation_proof_boundary_report_recomputed_digest": "217dd04ec6c9738e141c7c5f456dc1d8132bdc31fb511da4bad9670a547d1083",
-      "account_creation_sampler_timing_report_digest": "578d66fe58ec72edd708440c2785a9406369df246d6880d62814bf7c33d6bc64",
-      "account_creation_sampler_timing_report_recomputed_digest": "578d66fe58ec72edd708440c2785a9406369df246d6880d62814bf7c33d6bc64",
+      "account_creation_proof_boundary_report_digest": "ae75930653b27c7a39294c7669017455e874c2f21e01af2193aa9b77f514fc3f",
+      "account_creation_proof_boundary_report_recomputed_digest": "ae75930653b27c7a39294c7669017455e874c2f21e01af2193aa9b77f514fc3f",
+      "account_creation_sampler_timing_report_digest": "7c9f8825c4595b946c49bc366149ba21cd7b6270b7f4ea7e8e1cfd3bb71d98f1",
+      "account_creation_sampler_timing_report_recomputed_digest": "7c9f8825c4595b946c49bc366149ba21cd7b6270b7f4ea7e8e1cfd3bb71d98f1",
       "authorization_class_binding_audit_report_digest": "8a7fcd555ca01d557145b94c5a0660f767749fa228788898d4ed5cc8610b155b",
-      "proof_boundary_report_sampler_timing_digest": "578d66fe58ec72edd708440c2785a9406369df246d6880d62814bf7c33d6bc64"
+      "proof_boundary_report_sampler_timing_digest": "7c9f8825c4595b946c49bc366149ba21cd7b6270b7f4ea7e8e1cfd3bb71d98f1"
     },
     "executable_hooks": {
       "checked_core_challenge_binds_message": true,
@@ -85,7 +85,7 @@
       "sampler_integration_row_count": 5,
       "sampler_integration_rows": [
         {
-          "current_evidence": "PATH2_ACCOUNT_CREATION_SAMPLER_CONSTRUCTION_STEPS",
+          "current_evidence": "selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted",
           "integration_id": "sampler_integration_private_to_public_order",
           "named_break": "creation_time_hidden_source_soundness_break",
           "open": true,
@@ -154,5 +154,5 @@
       ]
     }
   },
-  "manifest_digest": "42ab1d620406b88b5233f460d1d8d2ef62373944d0fe8ae69140e5bb194fe1f1"
+  "manifest_digest": "3a7d1a4b7b60103d81fa6f9e7e7a64c71b99dea23d5f6f8def788df912511a0a"
 }

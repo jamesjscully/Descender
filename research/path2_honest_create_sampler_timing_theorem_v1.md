@@ -114,8 +114,12 @@ and creation can't be steered by the spend."
   to the lifecycle model (#9, `DIR-LIFE-001`) — named, not proven here. (2) The
   selected-Rust Lean support hooks for `HonestCreate` returning
   `AuthorizationCompatibleOverClass` and the five-row sampler integration
-  checklist are now digest-pinned by the sampler/timing report; the accepted
-  boundary row names
+  checklist are now digest-pinned by the sampler/timing report; the
+  private-to-public row names
+  `selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted`,
+  which machine-checks the accepted-boundary authorization-class facts, concrete
+  leaf fiber, and namespace seed as the selected-Rust construction-order support
+  slice. The accepted boundary row names
   `selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted`,
   which machine-checks the accepted-boundary import, authorization-class
   obligation import, no-postchallenge timing import, selected-Rust honest-create
@@ -138,8 +142,10 @@ and creation can't be steered by the spend."
   compatibility. The selected-Rust support hooks are pinned by
   `PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS`, and the remaining
   integration path is row-pinned by
-  `PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS`, with the accepted-boundary
+  `PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS`, with the private-to-public
   row now requiring
+  `selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted` and the
+  accepted-boundary row now requiring
   `selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted`.
 - **Hands off:** the lifecycle reorg/rollback term (#9); full honest-create
   sampler evidence integration that consumes the checklist; external review.

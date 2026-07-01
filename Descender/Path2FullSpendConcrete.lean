@@ -1065,6 +1065,57 @@ theorem selectedRustAcceptedBoundaryHonestCreate_of_boundaryAccepted
     rfl⟩
 
 /--
+Accepted selected-Rust boundary evidence realizes the sampler's
+private-to-public construction order for the accepted spend's concrete leaf
+fiber: the retained authorization-local class is exactly the public spend class
+exported by the boundary, and the retained lift core is the account namespace
+seed. This is still a support hook, not the full probabilistic sampler theorem.
+-/
+def SelectedRustAcceptedBoundaryPrivateToPublicOrderRealized
+    (spend : ConcreteSpendTuple) : Prop :=
+  selectedRustHonestCreationPredicates.honestCreate
+      spend.leaf.accountNamespace
+      spend.creationEvidence.boundary
+      (concreteLeafAuthorizationFiber spend.leaf) ∧
+    (concreteLeafAuthorizationFiber spend.leaf).authorizationLocal =
+        spend.leaf.authorizationClass ∧
+      (concreteLeafAuthorizationFiber spend.leaf).liftCore =
+          spend.leaf.accountNamespace ∧
+        spend.creationEvidence.boundary = spend.leaf.boundary ∧
+          spend.leaf.authorizationClass =
+            selectedRustPublicProjections.pSpend spend.creationEvidence.boundary
+
+/--
+Accepted selected-Rust boundary evidence is enough to import the concrete
+private-to-public sampler order for the accepted leaf fiber. The hook packages
+only the accepted-boundary construction facts currently available to Lean and
+keeps the full honest-sampler theorem outside this support slice.
+-/
+theorem selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted
+    {spend : ConcreteSpendTuple}
+    (hAccepted :
+      AccountCreationProofBoundaryEvidenceAccepted
+        selectedRustConcreteGameConfig spend) :
+    SelectedRustAcceptedBoundaryPrivateToPublicOrderRealized spend := by
+  have hCreate :=
+    selectedRustAcceptedBoundaryHonestCreate_of_boundaryAccepted hAccepted
+  have hAuthTracked :
+      AccountCreationAuthorizationClassObligationTracked
+        selectedRustConcreteGameConfig spend :=
+    hAccepted.2.2.1
+  have hBoundary :=
+    authorizationClass_boundary_eq_leafBoundary_of_obligationTracked
+      hAuthTracked
+  have hClass :=
+    authorizationClass_matches_pSpend_of_obligationTracked
+      hAuthTracked
+  exact ⟨hCreate,
+    rfl,
+    rfl,
+    hBoundary,
+    by simpa [selectedRustConcreteGameConfig] using hClass⟩
+
+/--
 Accepted selected-Rust proof-boundary evidence alone gives the spend-specific
 honest-sampler support package for the accepted boundary and leaf fiber.  This
 removes the explicit honest-create witness hypothesis from the previous hook,
