@@ -360,7 +360,11 @@ for the construction order above. The current sampler/timing manifest now pins
 the selected-Rust support hooks for the typed compatibility/projection bridge
 and a five-row integration checklist covering the private-to-public order,
 authorization bridge hooks, authorization-class audit import, accepted-boundary
-import, and closed no-postchallenge timing slice. It still keeps
+import, and closed no-postchallenge timing slice. The accepted-boundary row now
+requires
+`selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted`,
+which consumes the imported accepted-boundary/timing facts together with the
+selected-Rust honest-create authorization bridge as a support hook. It still keeps
 `full_honest_sampler_integration_complete` and the honest sampler theorem flag
 false until the full evidence path and review are complete.
 

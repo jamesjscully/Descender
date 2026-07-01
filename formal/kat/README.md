@@ -200,10 +200,12 @@ cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_
 It pins the current honest-create sampler support file, no-postchallenge timing
 support file, construction order, timing order, executable Rust hooks for
 creation-statement exclusion, checked-core challenge binding, state-namespace
-membership, consume-once enforcement, and the proof-boundary digest that imports
-this report. It is still not theorem closure: honest sampler soundness,
-authorization-class binding, no-postchallenge timing, and deployment readiness
-remain false. The `path2_account_creation_sampler_timing_consistency` gate also
+membership, consume-once enforcement, the selected-Rust sampler-checklist Lean
+hook, and the proof-boundary digest that imports this report. It is still not
+full sampler closure: honest sampler soundness, authorization-class binding,
+full sampler integration, and deployment readiness remain false. The
+no-postchallenge timing slice is the imported closed theorem. The
+`path2_account_creation_sampler_timing_consistency` gate also
 checks the support docs and source-level hook labels so this timing boundary
 cannot drift as only prose.
 

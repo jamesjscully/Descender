@@ -916,6 +916,51 @@ def AccountCreationProofBoundaryEvidenceAccepted
                             spend.creationEvidence.verifierBoundaryAccepts ∧
                               spend.creationEvidence.productionGateFailClosed
 
+/--
+Support package for the current sampler-integration checklist.  It joins the
+accepted proof-boundary evidence to the selected-Rust honest-create
+authorization bridge, while deliberately not instantiating the full honest
+sampler theorem.
+-/
+def SelectedRustHonestSamplerIntegrationChecklistConsumed
+    (C : ConcreteGameConfig)
+    (spend : ConcreteSpendTuple)
+    (seed : Nat)
+    (q : Path2NativeAccountDesign.Boundary)
+    (h : Path2NativeAccountDesign.PrivateFiber) : Prop :=
+  AccountCreationProofBoundaryEvidenceAccepted C spend ∧
+    AccountCreationAuthorizationClassObligationTracked C spend ∧
+      AccountCreationNoPostchallengeTimingObligationTracked C spend ∧
+        Path2NativeAccountDesign.AuthorizationCompatibleOverClass
+          selectedRustPrivateFiberPredicates
+          selectedRustPublicProjections
+          q
+          h ∧
+          selectedRustHonestCreationPredicates.honestCreate seed q h
+
+/--
+Accepted proof-boundary evidence plus a selected-Rust honest-create witness
+consumes the current sampler-integration checklist rows that are already
+machine-checked: accepted-boundary import, authorization-class obligation
+import, no-postchallenge timing import, and honest-create authorization
+compatibility.  The theorem is an integration hook, not the final sampler
+closure.
+-/
+theorem selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    {seed : Nat}
+    {q : Path2NativeAccountDesign.Boundary}
+    {h : Path2NativeAccountDesign.PrivateFiber}
+    (hAccepted : AccountCreationProofBoundaryEvidenceAccepted C spend)
+    (hCreate : selectedRustHonestCreationPredicates.honestCreate seed q h) :
+    SelectedRustHonestSamplerIntegrationChecklistConsumed C spend seed q h :=
+  ⟨hAccepted,
+    hAccepted.2.2.1,
+    hAccepted.2.2.2.1,
+    selectedRustHonestCreate_authorization_over_class hCreate,
+    hCreate⟩
+
 /-- Accepted proof-boundary evidence exposes the proof-family residual package. -/
 theorem accountCreationProofFamilyResidualsTracked_of_boundaryAccepted
     {C : ConcreteGameConfig}
