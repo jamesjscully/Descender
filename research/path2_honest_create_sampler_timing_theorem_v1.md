@@ -116,11 +116,12 @@ and creation can't be steered by the spend."
   `AuthorizationCompatibleOverClass` and the five-row sampler integration
   checklist are now digest-pinned by the sampler/timing report; the accepted
   boundary row names
-  `selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted`,
+  `selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted_honestCreate`,
   which machine-checks the accepted-boundary import, authorization-class
-  obligation import, no-postchallenge timing import, and selected-Rust
-  honest-create authorization bridge as a support package. The full honest-create
-  sampler evidence path is still not closed. (3) Signer state-loss is
+  obligation import, no-postchallenge timing import, selected-Rust honest-create
+  authorization bridge, and the binding of `q,h` to the accepted spend's own
+  creation boundary and concrete leaf authorization fiber as a support package.
+  The full honest-create sampler evidence path is still not closed. (3) Signer state-loss is
   key-management engineering, not a consensus proof. (4) External review. Only
   the no-postchallenge timing slice is imported as closed by the sampler/timing
   report; the honest-sampler theorem remains open.
@@ -138,7 +139,7 @@ and creation can't be steered by the spend."
   integration path is row-pinned by
   `PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS`, with the accepted-boundary
   row now requiring
-  `selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted`.
+  `selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted_honestCreate`.
 - **Hands off:** the lifecycle reorg/rollback term (#9); full honest-create
   sampler evidence integration that consumes the checklist; external review.
   `Path2AccountCreationSamplerTimingReportV1` keeps its honest-sampler theorem

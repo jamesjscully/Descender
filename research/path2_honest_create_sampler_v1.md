@@ -362,9 +362,10 @@ and a five-row integration checklist covering the private-to-public order,
 authorization bridge hooks, authorization-class audit import, accepted-boundary
 import, and closed no-postchallenge timing slice. The accepted-boundary row now
 requires
-`selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted`,
+`selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted_honestCreate`,
 which consumes the imported accepted-boundary/timing facts together with the
-selected-Rust honest-create authorization bridge as a support hook. It still keeps
+selected-Rust honest-create authorization bridge, pinned to the accepted spend's
+own boundary and concrete leaf authorization fiber, as a support hook. It still keeps
 `full_honest_sampler_integration_complete` and the honest sampler theorem flag
 false until the full evidence path and review are complete.
 

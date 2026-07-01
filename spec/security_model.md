@@ -408,10 +408,11 @@ The sampler/timing report also pins a five-row honest-create sampler integration
 checklist over the private-to-public construction order, selected-Rust bridge
 hooks, authorization-class audit import, accepted proof-boundary import, and
 closed no-postchallenge timing slice. The accepted-boundary row now points at
-`selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted`,
+`selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted_honestCreate`,
 the Lean support hook that consumes accepted-boundary evidence, the carried
-authorization-class/timing imports, and the selected-Rust honest-create
-authorization bridge. The checklist is executable evidence for
+authorization-class/timing imports, the selected-Rust honest-create
+authorization bridge, and the binding of `q,h` to the accepted spend's own
+creation boundary and concrete leaf authorization fiber. The checklist is executable evidence for
 the remaining integration path, not closure: it records four open rows and keeps
 `full_honest_sampler_integration_complete` and
 `honest_sampler_theorem_instantiated` false.

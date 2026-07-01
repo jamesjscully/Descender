@@ -17,12 +17,12 @@
     "corpus_id": "Descender.Path2.AccountCreationSamplerTiming.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "4400097a521cb976bcd4c04eb8f79023dd73dec07f4f50576903309d56c6e471",
-      "account_creation_proof_boundary_report_recomputed_digest": "4400097a521cb976bcd4c04eb8f79023dd73dec07f4f50576903309d56c6e471",
-      "account_creation_sampler_timing_report_digest": "32f98979c0fe16a56f2c1d33c9dbfcada336dc2aad42f4ac02c339225b0bdf08",
-      "account_creation_sampler_timing_report_recomputed_digest": "32f98979c0fe16a56f2c1d33c9dbfcada336dc2aad42f4ac02c339225b0bdf08",
+      "account_creation_proof_boundary_report_digest": "f74cb761e7337d7e823c85dbb4fd16c6f55b5d3ed5e6d94536b4ec3063a9a42f",
+      "account_creation_proof_boundary_report_recomputed_digest": "f74cb761e7337d7e823c85dbb4fd16c6f55b5d3ed5e6d94536b4ec3063a9a42f",
+      "account_creation_sampler_timing_report_digest": "feb84136968db9609d1dca331bc5a1b0aa95d8509a3d033711de656fe14a92e7",
+      "account_creation_sampler_timing_report_recomputed_digest": "feb84136968db9609d1dca331bc5a1b0aa95d8509a3d033711de656fe14a92e7",
       "authorization_class_binding_audit_report_digest": "8a7fcd555ca01d557145b94c5a0660f767749fa228788898d4ed5cc8610b155b",
-      "proof_boundary_report_sampler_timing_digest": "32f98979c0fe16a56f2c1d33c9dbfcada336dc2aad42f4ac02c339225b0bdf08"
+      "proof_boundary_report_sampler_timing_digest": "feb84136968db9609d1dca331bc5a1b0aa95d8509a3d033711de656fe14a92e7"
     },
     "executable_hooks": {
       "checked_core_challenge_binds_message": true,
@@ -109,7 +109,7 @@
           "support_surface": "Path2AuthorizationClassBindingAuditReportV1"
         },
         {
-          "current_evidence": "selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted",
+          "current_evidence": "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted_honestCreate",
           "integration_id": "sampler_integration_accepted_boundary_import",
           "named_break": "creation_time_hidden_source_soundness_break",
           "open": true,
@@ -154,5 +154,5 @@
       ]
     }
   },
-  "manifest_digest": "628e27ad56b3182183dd2575d2aefab60c9d4214fa1d8e3bc843916213c08428"
+  "manifest_digest": "faa60af7b1112780fd305076d63bd95f3b86a7ed214f40b462b03f5b31d6de00"
 }

@@ -961,6 +961,82 @@ theorem selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccept
     selectedRustHonestCreate_authorization_over_class hCreate,
     hCreate⟩
 
+/--
+Spend-specific support package for the selected-Rust honest sampler.  Unlike the
+generic checklist hook above, this pins `q` and `h` to the accepted spend's own
+creation boundary and concrete leaf authorization fiber.
+-/
+def SelectedRustAcceptedBoundaryHonestSamplerSound
+    (spend : ConcreteSpendTuple)
+    (seed : Nat) : Prop :=
+  SelectedRustHonestSamplerIntegrationChecklistConsumed
+      selectedRustConcreteGameConfig
+      spend
+      seed
+      spend.creationEvidence.boundary
+      (concreteLeafAuthorizationFiber spend.leaf) ∧
+    spend.creationEvidence.boundary = spend.leaf.boundary ∧
+      spend.leaf.authorizationClass =
+        selectedRustPublicProjections.pSpend spend.creationEvidence.boundary ∧
+        spend.leaf.authorizationClass =
+          (selectedRustMeaningProjection.meaningOfBoundary
+            spend.creationEvidence.boundary).spendAuthorizationClass ∧
+          spend.creationEvidence.acceptedAt ≤ (spend.spendChallengeTime : Nat) ∧
+            spend.leaf.creationTime ≤ (spend.spendChallengeTime : Nat) ∧
+              spend.leaf.frozenAt ≤ (spend.spendChallengeTime : Nat)
+
+/--
+Accepted selected-Rust proof-boundary evidence and an honest-create witness for
+the accepted spend's own boundary/leaf fiber give the spend-specific sampler
+support package.  This tightens the integration hook to the concrete spend, but
+still leaves the full honest sampler theorem flag false.
+-/
+theorem selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted_honestCreate
+    {spend : ConcreteSpendTuple}
+    {seed : Nat}
+    (hAccepted :
+      AccountCreationProofBoundaryEvidenceAccepted
+        selectedRustConcreteGameConfig spend)
+    (hCreate :
+      selectedRustHonestCreationPredicates.honestCreate
+        seed
+        spend.creationEvidence.boundary
+        (concreteLeafAuthorizationFiber spend.leaf)) :
+    SelectedRustAcceptedBoundaryHonestSamplerSound spend seed := by
+  have hAuthTracked :
+      AccountCreationAuthorizationClassObligationTracked
+        selectedRustConcreteGameConfig spend :=
+    hAccepted.2.2.1
+  have hTimingTracked :
+      AccountCreationNoPostchallengeTimingObligationTracked
+        selectedRustConcreteGameConfig spend :=
+    hAccepted.2.2.2.1
+  have hChecklist :
+      SelectedRustHonestSamplerIntegrationChecklistConsumed
+        selectedRustConcreteGameConfig
+        spend
+        seed
+        spend.creationEvidence.boundary
+        (concreteLeafAuthorizationFiber spend.leaf) :=
+    selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted
+      hAccepted hCreate
+  have hBoundary :=
+    authorizationClass_boundary_eq_leafBoundary_of_obligationTracked
+      hAuthTracked
+  have hClass :=
+    authorizationClass_matches_pSpend_of_obligationTracked
+      hAuthTracked
+  have hMeaning :=
+    selectedRust_accountCreationAuthorizationClass_matchesMeaning_of_obligationTracked
+      hAuthTracked
+  have hTiming :=
+    noPostchallengeTiming_createdBeforeChallenge hTimingTracked
+  exact ⟨hChecklist,
+    hBoundary,
+    by simpa [selectedRustConcreteGameConfig] using hClass,
+    hMeaning,
+    hTiming⟩
+
 /-- Accepted proof-boundary evidence exposes the proof-family residual package. -/
 theorem accountCreationProofFamilyResidualsTracked_of_boundaryAccepted
     {C : ConcreteGameConfig}

@@ -316,6 +316,7 @@ fn main() -> Result<(), String> {
     for hook in [
         "selectedRustHonestCreate_authorization_over_class",
         "selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted",
+        "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted_honestCreate",
         "selectedRustMeaningProjection_spendAuthorizationClass_eq_pSpend",
     ] {
         require_contains(
