@@ -360,16 +360,13 @@ for the construction order above. The current sampler/timing manifest now pins
 the selected-Rust support hooks for the typed compatibility/projection bridge
 and a five-row integration checklist covering the private-to-public order,
 authorization bridge hooks, authorization-class audit import, accepted-boundary
-import, and closed no-postchallenge timing slice. The private-to-public row now
-requires
-`selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted`,
-which machine-checks the accepted-boundary authorization-class facts, concrete
-leaf fiber, and namespace seed as the selected-Rust construction-order support
-slice. The authorization-bridge row now requires
-`selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted`,
-which machine-checks that accepted proof-boundary evidence and the
-selected-Rust `honestCreate` witness consume the current checklist package while
-the hook list remains separately digest-pinned. The authorization-class row now requires
+import, and closed no-postchallenge timing slice. The private-to-public and
+authorization-bridge rows now require
+`selectedRustHonestCreateSamplerSoundTheoremClosed`, which machine-checks the
+selected-Rust deterministic `honest_create_sampler_sound_v1` target: every
+`honestCreate` witness has zero obstruction, local validity, and
+`authClass = p_spend(q)` through the selected bridge hooks. The
+authorization-class row now requires
 `selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted`,
 which machine-checks typed compatibility, match to the boundary meaning,
 same-boundary no-ambiguity for the accepted leaf fiber, and the selected
@@ -383,8 +380,8 @@ timing row from accepted-boundary evidence. Its accepted-boundary sampler
 component remains pinned to the accepted spend's own boundary and concrete leaf
 authorization fiber while deriving the `honestCreate` witness from
 accepted-boundary facts. It still keeps
-`full_honest_sampler_integration_complete` and the honest sampler theorem flag
-false until the full evidence path and review are complete.
+`full_honest_sampler_integration_complete` false until the final
+accepted-boundary integration path and review are complete.
 
 This is now the highest-risk self-owned proof item. If it fails, the remaining
 gap is sampler evidence that does not consume the full accepted-boundary package;

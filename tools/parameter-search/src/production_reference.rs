@@ -11366,10 +11366,12 @@ pub const PATH2_ACCOUNT_CREATION_SAMPLER_CONSTRUCTION_STEPS: [&str; 8] = [
     "gauge/randomizer",
     "h",
 ];
-pub const PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS: [&str; 7] = [
+pub const PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS: [&str; 9] = [
     "selectedRustHonestCreationPredicates",
     "selectedRustHonestCreationSoundness",
     "selectedRustHonestCreate_authorization_over_class",
+    "SelectedRustHonestCreateSamplerSoundTheoremClosed",
+    "selectedRustHonestCreateSamplerSoundTheoremClosed",
     "selectedRustAuthorizationCompatibleOverClass_of_compatible",
     "selectedRustAuthorizationClassBinding",
     "selectedRustProjectionCompleteness",
@@ -11379,24 +11381,25 @@ pub const PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS:
     [Path2AccountCreationSamplerIntegrationRowV1; 5] = [
     Path2AccountCreationSamplerIntegrationRowV1 {
         integration_id: "sampler_integration_private_to_public_order",
-        support_surface: "research/path2_honest_create_sampler_v1.md#Construction Order",
+        support_surface:
+            "Descender/Path2FullSpendConcrete.lean selected-Rust deterministic honest-create theorem",
         current_evidence:
-            "selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted",
+            "selectedRustHonestCreateSamplerSoundTheoremClosed",
         required_closure:
-            "mechanize honest_create_sampler_sound_v1 over the selected private-to-public construction order",
+            "closed by mechanizing honest_create_sampler_sound_v1 over the selected private-to-public construction order",
         named_break: "creation_time_hidden_source_soundness_break",
-        open: true,
+        open: false,
     },
     Path2AccountCreationSamplerIntegrationRowV1 {
         integration_id: "sampler_integration_authorization_bridge_hooks",
         support_surface:
-            "Descender/Path2FullSpendConcrete.lean selected-Rust checklist consumption hook",
+            "Descender/Path2FullSpendConcrete.lean selected-Rust deterministic honest-create theorem + bridge hooks",
         current_evidence:
-            "selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted",
+            "selectedRustHonestCreateSamplerSoundTheoremClosed",
         required_closure:
-            "consume the selected-Rust checklist hook in the full honest-create sampler theorem",
+            "closed by consuming the selected-Rust honest-creation soundness interface and authorization bridge hooks",
         named_break: "creation_time_hidden_source_soundness_break",
-        open: true,
+        open: false,
     },
     Path2AccountCreationSamplerIntegrationRowV1 {
         integration_id: "sampler_integration_authorization_class_audit",
@@ -12282,7 +12285,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CLOSURE_DEPENDENCY_ROWS:
     Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
         dependency_id: "closure_dependency_honest_sampler",
         source_report: "Path2AccountCreationSamplerTimingReportV1",
-        source_flag_group: "honest_sampler_theorem_instantiated=false",
+        source_flag_group: "full_honest_sampler_integration_complete=false",
         proof_obligation_id: "creation_proof_obligation_honest_sampler",
         residual_item: "",
         named_break: "creation_time_hidden_source_soundness_break",
@@ -13071,7 +13074,7 @@ pub fn path2_account_creation_sampler_timing_report_v1() -> Path2AccountCreation
         full_honest_sampler_integration_complete: false,
         sampler_boundary_pinned: true,
         timing_boundary_pinned: true,
-        honest_sampler_theorem_instantiated: false,
+        honest_sampler_theorem_instantiated: true,
         authorization_class_binding_theorem_instantiated: true,
         no_postchallenge_timing_theorem_instantiated: true,
         deployment_ready: false,
@@ -13145,7 +13148,7 @@ pub fn validate_path2_account_creation_sampler_timing_report_v1(
         || report.full_honest_sampler_integration_complete
         || !report.sampler_boundary_pinned
         || !report.timing_boundary_pinned
-        || report.honest_sampler_theorem_instantiated
+        || !report.honest_sampler_theorem_instantiated
         || !report.authorization_class_binding_theorem_instantiated
         || !report.no_postchallenge_timing_theorem_instantiated
         || report.deployment_ready
@@ -13288,7 +13291,7 @@ fn path2_account_creation_closure_dependency_support_open_v1(
             .any(|residual| residual.residual_item == row.residual_item && residual.open);
     let source_open = match row.dependency_id {
         "closure_dependency_honest_sampler" => {
-            !sampler_timing_report.honest_sampler_theorem_instantiated
+            !sampler_timing_report.full_honest_sampler_integration_complete
                 && !sampler_timing_report.deployment_ready
         }
         "closure_dependency_authorization_class_binding" => {
@@ -51344,6 +51347,8 @@ fn path2_full_signature_execution_source_boundary_present_in_source_v1(
         "spend.creationEvidence.verifierBoundaryAccepts",
         "spend.creationEvidence.productionGateFailClosed",
         "AccountCreationProofBoundaryEvidenceAccepted C spend",
+        "SelectedRustHonestCreateSamplerSoundTheoremClosed",
+        "selectedRustHonestCreateSamplerSoundTheoremClosed",
         "SelectedRustHonestSamplerIntegrationChecklistConsumed",
         "selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted",
         "SelectedRustAcceptedBoundaryHonestSamplerSound",
@@ -114817,10 +114822,13 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.sampler_authorization_bridge_hook_ids,
             PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS.as_ref()
         );
-        assert_eq!(report.sampler_authorization_bridge_hook_count, 7);
+        assert_eq!(report.sampler_authorization_bridge_hook_count, 9);
         assert!(report
             .sampler_authorization_bridge_hook_ids
             .contains(&"selectedRustHonestCreate_authorization_over_class"));
+        assert!(report
+            .sampler_authorization_bridge_hook_ids
+            .contains(&"selectedRustHonestCreateSamplerSoundTheoremClosed"));
         assert!(report
             .sampler_authorization_bridge_hook_ids
             .contains(&"selectedRustMeaningProjection_spendAuthorizationClass_eq_pSpend"));
@@ -114829,15 +114837,15 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS.as_ref()
         );
         assert_eq!(report.sampler_integration_row_count, 5);
-        assert_eq!(report.sampler_integration_open_count, 3);
+        assert_eq!(report.sampler_integration_open_count, 1);
         assert!(report
             .sampler_integration_rows
             .iter()
             .any(
                 |row| row.integration_id == "sampler_integration_private_to_public_order"
                     && row.current_evidence
-                        == "selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted"
-                    && row.open
+                        == "selectedRustHonestCreateSamplerSoundTheoremClosed"
+                    && !row.open
             ));
         assert!(report
             .sampler_integration_rows
@@ -114845,8 +114853,8 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             .any(
                 |row| row.integration_id == "sampler_integration_authorization_bridge_hooks"
                     && row.current_evidence
-                        == "selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted"
-                    && row.open
+                        == "selectedRustHonestCreateSamplerSoundTheoremClosed"
+                    && !row.open
             ));
         assert!(report
             .sampler_integration_rows
@@ -114890,7 +114898,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(!report.full_honest_sampler_integration_complete);
         assert!(report.sampler_boundary_pinned);
         assert!(report.timing_boundary_pinned);
-        assert!(!report.honest_sampler_theorem_instantiated);
+        assert!(report.honest_sampler_theorem_instantiated);
         assert!(report.authorization_class_binding_theorem_instantiated);
         assert!(report.no_postchallenge_timing_theorem_instantiated);
         assert!(!report.deployment_ready);

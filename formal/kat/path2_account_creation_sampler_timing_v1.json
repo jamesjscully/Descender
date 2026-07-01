@@ -17,12 +17,12 @@
     "corpus_id": "Descender.Path2.AccountCreationSamplerTiming.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "f7895319d4d4dbc0dc2211f1e4b37abffee5645539619cb92a8e106d3afc7101",
-      "account_creation_proof_boundary_report_recomputed_digest": "f7895319d4d4dbc0dc2211f1e4b37abffee5645539619cb92a8e106d3afc7101",
-      "account_creation_sampler_timing_report_digest": "656399042146b12c99d8b233320383a604250d99f5fcf6cbe6c03d1c85f8507f",
-      "account_creation_sampler_timing_report_recomputed_digest": "656399042146b12c99d8b233320383a604250d99f5fcf6cbe6c03d1c85f8507f",
+      "account_creation_proof_boundary_report_digest": "888f45beaa4dc1581d65a363a88a32f91adaf7a76b5cbba37246e78c3a9ca550",
+      "account_creation_proof_boundary_report_recomputed_digest": "888f45beaa4dc1581d65a363a88a32f91adaf7a76b5cbba37246e78c3a9ca550",
+      "account_creation_sampler_timing_report_digest": "daae0ec787a61ea7de170a910b45aceac475faabb62cc883d2a9be1dcf6737d2",
+      "account_creation_sampler_timing_report_recomputed_digest": "daae0ec787a61ea7de170a910b45aceac475faabb62cc883d2a9be1dcf6737d2",
       "authorization_class_binding_audit_report_digest": "ea480d25897c0762b7f929b797189a58b42ebe85eaf7a8e134111c24e52c2e80",
-      "proof_boundary_report_sampler_timing_digest": "656399042146b12c99d8b233320383a604250d99f5fcf6cbe6c03d1c85f8507f"
+      "proof_boundary_report_sampler_timing_digest": "daae0ec787a61ea7de170a910b45aceac475faabb62cc883d2a9be1dcf6737d2"
     },
     "executable_hooks": {
       "checked_core_challenge_binds_message": true,
@@ -49,17 +49,19 @@
       "authorization_class_binding_theorem_instantiated": true,
       "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
       "deployment_ready": false,
-      "honest_sampler_theorem_instantiated": false,
+      "honest_sampler_theorem_instantiated": true,
       "no_postchallenge_timing_theorem_instantiated": true
     },
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "sampler_boundary": {
       "accepted_boundary_imports_sampler_integration": true,
-      "authorization_bridge_hook_count": 7,
+      "authorization_bridge_hook_count": 9,
       "authorization_bridge_hook_ids": [
         "selectedRustHonestCreationPredicates",
         "selectedRustHonestCreationSoundness",
         "selectedRustHonestCreate_authorization_over_class",
+        "SelectedRustHonestCreateSamplerSoundTheoremClosed",
+        "selectedRustHonestCreateSamplerSoundTheoremClosed",
         "selectedRustAuthorizationCompatibleOverClass_of_compatible",
         "selectedRustAuthorizationClassBinding",
         "selectedRustProjectionCompleteness",
@@ -79,26 +81,26 @@
       ],
       "every_sampler_integration_row_has_evidence": true,
       "full_honest_sampler_integration_complete": false,
-      "honest_sampler_theorem_instantiated": false,
+      "honest_sampler_theorem_instantiated": true,
       "sampler_boundary_pinned": true,
-      "sampler_integration_open_count": 3,
+      "sampler_integration_open_count": 1,
       "sampler_integration_row_count": 5,
       "sampler_integration_rows": [
         {
-          "current_evidence": "selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted",
+          "current_evidence": "selectedRustHonestCreateSamplerSoundTheoremClosed",
           "integration_id": "sampler_integration_private_to_public_order",
           "named_break": "creation_time_hidden_source_soundness_break",
-          "open": true,
-          "required_closure": "mechanize honest_create_sampler_sound_v1 over the selected private-to-public construction order",
-          "support_surface": "research/path2_honest_create_sampler_v1.md#Construction Order"
+          "open": false,
+          "required_closure": "closed by mechanizing honest_create_sampler_sound_v1 over the selected private-to-public construction order",
+          "support_surface": "Descender/Path2FullSpendConcrete.lean selected-Rust deterministic honest-create theorem"
         },
         {
-          "current_evidence": "selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted",
+          "current_evidence": "selectedRustHonestCreateSamplerSoundTheoremClosed",
           "integration_id": "sampler_integration_authorization_bridge_hooks",
           "named_break": "creation_time_hidden_source_soundness_break",
-          "open": true,
-          "required_closure": "consume the selected-Rust checklist hook in the full honest-create sampler theorem",
-          "support_surface": "Descender/Path2FullSpendConcrete.lean selected-Rust checklist consumption hook"
+          "open": false,
+          "required_closure": "closed by consuming the selected-Rust honest-creation soundness interface and authorization bridge hooks",
+          "support_surface": "Descender/Path2FullSpendConcrete.lean selected-Rust deterministic honest-create theorem + bridge hooks"
         },
         {
           "current_evidence": "selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted",
@@ -154,5 +156,5 @@
       ]
     }
   },
-  "manifest_digest": "9ab3bd2d193af9231f62b87f8099d23c1948f7cbe8d97ae08e18a3e51348073a"
+  "manifest_digest": "70e9eeb967bf8307646b56eb6299de1e6b5920d9d7966c3e7e2995263f2367b3"
 }

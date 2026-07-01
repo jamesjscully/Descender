@@ -415,16 +415,13 @@ false.
 The sampler/timing report also pins a five-row honest-create sampler integration
 checklist over the private-to-public construction order, selected-Rust bridge
 hooks, authorization-class audit import, accepted proof-boundary import, and
-closed no-postchallenge timing slice. The private-to-public row now points at
-`selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted`,
-the Lean support hook that packages the accepted-boundary authorization-class
-facts, concrete leaf fiber, and namespace seed into the selected-Rust
-private-to-public sampler order for the accepted spend. The authorization-bridge
-row now points at
-`selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted`,
-which consumes accepted proof-boundary evidence plus the selected-Rust
-`honestCreate` witness into the checked integration package while the full hook
-list remains digest-pinned by the report. The authorization-class
+closed no-postchallenge timing slice. The private-to-public and
+authorization-bridge rows now point at
+`selectedRustHonestCreateSamplerSoundTheoremClosed`, the Lean theorem that
+instantiates the selected-Rust deterministic `honest_create_sampler_sound_v1`
+target: every `honestCreate` witness gives zero obstruction, local validity,
+and `authClass = p_spend(q)` through the selected bridge hooks. The
+authorization-class
 row now points at
 `selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted`,
 which proves the accepted leaf authorization class, every same-boundary
@@ -440,15 +437,18 @@ evidence. Its accepted-boundary sampler component still derives the
 `honestCreate` witness from accepted-boundary facts and binds `q,h` to the
 accepted spend's own creation boundary and concrete leaf authorization fiber.
 The checklist is executable evidence for
-the remaining integration path: it records three open rows and keeps
+the remaining integration path: it records one open accepted-boundary/final
+integration row, keeps
 `full_honest_sampler_integration_complete` and
-`honest_sampler_theorem_instantiated` false.
+deployment readiness false, and imports the deterministic honest-sampler theorem
+flag as true.
 `formal/kat/path2_account_creation_proof_obligation_vectors_v1.json`
 turns that row table into a digest-pinned audit corpus bound to both the
 proof-boundary and direct-theorem reports; its honest-sampler obligation row now
 names the same
 `selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted`
-support package while staying open, records the current 5-open / 3-closed
+support package plus the deterministic sampler theorem while staying open,
+records the current 5-open / 3-closed
 proof-boundary accounting, and keeps deployment fail-closed. Its
 authorization-class obligation row is now closed by
 `selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted` plus the

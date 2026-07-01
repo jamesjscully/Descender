@@ -315,6 +315,8 @@ fn main() -> Result<(), String> {
     }
     for hook in [
         "selectedRustHonestCreate_authorization_over_class",
+        "SelectedRustHonestCreateSamplerSoundTheoremClosed",
+        "selectedRustHonestCreateSamplerSoundTheoremClosed",
         "selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted",
         "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted_honestCreate",
         "selectedRustAcceptedBoundaryHonestCreate_of_boundaryAccepted",
@@ -355,15 +357,21 @@ fn main() -> Result<(), String> {
             ));
         }
     }
-    for pointer in [
-        "/manifest/open_obligations/honest_sampler_theorem_instantiated",
-        "/manifest/open_obligations/deployment_ready",
-    ] {
+    for pointer in ["/manifest/open_obligations/deployment_ready"] {
         if bool_at(&manifest, pointer)? {
             return Err(format!(
                 "sampler/timing manifest unexpectedly closes {pointer}"
             ));
         }
+    }
+    if !bool_at(
+        &manifest,
+        "/manifest/open_obligations/honest_sampler_theorem_instantiated",
+    )? {
+        return Err(
+            "sampler/timing manifest lost imported deterministic honest-sampler theorem"
+                .to_string(),
+        );
     }
     if !bool_at(
         &manifest,

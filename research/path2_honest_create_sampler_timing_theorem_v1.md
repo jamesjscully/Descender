@@ -115,15 +115,12 @@ and creation can't be steered by the spend."
   selected-Rust Lean support hooks for `HonestCreate` returning
   `AuthorizationCompatibleOverClass` and the five-row sampler integration
   checklist are now digest-pinned by the sampler/timing report; the
-  private-to-public row names
-  `selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted`,
-  which machine-checks the accepted-boundary authorization-class facts, concrete
-  leaf fiber, and namespace seed as the selected-Rust construction-order support
-  slice. The authorization-bridge row names
-  `selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted`,
-  which machine-checks that accepted proof-boundary evidence and the
-  selected-Rust `honestCreate` witness consume the current checklist package
-  while the hook list remains separately digest-pinned. The authorization-class row names
+  private-to-public and authorization-bridge rows name
+  `selectedRustHonestCreateSamplerSoundTheoremClosed`, which machine-checks the
+  selected-Rust deterministic `honest_create_sampler_sound_v1` target: every
+  `honestCreate` witness has zero obstruction, local validity, and
+  `authClass = p_spend(q)` through the selected bridge hooks. The
+  authorization-class row names
   `selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted`,
   which machine-checks typed compatibility, match to boundary meaning, the
   same-boundary no-ambiguity consequence for the accepted leaf fiber, and the
@@ -139,8 +136,9 @@ and creation can't be steered by the spend."
   The full honest-create sampler evidence path is still not closed. (3) Signer state-loss is
   key-management engineering, not a consensus proof. (4) External review. Only
   the no-postchallenge timing slice is imported as closed by the sampler/timing
-  report; the local authorization-class binding theorem is also imported as
-  closed, while the honest-sampler theorem remains open.
+  report; the deterministic honest-sampler theorem and local
+  authorization-class binding theorem are imported as closed, while final
+  accepted-boundary sampler integration remains open.
 
 ## What This Closes And Hands Off
 
@@ -155,9 +153,9 @@ and creation can't be steered by the spend."
   integration path is row-pinned by
   `PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS`, with the private-to-public
   row now requiring
-  `selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted`, the
+  `selectedRustHonestCreateSamplerSoundTheoremClosed`, the
   authorization-bridge row requiring
-  `selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted`, and the
+  `selectedRustHonestCreateSamplerSoundTheoremClosed`, and the
   authorization-class row requiring
   `selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted`
   and the
@@ -165,6 +163,7 @@ and creation can't be steered by the spend."
   `selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted`.
 - **Hands off:** the lifecycle reorg/rollback term (#9); full honest-create
   sampler evidence integration that consumes the checklist; external review.
-  `Path2AccountCreationSamplerTimingReportV1` keeps its honest-sampler theorem
-  flag false pending that integration and review, while the local
-  authorization-class and no-postchallenge timing flags are true.
+  `Path2AccountCreationSamplerTimingReportV1` keeps
+  `full_honest_sampler_integration_complete` false pending that integration and
+  review, while the deterministic honest-sampler, local authorization-class,
+  and no-postchallenge timing flags are true.

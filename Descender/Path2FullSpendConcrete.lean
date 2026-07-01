@@ -362,6 +362,52 @@ theorem selectedRustHonestCreate_authorization_over_class
   Path2NativeAccountDesign.honest_create_authorization_over_class
     selectedRustHonestCreationSoundness hcreate
 
+/--
+Closed selected-Rust deterministic honest-create sampler theorem.
+
+This is the local `honest_create_sampler_sound_v1` slice: every selected-Rust
+`honestCreate` witness emits a zero-obstruction boundary, a locally valid
+private fiber, and an authorization class equal to `pSpend(q)`.  It does not
+claim distributional privacy/no-export, accepted-boundary integration into the
+final creation theorem, deployment readiness, or external review.
+-/
+def SelectedRustHonestCreateSamplerSoundTheoremClosed : Prop :=
+  ∀ seed q h,
+    selectedRustHonestCreationPredicates.honestCreate seed q h ->
+      Path2NativeAccountDesign.ObstructionZero selectedRustObstructionMap q ∧
+        Path2NativeAccountDesign.LocalValid
+          selectedRustObstructionMap
+          selectedRustPrivateFiberPredicates
+          q
+          h ∧
+          Path2NativeAccountDesign.AuthorizationClassMatches
+            selectedRustPrivateFiberPredicates
+            selectedRustPublicProjections
+            q
+            h ∧
+            Path2NativeAccountDesign.AuthorizationCompatibleOverClass
+              selectedRustPrivateFiberPredicates
+              selectedRustPublicProjections
+              q
+              h ∧
+              selectedRustPrivateFiberPredicates.authClass h =
+                selectedRustPublicProjections.pSpend q
+
+/--
+The selected-Rust honest-create predicates instantiate the deterministic
+honest-create sampler theorem using the generic native-account soundness
+interface and the selected authorization bridge.
+-/
+theorem selectedRustHonestCreateSamplerSoundTheoremClosed :
+    SelectedRustHonestCreateSamplerSoundTheoremClosed := by
+  intro seed q h hCreate
+  have hSound :=
+    Path2NativeAccountDesign.honest_create_local_valid
+      selectedRustHonestCreationSoundness hCreate
+  have hOver :=
+    selectedRustHonestCreate_authorization_over_class hCreate
+  exact ⟨hSound.1, hSound.2.1, hSound.2.2, hOver, hSound.2.2⟩
+
 /-- Interpret a concrete slot leaf as the authorization-local fiber slice. -/
 def concreteLeafAuthorizationFiber
     (leaf : ConcretePrevalidatedSlotLeaf) :
