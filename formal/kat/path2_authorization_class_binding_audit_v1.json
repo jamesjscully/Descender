@@ -22,7 +22,7 @@
       "authorization_class_binding_audit_report_digest": "19d2d50f2838c4cab7b7ce2d81ca58b5a5e6bfa575c35813727d88ea6faacb0b",
       "authorization_class_binding_audit_report_recomputed_digest": "19d2d50f2838c4cab7b7ce2d81ca58b5a5e6bfa575c35813727d88ea6faacb0b",
       "sampler_timing_report_authorization_class_audit_digest": "19d2d50f2838c4cab7b7ce2d81ca58b5a5e6bfa575c35813727d88ea6faacb0b",
-      "sampler_timing_report_digest": "a955b156dd7926aa8c2d1984800f533bf1016cfeeee69c16b5fa537eff393538"
+      "sampler_timing_report_digest": "a9bb1805471da13690c7ba18222a497a6f35c90ec53bf887cf739256dd9292e5"
     },
     "field_completeness": {
       "field_completeness_negative_audit_complete": true,
@@ -155,5 +155,5 @@
       ]
     }
   },
-  "manifest_digest": "12271b155bfe3992206e4dff544babc21216f122c30289bf268c2e44c2b17fca"
+  "manifest_digest": "48c4fe929e29a511de9aef605e6e28927082ccb1b635b6c9e6a7c2553cc79fbd"
 }

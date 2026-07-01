@@ -17,12 +17,12 @@
     "corpus_id": "Descender.Path2.AccountCreationSamplerTiming.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "12dcb3523bf5e77b06c8b07e8e9fbb725170830236b295b60173f7923b17c4ba",
-      "account_creation_proof_boundary_report_recomputed_digest": "12dcb3523bf5e77b06c8b07e8e9fbb725170830236b295b60173f7923b17c4ba",
-      "account_creation_sampler_timing_report_digest": "a955b156dd7926aa8c2d1984800f533bf1016cfeeee69c16b5fa537eff393538",
-      "account_creation_sampler_timing_report_recomputed_digest": "a955b156dd7926aa8c2d1984800f533bf1016cfeeee69c16b5fa537eff393538",
+      "account_creation_proof_boundary_report_digest": "b49939582d0b985a47092116b1c5b69022a339a24c1ecbf7b520db16eb53c229",
+      "account_creation_proof_boundary_report_recomputed_digest": "b49939582d0b985a47092116b1c5b69022a339a24c1ecbf7b520db16eb53c229",
+      "account_creation_sampler_timing_report_digest": "a9bb1805471da13690c7ba18222a497a6f35c90ec53bf887cf739256dd9292e5",
+      "account_creation_sampler_timing_report_recomputed_digest": "a9bb1805471da13690c7ba18222a497a6f35c90ec53bf887cf739256dd9292e5",
       "authorization_class_binding_audit_report_digest": "19d2d50f2838c4cab7b7ce2d81ca58b5a5e6bfa575c35813727d88ea6faacb0b",
-      "proof_boundary_report_sampler_timing_digest": "a955b156dd7926aa8c2d1984800f533bf1016cfeeee69c16b5fa537eff393538"
+      "proof_boundary_report_sampler_timing_digest": "a9bb1805471da13690c7ba18222a497a6f35c90ec53bf887cf739256dd9292e5"
     },
     "executable_hooks": {
       "checked_core_challenge_binds_message": true,
@@ -93,12 +93,12 @@
           "support_surface": "research/path2_honest_create_sampler_v1.md#Construction Order"
         },
         {
-          "current_evidence": "PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS",
+          "current_evidence": "selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted",
           "integration_id": "sampler_integration_authorization_bridge_hooks",
           "named_break": "creation_time_hidden_source_soundness_break",
           "open": true,
-          "required_closure": "consume selectedRustHonestCreate_authorization_over_class in the full honest-create sampler theorem",
-          "support_surface": "Descender/Path2FullSpendConcrete.lean selected-Rust honest-create hooks"
+          "required_closure": "consume the selected-Rust checklist hook in the full honest-create sampler theorem",
+          "support_surface": "Descender/Path2FullSpendConcrete.lean selected-Rust checklist consumption hook"
         },
         {
           "current_evidence": "selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted",
@@ -154,5 +154,5 @@
       ]
     }
   },
-  "manifest_digest": "cbdb528c0144e3927faa12ccae47dc34bfe0bfd05a6ae376161b285cac253fe1"
+  "manifest_digest": "7296da81772fb54cbed0319ad2c0c0b0f93c0f456cec40de20e8615a0521f283"
 }

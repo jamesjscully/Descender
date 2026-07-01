@@ -11389,10 +11389,12 @@ pub const PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS:
     },
     Path2AccountCreationSamplerIntegrationRowV1 {
         integration_id: "sampler_integration_authorization_bridge_hooks",
-        support_surface: "Descender/Path2FullSpendConcrete.lean selected-Rust honest-create hooks",
-        current_evidence: "PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS",
+        support_surface:
+            "Descender/Path2FullSpendConcrete.lean selected-Rust checklist consumption hook",
+        current_evidence:
+            "selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted",
         required_closure:
-            "consume selectedRustHonestCreate_authorization_over_class in the full honest-create sampler theorem",
+            "consume the selected-Rust checklist hook in the full honest-create sampler theorem",
         named_break: "creation_time_hidden_source_soundness_break",
         open: true,
     },
@@ -114791,7 +114793,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             .any(
                 |row| row.integration_id == "sampler_integration_authorization_bridge_hooks"
                     && row.current_evidence
-                        == "PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS"
+                        == "selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted"
                     && row.open
             ));
         assert!(report

@@ -119,7 +119,11 @@ and creation can't be steered by the spend."
   `selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted`,
   which machine-checks the accepted-boundary authorization-class facts, concrete
   leaf fiber, and namespace seed as the selected-Rust construction-order support
-  slice. The authorization-class row names
+  slice. The authorization-bridge row names
+  `selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted`,
+  which machine-checks that accepted proof-boundary evidence and the
+  selected-Rust `honestCreate` witness consume the current checklist package
+  while the hook list remains separately digest-pinned. The authorization-class row names
   `selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted`,
   which machine-checks typed compatibility, match to boundary meaning, and the
   same-boundary no-ambiguity consequence for the accepted leaf fiber while the
@@ -148,7 +152,9 @@ and creation can't be steered by the spend."
   integration path is row-pinned by
   `PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS`, with the private-to-public
   row now requiring
-  `selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted` and the
+  `selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted`, the
+  authorization-bridge row requiring
+  `selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted`, and the
   authorization-class row requiring
   `selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted`
   and the

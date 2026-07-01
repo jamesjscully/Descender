@@ -416,7 +416,12 @@ closed no-postchallenge timing slice. The private-to-public row now points at
 `selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted`,
 the Lean support hook that packages the accepted-boundary authorization-class
 facts, concrete leaf fiber, and namespace seed into the selected-Rust
-private-to-public sampler order for the accepted spend. The authorization-class
+private-to-public sampler order for the accepted spend. The authorization-bridge
+row now points at
+`selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted`,
+which consumes accepted proof-boundary evidence plus the selected-Rust
+`honestCreate` witness into the checked integration package while the full hook
+list remains digest-pinned by the report. The authorization-class
 row now points at
 `selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted`,
 which packages the accepted leaf fiber's typed compatibility, match to boundary

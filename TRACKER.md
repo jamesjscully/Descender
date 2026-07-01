@@ -137,7 +137,10 @@ report now also digest-pins the selected-Rust honest-create authorization bridge
 hook list plus a five-row sampler-integration checklist with 4-open/1-closed
 accounting; its private-to-public row now points at
 `selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted` for the
-accepted-boundary construction-order support hook, and its authorization-class
+accepted-boundary construction-order support hook, its authorization-bridge row
+now points at
+`selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted` for
+the checked checklist-consumption hook, and its authorization-class
 row now points at
 `selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted`
 for the accepted-boundary typed compatibility/no-ambiguity support hook, while keeping
