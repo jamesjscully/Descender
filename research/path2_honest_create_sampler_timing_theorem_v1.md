@@ -12,7 +12,8 @@ Status: honest-create sampler soundness + no-postchallenge timing theorem.
 ## Obligation
 
 Two coupled obligations under `DIR-CREATE-001`
-(`Path2AccountCreationSamplerTimingReportV1` keeps both flags false):
+(`Path2AccountCreationSamplerTimingReportV1` imports the no-postchallenge
+timing slice and keeps the honest-sampler flag false):
 
 1. **No-postchallenge timing** — account creation cannot be influenced after the
    spend challenge; otherwise the prevalidated-slot model is circular. Break:
@@ -113,15 +114,19 @@ and creation can't be steered by the spend."
   to the lifecycle model (#9, `DIR-LIFE-001`) — named, not proven here. (2) The
   Lean instantiation of `HonestCreate` returning `AuthorizationCompatibleOverClass`
   (with #6). (3) Signer state-loss is key-management engineering, not a consensus
-  proof. (4) External review. No flag flipped.
+  proof. (4) External review. Only the no-postchallenge timing slice is imported
+  by the sampler/timing report; the honest-sampler theorem remains open.
 
 ## What This Closes And Hands Off
 
-- **Closes (paper level):** no-postchallenge timing (anti-circularity) grounded in
-  L5 spend-independence + the admission-before-challenge ordering hooks; honest-
-  create sampler soundness by the private-to-public construction order, reusing
-  #6's typed compatibility.
+- **Closes:** no-postchallenge timing (anti-circularity) grounded in L5
+  spend-independence + the admission-before-challenge ordering hooks, now
+  machine-checked by `noPostchallengeTiming_createdBeforeChallenge` and
+  `noPostchallengeTiming_lateAdmission_excluded`.
+- **Paper-level support, still open as a report flag:** honest-create sampler
+  soundness by the private-to-public construction order, reusing #6's typed
+  compatibility.
 - **Hands off:** the lifecycle reorg/rollback term (#9); the Lean sampler
   instantiation; external review. `Path2AccountCreationSamplerTimingReportV1`
-  keeps its honest-sampler and no-postchallenge-timing theorem flags false pending
-  the Lean instantiation + external review.
+  keeps its honest-sampler theorem flag false pending the Lean instantiation and
+  external review, while the no-postchallenge timing flag is true.

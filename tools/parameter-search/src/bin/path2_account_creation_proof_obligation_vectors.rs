@@ -425,6 +425,10 @@ fn manifest_body() -> Result<Value, String> {
         },
         "audit_summary": {
             "proof_obligation_count": proof_report.proof_obligation_count,
+            "open_proof_obligation_count":
+                proof_report.proof_obligation_rows.iter().filter(|row| row.open).count(),
+            "closed_proof_obligation_count":
+                proof_report.proof_obligation_rows.iter().filter(|row| !row.open).count(),
             "proof_obligation_audit_vector_case_count":
                 proof_report.proof_obligation_audit_vector_case_count,
             "proof_obligation_named_break_classes":

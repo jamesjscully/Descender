@@ -585,9 +585,9 @@ def AccountCreationAuthorizationClassObligationTracked
 
 /--
 Accepted account-creation evidence tracks the sampler/timing report and the
-still-open no-postchallenge timing obligation.  The proposition records that
-the creation statement is prechallenge-fixed and excludes spend-time message
-and signature bytes; it does not prove the no-postchallenge timing theorem.
+no-postchallenge timing obligation.  The proposition records that the creation
+statement is prechallenge-fixed, excludes spend-time message and signature
+bytes, and carries the ordering facts consumed by the theorems below.
 -/
 def AccountCreationNoPostchallengeTimingObligationTracked
     (C : ConcreteGameConfig)
@@ -610,7 +610,7 @@ def AccountCreationNoPostchallengeTimingObligationTracked
                         (spend.spendChallengeTime : Nat)
 
 /--
-Baby step 1 toward closing the no-postchallenge timing obligation (`DIR-CREATE-001`).
+Closed no-postchallenge timing slice for `DIR-CREATE-001`.
 
 Anti-circularity core, machine-checked with no `sorry` and no external
 assumption: from the tracked timing facts, the accepted creation evidence, the

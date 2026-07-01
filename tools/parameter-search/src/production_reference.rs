@@ -12011,12 +12011,12 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
         closure_target: "no_postchallenge_slot_creation_timing_v1",
         supporting_surface: "Path2AccountCreationSamplerTimingReportV1",
         current_evidence:
-            "creation statement excludes spend message/signature bytes and spend challenge is derived after the fixed creation statement",
+            "creation statement excludes spend message/signature bytes; spend challenge is derived after the fixed creation statement; Lean proves accepted creation evidence, leaf creation, and leaf freeze precede the spend challenge and that a later admission cannot be the consumed evidence",
         required_closure:
-            "prove no accepted slot can be created, rewritten, or selectively opened after observing the spend challenge",
+            "closed by importing the no-postchallenge timing theorem from the concrete full-spend carrier into the sampler/timing and proof-boundary reports",
         named_break: "postchallenge_slot_creation_or_rewrite_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
-        open: true,
+        open: false,
     },
     Path2AccountCreationProofBoundaryObligationRowV1 {
         obligation_id: "creation_proof_obligation_simulator_no_export",
@@ -12105,12 +12105,12 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CLOSURE_DEPENDENCY_ROWS:
     Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
         dependency_id: "closure_dependency_no_postchallenge_timing",
         source_report: "Path2AccountCreationSamplerTimingReportV1",
-        source_flag_group: "no_postchallenge_timing_theorem_instantiated=false",
+        source_flag_group: "no_postchallenge_timing_theorem_instantiated=true",
         proof_obligation_id: "creation_proof_obligation_no_postchallenge_timing",
         residual_item: "",
         named_break: "postchallenge_slot_creation_or_rewrite_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
-        open: true,
+        open: false,
     },
     Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
         dependency_id: "closure_dependency_simulator_no_export",
@@ -12761,7 +12761,7 @@ pub fn path2_account_creation_sampler_timing_report_v1() -> Path2AccountCreation
         timing_boundary_pinned: true,
         honest_sampler_theorem_instantiated: false,
         authorization_class_binding_theorem_instantiated: false,
-        no_postchallenge_timing_theorem_instantiated: false,
+        no_postchallenge_timing_theorem_instantiated: true,
         deployment_ready: false,
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
     };
@@ -12803,7 +12803,7 @@ pub fn validate_path2_account_creation_sampler_timing_report_v1(
         || !report.timing_boundary_pinned
         || report.honest_sampler_theorem_instantiated
         || report.authorization_class_binding_theorem_instantiated
-        || report.no_postchallenge_timing_theorem_instantiated
+        || !report.no_postchallenge_timing_theorem_instantiated
         || report.deployment_ready
     {
         return Err(
@@ -12998,6 +12998,24 @@ fn path2_account_creation_closure_dependency_has_open_obligation_v1(
     })
 }
 
+fn path2_account_creation_closed_no_postchallenge_dependency_imported_v1(
+    dependency: &Path2AccountCreationProofBoundaryClosureDependencyRowV1,
+    proof_obligation_rows: &[Path2AccountCreationProofBoundaryObligationRowV1],
+    sampler_timing_report: &Path2AccountCreationSamplerTimingReportV1,
+) -> bool {
+    dependency.dependency_id == "closure_dependency_no_postchallenge_timing"
+        && dependency.proof_obligation_id == "creation_proof_obligation_no_postchallenge_timing"
+        && dependency.named_break == "postchallenge_slot_creation_or_rewrite_break"
+        && !dependency.open
+        && sampler_timing_report.no_postchallenge_timing_theorem_instantiated
+        && !sampler_timing_report.deployment_ready
+        && proof_obligation_rows.iter().any(|obligation| {
+            obligation.obligation_id == dependency.proof_obligation_id
+                && obligation.named_break == dependency.named_break
+                && !obligation.open
+        })
+}
+
 fn path2_account_creation_closure_dependency_evidence_rows_v1(
     closure_dependency_rows: &[Path2AccountCreationProofBoundaryClosureDependencyRowV1],
     proof_obligation_rows: &[Path2AccountCreationProofBoundaryObligationRowV1],
@@ -13151,14 +13169,19 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
             !row.open
                 || row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
         }),
-        every_closure_dependency_has_open_obligation: closure_dependency_rows.iter().all(|row| {
-            path2_account_creation_closure_dependency_has_open_obligation_v1(
-                row,
-                proof_obligation_rows,
-            )
-        }),
-        every_closure_dependency_has_open_support_surface: closure_dependency_rows.iter().all(
-            |row| {
+        every_closure_dependency_has_open_obligation: closure_dependency_rows
+            .iter()
+            .filter(|row| row.open)
+            .all(|row| {
+                path2_account_creation_closure_dependency_has_open_obligation_v1(
+                    row,
+                    proof_obligation_rows,
+                )
+            }),
+        every_closure_dependency_has_open_support_surface: closure_dependency_rows
+            .iter()
+            .filter(|row| row.open)
+            .all(|row| {
                 path2_account_creation_closure_dependency_support_open_v1(
                     row,
                     &sampler_timing_report,
@@ -13168,8 +13191,7 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
                     &fri_aok_boundary_report,
                     &payload_kat_boundary_report,
                 )
-            },
-        ),
+            }),
         every_open_closure_dependency_blocks_deployment: closure_dependency_rows.iter().all(
             |row| {
                 !row.open
@@ -13222,17 +13244,31 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
         .iter()
         .filter(|row| row.source_support_still_open)
         .count();
+    let open_closure_dependency_count =
+        report.closure_dependency_rows.iter().filter(|row| row.open).count();
     report.every_closure_dependency_has_evidence =
         report.closure_dependency_evidence_count == report.closure_dependency_count
             && report.closure_dependency_open_obligation_evidence_count
-                == report.closure_dependency_count
+                == open_closure_dependency_count
             && report.closure_dependency_open_support_evidence_count
-                == report.closure_dependency_count
+                == open_closure_dependency_count
             && report.closure_dependency_evidence_rows.iter().all(|row| {
-                row.closure_dependency_open
-                    && row.blocks_deployment
-                    && row.blocker
-                        == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
+                if row.closure_dependency_open {
+                    row.proof_obligation_still_open
+                        && row.source_support_still_open
+                        && row.blocks_deployment
+                        && row.blocker
+                            == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
+                } else {
+                    row.dependency_id == "closure_dependency_no_postchallenge_timing"
+                        && row.proof_obligation_id
+                            == "creation_proof_obligation_no_postchallenge_timing"
+                        && !row.proof_obligation_still_open
+                        && !row.source_support_still_open
+                        && !row.blocks_deployment
+                        && row.blocker
+                            == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
+                }
             });
     report.digest = path2_account_creation_proof_boundary_report_v1_digest(&report);
     report
@@ -13354,6 +13390,8 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
             &fri_aok_boundary_report,
             &payload_kat_boundary_report,
         );
+    let open_closure_dependency_count =
+        report.closure_dependency_rows.iter().filter(|row| row.open).count();
     if report.closure_dependency_rows
         != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CLOSURE_DEPENDENCY_ROWS.as_ref()
         || report.closure_dependency_count != report.closure_dependency_rows.len()
@@ -13363,9 +13401,9 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
         || report.closure_dependency_evidence_count
             != report.closure_dependency_evidence_rows.len()
         || report.closure_dependency_open_obligation_evidence_count
-            != report.closure_dependency_rows.len()
+            != open_closure_dependency_count
         || report.closure_dependency_open_support_evidence_count
-            != report.closure_dependency_rows.len()
+            != open_closure_dependency_count
         || !report
             .closure_dependency_rows
             .iter()
@@ -13379,28 +13417,45 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
         || !report.every_open_closure_dependency_blocks_deployment
         || !report.every_closure_dependency_has_evidence
         || !report.closure_dependency_rows.iter().all(|row| {
-            row.open
-                && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
-                && path2_account_creation_closure_dependency_has_open_obligation_v1(
+            if row.open {
+                row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
+                    && path2_account_creation_closure_dependency_has_open_obligation_v1(
+                        row,
+                        report.proof_obligation_rows,
+                    )
+                    && path2_account_creation_closure_dependency_support_open_v1(
+                        row,
+                        &sampler_timing_report,
+                        &no_export_boundary_report,
+                        &account_stark_residual_matrix_report,
+                        &fri_qrom_residual_report,
+                        &fri_aok_boundary_report,
+                        &payload_kat_boundary_report,
+                    )
+            } else {
+                path2_account_creation_closed_no_postchallenge_dependency_imported_v1(
                     row,
                     report.proof_obligation_rows,
-                )
-                && path2_account_creation_closure_dependency_support_open_v1(
-                    row,
                     &sampler_timing_report,
-                    &no_export_boundary_report,
-                    &account_stark_residual_matrix_report,
-                    &fri_qrom_residual_report,
-                    &fri_aok_boundary_report,
-                    &payload_kat_boundary_report,
                 )
+            }
         })
         || !report.closure_dependency_evidence_rows.iter().all(|row| {
-            row.proof_obligation_still_open
-                && row.source_support_still_open
-                && row.closure_dependency_open
-                && row.blocks_deployment
-                && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
+            if row.closure_dependency_open {
+                row.proof_obligation_still_open
+                    && row.source_support_still_open
+                    && row.blocks_deployment
+                    && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
+            } else {
+                row.dependency_id == "closure_dependency_no_postchallenge_timing"
+                    && row.proof_obligation_id
+                        == "creation_proof_obligation_no_postchallenge_timing"
+                    && !row.proof_obligation_still_open
+                    && !row.source_support_still_open
+                    && !row.blocks_deployment
+                    && row.blocker
+                        == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
+            }
         })
     {
         return Err(
@@ -48781,7 +48836,7 @@ fn path2_account_creation_accepted_proof_boundary_evidence_for_fixture_v1(
         proof_family_obligations_still_open: proof_boundary_report
             .proof_obligation_rows
             .iter()
-            .all(|row| row.open),
+            .any(|row| row.open),
         deployment_ready: false,
     };
     evidence.accepted_requirement_evidence_rows =
@@ -67975,7 +68030,7 @@ pub fn validate_path2_direct_accepted_composition_evidence_v1(
 
     let direct_obligations_still_open = direct_report.obligation_rows.iter().any(|row| row.open);
     let proof_family_obligations_still_open =
-        proof_report.proof_obligation_rows.iter().all(|row| row.open);
+        proof_report.proof_obligation_rows.iter().any(|row| row.open);
     if evidence.direct_theorem_obligations_still_open != direct_obligations_still_open
         || evidence.proof_family_obligations_still_open != proof_family_obligations_still_open
     {
@@ -114024,7 +114079,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.timing_boundary_pinned);
         assert!(!report.honest_sampler_theorem_instantiated);
         assert!(!report.authorization_class_binding_theorem_instantiated);
-        assert!(!report.no_postchallenge_timing_theorem_instantiated);
+        assert!(report.no_postchallenge_timing_theorem_instantiated);
         assert!(!report.deployment_ready);
         assert_eq!(
             report.blocker,
@@ -114037,7 +114092,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         validate_path2_account_creation_sampler_timing_report_v1(&report).unwrap();
 
         let mut malformed = report.clone();
-        malformed.no_postchallenge_timing_theorem_instantiated = true;
+        malformed.no_postchallenge_timing_theorem_instantiated = false;
         malformed.digest = path2_account_creation_sampler_timing_report_v1_digest(&malformed);
         assert_eq!(
             validate_path2_account_creation_sampler_timing_report_v1(&malformed).unwrap_err(),
@@ -114384,7 +114439,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             "account_stark_production_gate_break"
         );
         for row in report.proof_obligation_rows {
-            assert!(row.open);
+            assert_eq!(
+                row.open,
+                row.obligation_id != "creation_proof_obligation_no_postchallenge_timing"
+            );
             assert_eq!(
                 row.blocker,
                 PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY

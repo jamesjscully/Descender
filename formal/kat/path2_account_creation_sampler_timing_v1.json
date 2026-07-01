@@ -17,11 +17,11 @@
     "corpus_id": "Descender.Path2.AccountCreationSamplerTiming.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "7203fd6071e952dce7edfdfb0f2110721942f421a8e62f60c4a1796e9fc7b50d",
-      "account_creation_proof_boundary_report_recomputed_digest": "7203fd6071e952dce7edfdfb0f2110721942f421a8e62f60c4a1796e9fc7b50d",
-      "account_creation_sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
-      "account_creation_sampler_timing_report_recomputed_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
-      "proof_boundary_report_sampler_timing_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b"
+      "account_creation_proof_boundary_report_digest": "a88024ef8618467fd18ac5ff04aa33679f556b836ebeb26e2299188f8d7298ec",
+      "account_creation_proof_boundary_report_recomputed_digest": "a88024ef8618467fd18ac5ff04aa33679f556b836ebeb26e2299188f8d7298ec",
+      "account_creation_sampler_timing_report_digest": "8eec7a7b2e9f784bc3fd2b2be81980d888bffba40d3c7ff425338ec5fe29e844",
+      "account_creation_sampler_timing_report_recomputed_digest": "8eec7a7b2e9f784bc3fd2b2be81980d888bffba40d3c7ff425338ec5fe29e844",
+      "proof_boundary_report_sampler_timing_digest": "8eec7a7b2e9f784bc3fd2b2be81980d888bffba40d3c7ff425338ec5fe29e844"
     },
     "executable_hooks": {
       "checked_core_challenge_binds_message": true,
@@ -49,7 +49,7 @@
       "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
       "deployment_ready": false,
       "honest_sampler_theorem_instantiated": false,
-      "no_postchallenge_timing_theorem_instantiated": false
+      "no_postchallenge_timing_theorem_instantiated": true
     },
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "sampler_boundary": {
@@ -71,7 +71,7 @@
     },
     "schema": "Descender.Path2.AccountCreationSamplerTimingManifest.v1",
     "timing_boundary": {
-      "no_postchallenge_timing_theorem_instantiated": false,
+      "no_postchallenge_timing_theorem_instantiated": true,
       "prechallenge_fixed_through_step": 6,
       "spend_challenge_derived_at_step": 9,
       "support_file": "research/path2_no_postchallenge_creation_timing_game.md",
@@ -92,5 +92,5 @@
       ]
     }
   },
-  "manifest_digest": "e9c63b8352e04266093e5fc4ce9a2ab0ca97d16ce63108eec12880c34ac6fd55"
+  "manifest_digest": "cd519251abd568d37b961e91a949a3fce4ceff59076d67999b1654f998f1d3ce"
 }

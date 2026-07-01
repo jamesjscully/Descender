@@ -510,7 +510,6 @@ mod enabled {
         for pointer in [
             "/accepted_proof_boundary_evidence_artifact/audit_summary/proof_family_obligations_still_open",
             "/accepted_proof_boundary_evidence_artifact/audit_summary/production_gate_fail_closed",
-            "/proof_obligation_vector_corpus_evidence/audit_summary/all_cases_open",
             "/proof_obligation_vector_corpus_evidence/audit_summary/all_cases_have_named_break",
             "/proof_obligation_vector_corpus_evidence/audit_summary/all_open_cases_block_deployment",
             "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/proof_family_obligations_still_open",
@@ -522,6 +521,7 @@ mod enabled {
         }
         for pointer in [
             "/accepted_proof_boundary_evidence_artifact/audit_summary/deployment_ready",
+            "/proof_obligation_vector_corpus_evidence/audit_summary/all_cases_open",
             "/proof_obligation_vector_corpus_evidence/audit_summary/simulator_theorem_instantiated",
             "/proof_obligation_vector_corpus_evidence/audit_summary/fri_aok_extractor_theorem_instantiated",
             "/proof_obligation_vector_corpus_evidence/audit_summary/fri_qrom_residual_priced",

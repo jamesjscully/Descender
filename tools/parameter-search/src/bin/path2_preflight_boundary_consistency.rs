@@ -1063,6 +1063,8 @@ fn main() -> Result<(), String> {
             "account-creation proof boundary unexpectedly reports closed obligations".to_string(),
         );
     }
+    let open_proof_closure_dependency_count =
+        proof_report.closure_dependency_rows.iter().filter(|row| row.open).count();
     if !proof_report.proof_obligation_rows_pinned
         || !proof_report.every_proof_obligation_has_named_break
         || !proof_report.every_open_proof_obligation_blocks_deployment
@@ -1075,9 +1077,9 @@ fn main() -> Result<(), String> {
         || proof_report.closure_dependency_evidence_count
             != proof_report.closure_dependency_rows.len()
         || proof_report.closure_dependency_open_obligation_evidence_count
-            != proof_report.closure_dependency_rows.len()
+            != open_proof_closure_dependency_count
         || proof_report.closure_dependency_open_support_evidence_count
-            != proof_report.closure_dependency_rows.len()
+            != open_proof_closure_dependency_count
         || proof_report.closure_dependency_count != proof_report.proof_obligation_rows.len()
     {
         return Err(
@@ -1378,7 +1380,7 @@ fn main() -> Result<(), String> {
     }
     if !proof_report.deployment_ready
         && !proof_report.proof_obligation_rows.iter().all(|row| {
-            row.open && row.blocker == proof_report.blocker && contains(blockers, row.blocker)
+            !row.open || (row.blocker == proof_report.blocker && contains(blockers, row.blocker))
         })
     {
         return Err(

@@ -103,6 +103,7 @@ fn main() -> Result<(), String> {
         &root,
         "research/path2_no_postchallenge_creation_timing_game.md",
     )?;
+    let full_spend_lean = load_text(&root, "Descender/Path2FullSpendConcrete.lean")?;
 
     let report = path2_account_creation_sampler_timing_report_v1();
     let proof_report = path2_account_creation_proof_boundary_report_v1();
@@ -205,12 +206,19 @@ fn main() -> Result<(), String> {
     for pointer in [
         "/manifest/open_obligations/honest_sampler_theorem_instantiated",
         "/manifest/open_obligations/authorization_class_binding_theorem_instantiated",
-        "/manifest/open_obligations/no_postchallenge_timing_theorem_instantiated",
         "/manifest/open_obligations/deployment_ready",
     ] {
         if bool_at(&manifest, pointer)? {
             return Err(format!("sampler/timing manifest unexpectedly closes {pointer}"));
         }
+    }
+    if !bool_at(
+        &manifest,
+        "/manifest/open_obligations/no_postchallenge_timing_theorem_instantiated",
+    )? {
+        return Err(
+            "sampler/timing manifest lost imported no-postchallenge timing theorem".to_string(),
+        );
     }
 
     for (needle, label) in [
@@ -255,6 +263,30 @@ fn main() -> Result<(), String> {
         ),
     ] {
         require_contains(&timing_doc, needle, label)?;
+    }
+    for (needle, label) in [
+        (
+            "AccountCreationNoPostchallengeTimingObligationTracked",
+            "tracked no-postchallenge timing predicate",
+        ),
+        (
+            "noPostchallengeTiming_createdBeforeChallenge",
+            "created-before-challenge Lean theorem",
+        ),
+        (
+            "noPostchallengeTiming_lateAdmission_excluded",
+            "late-admission exclusion Lean theorem",
+        ),
+        (
+            "spend.creationEvidence.acceptedAt ≤ (spend.spendChallengeTime : Nat)",
+            "accepted evidence timing bound",
+        ),
+        (
+            "e'.acceptedAt ≠ spend.creationEvidence.acceptedAt",
+            "late admission exclusion conclusion",
+        ),
+    ] {
+        require_contains(&full_spend_lean, needle, label)?;
     }
 
     let creation_frame = function_window(&source, "path2_creation_hidden_source_statement_v1_frame")?;

@@ -901,7 +901,7 @@ fn check_consistency() -> Result<(), String> {
             "coverage",
             "closure_dependency_open_obligation_evidence_count",
         ],
-        8,
+        7,
     )?;
     expect_u64(
         proof_manifest,
@@ -910,7 +910,7 @@ fn check_consistency() -> Result<(), String> {
             "coverage",
             "closure_dependency_open_support_evidence_count",
         ],
-        8,
+        7,
     )?;
     expect_u64(
         proof_manifest,
@@ -1106,7 +1106,27 @@ fn check_consistency() -> Result<(), String> {
             "audit_summary",
             "all_cases_open",
         ],
-        true,
+        false,
+    )?;
+    expect_u64(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "proof_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "open_proof_obligation_count",
+        ],
+        7,
+    )?;
+    expect_u64(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "proof_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "closed_proof_obligation_count",
+        ],
+        1,
     )?;
     expect_eq(
         get(

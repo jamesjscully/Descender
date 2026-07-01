@@ -432,6 +432,8 @@ ACCOUNT_CREATION_SAMPLER_TIMING_MARKERS = {
         "validate_path2_direct_slot_authorization_state_namespace",
         "verify_path2_prevalidated_slot_consume_once",
         "verify_path2_direct_single_slot_spend_authorization",
+        "noPostchallengeTiming_createdBeforeChallenge",
+        "noPostchallengeTiming_lateAdmission_excluded",
         "Path 2 account-creation sampler/timing consistency check passed.",
     ],
     "formal/kat/path2_account_creation_sampler_timing_v1.json": [
@@ -448,7 +450,7 @@ ACCOUNT_CREATION_SAMPLER_TIMING_MARKERS = {
         '"consume_once_required": true',
         '"honest_sampler_theorem_instantiated": false',
         '"authorization_class_binding_theorem_instantiated": false',
-        '"no_postchallenge_timing_theorem_instantiated": false',
+        '"no_postchallenge_timing_theorem_instantiated": true',
         '"deployment_ready": false',
     ],
     "scripts/check_build.sh": [
@@ -776,7 +778,9 @@ ACCOUNT_CREATION_PROOF_BOUNDARY_MANIFEST_MARKERS = {
         "creation_proof_obligation_frozen_payload_kats",
         "creation_proof_obligation_production_gate_and_review",
         '"case_count": 8',
-        '"all_cases_open": true',
+        '"open_proof_obligation_count": 7',
+        '"closed_proof_obligation_count": 1',
+        '"all_cases_open": false',
         '"all_open_cases_block_deployment": true',
         '"composition_theorem_instantiated": false',
         '"deployment_ready": false',

@@ -1482,6 +1482,18 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
             != proof_report.proof_obligation_audit_vector_case_count as u64
         || u64_at(corpus, "/audit_summary/proof_obligation_count")?
             != proof_report.proof_obligation_count as u64
+        || u64_at(corpus, "/audit_summary/open_proof_obligation_count")?
+            != proof_report
+                .proof_obligation_rows
+                .iter()
+                .filter(|row| row.open)
+                .count() as u64
+        || u64_at(corpus, "/audit_summary/closed_proof_obligation_count")?
+            != proof_report
+                .proof_obligation_rows
+                .iter()
+                .filter(|row| !row.open)
+                .count() as u64
         || u64_at(
             corpus,
             "/audit_summary/proof_obligation_audit_vector_case_count",
@@ -1490,7 +1502,7 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
             corpus,
             "/audit_summary/proof_obligation_named_break_classes",
         )? != &json!(proof_report.proof_obligation_named_break_classes)
-        || !bool_at(corpus, "/audit_summary/all_cases_open")?
+        || bool_at(corpus, "/audit_summary/all_cases_open")?
         || !bool_at(corpus, "/audit_summary/all_cases_have_named_break")?
         || !bool_at(corpus, "/audit_summary/all_open_cases_block_deployment")?
         || !bool_at(
@@ -1544,6 +1556,14 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
             "proof_obligation_count": u64_at(
                 corpus,
                 "/audit_summary/proof_obligation_count"
+            )?,
+            "open_proof_obligation_count": u64_at(
+                corpus,
+                "/audit_summary/open_proof_obligation_count"
+            )?,
+            "closed_proof_obligation_count": u64_at(
+                corpus,
+                "/audit_summary/closed_proof_obligation_count"
             )?,
             "proof_obligation_audit_vector_case_count": u64_at(
                 corpus,

@@ -939,9 +939,17 @@ fn main() -> Result<(), String> {
         str_at(payload_vectors, "/honest_payload/payload_digest")?,
     )?;
 
+    let open_proof_obligation_count =
+        proof_report.proof_obligation_rows.iter().filter(|row| row.open).count() as u64;
+    let closed_proof_obligation_count =
+        proof_report.proof_obligation_rows.iter().filter(|row| !row.open).count() as u64;
     if u64_at(corpus, "/case_count")? != proof_report.proof_obligation_count as u64
         || u64_at(corpus, "/audit_summary/proof_obligation_count")?
             != proof_report.proof_obligation_count as u64
+        || u64_at(corpus, "/audit_summary/open_proof_obligation_count")?
+            != open_proof_obligation_count
+        || u64_at(corpus, "/audit_summary/closed_proof_obligation_count")?
+            != closed_proof_obligation_count
         || u64_at(
             corpus,
             "/audit_summary/proof_obligation_audit_vector_case_count",
@@ -982,11 +990,15 @@ fn main() -> Result<(), String> {
     )? || !bool_at(
         corpus,
         "/proof_boundary_report/every_open_proof_obligation_blocks_deployment",
-    )? || !bool_at(corpus, "/audit_summary/all_cases_open")?
+    )? || bool_at(corpus, "/audit_summary/all_cases_open")?
         || !bool_at(corpus, "/audit_summary/all_cases_have_named_break")?
         || !bool_at(corpus, "/audit_summary/all_open_cases_block_deployment")?
+        || open_proof_obligation_count != 7
+        || closed_proof_obligation_count != 1
     {
-        return Err("proof-obligation vector corpus lost fail-closed row invariants".to_string());
+        return Err(
+            "proof-obligation vector corpus lost partial-close row invariants".to_string(),
+        );
     }
     for pointer in [
         "/proof_boundary_report/deployment_ready",
@@ -1104,9 +1116,14 @@ fn main() -> Result<(), String> {
                 ));
             }
         }
-        if case.get("open").and_then(Value::as_bool) != Some(true) || !row.open {
+        if case.get("open").and_then(Value::as_bool) != Some(row.open) {
             return Err(format!(
-                "proof-obligation case {case_id} unexpectedly closed"
+                "proof-obligation case {case_id} open flag drifted"
+            ));
+        }
+        if !row.open && case_id != "creation_proof_obligation_no_postchallenge_timing" {
+            return Err(format!(
+                "proof-obligation case {case_id} closed without imported timing theorem"
             ));
         }
     }
