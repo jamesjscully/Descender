@@ -11408,27 +11408,27 @@ pub const PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS:
         current_evidence:
             "selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted",
         required_closure:
-            "closed local authorization-class binding theorem imported; honest sampler theorem remains separate",
+            "closed local authorization-class binding theorem imported; proof-family, deployment, and external review obligations remain separate",
         named_break: "checked_core_message_binding_break",
         open: false,
     },
     Path2AccountCreationSamplerIntegrationRowV1 {
         integration_id: "sampler_integration_accepted_boundary_import",
         support_surface:
-            "Descender/Path2FullSpendConcrete.lean accepted-boundary sampler row package",
+            "Descender/Path2FullSpendConcrete.lean accepted-boundary full sampler integration",
         current_evidence:
-            "selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted",
+            "selectedRustFullHonestSamplerIntegrationComplete_of_boundaryAccepted",
         required_closure:
-            "final creation theorem consumes the accepted-boundary sampler row package and honest sampler theorem together",
+            "closed by consuming the accepted-boundary sampler row package and deterministic honest sampler theorem together",
         named_break: "creation_time_hidden_source_soundness_break",
-        open: true,
+        open: false,
     },
     Path2AccountCreationSamplerIntegrationRowV1 {
         integration_id: "sampler_integration_no_postchallenge_timing_import",
         support_surface: "Descender/Path2FullSpendConcrete.lean no-postchallenge timing hooks",
         current_evidence: "noPostchallengeTiming_createdBeforeChallenge",
         required_closure:
-            "closed timing slice imported; remaining sampler residual is not closed by this row",
+            "closed timing slice imported as a separate no-postchallenge obligation",
         named_break: "postchallenge_slot_creation_or_rewrite_break",
         open: false,
     },
@@ -12190,13 +12190,13 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
         obligation_id: "creation_proof_obligation_honest_sampler",
         closure_target: "honest_create_sampler_sound_v1",
         supporting_surface:
-            "Path2AccountCreationSamplerTimingReportV1 + accepted-boundary Lean sampler row package",
+            "Path2AccountCreationSamplerTimingReportV1 + accepted-boundary Lean full sampler integration",
         current_evidence:
-            "selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted packages the private-to-public order, authorization bridge, authorization-class support, accepted-boundary sampler support, and closed timing rows",
-        required_closure: "prove the honest-create sampler samples the selected creation relation without bias or hidden postchallenge input",
+            "selectedRustFullHonestSamplerIntegrationComplete_of_boundaryAccepted imports the deterministic honest sampler theorem, accepted-boundary honest-create evidence, private-to-public local validity, obstruction-zero support, authorization-class matching, and the closed no-postchallenge timing row",
+        required_closure: "closed by importing the full accepted-boundary honest sampler integration theorem; leakage, no-export, proof-family, deployment, and external review obligations remain separate",
         named_break: "creation_time_hidden_source_soundness_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
-        open: true,
+        open: false,
     },
     Path2AccountCreationProofBoundaryObligationRowV1 {
         obligation_id: "creation_proof_obligation_authorization_class_binding",
@@ -12285,12 +12285,12 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CLOSURE_DEPENDENCY_ROWS:
     Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
         dependency_id: "closure_dependency_honest_sampler",
         source_report: "Path2AccountCreationSamplerTimingReportV1",
-        source_flag_group: "full_honest_sampler_integration_complete=false",
+        source_flag_group: "full_honest_sampler_integration_complete=true",
         proof_obligation_id: "creation_proof_obligation_honest_sampler",
         residual_item: "",
         named_break: "creation_time_hidden_source_soundness_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
-        open: true,
+        open: false,
     },
     Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
         dependency_id: "closure_dependency_authorization_class_binding",
@@ -13071,7 +13071,7 @@ pub fn path2_account_creation_sampler_timing_report_v1() -> Path2AccountCreation
         }),
         selected_rust_bridge_hooks_imported_by_sampler_integration: true,
         accepted_boundary_imports_sampler_integration: true,
-        full_honest_sampler_integration_complete: false,
+        full_honest_sampler_integration_complete: true,
         sampler_boundary_pinned: true,
         timing_boundary_pinned: true,
         honest_sampler_theorem_instantiated: true,
@@ -13145,7 +13145,7 @@ pub fn validate_path2_account_creation_sampler_timing_report_v1(
         || !report.every_sampler_integration_row_has_evidence
         || !report.selected_rust_bridge_hooks_imported_by_sampler_integration
         || !report.accepted_boundary_imports_sampler_integration
-        || report.full_honest_sampler_integration_complete
+        || !report.full_honest_sampler_integration_complete
         || !report.sampler_boundary_pinned
         || !report.timing_boundary_pinned
         || !report.honest_sampler_theorem_instantiated
@@ -13364,6 +13364,25 @@ fn path2_account_creation_closed_no_postchallenge_dependency_imported_v1(
         })
 }
 
+fn path2_account_creation_closed_honest_sampler_dependency_imported_v1(
+    dependency: &Path2AccountCreationProofBoundaryClosureDependencyRowV1,
+    proof_obligation_rows: &[Path2AccountCreationProofBoundaryObligationRowV1],
+    sampler_timing_report: &Path2AccountCreationSamplerTimingReportV1,
+) -> bool {
+    dependency.dependency_id == "closure_dependency_honest_sampler"
+        && dependency.proof_obligation_id == "creation_proof_obligation_honest_sampler"
+        && dependency.named_break == "creation_time_hidden_source_soundness_break"
+        && !dependency.open
+        && sampler_timing_report.full_honest_sampler_integration_complete
+        && sampler_timing_report.honest_sampler_theorem_instantiated
+        && !sampler_timing_report.deployment_ready
+        && proof_obligation_rows.iter().any(|obligation| {
+            obligation.obligation_id == dependency.proof_obligation_id
+                && obligation.named_break == dependency.named_break
+                && !obligation.open
+        })
+}
+
 fn path2_account_creation_closed_authorization_class_dependency_imported_v1(
     dependency: &Path2AccountCreationProofBoundaryClosureDependencyRowV1,
     proof_obligation_rows: &[Path2AccountCreationProofBoundaryObligationRowV1],
@@ -13411,7 +13430,11 @@ fn path2_account_creation_closed_dependency_imported_v1(
     sampler_timing_report: &Path2AccountCreationSamplerTimingReportV1,
     payload_kat_boundary_report: &Path2AccountStarkPayloadKatBoundaryReportV1,
 ) -> bool {
-    path2_account_creation_closed_no_postchallenge_dependency_imported_v1(
+    path2_account_creation_closed_honest_sampler_dependency_imported_v1(
+        dependency,
+        proof_obligation_rows,
+        sampler_timing_report,
+    ) || path2_account_creation_closed_no_postchallenge_dependency_imported_v1(
         dependency,
         proof_obligation_rows,
         sampler_timing_report,
@@ -13665,7 +13688,8 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
                     && row.blocks_deployment
                     && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
             } else {
-                (row.dependency_id == "closure_dependency_no_postchallenge_timing"
+                (row.dependency_id == "closure_dependency_honest_sampler"
+                    || row.dependency_id == "closure_dependency_no_postchallenge_timing"
                     || row.dependency_id == "closure_dependency_authorization_class_binding"
                     || row.dependency_id == "closure_dependency_frozen_payload_kats")
                     && !row.proof_obligation_still_open
@@ -13848,7 +13872,8 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
                     && row.blocks_deployment
                     && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
             } else {
-                (row.dependency_id == "closure_dependency_no_postchallenge_timing"
+                (row.dependency_id == "closure_dependency_honest_sampler"
+                    || row.dependency_id == "closure_dependency_no_postchallenge_timing"
                     || row.dependency_id == "closure_dependency_authorization_class_binding"
                     || row.dependency_id == "closure_dependency_frozen_payload_kats")
                     && !row.proof_obligation_still_open
@@ -51364,6 +51389,8 @@ fn path2_full_signature_execution_source_boundary_present_in_source_v1(
         "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted",
         "SelectedRustAcceptedBoundarySamplerIntegrationRowsSupported",
         "selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted",
+        "SelectedRustFullHonestSamplerIntegrationComplete",
+        "selectedRustFullHonestSamplerIntegrationComplete_of_boundaryAccepted",
         "SelectedRustAcceptedBoundaryNoExportSupport",
         "selectedRustAcceptedBoundaryNoExportSupport_of_boundaryAccepted",
         "SelectedRustAcceptedBoundaryFriAokSupport",
@@ -114837,7 +114864,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS.as_ref()
         );
         assert_eq!(report.sampler_integration_row_count, 5);
-        assert_eq!(report.sampler_integration_open_count, 1);
+        assert_eq!(report.sampler_integration_open_count, 0);
         assert!(report
             .sampler_integration_rows
             .iter()
@@ -114871,8 +114898,8 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             .any(
                 |row| row.integration_id == "sampler_integration_accepted_boundary_import"
                     && row.current_evidence
-                        == "selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted"
-                    && row.open
+                        == "selectedRustFullHonestSamplerIntegrationComplete_of_boundaryAccepted"
+                    && !row.open
             ));
         assert!(report
             .sampler_integration_rows
@@ -114895,7 +114922,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.every_sampler_integration_row_has_evidence);
         assert!(report.selected_rust_bridge_hooks_imported_by_sampler_integration);
         assert!(report.accepted_boundary_imports_sampler_integration);
-        assert!(!report.full_honest_sampler_integration_complete);
+        assert!(report.full_honest_sampler_integration_complete);
         assert!(report.sampler_boundary_pinned);
         assert!(report.timing_boundary_pinned);
         assert!(report.honest_sampler_theorem_instantiated);
@@ -115276,7 +115303,8 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         for row in report.proof_obligation_rows {
             let expected_closed = matches!(
                 row.obligation_id,
-                "creation_proof_obligation_authorization_class_binding"
+                "creation_proof_obligation_honest_sampler"
+                    | "creation_proof_obligation_authorization_class_binding"
                     | "creation_proof_obligation_no_postchallenge_timing"
                     | "creation_proof_obligation_frozen_payload_kats"
             );

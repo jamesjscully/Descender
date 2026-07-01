@@ -993,8 +993,8 @@ fn main() -> Result<(), String> {
     )? || bool_at(corpus, "/audit_summary/all_cases_open")?
         || !bool_at(corpus, "/audit_summary/all_cases_have_named_break")?
         || !bool_at(corpus, "/audit_summary/all_open_cases_block_deployment")?
-        || open_proof_obligation_count != 5
-        || closed_proof_obligation_count != 3
+        || open_proof_obligation_count != 4
+        || closed_proof_obligation_count != 4
     {
         return Err(
             "proof-obligation vector corpus lost partial-close row invariants".to_string(),
@@ -1127,7 +1127,8 @@ fn main() -> Result<(), String> {
         }
         let expected_closed = matches!(
             case_id,
-            "creation_proof_obligation_authorization_class_binding"
+            "creation_proof_obligation_honest_sampler"
+                | "creation_proof_obligation_authorization_class_binding"
                 | "creation_proof_obligation_no_postchallenge_timing"
                 | "creation_proof_obligation_frozen_payload_kats"
         );

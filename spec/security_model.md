@@ -429,31 +429,27 @@ compatible private authorization local, the semantic spend class, and the
 selected checked-core spend digest all agree with `p_spend(q)` while the audit
 digest remains imported by the report. The accepted-boundary
 row now points at
-`selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted`,
-the Lean support hook that packages the private-to-public order row,
+`selectedRustFullHonestSamplerIntegrationComplete_of_boundaryAccepted`,
+the Lean support hook that consumes the private-to-public order row,
 authorization-bridge checklist row, authorization-class support row,
-accepted-boundary sampler row, and closed timing row from accepted-boundary
-evidence. Its accepted-boundary sampler component still derives the
-`honestCreate` witness from accepted-boundary facts and binds `q,h` to the
-accepted spend's own creation boundary and concrete leaf authorization fiber.
-The checklist is executable evidence for
-the remaining integration path: it records one open accepted-boundary/final
-integration row, keeps
-`full_honest_sampler_integration_complete` and
-deployment readiness false, and imports the deterministic honest-sampler theorem
-flag as true.
+accepted-boundary sampler row, deterministic honest sampler theorem, and closed
+timing row from accepted-boundary evidence. Its accepted-boundary sampler
+component derives the `honestCreate` witness from accepted-boundary facts and
+binds `q,h` to the accepted spend's own creation boundary and concrete leaf
+authorization fiber. The checklist records zero open sampler-integration rows,
+keeps deployment readiness false, and imports the deterministic honest-sampler
+theorem flag as true.
 `formal/kat/path2_account_creation_proof_obligation_vectors_v1.json`
 turns that row table into a digest-pinned audit corpus bound to both the
 proof-boundary and direct-theorem reports; its honest-sampler obligation row now
 names the same
-`selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted`
-support package plus the deterministic sampler theorem while staying open,
-records the current 5-open / 3-closed
-proof-boundary accounting, and keeps deployment fail-closed. Its
+`selectedRustFullHonestSamplerIntegrationComplete_of_boundaryAccepted`
+support package plus the deterministic sampler theorem while closed, records the
+current 4-open / 4-closed proof-boundary accounting, and keeps deployment
+fail-closed. Its
 authorization-class obligation row is now closed by
 `selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted` plus the
-audit report's `p_spend` completeness and no-private-material checks, moving the
-proof-boundary accounting to 5 open / 3 closed. A separate
+audit report's `p_spend` completeness and no-private-material checks. A separate
 requirement-coverage matrix maps every
 acceptance requirement to its current evidence surface, vector evidence kind,
 current vector case ids where they exist, public rejection classes for rejection

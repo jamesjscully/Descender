@@ -1362,7 +1362,7 @@ theorem selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted
 Single accepted-boundary support package for the current sampler-integration
 row table.  It packages the private-to-public order row, authorization-bridge
 checklist row, authorization-class support row, accepted-boundary sampler row,
-and closed timing row without claiming the full honest sampler theorem.
+and closed timing row.
 -/
 def SelectedRustAcceptedBoundarySamplerIntegrationRowsSupported
     (spend : ConcreteSpendTuple) : Prop :=
@@ -1387,9 +1387,7 @@ def SelectedRustAcceptedBoundarySamplerIntegrationRowsSupported
 
 /--
 Accepted selected-Rust proof-boundary evidence realizes every currently
-machine-checked row in the sampler-integration table.  The four sampler rows
-remain open at report level because this is row support, not the final
-probabilistic honest sampler theorem or external review.
+machine-checked row in the sampler-integration table.
 -/
 theorem selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted
     {spend : ConcreteSpendTuple}
@@ -1413,6 +1411,67 @@ theorem selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryA
     selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted hAccepted,
     hTimingTracked,
     hTiming⟩
+
+/--
+Full selected-Rust honest sampler integration for an accepted boundary.
+
+This closes the local accepted-boundary integration slice by combining the
+deterministic `honest_create_sampler_sound_v1` theorem with the accepted-boundary
+row package.  It still does not claim no-export/privacy, proof-family,
+deployment readiness, or external review.
+-/
+def SelectedRustFullHonestSamplerIntegrationComplete
+    (spend : ConcreteSpendTuple) : Prop :=
+  SelectedRustAcceptedBoundarySamplerIntegrationRowsSupported spend ∧
+    SelectedRustHonestCreateSamplerSoundTheoremClosed ∧
+      selectedRustHonestCreationPredicates.honestCreate
+        spend.leaf.accountNamespace
+        spend.creationEvidence.boundary
+        (concreteLeafAuthorizationFiber spend.leaf) ∧
+        Path2NativeAccountDesign.ObstructionZero
+          selectedRustObstructionMap
+          spend.creationEvidence.boundary ∧
+          Path2NativeAccountDesign.LocalValid
+            selectedRustObstructionMap
+            selectedRustPrivateFiberPredicates
+            spend.creationEvidence.boundary
+            (concreteLeafAuthorizationFiber spend.leaf) ∧
+            Path2NativeAccountDesign.AuthorizationClassMatches
+              selectedRustPrivateFiberPredicates
+              selectedRustPublicProjections
+              spend.creationEvidence.boundary
+              (concreteLeafAuthorizationFiber spend.leaf)
+
+/--
+Accepted selected-Rust proof-boundary evidence closes the local full
+honest-sampler integration slice: the accepted boundary supplies the concrete
+`honestCreate` witness, the accepted-boundary row package, and the deterministic
+sampler theorem supplies zero obstruction, local validity, and `pSpend` class
+binding for that witness.
+-/
+theorem selectedRustFullHonestSamplerIntegrationComplete_of_boundaryAccepted
+    {spend : ConcreteSpendTuple}
+    (hAccepted :
+      AccountCreationProofBoundaryEvidenceAccepted
+        selectedRustConcreteGameConfig spend) :
+    SelectedRustFullHonestSamplerIntegrationComplete spend := by
+  have hRows :=
+    selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted
+      hAccepted
+  have hCreate :=
+    selectedRustAcceptedBoundaryHonestCreate_of_boundaryAccepted hAccepted
+  have hSound :=
+    selectedRustHonestCreateSamplerSoundTheoremClosed
+      spend.leaf.accountNamespace
+      spend.creationEvidence.boundary
+      (concreteLeafAuthorizationFiber spend.leaf)
+      hCreate
+  exact ⟨hRows,
+    selectedRustHonestCreateSamplerSoundTheoremClosed,
+    hCreate,
+    hSound.1,
+    hSound.2.1,
+    hSound.2.2.1⟩
 
 /-- Accepted proof-boundary evidence exposes the proof-family residual package. -/
 theorem accountCreationProofFamilyResidualsTracked_of_boundaryAccepted

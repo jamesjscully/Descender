@@ -258,12 +258,12 @@ fn main() -> Result<(), String> {
             ));
         }
     }
-    if bool_at(
+    if !bool_at(
         &manifest,
         "/manifest/sampler_boundary/full_honest_sampler_integration_complete",
     )? {
         return Err(
-            "sampler/timing manifest unexpectedly closes full honest sampler integration"
+            "sampler/timing manifest lost full honest sampler integration closure"
                 .to_string(),
         );
     }
@@ -329,6 +329,8 @@ fn main() -> Result<(), String> {
         "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted",
         "SelectedRustAcceptedBoundarySamplerIntegrationRowsSupported",
         "selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted",
+        "SelectedRustFullHonestSamplerIntegrationComplete",
+        "selectedRustFullHonestSamplerIntegrationComplete_of_boundaryAccepted",
         "selectedRustMeaningProjection_spendAuthorizationClass_eq_pSpend",
     ] {
         require_contains(

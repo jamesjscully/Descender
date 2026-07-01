@@ -373,16 +373,16 @@ same-boundary no-ambiguity for the accepted leaf fiber, and the selected
 checked-core spend-digest binding while the audit digest remains imported by
 the sampler/timing report. The accepted-boundary row now
 requires
-`selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted`,
-which packages the private-to-public order row, authorization-bridge checklist
-row, authorization-class support row, accepted-boundary sampler row, and closed
-timing row from accepted-boundary evidence. Its accepted-boundary sampler
-component remains pinned to the accepted spend's own boundary and concrete leaf
-authorization fiber while deriving the `honestCreate` witness from
-accepted-boundary facts. It still keeps
-`full_honest_sampler_integration_complete` false until the final
-accepted-boundary integration path and review are complete.
+`selectedRustFullHonestSamplerIntegrationComplete_of_boundaryAccepted`, which
+packages the private-to-public order row, authorization-bridge checklist row,
+authorization-class support row, accepted-boundary sampler row, deterministic
+honest sampler theorem, and closed timing row from accepted-boundary evidence.
+Its accepted-boundary sampler component remains pinned to the accepted spend's
+own boundary and concrete leaf authorization fiber while deriving the
+`honestCreate` witness from accepted-boundary facts. The sampler/timing report
+now keeps `full_honest_sampler_integration_complete` true while deployment
+readiness remains false.
 
-This is now the highest-risk self-owned proof item. If it fails, the remaining
-gap is sampler evidence that does not consume the full accepted-boundary package;
-the selected-Rust public semantics binding itself is already closed locally.
+The local accepted-boundary sampler integration is now closed. Remaining
+self-owned proof work is outside this sampler row: leakage, simulator/no-export,
+FRI/AoK, FRI/QROM, production-gate, deployment-profile, and review closure.

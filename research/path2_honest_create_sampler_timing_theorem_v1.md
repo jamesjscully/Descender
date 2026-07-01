@@ -126,19 +126,19 @@ and creation can't be steered by the spend."
   same-boundary no-ambiguity consequence for the accepted leaf fiber, and the
   selected checked-core spend-digest binding while the audit digest remains
   imported by the report. The accepted boundary row names
-  `selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted`,
-  which machine-checks the private-to-public order row, authorization-bridge
-  checklist row, authorization-class support row, accepted-boundary sampler row,
-  and closed timing row from accepted-boundary evidence. Its accepted-boundary
-  sampler component still derives the `honestCreate` witness from
-  accepted-boundary facts and binds `q,h` to the accepted spend's own creation
-  boundary and concrete leaf authorization fiber.
-  The full honest-create sampler evidence path is still not closed. (3) Signer state-loss is
-  key-management engineering, not a consensus proof. (4) External review. Only
-  the no-postchallenge timing slice is imported as closed by the sampler/timing
-  report; the deterministic honest-sampler theorem and local
-  authorization-class binding theorem are imported as closed, while final
-  accepted-boundary sampler integration remains open.
+  `selectedRustFullHonestSamplerIntegrationComplete_of_boundaryAccepted`, which
+  machine-checks the private-to-public order row, authorization-bridge checklist
+  row, authorization-class support row, accepted-boundary sampler row,
+  deterministic honest sampler theorem, and closed timing row from
+  accepted-boundary evidence. Its accepted-boundary sampler component still
+  derives the `honestCreate` witness from accepted-boundary facts and binds
+  `q,h` to the accepted spend's own creation boundary and concrete leaf
+  authorization fiber. (3)
+  Signer state-loss is key-management engineering, not a consensus proof. (4)
+  External review. The no-postchallenge timing slice, deterministic
+  honest-sampler theorem, local authorization-class binding theorem, and final
+  accepted-boundary sampler integration are imported as closed, while
+  deployment readiness remains false.
 
 ## What This Closes And Hands Off
 
@@ -146,11 +146,12 @@ and creation can't be steered by the spend."
   spend-independence + the admission-before-challenge ordering hooks, now
   machine-checked by `noPostchallengeTiming_createdBeforeChallenge` and
   `noPostchallengeTiming_lateAdmission_excluded`.
-- **Paper-level support, still open as a report flag:** honest-create sampler
-  soundness by the private-to-public construction order, reusing #6's typed
-  compatibility. The selected-Rust support hooks are pinned by
+- **Closed locally:** honest-create sampler soundness by the private-to-public
+  construction order, reusing #6's typed compatibility, plus the
+  accepted-boundary integration package. The selected-Rust support hooks are
+  pinned by
   `PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS`, and the remaining
-  integration path is row-pinned by
+  row evidence is pinned by
   `PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS`, with the private-to-public
   row now requiring
   `selectedRustHonestCreateSamplerSoundTheoremClosed`, the
@@ -160,10 +161,9 @@ and creation can't be steered by the spend."
   `selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted`
   and the
   accepted-boundary row now requiring
-  `selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted`.
-- **Hands off:** the lifecycle reorg/rollback term (#9); full honest-create
-  sampler evidence integration that consumes the checklist; external review.
-  `Path2AccountCreationSamplerTimingReportV1` keeps
-  `full_honest_sampler_integration_complete` false pending that integration and
-  review, while the deterministic honest-sampler, local authorization-class,
-  and no-postchallenge timing flags are true.
+  `selectedRustFullHonestSamplerIntegrationComplete_of_boundaryAccepted`.
+- **Hands off:** the lifecycle reorg/rollback term (#9), leakage,
+  simulator/no-export, proof-family theorem closure, production-gate closure,
+  deployment-profile acceptance, and external review. The sampler/timing report
+  keeps `full_honest_sampler_integration_complete` true while deployment
+  readiness remains false.

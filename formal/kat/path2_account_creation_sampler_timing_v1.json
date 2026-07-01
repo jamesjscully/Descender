@@ -17,12 +17,12 @@
     "corpus_id": "Descender.Path2.AccountCreationSamplerTiming.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "888f45beaa4dc1581d65a363a88a32f91adaf7a76b5cbba37246e78c3a9ca550",
-      "account_creation_proof_boundary_report_recomputed_digest": "888f45beaa4dc1581d65a363a88a32f91adaf7a76b5cbba37246e78c3a9ca550",
-      "account_creation_sampler_timing_report_digest": "daae0ec787a61ea7de170a910b45aceac475faabb62cc883d2a9be1dcf6737d2",
-      "account_creation_sampler_timing_report_recomputed_digest": "daae0ec787a61ea7de170a910b45aceac475faabb62cc883d2a9be1dcf6737d2",
+      "account_creation_proof_boundary_report_digest": "683a3b8621604dd86020f2249b42b01a23469733434d56dde4b17f83217bccf3",
+      "account_creation_proof_boundary_report_recomputed_digest": "683a3b8621604dd86020f2249b42b01a23469733434d56dde4b17f83217bccf3",
+      "account_creation_sampler_timing_report_digest": "0abd74f2a8c52e4317b5ab9886a96376e13962bc41cb8b188681054eaefeec0d",
+      "account_creation_sampler_timing_report_recomputed_digest": "0abd74f2a8c52e4317b5ab9886a96376e13962bc41cb8b188681054eaefeec0d",
       "authorization_class_binding_audit_report_digest": "ea480d25897c0762b7f929b797189a58b42ebe85eaf7a8e134111c24e52c2e80",
-      "proof_boundary_report_sampler_timing_digest": "daae0ec787a61ea7de170a910b45aceac475faabb62cc883d2a9be1dcf6737d2"
+      "proof_boundary_report_sampler_timing_digest": "0abd74f2a8c52e4317b5ab9886a96376e13962bc41cb8b188681054eaefeec0d"
     },
     "executable_hooks": {
       "checked_core_challenge_binds_message": true,
@@ -80,10 +80,10 @@
         "h"
       ],
       "every_sampler_integration_row_has_evidence": true,
-      "full_honest_sampler_integration_complete": false,
+      "full_honest_sampler_integration_complete": true,
       "honest_sampler_theorem_instantiated": true,
       "sampler_boundary_pinned": true,
-      "sampler_integration_open_count": 1,
+      "sampler_integration_open_count": 0,
       "sampler_integration_row_count": 5,
       "sampler_integration_rows": [
         {
@@ -107,23 +107,23 @@
           "integration_id": "sampler_integration_authorization_class_audit",
           "named_break": "checked_core_message_binding_break",
           "open": false,
-          "required_closure": "closed local authorization-class binding theorem imported; honest sampler theorem remains separate",
+          "required_closure": "closed local authorization-class binding theorem imported; proof-family, deployment, and external review obligations remain separate",
           "support_surface": "Path2AuthorizationClassBindingAuditReportV1 + selected-Rust Lean auth-class closure"
         },
         {
-          "current_evidence": "selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted",
+          "current_evidence": "selectedRustFullHonestSamplerIntegrationComplete_of_boundaryAccepted",
           "integration_id": "sampler_integration_accepted_boundary_import",
           "named_break": "creation_time_hidden_source_soundness_break",
-          "open": true,
-          "required_closure": "final creation theorem consumes the accepted-boundary sampler row package and honest sampler theorem together",
-          "support_surface": "Descender/Path2FullSpendConcrete.lean accepted-boundary sampler row package"
+          "open": false,
+          "required_closure": "closed by consuming the accepted-boundary sampler row package and deterministic honest sampler theorem together",
+          "support_surface": "Descender/Path2FullSpendConcrete.lean accepted-boundary full sampler integration"
         },
         {
           "current_evidence": "noPostchallengeTiming_createdBeforeChallenge",
           "integration_id": "sampler_integration_no_postchallenge_timing_import",
           "named_break": "postchallenge_slot_creation_or_rewrite_break",
           "open": false,
-          "required_closure": "closed timing slice imported; remaining sampler residual is not closed by this row",
+          "required_closure": "closed timing slice imported as a separate no-postchallenge obligation",
           "support_surface": "Descender/Path2FullSpendConcrete.lean no-postchallenge timing hooks"
         }
       ],
@@ -156,5 +156,5 @@
       ]
     }
   },
-  "manifest_digest": "70e9eeb967bf8307646b56eb6299de1e6b5920d9d7966c3e7e2995263f2367b3"
+  "manifest_digest": "aeabde764297fb11e3a3779a3bc2fe7a329e4b6761ee57aab194a800b6f7c82f"
 }
