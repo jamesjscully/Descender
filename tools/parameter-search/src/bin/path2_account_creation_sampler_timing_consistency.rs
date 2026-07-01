@@ -320,6 +320,8 @@ fn main() -> Result<(), String> {
         "selectedRustAcceptedBoundaryHonestCreate_of_boundaryAccepted",
         "SelectedRustAcceptedBoundaryPrivateToPublicOrderRealized",
         "selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted",
+        "SelectedRustAcceptedBoundaryAuthorizationClassBindingSupport",
+        "selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted",
         "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted",
         "selectedRustMeaningProjection_spendAuthorizationClass_eq_pSpend",
     ] {

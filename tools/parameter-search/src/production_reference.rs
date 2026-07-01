@@ -11398,8 +11398,10 @@ pub const PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS:
     },
     Path2AccountCreationSamplerIntegrationRowV1 {
         integration_id: "sampler_integration_authorization_class_audit",
-        support_surface: "Path2AuthorizationClassBindingAuditReportV1",
-        current_evidence: "authorization_class_binding_audit_report_digest",
+        support_surface:
+            "Path2AuthorizationClassBindingAuditReportV1 + accepted-boundary Lean auth-class support",
+        current_evidence:
+            "selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted",
         required_closure:
             "close selected_account_creation_authorization_class_binding_v1 after full sampler integration",
         named_break: "checked_core_message_binding_break",
@@ -114790,6 +114792,15 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                 |row| row.integration_id == "sampler_integration_authorization_bridge_hooks"
                     && row.current_evidence
                         == "PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS"
+                    && row.open
+            ));
+        assert!(report
+            .sampler_integration_rows
+            .iter()
+            .any(
+                |row| row.integration_id == "sampler_integration_authorization_class_audit"
+                    && row.current_evidence
+                        == "selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted"
                     && row.open
             ));
         assert!(report

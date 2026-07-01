@@ -365,7 +365,12 @@ requires
 `selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted`,
 which machine-checks the accepted-boundary authorization-class facts, concrete
 leaf fiber, and namespace seed as the selected-Rust construction-order support
-slice. The accepted-boundary row now requires
+slice. The authorization-class row now requires
+`selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted`,
+which machine-checks typed compatibility, match to the boundary meaning, and
+same-boundary no-ambiguity for the accepted leaf fiber while the audit digest
+remains imported by the sampler/timing report. The accepted-boundary row now
+requires
 `selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted`,
 which consumes the imported accepted-boundary/timing facts together with the
 selected-Rust honest-create authorization bridge, pinned to the accepted spend's

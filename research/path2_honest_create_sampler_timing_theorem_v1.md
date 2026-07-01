@@ -119,7 +119,11 @@ and creation can't be steered by the spend."
   `selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted`,
   which machine-checks the accepted-boundary authorization-class facts, concrete
   leaf fiber, and namespace seed as the selected-Rust construction-order support
-  slice. The accepted boundary row names
+  slice. The authorization-class row names
+  `selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted`,
+  which machine-checks typed compatibility, match to boundary meaning, and the
+  same-boundary no-ambiguity consequence for the accepted leaf fiber while the
+  audit digest remains imported by the report. The accepted boundary row names
   `selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted`,
   which machine-checks the accepted-boundary import, authorization-class
   obligation import, no-postchallenge timing import, selected-Rust honest-create
@@ -145,6 +149,9 @@ and creation can't be steered by the spend."
   `PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS`, with the private-to-public
   row now requiring
   `selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted` and the
+  authorization-class row requiring
+  `selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted`
+  and the
   accepted-boundary row now requiring
   `selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted`.
 - **Hands off:** the lifecycle reorg/rollback term (#9); full honest-create

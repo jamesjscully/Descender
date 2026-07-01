@@ -17,12 +17,12 @@
     "corpus_id": "Descender.Path2.AccountCreationSamplerTiming.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "ebf8d8be1f950e5f316f4b21b05cd32fff7c49d582ca445ee3a880f8315b0c57",
-      "account_creation_proof_boundary_report_recomputed_digest": "ebf8d8be1f950e5f316f4b21b05cd32fff7c49d582ca445ee3a880f8315b0c57",
-      "account_creation_sampler_timing_report_digest": "b186e17808c4507bbe0ea685e8d06b0ed200d2a549a0c5e0db8b20cd03ccc622",
-      "account_creation_sampler_timing_report_recomputed_digest": "b186e17808c4507bbe0ea685e8d06b0ed200d2a549a0c5e0db8b20cd03ccc622",
+      "account_creation_proof_boundary_report_digest": "12dcb3523bf5e77b06c8b07e8e9fbb725170830236b295b60173f7923b17c4ba",
+      "account_creation_proof_boundary_report_recomputed_digest": "12dcb3523bf5e77b06c8b07e8e9fbb725170830236b295b60173f7923b17c4ba",
+      "account_creation_sampler_timing_report_digest": "a955b156dd7926aa8c2d1984800f533bf1016cfeeee69c16b5fa537eff393538",
+      "account_creation_sampler_timing_report_recomputed_digest": "a955b156dd7926aa8c2d1984800f533bf1016cfeeee69c16b5fa537eff393538",
       "authorization_class_binding_audit_report_digest": "19d2d50f2838c4cab7b7ce2d81ca58b5a5e6bfa575c35813727d88ea6faacb0b",
-      "proof_boundary_report_sampler_timing_digest": "b186e17808c4507bbe0ea685e8d06b0ed200d2a549a0c5e0db8b20cd03ccc622"
+      "proof_boundary_report_sampler_timing_digest": "a955b156dd7926aa8c2d1984800f533bf1016cfeeee69c16b5fa537eff393538"
     },
     "executable_hooks": {
       "checked_core_challenge_binds_message": true,
@@ -101,12 +101,12 @@
           "support_surface": "Descender/Path2FullSpendConcrete.lean selected-Rust honest-create hooks"
         },
         {
-          "current_evidence": "authorization_class_binding_audit_report_digest",
+          "current_evidence": "selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted",
           "integration_id": "sampler_integration_authorization_class_audit",
           "named_break": "checked_core_message_binding_break",
           "open": true,
           "required_closure": "close selected_account_creation_authorization_class_binding_v1 after full sampler integration",
-          "support_surface": "Path2AuthorizationClassBindingAuditReportV1"
+          "support_surface": "Path2AuthorizationClassBindingAuditReportV1 + accepted-boundary Lean auth-class support"
         },
         {
           "current_evidence": "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted",
@@ -154,5 +154,5 @@
       ]
     }
   },
-  "manifest_digest": "945f1d46cf7a9298cdfdbef8fd5626daf7f1da9bb8272f2e97c2bfd91dd354a3"
+  "manifest_digest": "cbdb528c0144e3927faa12ccae47dc34bfe0bfd05a6ae376161b285cac253fe1"
 }
