@@ -347,8 +347,9 @@ Reject this sampler design if:
 
 ## Next Proof Move
 
-Lift the selected-Rust sampler bridge hooks into the full honest-create sampler
-evidence path, then finish the authorization class binding theorem:
+Mechanize the full honest-create sampler theorem over the sampler integration
+checklist now pinned by `Path2AccountCreationSamplerTimingReportV1`, then finish
+the authorization class binding theorem:
 
 ```text
 auth_compatible_c(q,auth)
@@ -356,9 +357,12 @@ auth_compatible_c(q,auth)
 ```
 
 for the construction order above. The current sampler/timing manifest now pins
-the selected-Rust support hooks for the typed compatibility/projection bridge,
-but keeps the honest sampler theorem flag false until the full evidence path and
-review are complete.
+the selected-Rust support hooks for the typed compatibility/projection bridge
+and a five-row integration checklist covering the private-to-public order,
+authorization bridge hooks, authorization-class audit import, accepted-boundary
+import, and closed no-postchallenge timing slice. It still keeps
+`full_honest_sampler_integration_complete` and the honest sampler theorem flag
+false until the full evidence path and review are complete.
 
 This is now the highest-risk proof item. If it fails, private authorization
 material still changes public spend semantics, and that semantic class must

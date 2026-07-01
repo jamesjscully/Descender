@@ -113,11 +113,12 @@ and creation can't be steered by the spend."
 - **Honest residual.** (1) The lifecycle rollback/reorg term in Lemma T is charged
   to the lifecycle model (#9, `DIR-LIFE-001`) — named, not proven here. (2) The
   selected-Rust Lean support hooks for `HonestCreate` returning
-  `AuthorizationCompatibleOverClass` are now digest-pinned by the sampler/timing
-  report, but the full honest-create sampler evidence path is not closed. (3)
-  Signer state-loss is key-management engineering, not a consensus proof. (4)
-  External review. Only the no-postchallenge timing slice is imported as closed
-  by the sampler/timing report; the honest-sampler theorem remains open.
+  `AuthorizationCompatibleOverClass` and the five-row sampler integration
+  checklist are now digest-pinned by the sampler/timing report, but the full
+  honest-create sampler evidence path is not closed. (3) Signer state-loss is
+  key-management engineering, not a consensus proof. (4) External review. Only
+  the no-postchallenge timing slice is imported as closed by the sampler/timing
+  report; the honest-sampler theorem remains open.
 
 ## What This Closes And Hands Off
 
@@ -128,9 +129,11 @@ and creation can't be steered by the spend."
 - **Paper-level support, still open as a report flag:** honest-create sampler
   soundness by the private-to-public construction order, reusing #6's typed
   compatibility. The selected-Rust support hooks are pinned by
-  `PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS`.
+  `PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS`, and the remaining
+  integration path is row-pinned by
+  `PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS`.
 - **Hands off:** the lifecycle reorg/rollback term (#9); full honest-create
-  sampler evidence integration; external review.
+  sampler evidence integration that consumes the checklist; external review.
   `Path2AccountCreationSamplerTimingReportV1` keeps its honest-sampler theorem
   flag false pending that integration and review, while the no-postchallenge
   timing flag is true.

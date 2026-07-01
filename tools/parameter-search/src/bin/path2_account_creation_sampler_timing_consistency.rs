@@ -6,6 +6,7 @@ use descender_parameter_search::production_reference::{
     validate_path2_account_creation_sampler_timing_report_v1,
     validate_path2_authorization_class_binding_audit_report_v1,
     PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS,
+    PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS,
 };
 use serde_json::Value;
 use std::{
@@ -222,6 +223,79 @@ fn main() -> Result<(), String> {
         )? != report.sampler_authorization_bridge_hook_count as u64
     {
         return Err("sampler/timing authorization bridge hook count drift".to_string());
+    }
+    if u64_at(
+        &manifest,
+        "/manifest/sampler_boundary/sampler_integration_row_count",
+    )? != PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS.len() as u64
+        || u64_at(
+            &manifest,
+            "/manifest/sampler_boundary/sampler_integration_row_count",
+        )? != report.sampler_integration_row_count as u64
+    {
+        return Err("sampler/timing integration row count drift".to_string());
+    }
+    if u64_at(
+        &manifest,
+        "/manifest/sampler_boundary/sampler_integration_open_count",
+    )? != report.sampler_integration_open_count as u64
+        || report.sampler_integration_open_count
+            != PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS
+                .iter()
+                .filter(|row| row.open)
+                .count()
+    {
+        return Err("sampler/timing integration open count drift".to_string());
+    }
+    for pointer in [
+        "/manifest/sampler_boundary/every_sampler_integration_row_has_evidence",
+        "/manifest/sampler_boundary/selected_rust_bridge_hooks_imported_by_sampler_integration",
+        "/manifest/sampler_boundary/accepted_boundary_imports_sampler_integration",
+    ] {
+        if !bool_at(&manifest, pointer)? {
+            return Err(format!(
+                "sampler/timing manifest lost integration evidence flag {pointer}"
+            ));
+        }
+    }
+    if bool_at(
+        &manifest,
+        "/manifest/sampler_boundary/full_honest_sampler_integration_complete",
+    )? {
+        return Err(
+            "sampler/timing manifest unexpectedly closes full honest sampler integration"
+                .to_string(),
+        );
+    }
+    let integration_rows_json = serde_json::to_string(at(
+        &manifest,
+        "/manifest/sampler_boundary/sampler_integration_rows",
+    )?)
+    .map_err(|err| format!("serialize sampler integration rows: {err}"))?;
+    let integration_support = format!("{source}\n{sampler_doc}\n{timing_doc}\n{full_spend_lean}");
+    for row in PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS {
+        require_contains(
+            &integration_rows_json,
+            row.integration_id,
+            "sampler/timing integration manifest rows",
+        )?;
+        require_contains(
+            &integration_rows_json,
+            row.current_evidence,
+            "sampler/timing integration manifest evidence",
+        )?;
+        require_contains(
+            &integration_support,
+            row.current_evidence,
+            "sampler/timing integration support sources",
+        )?;
+    }
+    for integration_id in ["sampler_integration_authorization_bridge_hooks"] {
+        require_contains(
+            &integration_rows_json,
+            integration_id,
+            "required sampler/timing integration row",
+        )?;
     }
     for hook in PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS {
         require_contains(

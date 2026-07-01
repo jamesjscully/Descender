@@ -17,12 +17,12 @@
     "corpus_id": "Descender.Path2.AccountCreationSamplerTiming.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "d93373012f26e2c3db4aee2f93a17d8a2df317298d629760dc97af2952954d7a",
-      "account_creation_proof_boundary_report_recomputed_digest": "d93373012f26e2c3db4aee2f93a17d8a2df317298d629760dc97af2952954d7a",
-      "account_creation_sampler_timing_report_digest": "2571e1bba6b4f3d809c12a14f8cf8ee4164ca9087935d168a3b52d716102ad50",
-      "account_creation_sampler_timing_report_recomputed_digest": "2571e1bba6b4f3d809c12a14f8cf8ee4164ca9087935d168a3b52d716102ad50",
+      "account_creation_proof_boundary_report_digest": "cc74edfe2466b7f953792e0c422eb7503fc8fef2e47ab721e356fc7d5b79e362",
+      "account_creation_proof_boundary_report_recomputed_digest": "cc74edfe2466b7f953792e0c422eb7503fc8fef2e47ab721e356fc7d5b79e362",
+      "account_creation_sampler_timing_report_digest": "9482b9817ab231edaa839ccc16c7f223659868c5bfb5fadb8c3c64778628faeb",
+      "account_creation_sampler_timing_report_recomputed_digest": "9482b9817ab231edaa839ccc16c7f223659868c5bfb5fadb8c3c64778628faeb",
       "authorization_class_binding_audit_report_digest": "8a7fcd555ca01d557145b94c5a0660f767749fa228788898d4ed5cc8610b155b",
-      "proof_boundary_report_sampler_timing_digest": "2571e1bba6b4f3d809c12a14f8cf8ee4164ca9087935d168a3b52d716102ad50"
+      "proof_boundary_report_sampler_timing_digest": "9482b9817ab231edaa839ccc16c7f223659868c5bfb5fadb8c3c64778628faeb"
     },
     "executable_hooks": {
       "checked_core_challenge_binds_message": true,
@@ -54,6 +54,7 @@
     },
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "sampler_boundary": {
+      "accepted_boundary_imports_sampler_integration": true,
       "authorization_bridge_hook_count": 7,
       "authorization_bridge_hook_ids": [
         "selectedRustHonestCreationPredicates",
@@ -76,8 +77,55 @@
         "gauge/randomizer",
         "h"
       ],
+      "every_sampler_integration_row_has_evidence": true,
+      "full_honest_sampler_integration_complete": false,
       "honest_sampler_theorem_instantiated": false,
       "sampler_boundary_pinned": true,
+      "sampler_integration_open_count": 4,
+      "sampler_integration_row_count": 5,
+      "sampler_integration_rows": [
+        {
+          "current_evidence": "PATH2_ACCOUNT_CREATION_SAMPLER_CONSTRUCTION_STEPS",
+          "integration_id": "sampler_integration_private_to_public_order",
+          "named_break": "creation_time_hidden_source_soundness_break",
+          "open": true,
+          "required_closure": "mechanize honest_create_sampler_sound_v1 over the selected private-to-public construction order",
+          "support_surface": "research/path2_honest_create_sampler_v1.md#Construction Order"
+        },
+        {
+          "current_evidence": "PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS",
+          "integration_id": "sampler_integration_authorization_bridge_hooks",
+          "named_break": "creation_time_hidden_source_soundness_break",
+          "open": true,
+          "required_closure": "consume selectedRustHonestCreate_authorization_over_class in the full honest-create sampler theorem",
+          "support_surface": "Descender/Path2FullSpendConcrete.lean selected-Rust honest-create hooks"
+        },
+        {
+          "current_evidence": "authorization_class_binding_audit_report_digest",
+          "integration_id": "sampler_integration_authorization_class_audit",
+          "named_break": "checked_core_message_binding_break",
+          "open": true,
+          "required_closure": "close selected_account_creation_authorization_class_binding_v1 after full sampler integration",
+          "support_surface": "Path2AuthorizationClassBindingAuditReportV1"
+        },
+        {
+          "current_evidence": "AccountCreationProofBoundaryEvidenceAccepted",
+          "integration_id": "sampler_integration_accepted_boundary_import",
+          "named_break": "creation_time_hidden_source_soundness_break",
+          "open": true,
+          "required_closure": "final creation theorem consumes the accepted-boundary sampler digest and honest sampler theorem together",
+          "support_surface": "Descender/Path2FullSpendConcrete.lean AccountCreationProofBoundaryEvidenceAccepted"
+        },
+        {
+          "current_evidence": "noPostchallengeTiming_createdBeforeChallenge",
+          "integration_id": "sampler_integration_no_postchallenge_timing_import",
+          "named_break": "postchallenge_slot_creation_or_rewrite_break",
+          "open": false,
+          "required_closure": "closed timing slice imported; remaining sampler residual is not closed by this row",
+          "support_surface": "Descender/Path2FullSpendConcrete.lean no-postchallenge timing hooks"
+        }
+      ],
+      "selected_rust_bridge_hooks_imported_by_sampler_integration": true,
       "selected_rust_honest_create_bridge_present": true,
       "selected_rust_projection_bridge_present": true,
       "support_file": "research/path2_honest_create_sampler_v1.md",
@@ -106,5 +154,5 @@
       ]
     }
   },
-  "manifest_digest": "cdfc67e106a2dbe4c8b40e417d7b0de521a97c607e205d77749bf6bc731927f6"
+  "manifest_digest": "ab4b0cff963dfe918e528b23d11a712b6bf0477efd5c7ee4555b13a739d5260e"
 }

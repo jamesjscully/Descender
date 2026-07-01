@@ -105,6 +105,20 @@ fn manifest_body() -> Result<Value, String> {
                 sampler_timing_report.sampler_authorization_bridge_hook_ids,
             "authorization_bridge_hook_count":
                 sampler_timing_report.sampler_authorization_bridge_hook_count,
+            "sampler_integration_rows":
+                sampler_timing_report.sampler_integration_rows,
+            "sampler_integration_row_count":
+                sampler_timing_report.sampler_integration_row_count,
+            "sampler_integration_open_count":
+                sampler_timing_report.sampler_integration_open_count,
+            "every_sampler_integration_row_has_evidence":
+                sampler_timing_report.every_sampler_integration_row_has_evidence,
+            "selected_rust_bridge_hooks_imported_by_sampler_integration":
+                sampler_timing_report.selected_rust_bridge_hooks_imported_by_sampler_integration,
+            "accepted_boundary_imports_sampler_integration":
+                sampler_timing_report.accepted_boundary_imports_sampler_integration,
+            "full_honest_sampler_integration_complete":
+                sampler_timing_report.full_honest_sampler_integration_complete,
             "authorization_class_binding_audit_report_digest": hex_encode(
                 &sampler_timing_report.authorization_class_binding_audit_report_digest
             ),

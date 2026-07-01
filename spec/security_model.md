@@ -404,6 +404,13 @@ checked before sampler/timing and proof-boundary manifests. This is executable
 audit evidence for the authorization-class binding residual; it keeps the
 authorization-class theorem, full honest-create sampler integration, external
 review, and deployment readiness false.
+The sampler/timing report also pins a five-row honest-create sampler integration
+checklist over the private-to-public construction order, selected-Rust bridge
+hooks, authorization-class audit import, accepted proof-boundary import, and
+closed no-postchallenge timing slice. The checklist is executable evidence for
+the remaining integration path, not closure: it records four open rows and keeps
+`full_honest_sampler_integration_complete` and
+`honest_sampler_theorem_instantiated` false.
 `formal/kat/path2_account_creation_proof_obligation_vectors_v1.json`
 turns that row table into a digest-pinned audit corpus bound to both the
 proof-boundary and direct-theorem reports; it records the current 6-open /

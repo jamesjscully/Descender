@@ -347,9 +347,10 @@ Fail or redesign if:
 
 ## Next Concrete Move
 
-Lift the selected-Rust support slice into the full honest-create sampler
-evidence path and external review package. The proof chain is now explicit in
-the Lean interface and selected-Rust support hooks:
+Consume the row-pinned sampler integration checklist in the full honest-create
+sampler evidence path, then carry that into the external review package. The
+proof chain is now explicit in the Lean interface, selected-Rust support hooks,
+and `PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS`:
 
 ```text
 HonestCreateSoundness

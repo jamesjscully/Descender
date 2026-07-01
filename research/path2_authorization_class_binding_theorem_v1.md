@@ -140,9 +140,10 @@ and `E_SD` (`p_spend.allowed_state_transition_class = p_state.state_transition_c
   field outside `p_spend(q)`). `Descender/Path2FullSpendConcrete.lean` now
   includes selected-Rust hooks for `AuthorizationCompatibleOverClass`, the
   honest-create wrapper, and the projection-completeness bridge
-  `p_spend(q) = meaning_of_boundary`. Remaining residuals are the full
-  honest-create sampler integration/evidence path and external review. No
-  theorem flag flipped.
+  `p_spend(q) = meaning_of_boundary`. `Path2AccountCreationSamplerTimingReportV1`
+  now row-pins the remaining sampler integration path, but the theorem has not
+  consumed that checklist. Remaining residuals are full honest-create sampler
+  integration/evidence closure and external review. No theorem flag flipped.
 
 ## What This Closes And Hands Off
 
@@ -163,7 +164,7 @@ and `E_SD` (`p_spend.allowed_state_transition_class = p_state.state_transition_c
   and
   `selectedRust_accountCreationAuthorizationClass_matchesMeaning_of_obligationTracked`.
   These are support hooks, not theorem closure.
-- **Hands off:** full honest-create sampler integration/evidence path and
-  external review. `DIR-AUTHCLASS-001` keeps
+- **Hands off:** full honest-create sampler integration/evidence path that
+  consumes the row-pinned checklist, and external review. `DIR-AUTHCLASS-001` keeps
   `authorization_class_binding_theorem_instantiated` false pending that theorem
   closure and review.

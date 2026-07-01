@@ -9536,6 +9536,16 @@ pub struct Path2AuthorizationClassBindingAuditReportV1 {
     pub blocker: &'static str,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2AccountCreationSamplerIntegrationRowV1 {
+    pub integration_id: &'static str,
+    pub support_surface: &'static str,
+    pub current_evidence: &'static str,
+    pub required_closure: &'static str,
+    pub named_break: &'static str,
+    pub open: bool,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Path2AccountCreationSamplerTimingReportV1 {
     pub digest: [u8; DIGEST_BYTES],
@@ -9556,6 +9566,9 @@ pub struct Path2AccountCreationSamplerTimingReportV1 {
     pub direct_spend_composition_endpoint: &'static str,
     pub sampler_authorization_bridge_hook_ids: &'static [&'static str],
     pub sampler_authorization_bridge_hook_count: usize,
+    pub sampler_integration_rows: &'static [Path2AccountCreationSamplerIntegrationRowV1],
+    pub sampler_integration_row_count: usize,
+    pub sampler_integration_open_count: usize,
     pub creation_statement_excludes_spend_message: bool,
     pub creation_statement_excludes_signature_bytes: bool,
     pub checked_core_challenge_binds_message: bool,
@@ -9567,6 +9580,10 @@ pub struct Path2AccountCreationSamplerTimingReportV1 {
     pub direct_spend_composition_hook_present: bool,
     pub selected_rust_honest_create_bridge_present: bool,
     pub selected_rust_projection_bridge_present: bool,
+    pub every_sampler_integration_row_has_evidence: bool,
+    pub selected_rust_bridge_hooks_imported_by_sampler_integration: bool,
+    pub accepted_boundary_imports_sampler_integration: bool,
+    pub full_honest_sampler_integration_complete: bool,
     pub sampler_boundary_pinned: bool,
     pub timing_boundary_pinned: bool,
     pub honest_sampler_theorem_instantiated: bool,
@@ -11358,6 +11375,54 @@ pub const PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS: [&str; 7] =
     "selectedRustProjectionCompleteness",
     "selectedRustMeaningProjection_spendAuthorizationClass_eq_pSpend",
 ];
+pub const PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS:
+    [Path2AccountCreationSamplerIntegrationRowV1; 5] = [
+    Path2AccountCreationSamplerIntegrationRowV1 {
+        integration_id: "sampler_integration_private_to_public_order",
+        support_surface: "research/path2_honest_create_sampler_v1.md#Construction Order",
+        current_evidence: "PATH2_ACCOUNT_CREATION_SAMPLER_CONSTRUCTION_STEPS",
+        required_closure:
+            "mechanize honest_create_sampler_sound_v1 over the selected private-to-public construction order",
+        named_break: "creation_time_hidden_source_soundness_break",
+        open: true,
+    },
+    Path2AccountCreationSamplerIntegrationRowV1 {
+        integration_id: "sampler_integration_authorization_bridge_hooks",
+        support_surface: "Descender/Path2FullSpendConcrete.lean selected-Rust honest-create hooks",
+        current_evidence: "PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS",
+        required_closure:
+            "consume selectedRustHonestCreate_authorization_over_class in the full honest-create sampler theorem",
+        named_break: "creation_time_hidden_source_soundness_break",
+        open: true,
+    },
+    Path2AccountCreationSamplerIntegrationRowV1 {
+        integration_id: "sampler_integration_authorization_class_audit",
+        support_surface: "Path2AuthorizationClassBindingAuditReportV1",
+        current_evidence: "authorization_class_binding_audit_report_digest",
+        required_closure:
+            "close selected_account_creation_authorization_class_binding_v1 after full sampler integration",
+        named_break: "checked_core_message_binding_break",
+        open: true,
+    },
+    Path2AccountCreationSamplerIntegrationRowV1 {
+        integration_id: "sampler_integration_accepted_boundary_import",
+        support_surface: "Descender/Path2FullSpendConcrete.lean AccountCreationProofBoundaryEvidenceAccepted",
+        current_evidence: "AccountCreationProofBoundaryEvidenceAccepted",
+        required_closure:
+            "final creation theorem consumes the accepted-boundary sampler digest and honest sampler theorem together",
+        named_break: "creation_time_hidden_source_soundness_break",
+        open: true,
+    },
+    Path2AccountCreationSamplerIntegrationRowV1 {
+        integration_id: "sampler_integration_no_postchallenge_timing_import",
+        support_surface: "Descender/Path2FullSpendConcrete.lean no-postchallenge timing hooks",
+        current_evidence: "noPostchallengeTiming_createdBeforeChallenge",
+        required_closure:
+            "closed timing slice imported; remaining sampler residual is not closed by this row",
+        named_break: "postchallenge_slot_creation_or_rewrite_break",
+        open: false,
+    },
+];
 pub const PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_FIELDS: [&str; 8] = [
     "spend_verifier_family",
     "spend_authorization_class",
@@ -12929,6 +12994,7 @@ pub fn path2_account_creation_sampler_timing_report_v1() -> Path2AccountCreation
 {
     let authorization_class_binding_audit_report =
         path2_authorization_class_binding_audit_report_v1();
+    let sampler_integration_rows = &PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS;
     let mut report = Path2AccountCreationSamplerTimingReportV1 {
         digest: [0_u8; DIGEST_BYTES],
         domain: PATH2_ACCOUNT_CREATION_SAMPLER_TIMING_REPORT_DOMAIN,
@@ -12952,6 +13018,12 @@ pub fn path2_account_creation_sampler_timing_report_v1() -> Path2AccountCreation
             &PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS,
         sampler_authorization_bridge_hook_count:
             PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS.len(),
+        sampler_integration_rows,
+        sampler_integration_row_count: sampler_integration_rows.len(),
+        sampler_integration_open_count: sampler_integration_rows
+            .iter()
+            .filter(|row| row.open)
+            .count(),
         creation_statement_excludes_spend_message: true,
         creation_statement_excludes_signature_bytes: true,
         checked_core_challenge_binds_message: true,
@@ -12963,6 +13035,16 @@ pub fn path2_account_creation_sampler_timing_report_v1() -> Path2AccountCreation
         direct_spend_composition_hook_present: true,
         selected_rust_honest_create_bridge_present: true,
         selected_rust_projection_bridge_present: true,
+        every_sampler_integration_row_has_evidence: sampler_integration_rows.iter().all(|row| {
+            !row.integration_id.is_empty()
+                && !row.support_surface.is_empty()
+                && !row.current_evidence.is_empty()
+                && !row.required_closure.is_empty()
+                && !row.named_break.is_empty()
+        }),
+        selected_rust_bridge_hooks_imported_by_sampler_integration: true,
+        accepted_boundary_imports_sampler_integration: true,
+        full_honest_sampler_integration_complete: false,
         sampler_boundary_pinned: true,
         timing_boundary_pinned: true,
         honest_sampler_theorem_instantiated: false,
@@ -13022,8 +13104,21 @@ pub fn validate_path2_account_creation_sampler_timing_report_v1(
             != PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS.as_ref()
         || report.sampler_authorization_bridge_hook_count
             != report.sampler_authorization_bridge_hook_ids.len()
+        || report.sampler_integration_rows
+            != PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS.as_ref()
+        || report.sampler_integration_row_count != report.sampler_integration_rows.len()
+        || report.sampler_integration_open_count
+            != report
+                .sampler_integration_rows
+                .iter()
+                .filter(|row| row.open)
+                .count()
         || !report.selected_rust_honest_create_bridge_present
         || !report.selected_rust_projection_bridge_present
+        || !report.every_sampler_integration_row_has_evidence
+        || !report.selected_rust_bridge_hooks_imported_by_sampler_integration
+        || !report.accepted_boundary_imports_sampler_integration
+        || report.full_honest_sampler_integration_complete
         || !report.sampler_boundary_pinned
         || !report.timing_boundary_pinned
         || report.honest_sampler_theorem_instantiated
@@ -71120,6 +71215,45 @@ fn path2_account_creation_sampler_timing_report_v1_frame(
         b"sampler_authorization_bridge_hook_count",
         report.sampler_authorization_bridge_hook_count as u64,
     );
+    for (index, row) in report.sampler_integration_rows.iter().enumerate() {
+        append_u64(&mut frame, b"sampler_integration_row_index", index as u64);
+        append_frame(
+            &mut frame,
+            b"sampler_integration_id",
+            row.integration_id.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"sampler_integration_support_surface",
+            row.support_surface.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"sampler_integration_current_evidence",
+            row.current_evidence.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"sampler_integration_required_closure",
+            row.required_closure.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"sampler_integration_named_break",
+            row.named_break.as_bytes(),
+        );
+        append_u64(&mut frame, b"sampler_integration_open", u64::from(row.open));
+    }
+    append_u64(
+        &mut frame,
+        b"sampler_integration_row_count",
+        report.sampler_integration_row_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"sampler_integration_open_count",
+        report.sampler_integration_open_count as u64,
+    );
     append_u64(
         &mut frame,
         b"creation_statement_excludes_spend_message",
@@ -71174,6 +71308,26 @@ fn path2_account_creation_sampler_timing_report_v1_frame(
         &mut frame,
         b"selected_rust_projection_bridge_present",
         u64::from(report.selected_rust_projection_bridge_present),
+    );
+    append_u64(
+        &mut frame,
+        b"every_sampler_integration_row_has_evidence",
+        u64::from(report.every_sampler_integration_row_has_evidence),
+    );
+    append_u64(
+        &mut frame,
+        b"selected_rust_bridge_hooks_imported_by_sampler_integration",
+        u64::from(report.selected_rust_bridge_hooks_imported_by_sampler_integration),
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_boundary_imports_sampler_integration",
+        u64::from(report.accepted_boundary_imports_sampler_integration),
+    );
+    append_u64(
+        &mut frame,
+        b"full_honest_sampler_integration_complete",
+        u64::from(report.full_honest_sampler_integration_complete),
     );
     append_u64(
         &mut frame,
@@ -114598,6 +114752,28 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report
             .sampler_authorization_bridge_hook_ids
             .contains(&"selectedRustMeaningProjection_spendAuthorizationClass_eq_pSpend"));
+        assert_eq!(
+            report.sampler_integration_rows,
+            PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS.as_ref()
+        );
+        assert_eq!(report.sampler_integration_row_count, 5);
+        assert_eq!(report.sampler_integration_open_count, 4);
+        assert!(report
+            .sampler_integration_rows
+            .iter()
+            .any(
+                |row| row.integration_id == "sampler_integration_authorization_bridge_hooks"
+                    && row.current_evidence
+                        == "PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS"
+                    && row.open
+            ));
+        assert!(report
+            .sampler_integration_rows
+            .iter()
+            .any(
+                |row| row.integration_id == "sampler_integration_no_postchallenge_timing_import"
+                    && !row.open
+            ));
         assert!(report.creation_statement_excludes_spend_message);
         assert!(report.creation_statement_excludes_signature_bytes);
         assert!(report.checked_core_challenge_binds_message);
@@ -114609,6 +114785,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.direct_spend_composition_hook_present);
         assert!(report.selected_rust_honest_create_bridge_present);
         assert!(report.selected_rust_projection_bridge_present);
+        assert!(report.every_sampler_integration_row_has_evidence);
+        assert!(report.selected_rust_bridge_hooks_imported_by_sampler_integration);
+        assert!(report.accepted_boundary_imports_sampler_integration);
+        assert!(!report.full_honest_sampler_integration_complete);
         assert!(report.sampler_boundary_pinned);
         assert!(report.timing_boundary_pinned);
         assert!(!report.honest_sampler_theorem_instantiated);
