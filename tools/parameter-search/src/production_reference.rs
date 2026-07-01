@@ -11411,11 +11411,12 @@ pub const PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS:
     },
     Path2AccountCreationSamplerIntegrationRowV1 {
         integration_id: "sampler_integration_accepted_boundary_import",
-        support_surface: "Descender/Path2FullSpendConcrete.lean AccountCreationProofBoundaryEvidenceAccepted",
+        support_surface:
+            "Descender/Path2FullSpendConcrete.lean accepted-boundary sampler row package",
         current_evidence:
-            "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted",
+            "selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted",
         required_closure:
-            "final creation theorem consumes the accepted-boundary sampler digest and honest sampler theorem together",
+            "final creation theorem consumes the accepted-boundary sampler row package and honest sampler theorem together",
         named_break: "creation_time_hidden_source_soundness_break",
         open: true,
     },
@@ -51315,6 +51316,8 @@ fn path2_full_signature_execution_source_boundary_present_in_source_v1(
         "SelectedRustAcceptedBoundaryAuthorizationClassBindingSupport",
         "selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted",
         "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted",
+        "SelectedRustAcceptedBoundarySamplerIntegrationRowsSupported",
+        "selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted",
     ];
 
     account_creation_checks
@@ -114811,7 +114814,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             .any(
                 |row| row.integration_id == "sampler_integration_accepted_boundary_import"
                     && row.current_evidence
-                        == "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted"
+                        == "selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted"
                     && row.open
             ));
         assert!(report

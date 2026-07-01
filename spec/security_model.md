@@ -428,12 +428,14 @@ which packages the accepted leaf fiber's typed compatibility, match to boundary
 meaning, and same-boundary no-ambiguity consequence while the audit digest remains
 imported by the report. The accepted-boundary
 row now points at
-`selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted`,
-the Lean support hook that consumes accepted-boundary evidence, the carried
-authorization-class/timing imports, the selected-Rust honest-create
-authorization bridge, derives the `honestCreate` witness from accepted-boundary
-facts, and binds `q,h` to the accepted spend's own creation boundary and concrete
-leaf authorization fiber. The checklist is executable evidence for
+`selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted`,
+the Lean support hook that packages the private-to-public order row,
+authorization-bridge checklist row, authorization-class support row,
+accepted-boundary sampler row, and closed timing row from accepted-boundary
+evidence. Its accepted-boundary sampler component still derives the
+`honestCreate` witness from accepted-boundary facts and binds `q,h` to the
+accepted spend's own creation boundary and concrete leaf authorization fiber.
+The checklist is executable evidence for
 the remaining integration path, not closure: it records four open rows and keeps
 `full_honest_sampler_integration_complete` and
 `honest_sampler_theorem_instantiated` false.

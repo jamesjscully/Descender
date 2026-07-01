@@ -375,11 +375,13 @@ which machine-checks typed compatibility, match to the boundary meaning, and
 same-boundary no-ambiguity for the accepted leaf fiber while the audit digest
 remains imported by the sampler/timing report. The accepted-boundary row now
 requires
-`selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted`,
-which consumes the imported accepted-boundary/timing facts together with the
-selected-Rust honest-create authorization bridge, pinned to the accepted spend's
-own boundary and concrete leaf authorization fiber, while deriving the
-`honestCreate` witness from accepted-boundary facts. It still keeps
+`selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted`,
+which packages the private-to-public order row, authorization-bridge checklist
+row, authorization-class support row, accepted-boundary sampler row, and closed
+timing row from accepted-boundary evidence. Its accepted-boundary sampler
+component remains pinned to the accepted spend's own boundary and concrete leaf
+authorization fiber while deriving the `honestCreate` witness from
+accepted-boundary facts. It still keeps
 `full_honest_sampler_integration_complete` and the honest sampler theorem flag
 false until the full evidence path and review are complete.
 

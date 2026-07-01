@@ -323,6 +323,8 @@ fn main() -> Result<(), String> {
         "SelectedRustAcceptedBoundaryAuthorizationClassBindingSupport",
         "selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted",
         "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted",
+        "SelectedRustAcceptedBoundarySamplerIntegrationRowsSupported",
+        "selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted",
         "selectedRustMeaningProjection_spendAuthorizationClass_eq_pSpend",
     ] {
         require_contains(

@@ -1223,6 +1223,62 @@ theorem selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted
     hAccepted
     (selectedRustAcceptedBoundaryHonestCreate_of_boundaryAccepted hAccepted)
 
+/--
+Single accepted-boundary support package for the current sampler-integration
+row table.  It packages the private-to-public order row, authorization-bridge
+checklist row, authorization-class support row, accepted-boundary sampler row,
+and closed timing row without claiming the full honest sampler theorem.
+-/
+def SelectedRustAcceptedBoundarySamplerIntegrationRowsSupported
+    (spend : ConcreteSpendTuple) : Prop :=
+  SelectedRustAcceptedBoundaryPrivateToPublicOrderRealized spend ∧
+    SelectedRustHonestSamplerIntegrationChecklistConsumed
+      selectedRustConcreteGameConfig
+      spend
+      spend.leaf.accountNamespace
+      spend.creationEvidence.boundary
+      (concreteLeafAuthorizationFiber spend.leaf) ∧
+      SelectedRustAcceptedBoundaryAuthorizationClassBindingSupport spend ∧
+        SelectedRustAcceptedBoundaryHonestSamplerSound
+          spend
+          spend.leaf.accountNamespace ∧
+          AccountCreationNoPostchallengeTimingObligationTracked
+            selectedRustConcreteGameConfig
+            spend ∧
+            spend.creationEvidence.acceptedAt ≤
+              (spend.spendChallengeTime : Nat) ∧
+              spend.leaf.creationTime ≤ (spend.spendChallengeTime : Nat) ∧
+                spend.leaf.frozenAt ≤ (spend.spendChallengeTime : Nat)
+
+/--
+Accepted selected-Rust proof-boundary evidence realizes every currently
+machine-checked row in the sampler-integration table.  The four sampler rows
+remain open at report level because this is row support, not the final
+probabilistic honest sampler theorem or external review.
+-/
+theorem selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted
+    {spend : ConcreteSpendTuple}
+    (hAccepted :
+      AccountCreationProofBoundaryEvidenceAccepted
+        selectedRustConcreteGameConfig spend) :
+    SelectedRustAcceptedBoundarySamplerIntegrationRowsSupported spend := by
+  have hCreate :=
+    selectedRustAcceptedBoundaryHonestCreate_of_boundaryAccepted hAccepted
+  have hTimingTracked :
+      AccountCreationNoPostchallengeTimingObligationTracked
+        selectedRustConcreteGameConfig spend :=
+    hAccepted.2.2.2.1
+  have hTiming := noPostchallengeTiming_createdBeforeChallenge hTimingTracked
+  exact ⟨selectedRustAcceptedBoundaryPrivateToPublicOrder_of_boundaryAccepted
+            hAccepted,
+    selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted
+      hAccepted hCreate,
+    selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted
+      hAccepted,
+    selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted hAccepted,
+    hTimingTracked,
+    hTiming⟩
+
 /-- Accepted proof-boundary evidence exposes the proof-family residual package. -/
 theorem accountCreationProofFamilyResidualsTracked_of_boundaryAccepted
     {C : ConcreteGameConfig}

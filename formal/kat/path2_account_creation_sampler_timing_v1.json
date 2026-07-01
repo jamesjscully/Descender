@@ -17,12 +17,12 @@
     "corpus_id": "Descender.Path2.AccountCreationSamplerTiming.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "b49939582d0b985a47092116b1c5b69022a339a24c1ecbf7b520db16eb53c229",
-      "account_creation_proof_boundary_report_recomputed_digest": "b49939582d0b985a47092116b1c5b69022a339a24c1ecbf7b520db16eb53c229",
-      "account_creation_sampler_timing_report_digest": "a9bb1805471da13690c7ba18222a497a6f35c90ec53bf887cf739256dd9292e5",
-      "account_creation_sampler_timing_report_recomputed_digest": "a9bb1805471da13690c7ba18222a497a6f35c90ec53bf887cf739256dd9292e5",
+      "account_creation_proof_boundary_report_digest": "cb76e843c6e002aaa7df04223957137fe258a84105c5156e146284f20f5a0835",
+      "account_creation_proof_boundary_report_recomputed_digest": "cb76e843c6e002aaa7df04223957137fe258a84105c5156e146284f20f5a0835",
+      "account_creation_sampler_timing_report_digest": "b55c8d9c4486a9fbabaf13c7e3027a2a9da6f8e5d5187d9086d4418d2ce268f0",
+      "account_creation_sampler_timing_report_recomputed_digest": "b55c8d9c4486a9fbabaf13c7e3027a2a9da6f8e5d5187d9086d4418d2ce268f0",
       "authorization_class_binding_audit_report_digest": "19d2d50f2838c4cab7b7ce2d81ca58b5a5e6bfa575c35813727d88ea6faacb0b",
-      "proof_boundary_report_sampler_timing_digest": "a9bb1805471da13690c7ba18222a497a6f35c90ec53bf887cf739256dd9292e5"
+      "proof_boundary_report_sampler_timing_digest": "b55c8d9c4486a9fbabaf13c7e3027a2a9da6f8e5d5187d9086d4418d2ce268f0"
     },
     "executable_hooks": {
       "checked_core_challenge_binds_message": true,
@@ -109,12 +109,12 @@
           "support_surface": "Path2AuthorizationClassBindingAuditReportV1 + accepted-boundary Lean auth-class support"
         },
         {
-          "current_evidence": "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted",
+          "current_evidence": "selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted",
           "integration_id": "sampler_integration_accepted_boundary_import",
           "named_break": "creation_time_hidden_source_soundness_break",
           "open": true,
-          "required_closure": "final creation theorem consumes the accepted-boundary sampler digest and honest sampler theorem together",
-          "support_surface": "Descender/Path2FullSpendConcrete.lean AccountCreationProofBoundaryEvidenceAccepted"
+          "required_closure": "final creation theorem consumes the accepted-boundary sampler row package and honest sampler theorem together",
+          "support_surface": "Descender/Path2FullSpendConcrete.lean accepted-boundary sampler row package"
         },
         {
           "current_evidence": "noPostchallengeTiming_createdBeforeChallenge",
@@ -154,5 +154,5 @@
       ]
     }
   },
-  "manifest_digest": "7296da81772fb54cbed0319ad2c0c0b0f93c0f456cec40de20e8615a0521f283"
+  "manifest_digest": "360ef9810e5d13fc5fb88d5504f23a7c1674017b874dc8c0142c5c153a9b2469"
 }

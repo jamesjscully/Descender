@@ -128,12 +128,13 @@ and creation can't be steered by the spend."
   which machine-checks typed compatibility, match to boundary meaning, and the
   same-boundary no-ambiguity consequence for the accepted leaf fiber while the
   audit digest remains imported by the report. The accepted boundary row names
-  `selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted`,
-  which machine-checks the accepted-boundary import, authorization-class
-  obligation import, no-postchallenge timing import, selected-Rust honest-create
-  authorization bridge, the derivation of the `honestCreate` witness from
-  accepted-boundary facts, and the binding of `q,h` to the accepted spend's own
-  creation boundary and concrete leaf authorization fiber as a support package.
+  `selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted`,
+  which machine-checks the private-to-public order row, authorization-bridge
+  checklist row, authorization-class support row, accepted-boundary sampler row,
+  and closed timing row from accepted-boundary evidence. Its accepted-boundary
+  sampler component still derives the `honestCreate` witness from
+  accepted-boundary facts and binds `q,h` to the accepted spend's own creation
+  boundary and concrete leaf authorization fiber.
   The full honest-create sampler evidence path is still not closed. (3) Signer state-loss is
   key-management engineering, not a consensus proof. (4) External review. Only
   the no-postchallenge timing slice is imported as closed by the sampler/timing
@@ -159,7 +160,7 @@ and creation can't be steered by the spend."
   `selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted`
   and the
   accepted-boundary row now requiring
-  `selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted`.
+  `selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted`.
 - **Hands off:** the lifecycle reorg/rollback term (#9); full honest-create
   sampler evidence integration that consumes the checklist; external review.
   `Path2AccountCreationSamplerTimingReportV1` keeps its honest-sampler theorem
