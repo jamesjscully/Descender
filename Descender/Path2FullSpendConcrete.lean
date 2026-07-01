@@ -1235,6 +1235,29 @@ theorem checkedCoreFrameBinding_frame_eq_of_imported
         spend.signatureBody.proofCommitment :=
   hChecked.2.1
 
+/--
+Closed direct-theorem slot-authorization digest slice.
+
+The concrete accepted-spend predicate carries the prevalidated slot package as
+the first conjunct.  This theorem gives the direct theorem boundary a stable
+import hook for `direct_obligation_slot_authorization_digest`; it does not close
+the separate direct-admission namespace or target-chain data-availability rows.
+-/
+theorem slotAuthorizationDigest_imported_of_concreteSpendAccepts
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hAccept : ConcreteSpendVerificationAccepts C spend) :
+    SlotAuthorizationDigestFramesLeaf C spend :=
+  hAccept.1.2.2.1
+
+/-- The imported slot-authorization digest exposes the exact canonical leaf digest. -/
+theorem slotAuthorizationDigest_eq_leafDigest_of_imported
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hSlot : SlotAuthorizationDigestFramesLeaf C spend) :
+    spend.slotAuthorizationDigest = spend.leaf.leafDigest :=
+  Eq.trans hSlot.1 hSlot.2
+
 /-- Full-game predicates for the concrete native carrier. -/
 def concretePredicates
     (C : ConcreteGameConfig) :

@@ -10176,6 +10176,7 @@ pub struct Path2DirectTheoremBoundaryReportV1 {
     pub composition_theorem_instantiated: bool,
     pub account_creation_proof_boundary_verified: bool,
     pub checked_core_frame_binding_imported: bool,
+    pub slot_authorization_digest_imported: bool,
     pub lifecycle_transition_profile_verified: bool,
     pub qrom_and_action_bounds_linked_to_theorem: bool,
     pub deployment_ready: bool,
@@ -11452,12 +11453,12 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         acceptance_hypothesis: "slot_authorization_digest_matches_canonical_leaf",
         supporting_surface: "slot_authorization_digest domain and leaf-byte frame",
         current_evidence:
-            "wire-format authority gates the slot authorization domain and digest helper; accepted-tuple evidence records the canonical slot authorization digest",
+            "wire-format authority gates the slot authorization domain and digest helper; accepted-tuple evidence records the canonical slot authorization digest; Lean imports SlotAuthorizationDigestFramesLeaf from ConcreteSpendVerificationAccepts",
         required_closure:
-            "composition theorem imports canonical slot_authorization_digest equality and byte KAT coverage",
+            "closed by importing canonical slot_authorization_digest equality and byte KAT coverage for the accepted spend tuple into the direct theorem boundary",
         named_break: "prevalidation_leaf_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
-        open: true,
+        open: false,
     },
     Path2DirectTheoremObligationRowV1 {
         obligation_id: "direct_obligation_creation_before_challenge",
@@ -11561,13 +11562,13 @@ pub const PATH2_DIRECT_THEOREM_CLOSURE_DEPENDENCY_ROWS:
     Path2DirectTheoremClosureDependencyRowV1 {
         dependency_id: "direct_dependency_slot_authorization_digest",
         source_report: "Path2DirectTheoremBoundaryReportV1",
-        source_flag_group: "composition_theorem_instantiated",
+        source_flag_group: "slot_authorization_digest_imported=true",
         direct_obligation_id: "direct_obligation_slot_authorization_digest",
         acceptance_hypothesis: "slot_authorization_digest_matches_canonical_leaf",
         support_surface: "slot_authorization_digest domain and leaf-byte frame",
         named_break: "prevalidation_leaf_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
-        open: true,
+        open: false,
     },
     Path2DirectTheoremClosureDependencyRowV1 {
         dependency_id: "direct_dependency_creation_before_challenge",
@@ -13732,10 +13733,15 @@ fn path2_direct_theorem_closure_dependency_support_open_v1(
 ) -> bool {
     match row.dependency_id {
         "direct_dependency_leaf_canonical_live"
-        | "direct_dependency_slot_authorization_digest"
         | "direct_dependency_admission_namespace"
         | "direct_dependency_public_rejection" => {
             !direct_report.composition_theorem_instantiated && !direct_report.deployment_ready
+        }
+        "direct_dependency_slot_authorization_digest" => {
+            row.open
+                && !direct_report.slot_authorization_digest_imported
+                && !direct_report.composition_theorem_instantiated
+                && !direct_report.deployment_ready
         }
         "direct_dependency_checked_core_frame_binding" => {
             row.open
@@ -13908,6 +13914,117 @@ fn path2_direct_checked_core_frame_binding_imported_in_source_v1(
             .all(|marker| soundness_window.contains(marker))
 }
 
+fn path2_direct_slot_authorization_digest_imported_v1() -> bool {
+    let full_spend_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
+    path2_direct_slot_authorization_digest_imported_in_source_v1(full_spend_source)
+}
+
+fn path2_direct_slot_authorization_digest_imported_in_source_v1(
+    full_spend_source: &str,
+) -> bool {
+    let Some(predicate_start) =
+        full_spend_source.find("\ndef SlotAuthorizationDigestFramesLeaf")
+    else {
+        return false;
+    };
+    let Some(predicate_end) = full_spend_source[predicate_start..]
+        .find("\n/-- Replayable direct certificate")
+    else {
+        return false;
+    };
+    let predicate_window = &full_spend_source[predicate_start..predicate_start + predicate_end];
+
+    let Some(bound_start) = full_spend_source.find("\ndef BoundConcretePrevalidatedSlot")
+    else {
+        return false;
+    };
+    let Some(bound_end) = full_spend_source[bound_start..]
+        .find("\n/-- Concrete prechallenge admission package")
+    else {
+        return false;
+    };
+    let bound_window = &full_spend_source[bound_start..bound_start + bound_end];
+
+    let Some(accept_start) =
+        full_spend_source.find("\ndef ConcreteSpendVerificationAccepts")
+    else {
+        return false;
+    };
+    let Some(accept_end) = full_spend_source[accept_start..]
+        .find("\n/--\nClosed direct-theorem checked-core frame-binding slice.")
+    else {
+        return false;
+    };
+    let accept_window = &full_spend_source[accept_start..accept_start + accept_end];
+
+    let Some(import_start) = full_spend_source
+        .find("\ntheorem slotAuthorizationDigest_imported_of_concreteSpendAccepts")
+    else {
+        return false;
+    };
+    let Some(import_end) = full_spend_source[import_start..]
+        .find("\n/-- The imported slot-authorization digest exposes")
+    else {
+        return false;
+    };
+    let import_window = &full_spend_source[import_start..import_start + import_end];
+
+    let Some(eq_start) = full_spend_source
+        .find("\ntheorem slotAuthorizationDigest_eq_leafDigest_of_imported")
+    else {
+        return false;
+    };
+    let Some(eq_end) = full_spend_source[eq_start..]
+        .find("\n/-- Full-game predicates for the concrete native carrier.")
+    else {
+        return false;
+    };
+    let eq_window = &full_spend_source[eq_start..eq_start + eq_end];
+
+    let predicate_checks = [
+        "spend.slotAuthorizationDigest = C.leafFrame spend.leaf",
+        "C.leafFrame spend.leaf = spend.leaf.leafDigest",
+    ];
+    let bound_checks = [
+        "PrevalidatedSlotLeafCanonicalAndLive C spend",
+        "LeafEvidenceCertificateBinding C spend",
+        "SlotAuthorizationDigestFramesLeaf C spend",
+        "ReplayableCertificateDataAvailable C spend",
+    ];
+    let accept_checks = [
+        "BoundConcretePrevalidatedSlot C spend",
+        "AdmittedConcretePrechallengeLeaf C spend",
+        "CheckedCoreChallengeBindsAcceptedTuple C spend",
+        "ConcreteConsumeOnceAcceptedTransition C spend",
+    ];
+    let import_checks = [
+        "slotAuthorizationDigest_imported_of_concreteSpendAccepts",
+        "hAccept : ConcreteSpendVerificationAccepts C spend",
+        "SlotAuthorizationDigestFramesLeaf C spend",
+        "hAccept.1.2.2.1",
+    ];
+    let eq_checks = [
+        "slotAuthorizationDigest_eq_leafDigest_of_imported",
+        "hSlot : SlotAuthorizationDigestFramesLeaf C spend",
+        "spend.slotAuthorizationDigest = spend.leaf.leafDigest",
+        "Eq.trans hSlot.1 hSlot.2",
+    ];
+
+    predicate_checks
+        .iter()
+        .all(|marker| predicate_window.contains(marker))
+        && bound_checks
+            .iter()
+            .all(|marker| bound_window.contains(marker))
+        && accept_checks
+            .iter()
+            .all(|marker| accept_window.contains(marker))
+        && import_checks
+            .iter()
+            .all(|marker| import_window.contains(marker))
+        && eq_checks.iter().all(|marker| eq_window.contains(marker))
+}
+
 fn path2_direct_theorem_closed_checked_core_frame_dependency_imported_v1(
     row: &Path2DirectTheoremClosureDependencyRowV1,
     direct_report: &Path2DirectTheoremBoundaryReportV1,
@@ -13916,6 +14033,18 @@ fn path2_direct_theorem_closed_checked_core_frame_dependency_imported_v1(
         && !row.open
         && row.source_flag_group == "checked_core_frame_binding_imported=true"
         && direct_report.checked_core_frame_binding_imported
+        && !direct_report.composition_theorem_instantiated
+        && !direct_report.deployment_ready
+}
+
+fn path2_direct_theorem_closed_slot_authorization_dependency_imported_v1(
+    row: &Path2DirectTheoremClosureDependencyRowV1,
+    direct_report: &Path2DirectTheoremBoundaryReportV1,
+) -> bool {
+    row.dependency_id == "direct_dependency_slot_authorization_digest"
+        && !row.open
+        && row.source_flag_group == "slot_authorization_digest_imported=true"
+        && direct_report.slot_authorization_digest_imported
         && !direct_report.composition_theorem_instantiated
         && !direct_report.deployment_ready
 }
@@ -13975,6 +14104,8 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
             && !direct_lifecycle_boundary_report.deployment_ready;
     let checked_core_frame_binding_imported =
         path2_direct_checked_core_frame_binding_imported_v1();
+    let slot_authorization_digest_imported =
+        path2_direct_slot_authorization_digest_imported_v1();
     let mut report = Path2DirectTheoremBoundaryReportV1 {
         digest: [0_u8; DIGEST_BYTES],
         domain: PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN,
@@ -14028,6 +14159,7 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
         composition_theorem_instantiated: false,
         account_creation_proof_boundary_verified: false,
         checked_core_frame_binding_imported,
+        slot_authorization_digest_imported,
         lifecycle_transition_profile_verified,
         qrom_and_action_bounds_linked_to_theorem: false,
         deployment_ready: false,
@@ -14090,7 +14222,9 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
                         && !row.blocks_deployment
                         && (row.dependency_id == "direct_dependency_consume_once"
                             || row.dependency_id
-                                == "direct_dependency_checked_core_frame_binding")
+                                == "direct_dependency_checked_core_frame_binding"
+                            || row.dependency_id
+                                == "direct_dependency_slot_authorization_digest")
                 }
             });
     report.digest = path2_direct_theorem_boundary_report_v1_digest(&report);
@@ -14232,6 +14366,9 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
                 ) || path2_direct_theorem_closed_checked_core_frame_dependency_imported_v1(
                     row,
                     report,
+                ) || path2_direct_theorem_closed_slot_authorization_dependency_imported_v1(
+                    row,
+                    report,
                 )
             }
         })
@@ -14248,6 +14385,8 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
                     && ((row.dependency_id == "direct_dependency_consume_once"
                         && row.source_report == "Path2DirectLifecycleBoundaryReportV1")
                         || (row.dependency_id == "direct_dependency_checked_core_frame_binding"
+                            && row.source_report == "Path2DirectTheoremBoundaryReportV1")
+                        || (row.dependency_id == "direct_dependency_slot_authorization_digest"
                             && row.source_report == "Path2DirectTheoremBoundaryReportV1"))
             }
         })
@@ -14266,6 +14405,7 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
         || report.composition_theorem_instantiated
         || report.account_creation_proof_boundary_verified
         || !report.checked_core_frame_binding_imported
+        || !report.slot_authorization_digest_imported
         || !report.lifecycle_transition_profile_verified
         || report.qrom_and_action_bounds_linked_to_theorem
         || report.deployment_ready
@@ -66897,7 +67037,10 @@ fn path2_direct_referenced_obligations_open_or_imported_v1(obligation_ids: &[&st
                                 == "lifecycle_transition_consumes_authorization_once")
                         || (*obligation_id == "direct_obligation_checked_core_frame_binding"
                             && row.acceptance_hypothesis
-                                == "checked_core_challenge_binds_public_spend_context"))
+                                == "checked_core_challenge_binds_public_spend_context")
+                        || (*obligation_id == "direct_obligation_slot_authorization_digest"
+                            && row.acceptance_hypothesis
+                                == "slot_authorization_digest_matches_canonical_leaf"))
             })
         })
 }
@@ -66913,7 +67056,10 @@ fn path2_direct_referenced_obligations_closed_by_import_v1(obligation_ids: &[&st
                             == "lifecycle_transition_consumes_authorization_once")
                         || (*obligation_id == "direct_obligation_checked_core_frame_binding"
                             && row.acceptance_hypothesis
-                                == "checked_core_challenge_binds_public_spend_context"))
+                                == "checked_core_challenge_binds_public_spend_context")
+                        || (*obligation_id == "direct_obligation_slot_authorization_digest"
+                            && row.acceptance_hypothesis
+                                == "slot_authorization_digest_matches_canonical_leaf"))
             })
         })
 }
@@ -68126,7 +68272,7 @@ pub fn validate_path2_direct_accepted_spend_tuple_evidence_v1(
         || evidence.accepted_tuple_field_evidence_present_count
             != PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
         || evidence.accepted_tuple_field_open_obligation_count
-            != 7
+            != 6
         || evidence.accepted_tuple_field_imported_closure_count != 2
         || !evidence.every_accepted_tuple_field_has_evidence
         || evidence.every_accepted_tuple_field_has_open_direct_obligation
@@ -72426,6 +72572,11 @@ fn path2_direct_theorem_boundary_report_v1_frame(
         &mut frame,
         b"checked_core_frame_binding_imported",
         u64::from(report.checked_core_frame_binding_imported),
+    );
+    append_u64(
+        &mut frame,
+        b"slot_authorization_digest_imported",
+        u64::from(report.slot_authorization_digest_imported),
     );
     append_u64(
         &mut frame,
@@ -115001,6 +115152,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                     row.obligation_id,
                     "direct_obligation_consume_once"
                         | "direct_obligation_checked_core_frame_binding"
+                        | "direct_obligation_slot_authorization_digest"
                 )
             );
             assert_eq!(
@@ -115020,6 +115172,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(!report.composition_theorem_instantiated);
         assert!(!report.account_creation_proof_boundary_verified);
         assert!(report.checked_core_frame_binding_imported);
+        assert!(report.slot_authorization_digest_imported);
         assert!(report.lifecycle_transition_profile_verified);
         assert!(!report.qrom_and_action_bounds_linked_to_theorem);
         assert!(!report.deployment_ready);

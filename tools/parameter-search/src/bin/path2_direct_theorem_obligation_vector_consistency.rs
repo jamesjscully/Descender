@@ -604,8 +604,8 @@ fn main() -> Result<(), String> {
     )? || bool_at(corpus, "/audit_summary/all_cases_open")?
         || !bool_at(corpus, "/audit_summary/all_cases_have_named_break")?
         || !bool_at(corpus, "/audit_summary/all_open_cases_block_deployment")?
-        || open_direct_obligation_count != 7
-        || closed_direct_obligation_count != 2
+        || open_direct_obligation_count != 6
+        || closed_direct_obligation_count != 3
     {
         return Err(
             "direct theorem obligation vector corpus lost partial-close row invariants".to_string(),
@@ -638,8 +638,10 @@ fn main() -> Result<(), String> {
     }
     for pointer in [
         "/direct_theorem_report/checked_core_frame_binding_imported",
+        "/direct_theorem_report/slot_authorization_digest_imported",
         "/direct_theorem_report/lifecycle_transition_profile_verified",
         "/audit_summary/checked_core_frame_binding_imported",
+        "/audit_summary/slot_authorization_digest_imported",
         "/lifecycle_boundary_report/target_chain_finality_profile_instantiated",
         "/lifecycle_boundary_report/target_chain_lifecycle_profile_review_pinned",
         "/lifecycle_boundary_report/target_chain_lifecycle_profile_verification_pinned",
@@ -884,7 +886,9 @@ fn main() -> Result<(), String> {
         if !row.open
             && !matches!(
                 case_id,
-                "direct_obligation_consume_once" | "direct_obligation_checked_core_frame_binding"
+                "direct_obligation_consume_once"
+                    | "direct_obligation_checked_core_frame_binding"
+                    | "direct_obligation_slot_authorization_digest"
             )
         {
             return Err(format!(

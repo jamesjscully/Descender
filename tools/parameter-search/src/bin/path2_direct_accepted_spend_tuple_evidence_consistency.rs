@@ -276,7 +276,7 @@ mod enabled {
             )? != evidence.accepted_tuple_field_imported_closure_count as u64
             || evidence.accepted_tuple_field_evidence_count != 11
             || evidence.accepted_tuple_field_evidence_present_count != 11
-            || evidence.accepted_tuple_field_open_obligation_count != 7
+            || evidence.accepted_tuple_field_open_obligation_count != 6
             || evidence.accepted_tuple_field_imported_closure_count != 2
             || at(body, "/evidence/accepted_tuple_field_evidence_rows")? != &expected_field_rows
         {

@@ -305,7 +305,10 @@ fn require_direct_accepted_tuple_field_evidence_identity(
                         == "lifecycle_transition_consumes_authorization_once")
                     || (obligation_id == "direct_obligation_checked_core_frame_binding"
                         && acceptance_hypothesis
-                            == "checked_core_challenge_binds_public_spend_context"));
+                            == "checked_core_challenge_binds_public_spend_context")
+                    || (obligation_id == "direct_obligation_slot_authorization_digest"
+                        && acceptance_hypothesis
+                            == "slot_authorization_digest_matches_canonical_leaf"));
             all_referenced_open &= source_open;
             all_referenced_open_or_imported &= source_open || imported_closed;
         }
@@ -1030,6 +1033,11 @@ fn main() -> Result<(), String> {
             "direct theorem boundary has not imported checked-core frame binding".to_string(),
         );
     }
+    if !direct_report.slot_authorization_digest_imported {
+        return Err(
+            "direct theorem boundary has not imported slot authorization digest".to_string(),
+        );
+    }
     if qrom_action_report.deployment_ready
         || qrom_action_report.theorem_imports_budget
         || qrom_action_report.external_qrom_review_complete
@@ -1173,7 +1181,7 @@ fn main() -> Result<(), String> {
         ),
         (
             "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/accepted_tuple_field_open_obligation_count",
-            7,
+            6,
         ),
         (
             "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/accepted_tuple_field_imported_closure_count",
@@ -1271,6 +1279,10 @@ fn main() -> Result<(), String> {
                             && row.acceptance_hypothesis
                                 == "checked_core_challenge_binds_public_spend_context"
                             && direct_report.checked_core_frame_binding_imported)
+                        || (row.obligation_id == "direct_obligation_slot_authorization_digest"
+                            && row.acceptance_hypothesis
+                                == "slot_authorization_digest_matches_canonical_leaf"
+                            && direct_report.slot_authorization_digest_imported)
                 }))
     {
         return Err(
@@ -1354,6 +1366,25 @@ fn main() -> Result<(), String> {
         {
             return Err(
                 "direct checked-core frame-binding import is not backed by a closed direct row"
+                    .to_string(),
+            );
+        }
+    }
+    if direct_report.slot_authorization_digest_imported {
+        let slot_authorization_row = direct_report
+            .obligation_rows
+            .iter()
+            .find(|row| row.obligation_id == "direct_obligation_slot_authorization_digest")
+            .ok_or_else(|| {
+                "direct theorem boundary lost slot-authorization digest row".to_string()
+            })?;
+        if slot_authorization_row.open
+            || slot_authorization_row.acceptance_hypothesis
+                != "slot_authorization_digest_matches_canonical_leaf"
+            || slot_authorization_row.named_break != "prevalidation_leaf_binding_break"
+        {
+            return Err(
+                "direct slot-authorization digest import is not backed by a closed direct row"
                     .to_string(),
             );
         }

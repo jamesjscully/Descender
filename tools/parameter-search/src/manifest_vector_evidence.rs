@@ -865,7 +865,7 @@ pub fn path2_direct_accepted_spend_tuple_evidence_artifact_v1() -> Result<Value,
         || u64_at(
             artifact,
             "/evidence/accepted_tuple_field_open_obligation_count",
-        )? != 7
+        )? != 6
         || u64_at(
             artifact,
             "/evidence/accepted_tuple_field_imported_closure_count",
@@ -1767,6 +1767,7 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
             "/audit_summary/account_creation_proof_boundary_verified",
         )?
         || !bool_at(corpus, "/audit_summary/checked_core_frame_binding_imported")?
+        || !bool_at(corpus, "/audit_summary/slot_authorization_digest_imported")?
         || bool_at(corpus, "/audit_summary/proof_boundary_deployment_ready")?
         || bool_at(corpus, "/audit_summary/qrom_theorem_imports_budget")?
         || bool_at(corpus, "/audit_summary/qrom_external_review_complete")?
@@ -1870,6 +1871,10 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
             "checked_core_frame_binding_imported": bool_at(
                 corpus,
                 "/audit_summary/checked_core_frame_binding_imported"
+            )?,
+            "slot_authorization_digest_imported": bool_at(
+                corpus,
+                "/audit_summary/slot_authorization_digest_imported"
             )?,
             "proof_boundary_deployment_ready": bool_at(
                 corpus,
