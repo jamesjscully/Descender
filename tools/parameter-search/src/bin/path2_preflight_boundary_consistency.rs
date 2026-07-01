@@ -1469,7 +1469,7 @@ fn main() -> Result<(), String> {
             "production_gate_open_or_external_review_complete",
             "creation_proof_obligation_production_gate_and_review",
             "selected_account_stark_production_admission_gate_v1",
-            "external review lane",
+            "Path2AccountStarkResidualMatrixReportV1",
             "external review",
         )?;
     }

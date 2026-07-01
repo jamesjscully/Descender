@@ -1483,6 +1483,61 @@ theorem selectedRustAcceptedBoundaryFriQromSupport_of_boundaryAccepted
     rfl,
     hProofFamilyOpen⟩
 
+/--
+Accepted selected-Rust boundary evidence carries the production-gate support
+slice: the selected proof-boundary report and accepted-evidence digests are
+pinned, the public boundary accepted, and the production gate remains
+fail-closed while proof-family obligations are still open. This is not an
+external review or maintainer approval.
+-/
+def SelectedRustAcceptedBoundaryProductionGateSupport
+    (spend : ConcreteSpendTuple) : Prop :=
+  spend.creationEvidence.proofBoundaryReportDigest =
+      selectedRustConcreteGameConfig.accountCreationProofBoundaryReportDigest ∧
+    spend.creationEvidence.acceptedProofBoundaryEvidenceDigest =
+        selectedRustConcreteGameConfig.acceptedProofBoundaryEvidenceDigest ∧
+      spend.creationEvidence.proofBoundaryReportValidated ∧
+        spend.creationEvidence.acceptedProofBoundaryEvidenceValidated ∧
+          spend.creationEvidence.verifierBoundaryAccepts ∧
+            spend.creationEvidence.productionGateFailClosed ∧
+              AccountCreationProofBoundaryBreakClass.trackedBy
+                AccountCreationProofBoundaryBreakClass.productionGateAndReview spend ∧
+                AccountCreationProofBoundaryBreakClass.toDirectNamedBreakClass
+                  AccountCreationProofBoundaryBreakClass.productionGateAndReview =
+                    DirectNamedBreakClass.selectedAccountCreationPayloadProofFamilyBreak ∧
+                  spend.creationEvidence.proofFamilyObligationsStillOpen
+
+/--
+Accepted selected-Rust proof-boundary evidence imports the production-gate
+fail-closed support slice while preserving the still-open proof-family flag.
+-/
+theorem selectedRustAcceptedBoundaryProductionGateSupport_of_boundaryAccepted
+    {spend : ConcreteSpendTuple}
+    (hAccepted :
+      AccountCreationProofBoundaryEvidenceAccepted
+        selectedRustConcreteGameConfig spend) :
+    SelectedRustAcceptedBoundaryProductionGateSupport spend := by
+  have hResiduals :
+      AccountCreationProofFamilyResidualsTracked
+        selectedRustConcreteGameConfig spend :=
+    accountCreationProofFamilyResidualsTracked_of_boundaryAccepted hAccepted
+  have hProofFamilyOpen :=
+    proofFamilyObligationsStillOpen_of_residualsTracked hResiduals
+  rcases hAccepted with
+    ⟨hReportDigest, hEvidenceDigest, _hAuthTracked, _hTimingTracked,
+      _hResiduals, _hReplayDigest, _hAnchorDigest, _hReportNonzero,
+      _hEvidenceNonzero, _hReplayNonzero, _hAnchorNonzero, hReportValidated,
+      hEvidenceValidated, hVerifierAccepts, hProductionFailClosed⟩
+  exact ⟨hReportDigest,
+    hEvidenceDigest,
+    hReportValidated,
+    hEvidenceValidated,
+    hVerifierAccepts,
+    hProductionFailClosed,
+    hProductionFailClosed,
+    rfl,
+    hProofFamilyOpen⟩
+
 /-- Accepted proof-boundary evidence exposes the detailed-to-direct break taxonomy coverage. -/
 theorem accountCreationProofFamilyResidualBreakClassesCovered_of_boundaryAccepted
     {C : ConcreteGameConfig}

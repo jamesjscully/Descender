@@ -12264,8 +12264,10 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
     Path2AccountCreationProofBoundaryObligationRowV1 {
         obligation_id: "creation_proof_obligation_production_gate_and_review",
         closure_target: "selected_account_stark_production_admission_gate_v1",
-        supporting_surface: "production account-STARK payload boundary and external review lane",
-        current_evidence: "production verification remains fail-closed and external proof-family review is incomplete",
+        supporting_surface:
+            "Path2AccountStarkResidualMatrixReportV1 + accepted-boundary Lean production-gate fail-closed support",
+        current_evidence:
+            "selectedRustAcceptedBoundaryProductionGateSupport_of_boundaryAccepted packages selected proof-boundary and accepted-evidence digests, proof-boundary validation, verifier acceptance, production-gate fail-closed tracking, direct proof-family break mapping, and the still-open proof-family flag while the residual matrix pins production-gate, external-review, and deployment-readiness flags false",
         required_closure: "obtain external review, record tracker disposition, and make an explicit maintainer decision before production admission can open",
         named_break: "account_stark_production_gate_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
@@ -51334,6 +51336,8 @@ fn path2_full_signature_execution_source_boundary_present_in_source_v1(
         "selectedRustAcceptedBoundaryFriAokSupport_of_boundaryAccepted",
         "SelectedRustAcceptedBoundaryFriQromSupport",
         "selectedRustAcceptedBoundaryFriQromSupport_of_boundaryAccepted",
+        "SelectedRustAcceptedBoundaryProductionGateSupport",
+        "selectedRustAcceptedBoundaryProductionGateSupport_of_boundaryAccepted",
     ];
 
     account_creation_checks

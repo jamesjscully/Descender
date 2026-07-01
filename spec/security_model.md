@@ -490,6 +490,12 @@ The FRI/QROM residual-pricing row now names
 the accepted FRI/QROM residual digest, nonzero evidence, residual-pricing
 tracking, direct proof-family break mapping, and still-open proof-family flag
 without claiming the account-STARK transcript QROM theorem or pricing closure.
+The production-gate-and-review row now names
+`selectedRustAcceptedBoundaryProductionGateSupport_of_boundaryAccepted`, which
+packages the selected proof-boundary and accepted-evidence digests, validation
+facts, verifier acceptance, production-gate fail-closed tracking, direct
+proof-family break mapping, and still-open proof-family flag without claiming
+external review, maintainer approval, or deployment readiness.
 `formal/kat/path2_account_creation_proof_boundary_v1.json` is regenerated from
 that report, the selected `Path2AccountStarkResidualMatrixReportV1`, the current
 `Path2AccountStarkPayloadKatBoundaryReportV1`, the current sampler/timing
