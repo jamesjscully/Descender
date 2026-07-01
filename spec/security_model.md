@@ -595,10 +595,10 @@ cannot disappear, be reordered, or be renamed when a standalone corpus is
 imported by a boundary or preflight manifest.
 The reports and
 manifests are
-the executable boundary map for this section; they are not an honest-sampler
-theorem, authorization-class binding theorem, no-postchallenge timing theorem,
-simulator, no-export theorem, extractor, FRI/QROM, KAT, or external-review
-substitute.
+the executable boundary map for this section. Aside from the explicitly imported
+local authorization-class binding and no-postchallenge timing theorem slices,
+they are not an honest-sampler theorem, simulator, no-export theorem, extractor,
+FRI/QROM, KAT, or external-review substitute.
 
 The boundary is implemented but not verified. The active Rust test suite now has
 an initial `Path2AccountStarkCreationPayloadV1` malformed-payload mutation

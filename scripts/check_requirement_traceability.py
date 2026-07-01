@@ -2091,7 +2091,7 @@ DIRECT_IMPLEMENTATION_SURFACE_CONTRACTS = [
     (
         "Authorization-class binding",
         "`direct`",
-        "`not_ready`",
+        "`partial`",
         "private authorization-local material cannot change public spend semantics",
         {"DIR-AUTHCLASS-001", "DIR-SEC-001"},
     ),

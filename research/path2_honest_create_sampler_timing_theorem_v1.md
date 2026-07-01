@@ -124,10 +124,11 @@ and creation can't be steered by the spend."
   which machine-checks that accepted proof-boundary evidence and the
   selected-Rust `honestCreate` witness consume the current checklist package
   while the hook list remains separately digest-pinned. The authorization-class row names
-  `selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted`,
-  which machine-checks typed compatibility, match to boundary meaning, and the
-  same-boundary no-ambiguity consequence for the accepted leaf fiber while the
-  audit digest remains imported by the report. The accepted boundary row names
+  `selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted`,
+  which machine-checks typed compatibility, match to boundary meaning, the
+  same-boundary no-ambiguity consequence for the accepted leaf fiber, and the
+  selected checked-core spend-digest binding while the audit digest remains
+  imported by the report. The accepted boundary row names
   `selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted`,
   which machine-checks the private-to-public order row, authorization-bridge
   checklist row, authorization-class support row, accepted-boundary sampler row,
@@ -138,7 +139,8 @@ and creation can't be steered by the spend."
   The full honest-create sampler evidence path is still not closed. (3) Signer state-loss is
   key-management engineering, not a consensus proof. (4) External review. Only
   the no-postchallenge timing slice is imported as closed by the sampler/timing
-  report; the honest-sampler theorem remains open.
+  report; the local authorization-class binding theorem is also imported as
+  closed, while the honest-sampler theorem remains open.
 
 ## What This Closes And Hands Off
 
@@ -157,12 +159,12 @@ and creation can't be steered by the spend."
   authorization-bridge row requiring
   `selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted`, and the
   authorization-class row requiring
-  `selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted`
+  `selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted`
   and the
   accepted-boundary row now requiring
   `selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted`.
 - **Hands off:** the lifecycle reorg/rollback term (#9); full honest-create
   sampler evidence integration that consumes the checklist; external review.
   `Path2AccountCreationSamplerTimingReportV1` keeps its honest-sampler theorem
-  flag false pending that integration and review, while the no-postchallenge
-  timing flag is true.
+  flag false pending that integration and review, while the local
+  authorization-class and no-postchallenge timing flags are true.

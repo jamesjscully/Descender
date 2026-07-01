@@ -348,8 +348,8 @@ Reject this sampler design if:
 ## Next Proof Move
 
 Mechanize the full honest-create sampler theorem over the sampler integration
-checklist now pinned by `Path2AccountCreationSamplerTimingReportV1`, then finish
-the authorization class binding theorem:
+checklist now pinned by `Path2AccountCreationSamplerTimingReportV1`, consuming
+the already imported local authorization-class binding theorem:
 
 ```text
 auth_compatible_c(q,auth)
@@ -370,10 +370,11 @@ slice. The authorization-bridge row now requires
 which machine-checks that accepted proof-boundary evidence and the
 selected-Rust `honestCreate` witness consume the current checklist package while
 the hook list remains separately digest-pinned. The authorization-class row now requires
-`selectedRustAcceptedBoundaryAuthorizationClassBindingSupport_of_boundaryAccepted`,
-which machine-checks typed compatibility, match to the boundary meaning, and
-same-boundary no-ambiguity for the accepted leaf fiber while the audit digest
-remains imported by the sampler/timing report. The accepted-boundary row now
+`selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted`,
+which machine-checks typed compatibility, match to the boundary meaning,
+same-boundary no-ambiguity for the accepted leaf fiber, and the selected
+checked-core spend-digest binding while the audit digest remains imported by
+the sampler/timing report. The accepted-boundary row now
 requires
 `selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted`,
 which packages the private-to-public order row, authorization-bridge checklist
@@ -385,6 +386,6 @@ accepted-boundary facts. It still keeps
 `full_honest_sampler_integration_complete` and the honest sampler theorem flag
 false until the full evidence path and review are complete.
 
-This is now the highest-risk proof item. If it fails, private authorization
-material still changes public spend semantics, and that semantic class must
-move into `q` more explicitly.
+This is now the highest-risk self-owned proof item. If it fails, the remaining
+gap is sampler evidence that does not consume the full accepted-boundary package;
+the selected-Rust public semantics binding itself is already closed locally.
