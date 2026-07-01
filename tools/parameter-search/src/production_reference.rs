@@ -11355,7 +11355,7 @@ pub const PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_FIELDS: [&str; 8] = [
     "aggregation_mode",
     "spend_domain_separator",
 ];
-pub const PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_HOOKS: [&str; 10] = [
+pub const PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_HOOKS: [&str; 21] = [
     "path2_native_spend_authorization_class_digest_v1",
     "path2_native_spend_projection_v1_bytes",
     "verify_path2_direct_single_slot_spend_authorization",
@@ -11365,6 +11365,17 @@ pub const PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_HOOKS: [&str; 10] = [
     "path2_checked_core_authorization_challenge_frame",
     "AccountCreationAuthorizationClassObligationTracked",
     "authorizationClass_matches_pSpend_of_obligationTracked",
+    "selectedRustProjectionCompleteness",
+    "selectedRustMeaningProjection_spendAuthorizationClass_eq_pSpend",
+    "selectedRustPrivateFiberPredicates",
+    "selectedRustAuthorizationCompatibleOverClass_of_compatible",
+    "selectedRustAuthorizationClassBinding",
+    "selectedRustHonestCreationPredicates",
+    "selectedRustHonestCreationSoundness",
+    "selectedRustHonestCreate_authorization_over_class",
+    "concreteLeafAuthorizationFiber",
+    "selectedRust_accountCreationAuthorizationCompatibleOverClass_of_obligationTracked",
+    "selectedRust_accountCreationAuthorizationClass_matchesMeaning_of_obligationTracked",
     "path2_native_honest_constructor_rejects_authorization_class_mismatch",
 ];
 pub const PATH2_ACCOUNT_CREATION_TIMING_ORDER_STEPS: [&str; 11] = [

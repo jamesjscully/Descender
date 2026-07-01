@@ -17,12 +17,12 @@
     "corpus_id": "Descender.Path2.AccountCreationSamplerTiming.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "eb52b705a4d6b7ce06d8243c67e462cc6cae83d156863e37b8844fb1dbbfc283",
-      "account_creation_proof_boundary_report_recomputed_digest": "eb52b705a4d6b7ce06d8243c67e462cc6cae83d156863e37b8844fb1dbbfc283",
-      "account_creation_sampler_timing_report_digest": "6d4a1cd853fc420264da53eb5c0f864b9b9d24db21da355ed014f2b45e8f135c",
-      "account_creation_sampler_timing_report_recomputed_digest": "6d4a1cd853fc420264da53eb5c0f864b9b9d24db21da355ed014f2b45e8f135c",
-      "authorization_class_binding_audit_report_digest": "2db1974f6e581ceaa85fa0adda92c27b526f6540960f9bc57016751469e53828",
-      "proof_boundary_report_sampler_timing_digest": "6d4a1cd853fc420264da53eb5c0f864b9b9d24db21da355ed014f2b45e8f135c"
+      "account_creation_proof_boundary_report_digest": "b11cffffccb7793c6dde2ff3e34b3657f1a7f4344a63184005ec04fafb24b175",
+      "account_creation_proof_boundary_report_recomputed_digest": "b11cffffccb7793c6dde2ff3e34b3657f1a7f4344a63184005ec04fafb24b175",
+      "account_creation_sampler_timing_report_digest": "04a00240b2f5de85c1574790b413c9ff041a5c67171414885d3155502da3ed04",
+      "account_creation_sampler_timing_report_recomputed_digest": "04a00240b2f5de85c1574790b413c9ff041a5c67171414885d3155502da3ed04",
+      "authorization_class_binding_audit_report_digest": "8a7fcd555ca01d557145b94c5a0660f767749fa228788898d4ed5cc8610b155b",
+      "proof_boundary_report_sampler_timing_digest": "04a00240b2f5de85c1574790b413c9ff041a5c67171414885d3155502da3ed04"
     },
     "executable_hooks": {
       "checked_core_challenge_binds_message": true,
@@ -54,7 +54,7 @@
     },
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "sampler_boundary": {
-      "authorization_class_binding_audit_report_digest": "2db1974f6e581ceaa85fa0adda92c27b526f6540960f9bc57016751469e53828",
+      "authorization_class_binding_audit_report_digest": "8a7fcd555ca01d557145b94c5a0660f767749fa228788898d4ed5cc8610b155b",
       "authorization_class_binding_theorem_instantiated": false,
       "construction_steps": [
         "seed",
@@ -94,5 +94,5 @@
       ]
     }
   },
-  "manifest_digest": "4640ca855ee5b4928c27fde06357b53bffeb6848454090b4b0fea2465869176a"
+  "manifest_digest": "50f4cd53c73fd8ae2089b5df4a525e2fd2e32d8531aab99cf3899c5d89cf0b6a"
 }

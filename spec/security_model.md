@@ -396,12 +396,14 @@ production-review evidence.
 authorization-class field-completeness audit: every revised `p_spend` field is
 named, every row maps to the deployed projection/check surface, the direct spend
 verifier is checked for absence of private authorization-local material reads,
-and the source-shape hook list covers the Rust and Lean boundary hooks. The
+and the source-shape hook list covers the Rust hooks, Lean boundary hooks, and
+selected-Rust typed compatibility/projection bridge hooks. The
 sampler/timing report imports that audit digest, and
 `formal/kat/path2_authorization_class_binding_audit_v1.json` is regenerated and
 checked before sampler/timing and proof-boundary manifests. This is executable
 audit evidence for the authorization-class binding residual; it keeps the
-authorization-class theorem, external review, and deployment readiness false.
+authorization-class theorem, full honest-create sampler integration, external
+review, and deployment readiness false.
 `formal/kat/path2_account_creation_proof_obligation_vectors_v1.json`
 turns that row table into a digest-pinned audit corpus bound to both the
 proof-boundary and direct-theorem reports; it records the current 6-open /

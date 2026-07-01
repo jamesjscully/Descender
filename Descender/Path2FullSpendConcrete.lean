@@ -232,6 +232,28 @@ def selectedRustPublicProjections :
   pTranscript := fun q => q.transcriptFace
   pState := fun q => q.stateFace
 
+/-- Selected Rust public projections are complete for the selected native meaning. -/
+def selectedRustProjectionCompleteness :
+    Path2NativeAccountDesign.ProjectionCompleteness
+      selectedRustMeaningProjection selectedRustPublicProjections where
+  account_eq := by intro q; rfl
+  spend_eq := by intro q; rfl
+  lifecycle_eq := by intro q; rfl
+  transcript_eq := by intro q; rfl
+  state_eq := by intro q; rfl
+  context_eq := by intro q; rfl
+
+/--
+Selected Rust projection bridge for the authorization-class field: the semantic
+meaning's spend authorization class is definitionally the public `pSpend`
+projection consumed by the verifier.
+-/
+theorem selectedRustMeaningProjection_spendAuthorizationClass_eq_pSpend
+    (q : Path2NativeAccountDesign.Boundary) :
+    (selectedRustMeaningProjection.meaningOfBoundary q).spendAuthorizationClass =
+      selectedRustPublicProjections.pSpend q :=
+  selectedRustProjectionCompleteness.spend_eq q
+
 /-- Selected Rust obstruction map for already-checked concrete boundaries. -/
 def selectedRustObstructionMap :
     Path2NativeAccountDesign.ObstructionMap where
@@ -246,6 +268,81 @@ def selectedRustObstructionComponentPredicates :
   meaningChecked := fun _ => True
   spendStateChecked := fun _ => True
   canonicalityChecked := fun _ => True
+
+/--
+Selected Rust private-fiber predicates for theorem support.  Authorization
+compatibility is the typed equality to the public spend projection; the other
+fiber coordinates remain outside this authorization-class slice.
+-/
+def selectedRustPrivateFiberPredicates :
+    Path2NativeAccountDesign.PrivateFiberPredicates where
+  liftValid := fun _ _ => True
+  authorizationCompatible := fun q h =>
+    h.authorizationLocal = selectedRustPublicProjections.pSpend q
+  gaugeValid := fun _ _ => True
+  randomizerValid := fun _ _ => True
+  authClass := fun h => h.authorizationLocal
+  meaningOfFiber := fun q _ => selectedRustMeaningProjection.meaningOfBoundary q
+
+/-- Selected Rust authorization compatibility is compatibility over `pSpend(q)`. -/
+theorem selectedRustAuthorizationCompatibleOverClass_of_compatible
+    {q : Path2NativeAccountDesign.Boundary}
+    {h : Path2NativeAccountDesign.PrivateFiber}
+    (hauth :
+      selectedRustPrivateFiberPredicates.authorizationCompatible q h) :
+    Path2NativeAccountDesign.AuthorizationCompatibleOverClass
+      selectedRustPrivateFiberPredicates selectedRustPublicProjections q h :=
+  ⟨hauth, hauth⟩
+
+/-- Concrete selected Rust authorization-class binding certificate. -/
+def selectedRustAuthorizationClassBinding :
+    Path2NativeAccountDesign.AuthorizationClassBinding
+      selectedRustPrivateFiberPredicates selectedRustPublicProjections where
+  auth_class_matches := by
+    intro q h hauth
+    exact hauth
+
+/-- Selected Rust honest-create relation used by the authorization-class slice. -/
+def selectedRustHonestCreationPredicates :
+    Path2NativeAccountDesign.HonestCreationPredicates where
+  honestCreate := fun seed q h =>
+    h.authorizationLocal = selectedRustPublicProjections.pSpend q ∧
+      h.liftCore = seed
+
+/-- Selected Rust honest-create soundness for the authorization-class slice. -/
+def selectedRustHonestCreationSoundness :
+    Path2NativeAccountDesign.HonestCreationSoundness
+      selectedRustObstructionMap
+      selectedRustPrivateFiberPredicates
+      selectedRustPublicProjections
+      selectedRustHonestCreationPredicates where
+  honest_create_valid := by
+    intro seed q h hcreate
+    rcases hcreate with ⟨hauth, _⟩
+    exact ⟨rfl, ⟨rfl, trivial, hauth, trivial, trivial⟩, hauth⟩
+
+/--
+Selected Rust honest creation returns authorization-local material compatible
+with the emitted public spend class.
+-/
+theorem selectedRustHonestCreate_authorization_over_class
+    {seed : Nat}
+    {q : Path2NativeAccountDesign.Boundary}
+    {h : Path2NativeAccountDesign.PrivateFiber}
+    (hcreate : selectedRustHonestCreationPredicates.honestCreate seed q h) :
+    Path2NativeAccountDesign.AuthorizationCompatibleOverClass
+      selectedRustPrivateFiberPredicates selectedRustPublicProjections q h :=
+  Path2NativeAccountDesign.honest_create_authorization_over_class
+    selectedRustHonestCreationSoundness hcreate
+
+/-- Interpret a concrete slot leaf as the authorization-local fiber slice. -/
+def concreteLeafAuthorizationFiber
+    (leaf : ConcretePrevalidatedSlotLeaf) :
+    Path2NativeAccountDesign.PrivateFiber where
+  liftCore := leaf.accountNamespace
+  authorizationLocal := leaf.authorizationClass
+  gauge := leaf.lifecycleIdentity
+  randomizer := leaf.transcriptSurface
 
 /-- Selected Rust verifier predicates for the concrete execution source. -/
 def selectedRustVerifierPredicates :
@@ -619,6 +716,50 @@ theorem authorizationClass_matches_pSpend_of_obligationTracked
     spend.leaf.authorizationClass =
       C.nativeProjections.pSpend spend.creationEvidence.boundary :=
   hTracked.2.2.2.2
+
+/--
+Selected Rust bridge from the carried account-creation obligation to the typed
+`AuthorizationCompatibleOverClass` interface used by the native-account design.
+-/
+theorem selectedRust_accountCreationAuthorizationCompatibleOverClass_of_obligationTracked
+    {spend : ConcreteSpendTuple}
+    (hTracked :
+      AccountCreationAuthorizationClassObligationTracked
+        selectedRustConcreteGameConfig spend) :
+    Path2NativeAccountDesign.AuthorizationCompatibleOverClass
+      selectedRustPrivateFiberPredicates
+      selectedRustPublicProjections
+      spend.creationEvidence.boundary
+      (concreteLeafAuthorizationFiber spend.leaf) := by
+  have hClass := authorizationClass_matches_pSpend_of_obligationTracked hTracked
+  exact ⟨by
+    simpa [concreteLeafAuthorizationFiber, selectedRustConcreteGameConfig] using hClass,
+    by
+      simpa [
+        Path2NativeAccountDesign.AuthorizationClassMatches,
+        concreteLeafAuthorizationFiber,
+        selectedRustConcreteGameConfig
+      ] using hClass⟩
+
+/--
+Selected Rust semantic bridge for the carried authorization-class obligation:
+the admitted leaf class also equals the semantic meaning field of the accepted
+native boundary.
+-/
+theorem selectedRust_accountCreationAuthorizationClass_matchesMeaning_of_obligationTracked
+    {spend : ConcreteSpendTuple}
+    (hTracked :
+      AccountCreationAuthorizationClassObligationTracked
+        selectedRustConcreteGameConfig spend) :
+    spend.leaf.authorizationClass =
+      (selectedRustMeaningProjection.meaningOfBoundary
+        spend.creationEvidence.boundary).spendAuthorizationClass := by
+  have hClass := authorizationClass_matches_pSpend_of_obligationTracked hTracked
+  simpa [
+    selectedRustConcreteGameConfig,
+    selectedRustMeaningProjection,
+    selectedRustPublicProjections
+  ] using hClass
 
 /--
 Accepted account-creation evidence tracks the sampler/timing report and the

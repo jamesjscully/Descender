@@ -296,10 +296,10 @@ AuthorizationClassMatches P Proj q h :=
   P.authClass h = Proj.pSpend q
 ```
 
-This is enough structurally, but the next refinement should document that
-`authorizationCompatible` is intended to entail `AuthorizationClassMatches`.
+The interface now documents that `authorizationCompatible` must entail
+`AuthorizationClassMatches`.
 
-Possible Lean addition:
+Lean addition:
 
 ```text
 def AuthorizationCompatibleOverClass
@@ -312,6 +312,13 @@ def AuthorizationCompatibleOverClass
 
 Then honest creation can return this stronger predicate directly, while
 `AuthorizationClassBinding` remains the global no-ambiguity theorem.
+`Descender/Path2FullSpendConcrete.lean` now instantiates this shape for the
+selected Rust theorem-support slice through
+`selectedRustAuthorizationCompatibleOverClass_of_compatible`,
+`selectedRustAuthorizationClassBinding`,
+`selectedRustHonestCreate_authorization_over_class`, and the selected
+projection-completeness hook
+`selectedRustMeaningProjection_spendAuthorizationClass_eq_pSpend`.
 
 ## Pass Criteria
 
@@ -340,15 +347,9 @@ Fail or redesign if:
 
 ## Next Concrete Move
 
-Update the Lean interface with a derived predicate:
-
-```text
-AuthorizationCompatibleOverClass
-```
-
-and an honest creation theorem wrapper returning that predicate explicitly.
-
-Then the following proof chain becomes explicit:
+Lift the selected-Rust support slice into the full honest-create sampler
+evidence path and external review package. The proof chain is now explicit in
+the Lean interface and selected-Rust support hooks:
 
 ```text
 HonestCreateSoundness

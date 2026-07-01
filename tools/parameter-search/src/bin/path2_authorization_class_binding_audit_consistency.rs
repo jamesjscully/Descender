@@ -350,18 +350,28 @@ fn main() -> Result<(), String> {
         "authorizationClass_obligationDigest_nonzero_of_obligationTracked",
         "authorizationClass_boundary_eq_leafBoundary_of_obligationTracked",
         "authorizationClass_matches_pSpend_of_obligationTracked",
+        "selectedRustProjectionCompleteness",
+        "selectedRustMeaningProjection_spendAuthorizationClass_eq_pSpend",
+        "selectedRustAuthorizationCompatibleOverClass_of_compatible",
+        "selectedRustAuthorizationClassBinding",
+        "selectedRustHonestCreate_authorization_over_class",
+        "selectedRust_accountCreationAuthorizationCompatibleOverClass_of_obligationTracked",
+        "selectedRust_accountCreationAuthorizationClass_matchesMeaning_of_obligationTracked",
         "spend.leaf.authorizationClass =",
         "C.nativeProjections.pSpend spend.creationEvidence.boundary",
     ] {
         require_contains(&full_spend_lean, marker, "Lean authorization-class hooks")?;
     }
     for hook in PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_HOOKS {
-        let haystack =
-            if hook.starts_with("AccountCreation") || hook.starts_with("authorizationClass") {
-                &full_spend_lean
-            } else {
-                &source
-            };
+        let haystack = if hook.starts_with("AccountCreation")
+            || hook.starts_with("authorizationClass")
+            || hook.starts_with("selectedRust")
+            || hook == "concreteLeafAuthorizationFiber"
+        {
+            &full_spend_lean
+        } else {
+            &source
+        };
         require_contains(haystack, hook, "authorization-class source hook")?;
     }
 

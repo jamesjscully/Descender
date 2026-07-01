@@ -19,10 +19,10 @@
     "corpus_id": "Descender.Path2.AuthorizationClassBindingAudit.v1",
     "corpus_version": 1,
     "digests": {
-      "authorization_class_binding_audit_report_digest": "2db1974f6e581ceaa85fa0adda92c27b526f6540960f9bc57016751469e53828",
-      "authorization_class_binding_audit_report_recomputed_digest": "2db1974f6e581ceaa85fa0adda92c27b526f6540960f9bc57016751469e53828",
-      "sampler_timing_report_authorization_class_audit_digest": "2db1974f6e581ceaa85fa0adda92c27b526f6540960f9bc57016751469e53828",
-      "sampler_timing_report_digest": "6d4a1cd853fc420264da53eb5c0f864b9b9d24db21da355ed014f2b45e8f135c"
+      "authorization_class_binding_audit_report_digest": "8a7fcd555ca01d557145b94c5a0660f767749fa228788898d4ed5cc8610b155b",
+      "authorization_class_binding_audit_report_recomputed_digest": "8a7fcd555ca01d557145b94c5a0660f767749fa228788898d4ed5cc8610b155b",
+      "sampler_timing_report_authorization_class_audit_digest": "8a7fcd555ca01d557145b94c5a0660f767749fa228788898d4ed5cc8610b155b",
+      "sampler_timing_report_digest": "04a00240b2f5de85c1574790b413c9ff041a5c67171414885d3155502da3ed04"
     },
     "field_completeness": {
       "field_completeness_negative_audit_complete": true,
@@ -126,7 +126,7 @@
       "lean_boundary_hooks_present": true,
       "no_private_authorization_material_in_direct_verifier": true,
       "slot_authorization_digest_imported": true,
-      "source_shape_hook_count": 10,
+      "source_shape_hook_count": 21,
       "source_shape_hook_ids": [
         "path2_native_spend_authorization_class_digest_v1",
         "path2_native_spend_projection_v1_bytes",
@@ -137,9 +137,20 @@
         "path2_checked_core_authorization_challenge_frame",
         "AccountCreationAuthorizationClassObligationTracked",
         "authorizationClass_matches_pSpend_of_obligationTracked",
+        "selectedRustProjectionCompleteness",
+        "selectedRustMeaningProjection_spendAuthorizationClass_eq_pSpend",
+        "selectedRustPrivateFiberPredicates",
+        "selectedRustAuthorizationCompatibleOverClass_of_compatible",
+        "selectedRustAuthorizationClassBinding",
+        "selectedRustHonestCreationPredicates",
+        "selectedRustHonestCreationSoundness",
+        "selectedRustHonestCreate_authorization_over_class",
+        "concreteLeafAuthorizationFiber",
+        "selectedRust_accountCreationAuthorizationCompatibleOverClass_of_obligationTracked",
+        "selectedRust_accountCreationAuthorizationClass_matchesMeaning_of_obligationTracked",
         "path2_native_honest_constructor_rejects_authorization_class_mismatch"
       ]
     }
   },
-  "manifest_digest": "0bc436bb5a9e4153b6e5200a885684ca36eb7758eb1b6bae65890573fcb27e33"
+  "manifest_digest": "f8eac599dd9c04588a3bde50f5d0d3877a82d391c3130a0d3dd14003f6b8cb88"
 }

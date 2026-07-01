@@ -435,6 +435,7 @@ AUTHORIZATION_CLASS_BINDING_AUDIT_MARKERS = {
         "path2_native_spend_authorization_class_digest_v1",
         "verify_path2_direct_single_slot_spend_authorization",
         "AccountCreationAuthorizationClassObligationTracked",
+        "selectedRust_accountCreationAuthorizationCompatibleOverClass_of_obligationTracked",
         "Path 2 authorization-class binding audit consistency check passed.",
     ],
     "formal/kat/path2_authorization_class_binding_audit_v1.json": [
@@ -443,7 +444,8 @@ AUTHORIZATION_CLASS_BINDING_AUDIT_MARKERS = {
         "draft_authorization_class_binding_audit_manifest",
         "authorization_class_binding_audit_report_digest",
         '"p_spend_field_count": 8',
-        '"source_shape_hook_count": 10',
+        '"source_shape_hook_count": 21',
+        "selectedRust_accountCreationAuthorizationCompatibleOverClass_of_obligationTracked",
         '"field_completeness_negative_audit_complete": true',
         '"theorem_instantiated": false',
         '"deployment_ready": false',

@@ -137,10 +137,12 @@ and `E_SD` (`p_spend.allowed_state_transition_class = p_state.state_transition_c
 - **Honest residual.** The field-completeness negative audit of the deployed
   checked-core spend verifier is now digest-pinned by
   `Path2AuthorizationClassBindingAuditReportV1` (no acceptance branch reads a
-  field outside `p_spend(q)`). Remaining residuals are (1) the Lean
-  `AuthorizationCompatibleOverClass` instantiation + honest-create wrapper
-  (couples to #7), (2) the projection-completeness bridge `p_spend(q) =
-  meaning_of_boundary`, and (3) external review. No theorem flag flipped.
+  field outside `p_spend(q)`). `Descender/Path2FullSpendConcrete.lean` now
+  includes selected-Rust hooks for `AuthorizationCompatibleOverClass`, the
+  honest-create wrapper, and the projection-completeness bridge
+  `p_spend(q) = meaning_of_boundary`. Remaining residuals are the full
+  honest-create sampler integration/evidence path and external review. No
+  theorem flag flipped.
 
 ## What This Closes And Hands Off
 
@@ -153,9 +155,15 @@ and `E_SD` (`p_spend.allowed_state_transition_class = p_state.state_transition_c
   `authorizationClass_matches_pSpend_of_obligationTracked`, exposing the carried
   proof-boundary facts that the obligation digest is nonzero, creation evidence
   and leaf share the same boundary, and the admitted leaf's public
-  authorization class equals `p_spend(boundary)`. These are boundary hooks, not
-  theorem closure.
-- **Hands off:** the Lean predicate instantiation (with #7 honest-create);
-  projection-completeness bridge; external review. `DIR-AUTHCLASS-001` keeps
+  authorization class equals `p_spend(boundary)`. It also proves the
+  selected-Rust typed compatibility/projection bridge through
+  `selectedRustProjectionCompleteness`,
+  `selectedRustHonestCreate_authorization_over_class`,
+  `selectedRust_accountCreationAuthorizationCompatibleOverClass_of_obligationTracked`,
+  and
+  `selectedRust_accountCreationAuthorizationClass_matchesMeaning_of_obligationTracked`.
+  These are support hooks, not theorem closure.
+- **Hands off:** full honest-create sampler integration/evidence path and
+  external review. `DIR-AUTHCLASS-001` keeps
   `authorization_class_binding_theorem_instantiated` false pending that theorem
   closure and review.
