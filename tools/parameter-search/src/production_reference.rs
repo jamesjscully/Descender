@@ -12230,8 +12230,10 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
     Path2AccountCreationProofBoundaryObligationRowV1 {
         obligation_id: "creation_proof_obligation_fri_aok_extractor",
         closure_target: "selected_plonky3_q12289_fri_iop_aok_extractor",
-        supporting_surface: "Path2AccountStarkFriAokBoundaryReportV1",
-        current_evidence: "AIR coverage, FRI schedule, challenge field, and extractor theorem target are pinned",
+        supporting_surface:
+            "Path2AccountStarkFriAokBoundaryReportV1 + accepted-boundary Lean FRI/AoK support",
+        current_evidence:
+            "selectedRustAcceptedBoundaryFriAokSupport_of_boundaryAccepted packages FRI/AoK boundary digest/nonzero, extractor-obligation tracking, direct proof-family break mapping, and the still-open proof-family flag while the report pins AIR coverage, selected proof family, FRI schedule, challenge field, and extractor theorem target",
         required_closure: "prove every accepting proof for the selected Plonky3/q12289 configuration implies an extractable account-creation witness or a named FRI/AoK break",
         named_break: "account_stark_fri_aok_extractor_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
@@ -51326,6 +51328,8 @@ fn path2_full_signature_execution_source_boundary_present_in_source_v1(
         "selectedRustAcceptedBoundarySamplerIntegrationRowsSupported_of_boundaryAccepted",
         "SelectedRustAcceptedBoundaryNoExportSupport",
         "selectedRustAcceptedBoundaryNoExportSupport_of_boundaryAccepted",
+        "SelectedRustAcceptedBoundaryFriAokSupport",
+        "selectedRustAcceptedBoundaryFriAokSupport_of_boundaryAccepted",
     ];
 
     account_creation_checks

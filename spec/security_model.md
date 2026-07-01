@@ -480,6 +480,11 @@ The simulator/no-export proof-obligation row now names
 the accepted no-export boundary digest, nonzero evidence, simulator/no-export
 tracking, direct proof-family break mapping, and still-open proof-family flag
 without claiming simulator/no-export closure.
+The FRI/AoK extractor obligation row similarly names
+`selectedRustAcceptedBoundaryFriAokSupport_of_boundaryAccepted`, which packages
+the accepted FRI/AoK boundary digest, nonzero evidence, extractor-obligation
+tracking, direct proof-family break mapping, and still-open proof-family flag
+without claiming the selected Plonky3/q12289 extractor theorem.
 `formal/kat/path2_account_creation_proof_boundary_v1.json` is regenerated from
 that report, the selected `Path2AccountStarkResidualMatrixReportV1`, the current
 `Path2AccountStarkPayloadKatBoundaryReportV1`, the current sampler/timing
