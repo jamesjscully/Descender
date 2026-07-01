@@ -266,6 +266,30 @@ fn main() -> Result<(), String> {
     }
     for (needle, label) in [
         (
+            "AccountCreationAuthorizationClassObligationTracked",
+            "tracked authorization-class predicate",
+        ),
+        (
+            "authorizationClass_obligationDigest_nonzero_of_obligationTracked",
+            "authorization-class nonzero digest Lean theorem",
+        ),
+        (
+            "authorizationClass_boundary_eq_leafBoundary_of_obligationTracked",
+            "authorization-class boundary equality Lean theorem",
+        ),
+        (
+            "authorizationClass_matches_pSpend_of_obligationTracked",
+            "authorization-class pSpend Lean theorem",
+        ),
+        (
+            "spend.leaf.authorizationClass =",
+            "authorization-class leaf equality conclusion",
+        ),
+        (
+            "C.nativeProjections.pSpend spend.creationEvidence.boundary",
+            "authorization-class pSpend conclusion",
+        ),
+        (
             "AccountCreationNoPostchallengeTimingObligationTracked",
             "tracked no-postchallenge timing predicate",
         ),

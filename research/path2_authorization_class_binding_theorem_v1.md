@@ -143,6 +143,14 @@ and `E_SD` (`p_spend.allowed_state_transition_class = p_state.state_transition_c
 - **Closes (paper level):** local authorization-class binding (definitional under
   typed compatibility) + the positive field-completeness mapping to the deployed
   acceptance boundary; the no-ambiguity property; the spend-closure consequence.
+- **Machine-checked boundary hooks:** `Descender/Path2FullSpendConcrete.lean`
+  proves `authorizationClass_obligationDigest_nonzero_of_obligationTracked`,
+  `authorizationClass_boundary_eq_leafBoundary_of_obligationTracked`, and
+  `authorizationClass_matches_pSpend_of_obligationTracked`, exposing the carried
+  proof-boundary facts that the obligation digest is nonzero, creation evidence
+  and leaf share the same boundary, and the admitted leaf's public
+  authorization class equals `p_spend(boundary)`. These are boundary hooks, not
+  theorem closure.
 - **Hands off:** the field-completeness *negative* audit of the spend verifier;
   the Lean predicate instantiation (with #7 honest-create); projection-completeness
   bridge; external review. `DIR-AUTHCLASS-001` keeps

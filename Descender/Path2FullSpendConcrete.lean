@@ -584,6 +584,43 @@ def AccountCreationAuthorizationClassObligationTracked
             C.nativeProjections.pSpend spend.creationEvidence.boundary
 
 /--
+Machine-checked boundary hook for the still-open authorization-class obligation:
+accepted proof-boundary evidence must carry a nonzero obligation digest.
+-/
+theorem authorizationClass_obligationDigest_nonzero_of_obligationTracked
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hTracked : AccountCreationAuthorizationClassObligationTracked C spend) :
+    spend.creationEvidence.authorizationClassObligationDigest ≠ 0 :=
+  hTracked.2.1
+
+/--
+Machine-checked boundary hook for the still-open authorization-class obligation:
+the creation evidence and prevalidated leaf name the same native boundary.
+-/
+theorem authorizationClass_boundary_eq_leafBoundary_of_obligationTracked
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hTracked : AccountCreationAuthorizationClassObligationTracked C spend) :
+    spend.creationEvidence.boundary = spend.leaf.boundary :=
+  hTracked.2.2.2.1
+
+/--
+Machine-checked boundary hook for the still-open authorization-class obligation:
+the admitted leaf's public authorization class is exactly the selected public
+spend projection of the accepted creation boundary.  This exposes the carried
+obligation to the proof boundary, but it does not close the field-completeness
+audit or external review residuals tracked by `DIR-AUTHCLASS-001`.
+-/
+theorem authorizationClass_matches_pSpend_of_obligationTracked
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hTracked : AccountCreationAuthorizationClassObligationTracked C spend) :
+    spend.leaf.authorizationClass =
+      C.nativeProjections.pSpend spend.creationEvidence.boundary :=
+  hTracked.2.2.2.2
+
+/--
 Accepted account-creation evidence tracks the sampler/timing report and the
 no-postchallenge timing obligation.  The proposition records that the creation
 statement is prechallenge-fixed, excludes spend-time message and signature
