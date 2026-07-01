@@ -29,8 +29,8 @@
     "digests": {
       "direct_lifecycle_boundary_report_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
       "direct_lifecycle_boundary_report_recomputed_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
-      "direct_theorem_boundary_report_digest": "a97a7551bf644247b1d2def21d87fa479032ee096bc146e0e5ad96c6805fa721",
-      "direct_theorem_boundary_report_recomputed_digest": "a97a7551bf644247b1d2def21d87fa479032ee096bc146e0e5ad96c6805fa721",
+      "direct_theorem_boundary_report_digest": "5b8a6030bc05bde585db39d4ccd62f8a7caa8448a722884679883aa1f3b09ddf",
+      "direct_theorem_boundary_report_recomputed_digest": "5b8a6030bc05bde585db39d4ccd62f8a7caa8448a722884679883aa1f3b09ddf",
       "direct_theorem_report_lifecycle_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f"
     },
     "frozen_status": "draft_lifecycle_boundary_manifest",
@@ -230,5 +230,5 @@
       ]
     }
   },
-  "manifest_digest": "0cabe1eaf7e32c1ae2c3628f2433ba0c4a001412495004736261e786b4ce42e6"
+  "manifest_digest": "f11acf7c9acb1d8fcb3c9c2f5c6d20bf1f69316d1f90395d43f7f057fdd5ee9d"
 }

@@ -11408,7 +11408,7 @@ pub const PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS:
         integration_id: "sampler_integration_accepted_boundary_import",
         support_surface: "Descender/Path2FullSpendConcrete.lean AccountCreationProofBoundaryEvidenceAccepted",
         current_evidence:
-            "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted_honestCreate",
+            "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted",
         required_closure:
             "final creation theorem consumes the accepted-boundary sampler digest and honest sampler theorem together",
         named_break: "creation_time_hidden_source_soundness_break",
@@ -51300,6 +51300,8 @@ fn path2_full_signature_execution_source_boundary_present_in_source_v1(
         "selectedRustHonestSamplerIntegrationChecklist_consumed_of_boundaryAccepted",
         "SelectedRustAcceptedBoundaryHonestSamplerSound",
         "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted_honestCreate",
+        "selectedRustAcceptedBoundaryHonestCreate_of_boundaryAccepted",
+        "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted",
     ];
 
     account_creation_checks
@@ -114778,7 +114780,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             .any(
                 |row| row.integration_id == "sampler_integration_accepted_boundary_import"
                     && row.current_evidence
-                        == "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted_honestCreate"
+                        == "selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted"
                     && row.open
             ));
         assert!(report

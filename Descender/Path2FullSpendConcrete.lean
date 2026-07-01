@@ -1037,6 +1037,51 @@ theorem selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted_hones
     hMeaning,
     hTiming⟩
 
+/--
+Accepted selected-Rust boundary evidence itself supplies the honest-create
+witness for the accepted spend's concrete leaf fiber.  No separate sampler
+witness is needed for this support slice: the carried authorization-class
+obligation gives `authorizationLocal = pSpend(q)`, and the concrete fiber's
+`liftCore` is the leaf namespace.
+-/
+theorem selectedRustAcceptedBoundaryHonestCreate_of_boundaryAccepted
+    {spend : ConcreteSpendTuple}
+    (hAccepted :
+      AccountCreationProofBoundaryEvidenceAccepted
+        selectedRustConcreteGameConfig spend) :
+    selectedRustHonestCreationPredicates.honestCreate
+      spend.leaf.accountNamespace
+      spend.creationEvidence.boundary
+      (concreteLeafAuthorizationFiber spend.leaf) := by
+  have hAuthTracked :
+      AccountCreationAuthorizationClassObligationTracked
+        selectedRustConcreteGameConfig spend :=
+    hAccepted.2.2.1
+  have hClass :=
+    authorizationClass_matches_pSpend_of_obligationTracked
+      hAuthTracked
+  exact ⟨by
+    simpa [concreteLeafAuthorizationFiber, selectedRustConcreteGameConfig] using hClass,
+    rfl⟩
+
+/--
+Accepted selected-Rust proof-boundary evidence alone gives the spend-specific
+honest-sampler support package for the accepted boundary and leaf fiber.  This
+removes the explicit honest-create witness hypothesis from the previous hook,
+but still does not instantiate the full honest sampler theorem.
+-/
+theorem selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted
+    {spend : ConcreteSpendTuple}
+    (hAccepted :
+      AccountCreationProofBoundaryEvidenceAccepted
+        selectedRustConcreteGameConfig spend) :
+    SelectedRustAcceptedBoundaryHonestSamplerSound
+      spend
+      spend.leaf.accountNamespace :=
+  selectedRustAcceptedBoundaryHonestSamplerSound_of_boundaryAccepted_honestCreate
+    hAccepted
+    (selectedRustAcceptedBoundaryHonestCreate_of_boundaryAccepted hAccepted)
+
 /-- Accepted proof-boundary evidence exposes the proof-family residual package. -/
 theorem accountCreationProofFamilyResidualsTracked_of_boundaryAccepted
     {C : ConcreteGameConfig}
