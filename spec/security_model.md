@@ -485,6 +485,11 @@ The FRI/AoK extractor obligation row similarly names
 the accepted FRI/AoK boundary digest, nonzero evidence, extractor-obligation
 tracking, direct proof-family break mapping, and still-open proof-family flag
 without claiming the selected Plonky3/q12289 extractor theorem.
+The FRI/QROM residual-pricing row now names
+`selectedRustAcceptedBoundaryFriQromSupport_of_boundaryAccepted`, which packages
+the accepted FRI/QROM residual digest, nonzero evidence, residual-pricing
+tracking, direct proof-family break mapping, and still-open proof-family flag
+without claiming the account-STARK transcript QROM theorem or pricing closure.
 `formal/kat/path2_account_creation_proof_boundary_v1.json` is regenerated from
 that report, the selected `Path2AccountStarkResidualMatrixReportV1`, the current
 `Path2AccountStarkPayloadKatBoundaryReportV1`, the current sampler/timing

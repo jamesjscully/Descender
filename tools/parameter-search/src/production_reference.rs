@@ -12242,8 +12242,10 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
     Path2AccountCreationProofBoundaryObligationRowV1 {
         obligation_id: "creation_proof_obligation_fri_qrom_residual_pricing",
         closure_target: "selected_account_stark_fri_poseidon2_qrom_residual_ledger_v1",
-        supporting_surface: "Path2AccountStarkFriQromResidualReportV1",
-        current_evidence: "active FRI parameters, degree-8 challenge field, Poseidon2 sponge floor, and checked-core QROM artifacts are pinned",
+        supporting_surface:
+            "Path2AccountStarkFriQromResidualReportV1 + accepted-boundary Lean FRI/QROM support",
+        current_evidence:
+            "selectedRustAcceptedBoundaryFriQromSupport_of_boundaryAccepted packages FRI/QROM residual digest/nonzero, residual-pricing tracking, direct proof-family break mapping, and the still-open proof-family flag while the report pins active FRI parameters, degree-8 challenge field, Poseidon2 sponge floor, checked-core QROM artifacts, and fail-closed theorem flags",
         required_closure: "price the account-STARK FRI transcript theorem, recursion if used, and multi-target/QROM terms against the selected deployment profile",
         named_break: "fri_soundness_margin_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
@@ -51330,6 +51332,8 @@ fn path2_full_signature_execution_source_boundary_present_in_source_v1(
         "selectedRustAcceptedBoundaryNoExportSupport_of_boundaryAccepted",
         "SelectedRustAcceptedBoundaryFriAokSupport",
         "selectedRustAcceptedBoundaryFriAokSupport_of_boundaryAccepted",
+        "SelectedRustAcceptedBoundaryFriQromSupport",
+        "selectedRustAcceptedBoundaryFriQromSupport_of_boundaryAccepted",
     ];
 
     account_creation_checks

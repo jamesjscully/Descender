@@ -1429,6 +1429,60 @@ theorem selectedRustAcceptedBoundaryFriAokSupport_of_boundaryAccepted
     rfl,
     hProofFamilyOpen⟩
 
+/--
+Accepted selected-Rust boundary evidence carries the current FRI/QROM residual
+support slice: the selected FRI/QROM residual digest is pinned and nonzero, the
+residual-pricing row is explicitly tracked, it maps to the direct theorem's
+proof-family break class, and proof-family obligations remain open. This is not
+the account-STARK transcript QROM theorem or residual-pricing closure.
+-/
+def SelectedRustAcceptedBoundaryFriQromSupport
+    (spend : ConcreteSpendTuple) : Prop :=
+  spend.creationEvidence.friQromResidualReportDigest =
+      selectedRustConcreteGameConfig.accountCreationFriQromResidualReportDigest ∧
+    spend.creationEvidence.friQromResidualReportDigest ≠ 0 ∧
+      spend.creationEvidence.friQromResidualObligationTracked ∧
+        AccountCreationProofBoundaryBreakClass.trackedBy
+          AccountCreationProofBoundaryBreakClass.friQromResidualPricing spend ∧
+          AccountCreationProofBoundaryBreakClass.toDirectNamedBreakClass
+            AccountCreationProofBoundaryBreakClass.friQromResidualPricing =
+              DirectNamedBreakClass.selectedAccountCreationPayloadProofFamilyBreak ∧
+            spend.creationEvidence.proofFamilyObligationsStillOpen
+
+/--
+Accepted selected-Rust proof-boundary evidence imports the current FRI/QROM
+residual support slice from the carried proof-family residual package while
+preserving the open proof-family flag.
+-/
+theorem selectedRustAcceptedBoundaryFriQromSupport_of_boundaryAccepted
+    {spend : ConcreteSpendTuple}
+    (hAccepted :
+      AccountCreationProofBoundaryEvidenceAccepted
+        selectedRustConcreteGameConfig spend) :
+    SelectedRustAcceptedBoundaryFriQromSupport spend := by
+  have hResiduals :
+      AccountCreationProofFamilyResidualsTracked
+        selectedRustConcreteGameConfig spend :=
+    accountCreationProofFamilyResidualsTracked_of_boundaryAccepted hAccepted
+  have hDigest :=
+    accountCreationProofFamilyDigestChainPinned_of_residualsTracked hResiduals
+  have hOpen :=
+    accountCreationProofFamilyOpenObligationsTracked_of_residualsTracked
+      hResiduals
+  rcases hDigest with
+    ⟨_hNoExportDigest, _hMatrixDigest, hQromDigest, _hAokDigest,
+      _hPayloadKatDigest, _hNoExportNonzero, _hMatrixNonzero, hQromNonzero,
+      _hAokNonzero, _hPayloadKatNonzero⟩
+  rcases hOpen with
+    ⟨_hNoExportTracked, _hSimulatorTracked, hQromTracked, _hAokTracked,
+      _hPayloadKatTracked, hProofFamilyOpen⟩
+  exact ⟨hQromDigest,
+    hQromNonzero,
+    hQromTracked,
+    hQromTracked,
+    rfl,
+    hProofFamilyOpen⟩
+
 /-- Accepted proof-boundary evidence exposes the detailed-to-direct break taxonomy coverage. -/
 theorem accountCreationProofFamilyResidualBreakClassesCovered_of_boundaryAccepted
     {C : ConcreteGameConfig}
