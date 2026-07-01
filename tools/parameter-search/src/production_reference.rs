@@ -12226,7 +12226,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
         supporting_surface:
             "Path2AccountCreationNoExportBoundaryReportV1 + accepted-boundary Lean no-export support",
         current_evidence:
-            "selectedRustAcceptedBoundaryNoExportSupport_of_boundaryAccepted packages no-export boundary digest/nonzero, simulator/no-export tracking, direct proof-family break mapping, and the still-open proof-family flag while the report pins public-input allowlist, private-material denylist, no-export vectors, and fail-closed flags",
+            "selectedRustAcceptedBoundaryNoExportSupport_of_boundaryAccepted packages no-export boundary digest/nonzero, simulator/no-export tracking, direct proof-family break mapping, and the still-open proof-family flag while the report pins public-input allowlist, private-material denylist, frozen no-export vectors, and fail-closed flags",
         required_closure: "prove accepted public bundles are simulatable from public anchors and allowed commitments without exporting private creation material",
         named_break: "account_stark_simulator_or_no_export_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
@@ -13204,7 +13204,7 @@ pub fn path2_account_creation_no_export_boundary_report_v1(
         simulator_theorem_instantiated: false,
         no_export_theorem_instantiated: false,
         accepted_bundle_simulatable_from_public_anchors: false,
-        frozen_no_export_vectors_complete: false,
+        frozen_no_export_vectors_complete: true,
         external_review_complete: false,
         deployment_ready: false,
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_SIMULATOR,
@@ -13263,7 +13263,7 @@ pub fn validate_path2_account_creation_no_export_boundary_report_v1(
         || report.simulator_theorem_instantiated
         || report.no_export_theorem_instantiated
         || report.accepted_bundle_simulatable_from_public_anchors
-        || report.frozen_no_export_vectors_complete
+        || !report.frozen_no_export_vectors_complete
         || report.external_review_complete
         || report.deployment_ready
     {
@@ -115032,7 +115032,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(!report.simulator_theorem_instantiated);
         assert!(!report.no_export_theorem_instantiated);
         assert!(!report.accepted_bundle_simulatable_from_public_anchors);
-        assert!(!report.frozen_no_export_vectors_complete);
+        assert!(report.frozen_no_export_vectors_complete);
         assert!(!report.external_review_complete);
         assert!(!report.deployment_ready);
         assert_eq!(

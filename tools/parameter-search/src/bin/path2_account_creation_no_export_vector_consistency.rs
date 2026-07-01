@@ -137,6 +137,15 @@ fn main() -> Result<(), String> {
     {
         return Err("no-export vector corpus unexpectedly closes theorem status".to_string());
     }
+    if !bool_at(
+        corpus,
+        "/boundary_report/frozen_no_export_vectors_complete",
+    )? || !bool_at(
+        corpus,
+        "/audit_summary/frozen_no_export_vectors_complete",
+    )? {
+        return Err("no-export vector corpus lost frozen-vector closure".to_string());
+    }
     if !bool_at(corpus, "/audit_summary/all_private_material_absent")?
         || !bool_at(corpus, "/audit_summary/payload_denylist_absent")?
         || !bool_at(corpus, "/audit_summary/simulator_denylist_absent")?

@@ -281,8 +281,9 @@ public_rejection_code
 This report is a boundary and fail-closed regression anchor, not simulator
 closure. It records that the public payload byte model exports no private
 material and that current public mutation coverage is wired. The open blocker is
-simulator semantics, no-export theorem closure, frozen no-export vectors,
-external review, and deployment readiness. The denylist term
+simulator semantics, no-export theorem closure, external review, and deployment
+readiness; the no-export audit vector corpus is frozen by the digest-pinned
+current vectors. The denylist term
 `private_trace_material` covers private trace material.
 
 The algebra-layer simulator/no-export theorem for the selected payload is now
@@ -290,9 +291,11 @@ stated and proven in
 `research/path2_account_stark_simulator_no_export_theorem_v1.md` (`S(pub) ≈_c
 Real` from the allowlist alone, reducing no-export to {zk-FRI HVZK, Poseidon2
 mask-PRF, Poseidon2 commitment hiding}). It does NOT close the boundary report:
-the implementation no-export scan, frozen no-export vectors, the pad-seed
-single-use lifecycle term (`DIR-LIFE-001`), the Lean public-view predicate, and
-external review remain the open blockers, and the report flags stay false.
+the implementation no-export scan, pad-seed single-use lifecycle term
+(`DIR-LIFE-001`), the Lean public-view predicate, and external review remain the
+open blockers. The frozen no-export vector flag is closed; simulator,
+no-export, accepted-bundle simulability, review, and deployment flags stay
+false.
 
 ## Helper API Rule
 

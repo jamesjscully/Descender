@@ -344,6 +344,8 @@ fn manifest_body() -> Result<Value, String> {
                 no_export_report.simulator_theorem_instantiated,
             "no_export_theorem_instantiated":
                 no_export_report.no_export_theorem_instantiated,
+            "frozen_no_export_vectors_complete":
+                no_export_report.frozen_no_export_vectors_complete,
             "deployment_ready": no_export_report.deployment_ready,
             "blocker": no_export_report.blocker
         },

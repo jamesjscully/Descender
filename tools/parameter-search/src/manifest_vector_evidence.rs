@@ -2022,6 +2022,10 @@ pub fn path2_account_creation_requirement_vector_corpus_evidence_v1() -> Result<
             no_export_vectors,
             "/audit_summary/no_export_theorem_instantiated",
         )?
+        || !bool_at(
+            no_export_vectors,
+            "/audit_summary/frozen_no_export_vectors_complete",
+        )?
         || bool_at(no_export_vectors, "/audit_summary/deployment_ready")?
     {
         return Err(

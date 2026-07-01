@@ -4,6 +4,7 @@
       "all_private_material_absent": true,
       "deployment_ready": false,
       "deterministic_kat_digest_pins_bundle_bytes": true,
+      "frozen_no_export_vectors_complete": true,
       "full_proof_bytes_inlined_in_manifest": false,
       "no_export_theorem_instantiated": false,
       "payload_denylist_absent": true,
@@ -17,8 +18,9 @@
     "boundary_report": {
       "blocker": "account-STARK residual matrix: selected payload simulator and no-export theorem is not instantiated",
       "deployment_ready": false,
-      "digest": "ac72e42f992f87708be678abcfd5dee67777341118621692193babedb0c8b8e6",
+      "digest": "6e8d61fa6d9ffb7fdccbaf35d748076f9096ecd91613cecd3b05e9d6cabcbfd0",
       "domain": "Descender.Path2.AccountCreationNoExportBoundaryReport.v1",
+      "frozen_no_export_vectors_complete": true,
       "no_export_requirement": "zero_knowledge_no_export_semantics",
       "no_export_theorem_instantiated": false,
       "no_export_theorem_target": "selected_account_stark_no_export_v1",
@@ -131,5 +133,5 @@
     "schema": "Descender.Path2.AccountCreationNoExportVectors.v1",
     "status": "digest_pinned_no_export_audit_vectors"
   },
-  "corpus_digest": "4a0b26f146e49bef06cf9bbe6c3217ba6eec03561527a7c42ec79ff78c987d37"
+  "corpus_digest": "5fb93ca197902cc85efdc9458f4e3da7e70d84d14c9fbf05172bacdf9968a874"
 }

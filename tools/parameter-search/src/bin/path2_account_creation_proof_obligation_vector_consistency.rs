@@ -515,6 +515,11 @@ fn main() -> Result<(), String> {
         "/no_export_vector_evidence/no_export_theorem_instantiated",
         false,
     )?;
+    require_bool(
+        corpus,
+        "/no_export_vector_evidence/frozen_no_export_vectors_complete",
+        true,
+    )?;
     require_bool(corpus, "/no_export_vector_evidence/deployment_ready", false)?;
     require_str(
         corpus,

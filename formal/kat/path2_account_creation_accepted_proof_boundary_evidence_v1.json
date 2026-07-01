@@ -273,7 +273,7 @@
         "deterministic_public_rejection"
       ],
       "account_creation_evidence_transcript_digest": "ef18960db93f1bf9e4e244059226549805092f6d5433186c0edd1a1f405743a0",
-      "account_creation_proof_boundary_report_digest": "683a3b8621604dd86020f2249b42b01a23469733434d56dde4b17f83217bccf3",
+      "account_creation_proof_boundary_report_digest": "5eebf31096f4b98ade3caab4fe0ef1f9cf5b8e4871dfac9223fbc992ad78f116",
       "account_id": "e7e9c407d51a153ae517b874c3da8d828943c0eb4ccc8800423bf164fc4d4baf",
       "account_stark_bundle_bytes": 10700945,
       "account_stark_bundle_digest": "018aa9d16435afedb30bc28b3c2aadbbb1f9d9ab1a689077b45c3f299c6778e3",
@@ -298,7 +298,7 @@
       "deployed_anchor_verifier_version_bound": true,
       "deployment_ready": false,
       "deterministic_rejection_requirement_deferred_to_rejection_kats": true,
-      "digest": "e7bac04fdd595d28b60ed762634e6cd74d4cb7b70995162489f854ce5684d5b7",
+      "digest": "abee0197e79b23b3a1259728921a44e39ab012cf8786172c86c9415b3ac5559d",
       "direct_replayable_relation_certificate_digest": "6093362302ab49f072d2cbc10020bf58dc091d116438615e844528e30b8e32b7",
       "every_accepting_requirement_has_boundary_or_audit_evidence": true,
       "every_applicable_accepting_requirement_has_accepted_path_evidence": true,
@@ -314,7 +314,7 @@
       "leaf_transcript_bound_to_evidence": true,
       "masked_projection_digest": "1dc8895cd768336840947d7b11597dd3a20e6a277e0694674bd30add8a0c4031",
       "native_role_root_commitment": "59c1cda3beb141d721de867d5c1797d1f05416d4bef43c8e0cc82c442b689d65",
-      "no_export_boundary_report_digest": "ac72e42f992f87708be678abcfd5dee67777341118621692193babedb0c8b8e6",
+      "no_export_boundary_report_digest": "6e8d61fa6d9ffb7fdccbaf35d748076f9096ecd91613cecd3b05e9d6cabcbfd0",
       "payload_binding_fields_match_report": true,
       "payload_byte_model_report_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
       "payload_digest_bound_to_certificate": true,
@@ -332,7 +332,7 @@
       "public_key_identity": "58f218aeb259309eeb545345a8f5c715987967b0ec724806d448394da578d0b0",
       "public_payload_exports_private_material": false,
       "qrom_requirement_deferred_to_residual_theorem": true,
-      "recomputed_digest": "e7bac04fdd595d28b60ed762634e6cd74d4cb7b70995162489f854ce5684d5b7",
+      "recomputed_digest": "abee0197e79b23b3a1259728921a44e39ab012cf8786172c86c9415b3ac5559d",
       "replay_payload_digest_function": "path2_account_stark_creation_payload_v1_digest",
       "sampler_timing_report_digest": "0abd74f2a8c52e4317b5ab9886a96376e13962bc41cb8b188681054eaefeec0d",
       "schema": "Descender.Path2.AccountCreationAcceptedProofBoundaryEvidence.v1",
@@ -352,5 +352,5 @@
     "schema": "Descender.Path2.AccountCreationAcceptedProofBoundaryDeterministicKatEvidenceManifest.v1",
     "status": "digest_pinned_deterministic_kat_accepted_account_creation_proof_boundary_evidence"
   },
-  "manifest_digest": "bcebc1690bf59fafda318bfabea540ef8bf801ddffe5f5626e71883c3442550d"
+  "manifest_digest": "c6bc344900c5c4bafb6d4a2a24836c845543ae8aed3af3edfa58d7ef000cc186"
 }

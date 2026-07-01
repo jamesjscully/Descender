@@ -138,6 +138,7 @@ fn manifest_body() -> Result<Value, String> {
             "no_export_theorem_target": report.no_export_theorem_target,
             "simulator_theorem_instantiated": report.simulator_theorem_instantiated,
             "no_export_theorem_instantiated": report.no_export_theorem_instantiated,
+            "frozen_no_export_vectors_complete": report.frozen_no_export_vectors_complete,
             "deployment_ready": report.deployment_ready,
             "blocker": report.blocker
         },
@@ -160,6 +161,7 @@ fn manifest_body() -> Result<Value, String> {
             "all_private_material_absent": all_private_material_absent,
             "simulator_theorem_instantiated": report.simulator_theorem_instantiated,
             "no_export_theorem_instantiated": report.no_export_theorem_instantiated,
+            "frozen_no_export_vectors_complete": report.frozen_no_export_vectors_complete,
             "deployment_ready": report.deployment_ready
         },
         "case_count": cases.len(),

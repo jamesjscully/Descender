@@ -220,7 +220,6 @@ fn main() -> Result<(), String> {
         "/manifest/no_export_boundary/coverage/simulator_theorem_instantiated",
         "/manifest/no_export_boundary/coverage/no_export_theorem_instantiated",
         "/manifest/no_export_boundary/coverage/accepted_bundle_simulatable_from_public_anchors",
-        "/manifest/no_export_boundary/coverage/frozen_no_export_vectors_complete",
         "/manifest/no_export_boundary/coverage/external_review_complete",
         "/manifest/no_export_boundary/coverage/deployment_ready",
     ] {
@@ -229,6 +228,14 @@ fn main() -> Result<(), String> {
                 "account-creation no-export manifest unexpectedly closes {pointer}"
             ));
         }
+    }
+    if !bool_at(
+        &manifest,
+        "/manifest/no_export_boundary/coverage/frozen_no_export_vectors_complete",
+    )? {
+        return Err(
+            "account-creation no-export manifest lost frozen vector closure".to_string(),
+        );
     }
 
     let support_doc = load_text(&root, report.support_file)?;

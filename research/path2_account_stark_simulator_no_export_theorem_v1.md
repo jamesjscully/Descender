@@ -173,15 +173,15 @@ following must hold in code and stay regression-tested (owned by
 - no public helper/serializer returns authorization-local, gauge, randomizer, or
   raw hidden-lift material;
 - frozen no-export vectors scan all public outputs for raw seed/opening/lane/
-  mask/randomizer bytes.
+  mask/randomizer bytes and remain digest-pinned.
 
 ## What This Closes And Hands Off
 
 - **Closes (algebra layer):** the simulator theorem for
   `Path2AccountStarkCreationPayloadV1` — the accepted public bundle is
   simulatable from the public allowlist, reducing no-export to A1–A3.
-- **Hands off:** A2′ pad-seed single-use (#9, `DIR-LIFE-001`); the implementation
-  no-export scan + frozen vectors (#8, `DIR-REJECT-001`/`DIR-PAYLOAD-001`); the
-  Lean public-view/no-export predicate; external review. No report flag is
-  flipped; `Path2AccountCreationNoExportBoundaryReportV1` keeps its
-  simulator/no-export/deployment flags false pending those.
+- **Hands off:** A2′ pad-seed single-use (#9, `DIR-LIFE-001`); the
+  implementation no-export scan (#8, `DIR-REJECT-001`/`DIR-PAYLOAD-001`); the
+  Lean public-view/no-export predicate; external review. The frozen vector
+  corpus is now closed separately; `Path2AccountCreationNoExportBoundaryReportV1`
+  keeps its simulator/no-export/deployment flags false pending those.
