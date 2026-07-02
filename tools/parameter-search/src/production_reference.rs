@@ -9625,6 +9625,8 @@ pub struct Path2AccountCreationNoExportBoundaryReportV1 {
     pub public_bundle_no_export_predicate_instantiated: bool,
     pub simulator_input_allowlist_lean_theorem: &'static str,
     pub simulator_input_allowlist_predicate_instantiated: bool,
+    pub accepted_public_anchor_package_lean_theorem: &'static str,
+    pub accepted_public_anchor_package_bound: bool,
     pub simulator_theorem_instantiated: bool,
     pub no_export_theorem_instantiated: bool,
     pub accepted_bundle_simulatable_from_public_anchors: bool,
@@ -11860,10 +11862,11 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHOR_CASES: [&str; 2]
     "rebound_native_role_root_anchor",
     "rebound_masked_projection_anchor",
 ];
-pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES: [&str; 6] = [
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES: [&str; 7] = [
     "no_export_public_payload_field_allowlist",
     "no_export_simulator_public_input_allowlist",
     "no_export_simulator_input_lean_predicate",
+    "no_export_accepted_public_anchor_package_lean_predicate",
     "no_export_private_material_denylist_absence",
     "no_export_opaque_bundle_not_manifest_inlined",
     "no_export_public_bundle_lean_predicate",
@@ -12088,6 +12091,8 @@ pub const PATH2_ACCOUNT_CREATION_PUBLIC_BUNDLE_NO_EXPORT_LEAN_THEOREM: &str =
     "selectedRustAccountCreationPublicBundleNoExport_instantiation_v1";
 pub const PATH2_ACCOUNT_CREATION_SIMULATOR_INPUT_ALLOWLIST_LEAN_THEOREM: &str =
     "selectedRustAccountCreationSimulatorInputNoExport_instantiation_v1";
+pub const PATH2_ACCOUNT_CREATION_ACCEPTED_PUBLIC_ANCHOR_PACKAGE_LEAN_THEOREM: &str =
+    "selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1";
 pub const PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS: [&str; 14] = [
     "leaf_context_digest",
     "creation_proof_binding_digest",
@@ -12236,7 +12241,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
         supporting_surface:
             "Path2AccountCreationNoExportBoundaryReportV1 + accepted-boundary Lean no-export support",
         current_evidence:
-            "selectedRustAcceptedBoundaryNoExportSupport_of_boundaryAccepted packages no-export boundary digest/nonzero, simulator/no-export tracking, direct proof-family break mapping, and the still-open proof-family flag while the report pins public-input allowlist, private-material denylist, frozen no-export vectors, selected Rust public-bundle denylist predicate, selected Rust simulator-input allowlist predicate, and fail-closed flags",
+            "selectedRustAcceptedBoundaryNoExportSupport_of_boundaryAccepted packages no-export boundary digest/nonzero, simulator/no-export tracking, direct proof-family break mapping, and the still-open proof-family flag while the report pins public-input allowlist, private-material denylist, frozen no-export vectors, selected Rust public-bundle denylist predicate, selected Rust simulator-input allowlist predicate, selected Rust accepted public-anchor package binding predicate, and fail-closed flags",
         required_closure: "prove accepted public bundles are simulatable from public anchors and allowed commitments without exporting private creation material",
         named_break: "account_stark_simulator_or_no_export_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
@@ -13217,6 +13222,9 @@ pub fn path2_account_creation_no_export_boundary_report_v1(
         simulator_input_allowlist_lean_theorem:
             PATH2_ACCOUNT_CREATION_SIMULATOR_INPUT_ALLOWLIST_LEAN_THEOREM,
         simulator_input_allowlist_predicate_instantiated: true,
+        accepted_public_anchor_package_lean_theorem:
+            PATH2_ACCOUNT_CREATION_ACCEPTED_PUBLIC_ANCHOR_PACKAGE_LEAN_THEOREM,
+        accepted_public_anchor_package_bound: true,
         simulator_theorem_instantiated: false,
         no_export_theorem_instantiated: false,
         accepted_bundle_simulatable_from_public_anchors: false,
@@ -13281,6 +13289,9 @@ pub fn validate_path2_account_creation_no_export_boundary_report_v1(
         || report.simulator_input_allowlist_lean_theorem
             != PATH2_ACCOUNT_CREATION_SIMULATOR_INPUT_ALLOWLIST_LEAN_THEOREM
         || !report.simulator_input_allowlist_predicate_instantiated
+        || report.accepted_public_anchor_package_lean_theorem
+            != PATH2_ACCOUNT_CREATION_ACCEPTED_PUBLIC_ANCHOR_PACKAGE_LEAN_THEOREM
+        || !report.accepted_public_anchor_package_bound
         || report.public_payload_exports_private_material
         || report.simulator_theorem_instantiated
         || report.no_export_theorem_instantiated
@@ -71062,6 +71073,16 @@ fn path2_account_creation_no_export_boundary_report_v1_frame(
         b"simulator_input_allowlist_predicate_instantiated",
         u64::from(report.simulator_input_allowlist_predicate_instantiated),
     );
+    append_frame(
+        &mut frame,
+        b"accepted_public_anchor_package_lean_theorem",
+        report.accepted_public_anchor_package_lean_theorem.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_public_anchor_package_bound",
+        u64::from(report.accepted_public_anchor_package_bound),
+    );
     append_u64(
         &mut frame,
         b"simulator_theorem_instantiated",
@@ -115084,6 +115105,11 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             PATH2_ACCOUNT_CREATION_SIMULATOR_INPUT_ALLOWLIST_LEAN_THEOREM
         );
         assert!(report.simulator_input_allowlist_predicate_instantiated);
+        assert_eq!(
+            report.accepted_public_anchor_package_lean_theorem,
+            PATH2_ACCOUNT_CREATION_ACCEPTED_PUBLIC_ANCHOR_PACKAGE_LEAN_THEOREM
+        );
+        assert!(report.accepted_public_anchor_package_bound);
         assert!(!report.simulator_theorem_instantiated);
         assert!(!report.no_export_theorem_instantiated);
         assert!(!report.accepted_bundle_simulatable_from_public_anchors);

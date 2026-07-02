@@ -1016,5 +1016,121 @@ theorem selectedRustAccountCreationSimulatorInputNoExport_instantiation_v1 :
       selectedRustAccountCreationSimulatorInputNoExportProof
       selectedRustAccountCreationSimulatorInputOutputConforms) hProduced
 
+/-!
+## Account-Creation Accepted Public-Anchor Package
+
+The simulator theorem will ultimately consume a public-anchor package, not
+independent ad hoc fields.  This section packages the selected accepted
+account-creation public anchors and proves that the package feeds only the two
+already-allowlisted public surfaces: the public bundle and the simulator input.
+
+This is still a boundary/allowlist theorem.  It does not prove the simulator
+distribution theorem or accepted-bundle simulability.
+-/
+
+/-- Public anchors carried by the selected accepted account-creation bundle. -/
+structure AccountCreationAcceptedPublicAnchorPackage where
+  accountId : Nat
+  slotId : Nat
+  accountStateRoot : Nat
+  verifierVersion : Nat
+  packedWitnessCommitment : Nat
+  nativeRoleRootCommitment : Nat
+  maskedProjection : Nat
+  accountStarkBundleBytesOrDigest : Nat
+  publicReplayPayloadDigest : Nat
+  lifecycleAnchor : Nat
+  transcriptSurface : Nat
+  stateTransitionBoundary : Nat
+  accountNamespace : Nat
+  authorizationClass : Nat
+  leafContextDigest : Nat
+  creationProofBindingDigest : Nat
+  aggregationContextDigest : Nat
+  publicRejectionCode : Nat
+
+namespace AccountCreationAcceptedPublicAnchorPackage
+
+/-- Public-bundle output induced by an accepted public-anchor package. -/
+def publicBundleOutput (A : AccountCreationAcceptedPublicAnchorPackage) : Nat :=
+  selectedRustAccountCreationPublicBundleSerializer.publicBundleOutputOf
+    A.accountId A.slotId A.accountStateRoot A.verifierVersion
+    A.packedWitnessCommitment A.nativeRoleRootCommitment A.maskedProjection
+    A.accountStarkBundleBytesOrDigest A.publicReplayPayloadDigest
+    A.lifecycleAnchor A.transcriptSurface A.stateTransitionBoundary
+    A.accountNamespace A.authorizationClass
+
+/-- Simulator-input output induced by an accepted public-anchor package. -/
+def simulatorInputOutput (A : AccountCreationAcceptedPublicAnchorPackage) :
+    Nat :=
+  selectedRustAccountCreationSimulatorInputSerializer.simulatorInputOf
+    A.leafContextDigest A.creationProofBindingDigest
+    A.nativeRoleRootCommitment A.aggregationContextDigest A.slotId
+    A.maskedProjection A.accountStarkBundleBytesOrDigest
+    A.publicReplayPayloadDigest A.accountId A.accountStateRoot
+    A.lifecycleAnchor A.verifierVersion A.packedWitnessCommitment
+    A.publicRejectionCode
+
+/-- The accepted public-anchor package produces both selected public surfaces. -/
+def surfaces (A : AccountCreationAcceptedPublicAnchorPackage) : Prop :=
+  selectedRustAccountCreationPublicBundleSerializer.surface
+      A.publicBundleOutput ∧
+    selectedRustAccountCreationSimulatorInputSerializer.surface
+      A.simulatorInputOutput
+
+/-- Package-level no-export support for accepted public anchors. -/
+def noExportSupport (A : AccountCreationAcceptedPublicAnchorPackage) : Prop :=
+  surfaces A ∧
+    ¬ selectedRustAccountCreationNoExportPolicy.containsDenylistedField
+      A.publicBundleOutput ∧
+      ¬ selectedRustAccountCreationSimulatorInputNoExportPolicy.containsDenylistedField
+        A.simulatorInputOutput
+
+end AccountCreationAcceptedPublicAnchorPackage
+
+/-- The accepted public-anchor package is bound to the selected public surfaces. -/
+theorem selectedRustAcceptedPublicAnchorPackage_surfaces_v1
+    (A : AccountCreationAcceptedPublicAnchorPackage) :
+    A.surfaces := by
+  constructor
+  ·
+    refine
+      ⟨A.accountId, A.slotId, A.accountStateRoot, A.verifierVersion,
+        A.packedWitnessCommitment, A.nativeRoleRootCommitment,
+        A.maskedProjection, A.accountStarkBundleBytesOrDigest,
+        A.publicReplayPayloadDigest, A.lifecycleAnchor, A.transcriptSurface,
+        A.stateTransitionBoundary, A.accountNamespace, A.authorizationClass,
+        ?_⟩
+    rfl
+  ·
+    refine
+      ⟨A.leafContextDigest, A.creationProofBindingDigest,
+        A.nativeRoleRootCommitment, A.aggregationContextDigest, A.slotId,
+        A.maskedProjection, A.accountStarkBundleBytesOrDigest,
+        A.publicReplayPayloadDigest, A.accountId, A.accountStateRoot,
+        A.lifecycleAnchor, A.verifierVersion, A.packedWitnessCommitment,
+        A.publicRejectionCode, ?_⟩
+    rfl
+
+/--
+Selected Rust package-level accepted public-anchor no-export support.
+
+This theorem only binds the package to allowlisted public surfaces and applies
+the existing denylist-separation closures.  It does not instantiate
+`selected_account_stark_public_bundle_simulator_v1`,
+`selected_account_stark_no_export_v1`, or accepted-bundle simulability from
+public anchors.
+-/
+theorem selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1 :
+    forall A : AccountCreationAcceptedPublicAnchorPackage,
+      A.noExportSupport := by
+  intro A
+  have hSurfaces := selectedRustAcceptedPublicAnchorPackage_surfaces_v1 A
+  exact ⟨hSurfaces,
+    selectedRustAccountCreationPublicBundleNoExport_instantiation_v1
+      hSurfaces.1,
+    selectedRustAccountCreationSimulatorInputNoExport_instantiation_v1
+      hSurfaces.2⟩
+
 end Path2NoExportConcrete
 end Descender

@@ -427,6 +427,10 @@ fn manifest_body() -> Result<Value, String> {
                     no_export_report.simulator_input_allowlist_lean_theorem,
                 "simulator_input_allowlist_predicate_instantiated":
                     no_export_report.simulator_input_allowlist_predicate_instantiated,
+                "accepted_public_anchor_package_lean_theorem":
+                    no_export_report.accepted_public_anchor_package_lean_theorem,
+                "accepted_public_anchor_package_bound":
+                    no_export_report.accepted_public_anchor_package_bound,
                 "simulator_theorem_instantiated":
                     no_export_report.simulator_theorem_instantiated,
                 "no_export_theorem_instantiated":

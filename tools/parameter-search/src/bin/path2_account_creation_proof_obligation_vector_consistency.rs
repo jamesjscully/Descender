@@ -540,6 +540,21 @@ fn main() -> Result<(), String> {
         "/no_export_vector_evidence/simulator_input_allowlist_lean_theorem",
         no_export_report.simulator_input_allowlist_lean_theorem,
     )?;
+    require_bool(
+        corpus,
+        "/no_export_vector_evidence/accepted_public_anchor_package_bound",
+        true,
+    )?;
+    require_str(
+        corpus,
+        "/no_export_vector_evidence/accepted_public_anchor_package_lean_theorem",
+        no_export_report.accepted_public_anchor_package_lean_theorem,
+    )?;
+    require_bool(
+        corpus,
+        "/no_export_vector_evidence/accepted_bundle_simulatable_from_public_anchors",
+        false,
+    )?;
     require_bool(corpus, "/no_export_vector_evidence/deployment_ready", false)?;
     require_str(
         corpus,
@@ -577,6 +592,14 @@ fn main() -> Result<(), String> {
         || !bool_at(
             no_export_vectors,
             "/audit_summary/simulator_input_allowlist_predicate_instantiated",
+        )?
+        || !bool_at(
+            no_export_vectors,
+            "/audit_summary/accepted_public_anchor_package_bound",
+        )?
+        || bool_at(
+            no_export_vectors,
+            "/audit_summary/accepted_bundle_simulatable_from_public_anchors",
         )?
         || bool_at(
             no_export_vectors,

@@ -287,10 +287,13 @@ current vectors, and the selected Rust public-bundle denylist predicate is
 machine-checked by
 `selectedRustAccountCreationPublicBundleNoExport_instantiation_v1`. The selected
 Rust simulator-input allowlist predicate is also machine-checked by
-`selectedRustAccountCreationSimulatorInputNoExport_instantiation_v1`. These are
-allowlist/denylist predicates only; they do not instantiate the simulator
-distribution theorem or accepted-bundle simulability. The denylist term
-`private_trace_material` covers private trace material.
+`selectedRustAccountCreationSimulatorInputNoExport_instantiation_v1`. The
+selected Rust accepted public-anchor package binding predicate is
+machine-checked by
+`selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1`. These are
+allowlist/denylist and package-binding predicates only; they do not instantiate
+the simulator distribution theorem or accepted-bundle simulability. The denylist
+term `private_trace_material` covers private trace material.
 
 The algebra-layer simulator/no-export theorem for the selected payload is now
 stated and proven in
@@ -300,9 +303,9 @@ mask-PRF, Poseidon2 commitment hiding}). It does NOT close the boundary report:
 the implementation no-export scan, pad-seed single-use lifecycle term
 (`DIR-LIFE-001`), public-anchor simulability, and external review remain the
 open blockers. The frozen no-export vector flag, public-bundle denylist
-predicate, and simulator-input allowlist predicate are closed; simulator,
-no-export, accepted-bundle simulability, review, and deployment flags stay
-false.
+predicate, simulator-input allowlist predicate, and accepted public-anchor
+package binding predicate are closed; simulator, no-export, accepted-bundle
+simulability, review, and deployment flags stay false.
 
 ## Helper API Rule
 

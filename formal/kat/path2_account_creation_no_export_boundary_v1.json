@@ -1,6 +1,7 @@
 {
   "manifest": {
     "authority_snapshot": {
+      "accepted_public_anchor_package_lean_theorem": "selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1",
       "blocker": "account-STARK residual matrix: selected payload simulator and no-export theorem is not instantiated",
       "named_break": "account_stark_simulator_or_no_export_break",
       "no_export_report_domain": "Descender.Path2.AccountCreationNoExportBoundaryReport.v1",
@@ -18,12 +19,12 @@
     "corpus_id": "Descender.Path2.AccountCreationNoExportBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_no_export_boundary_report_digest": "4e701ec93567f4d6d5dacf5bba2c4b32e3c10bd1db013d10e72b9aa587a86346",
-      "account_creation_no_export_boundary_report_recomputed_digest": "4e701ec93567f4d6d5dacf5bba2c4b32e3c10bd1db013d10e72b9aa587a86346",
-      "account_creation_proof_boundary_report_digest": "9b42c3ffcb878939230fba2792948fcaf6f73e398497bcbf8affa4c3f463d065",
+      "account_creation_no_export_boundary_report_digest": "886bdcf84fe536a1793217498ffe23684a201cd2ce2bbc0cc10c2b9ca11ed164",
+      "account_creation_no_export_boundary_report_recomputed_digest": "886bdcf84fe536a1793217498ffe23684a201cd2ce2bbc0cc10c2b9ca11ed164",
+      "account_creation_proof_boundary_report_digest": "1c837562289a63fa063d7b8690dd3018d8327532399c33db8fccd9f2bdcbdaca",
       "payload_byte_model_report_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
       "payload_kat_boundary_report_digest": "ab14d77b9401e7c219a85204c19c767b958220517bd64f4a5868189bb8fbbafe",
-      "proof_boundary_report_no_export_digest": "4e701ec93567f4d6d5dacf5bba2c4b32e3c10bd1db013d10e72b9aa587a86346"
+      "proof_boundary_report_no_export_digest": "886bdcf84fe536a1793217498ffe23684a201cd2ce2bbc0cc10c2b9ca11ed164"
     },
     "frozen_status": "draft_no_export_boundary_manifest",
     "generator": {
@@ -31,8 +32,10 @@
       "source": "tools/parameter-search/src/bin/path2_account_creation_no_export_boundary_manifest.rs"
     },
     "no_export_boundary": {
+      "accepted_public_anchor_package_lean_theorem": "selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1",
       "coverage": {
         "accepted_bundle_simulatable_from_public_anchors": false,
+        "accepted_public_anchor_package_bound": true,
         "blocker": "account-STARK residual matrix: selected payload simulator and no-export theorem is not instantiated",
         "boundary_mapping_complete": true,
         "byte_model_public_payload_only": true,
@@ -41,7 +44,7 @@
         "frozen_no_export_vectors_complete": true,
         "no_export_field_denylist_pinned": true,
         "no_export_theorem_instantiated": false,
-        "no_export_vector_case_count": 6,
+        "no_export_vector_case_count": 7,
         "no_export_vectors_present": true,
         "payload_public_field_count": 11,
         "production_gate_fail_closed": true,
@@ -67,6 +70,7 @@
         "no_export_public_payload_field_allowlist",
         "no_export_simulator_public_input_allowlist",
         "no_export_simulator_input_lean_predicate",
+        "no_export_accepted_public_anchor_package_lean_predicate",
         "no_export_private_material_denylist_absence",
         "no_export_opaque_bundle_not_manifest_inlined",
         "no_export_public_bundle_lean_predicate"
@@ -94,5 +98,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.AccountCreationNoExportBoundaryManifest.v1"
   },
-  "manifest_digest": "d9087fe4eb84e01a726e55e9d24a2c63df6934d03a6727af786c7d7b2b614df3"
+  "manifest_digest": "3f6424242a51fe115c7d985f6a9a2f7f8462029869bdbdfd6386a132f50d0b9d"
 }

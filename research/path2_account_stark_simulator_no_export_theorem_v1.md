@@ -163,8 +163,11 @@ syndrome preimage / gauge / randomizer` beyond the public class — the
   The selected Rust public-bundle denylist predicate is now machine-checked by
   `selectedRustAccountCreationPublicBundleNoExport_instantiation_v1`, and the
   selected Rust simulator-input allowlist predicate is machine-checked by
-  `selectedRustAccountCreationSimulatorInputNoExport_instantiation_v1`, while
-  public-anchor simulability and external review remain.
+  `selectedRustAccountCreationSimulatorInputNoExport_instantiation_v1`. The
+  selected Rust accepted public-anchor package binding predicate is
+  machine-checked by
+  `selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1`, while
+  full public-anchor simulability and external review remain.
 
 ## Implementation Residual (test surface, not algebra)
 
@@ -188,6 +191,7 @@ following must hold in code and stay regression-tested (owned by
   implementation no-export scan (#8, `DIR-REJECT-001`/`DIR-PAYLOAD-001`); the
   full public-anchor simulator/no-export predicate; external review. The frozen
   vector corpus, selected Rust public-bundle denylist predicate, and selected
-  Rust simulator-input allowlist predicate are now closed separately;
+  Rust simulator-input allowlist predicate, plus the selected Rust accepted
+  public-anchor package binding predicate, are now closed separately;
   `Path2AccountCreationNoExportBoundaryReportV1` keeps its
   simulator/no-export/deployment flags false pending those.

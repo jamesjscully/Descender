@@ -77,6 +77,7 @@ fn main() -> Result<(), String> {
         "formal/kat/path2_account_creation_no_export_boundary_v1.json",
     )?;
     let source = load_text(&root, "tools/parameter-search/src/production_reference.rs")?;
+    let lean_source = load_text(&root, "Descender/Path2NoExportConcrete.lean")?;
 
     let report = path2_account_creation_no_export_boundary_report_v1();
     let proof_report = path2_account_creation_proof_boundary_report_v1();
@@ -157,6 +158,10 @@ fn main() -> Result<(), String> {
             report.simulator_input_allowlist_lean_theorem,
         ),
         (
+            "/manifest/authority_snapshot/accepted_public_anchor_package_lean_theorem",
+            report.accepted_public_anchor_package_lean_theorem,
+        ),
+        (
             "/manifest/authority_snapshot/named_break",
             report.named_break,
         ),
@@ -197,6 +202,7 @@ fn main() -> Result<(), String> {
         "/manifest/no_export_boundary/coverage/no_export_vectors_present",
         "/manifest/no_export_boundary/coverage/public_bundle_no_export_predicate_instantiated",
         "/manifest/no_export_boundary/coverage/simulator_input_allowlist_predicate_instantiated",
+        "/manifest/no_export_boundary/coverage/accepted_public_anchor_package_bound",
     ] {
         if !bool_at(&manifest, pointer)? {
             return Err(format!(
@@ -259,6 +265,16 @@ fn main() -> Result<(), String> {
             "account-creation no-export manifest lost simulator-input Lean hook".to_string(),
         );
     }
+    if str_at(
+        &manifest,
+        "/manifest/no_export_boundary/accepted_public_anchor_package_lean_theorem",
+    )? != report.accepted_public_anchor_package_lean_theorem
+    {
+        return Err(
+            "account-creation no-export manifest lost accepted public-anchor Lean hook"
+                .to_string(),
+        );
+    }
 
     let support_doc = load_text(&root, report.support_file)?;
     for needle in [
@@ -289,6 +305,7 @@ fn main() -> Result<(), String> {
         "PATH2_ACCOUNT_CREATION_NO_EXPORT_THEOREM_TARGET",
         "PATH2_ACCOUNT_CREATION_PUBLIC_BUNDLE_NO_EXPORT_LEAN_THEOREM",
         "PATH2_ACCOUNT_CREATION_SIMULATOR_INPUT_ALLOWLIST_LEAN_THEOREM",
+        "PATH2_ACCOUNT_CREATION_ACCEPTED_PUBLIC_ANCHOR_PACKAGE_LEAN_THEOREM",
         "PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS",
         "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS",
         "verify_path2_direct_creation_account_stark_payload_boundary",
@@ -296,6 +313,15 @@ fn main() -> Result<(), String> {
         "path2_account_stark_payload_kat_boundary_report_v1",
     ] {
         require_contains(&source, needle, "production reference source")?;
+    }
+    for needle in [
+        report.public_bundle_no_export_lean_theorem,
+        report.simulator_input_allowlist_lean_theorem,
+        report.accepted_public_anchor_package_lean_theorem,
+        "AccountCreationAcceptedPublicAnchorPackage",
+        "selectedRustAcceptedPublicAnchorPackage_surfaces_v1",
+    ] {
+        require_contains(&lean_source, needle, "Path2NoExportConcrete Lean source")?;
     }
 
     println!("Path 2 account-creation no-export boundary consistency check passed.");

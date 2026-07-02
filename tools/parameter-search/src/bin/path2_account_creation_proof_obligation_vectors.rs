@@ -139,6 +139,14 @@ fn manifest_body() -> Result<Value, String> {
             no_export_vectors,
             "/audit_summary/simulator_input_allowlist_predicate_instantiated",
         )?
+        || !bool_at(
+            no_export_vectors,
+            "/audit_summary/accepted_public_anchor_package_bound",
+        )?
+        || bool_at(
+            no_export_vectors,
+            "/audit_summary/accepted_bundle_simulatable_from_public_anchors",
+        )?
         || bool_at(
             no_export_vectors,
             "/audit_summary/public_payload_exports_private_material",
@@ -356,6 +364,12 @@ fn manifest_body() -> Result<Value, String> {
                 no_export_report.simulator_input_allowlist_lean_theorem,
             "simulator_input_allowlist_predicate_instantiated":
                 no_export_report.simulator_input_allowlist_predicate_instantiated,
+            "accepted_public_anchor_package_lean_theorem":
+                no_export_report.accepted_public_anchor_package_lean_theorem,
+            "accepted_public_anchor_package_bound":
+                no_export_report.accepted_public_anchor_package_bound,
+            "accepted_bundle_simulatable_from_public_anchors":
+                no_export_report.accepted_bundle_simulatable_from_public_anchors,
             "frozen_no_export_vectors_complete":
                 no_export_report.frozen_no_export_vectors_complete,
             "deployment_ready": no_export_report.deployment_ready,

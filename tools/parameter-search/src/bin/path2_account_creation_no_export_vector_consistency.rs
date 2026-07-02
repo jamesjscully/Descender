@@ -156,6 +156,26 @@ fn main() -> Result<(), String> {
     )? {
         return Err("no-export vector corpus lost simulator-input Lean hook".to_string());
     }
+    if !bool_at(
+        corpus,
+        "/boundary_report/accepted_public_anchor_package_bound",
+    )? || !bool_at(
+        corpus,
+        "/audit_summary/accepted_public_anchor_package_bound",
+    )? {
+        return Err(
+            "no-export vector corpus lost accepted public-anchor package hook".to_string(),
+        );
+    }
+    if bool_at(
+        corpus,
+        "/audit_summary/accepted_bundle_simulatable_from_public_anchors",
+    )? {
+        return Err(
+            "no-export vector corpus unexpectedly closes accepted-bundle simulability"
+                .to_string(),
+        );
+    }
     if !bool_at(corpus, "/audit_summary/all_private_material_absent")?
         || !bool_at(corpus, "/audit_summary/payload_denylist_absent")?
         || !bool_at(corpus, "/audit_summary/simulator_denylist_absent")?
@@ -258,6 +278,30 @@ fn main() -> Result<(), String> {
             != Some(true)
     {
         return Err("no-export simulator-input Lean case drifted".to_string());
+    }
+    let accepted_anchor_case = cases
+        .iter()
+        .find(|case| {
+            case.get("case_id").and_then(Value::as_str)
+                == Some("no_export_accepted_public_anchor_package_lean_predicate")
+        })
+        .ok_or_else(|| {
+            "no-export vector corpus lost accepted public-anchor package Lean case".to_string()
+        })?;
+    if accepted_anchor_case
+        .get("accepted_public_anchor_package_lean_theorem")
+        .and_then(Value::as_str)
+        != Some(report.accepted_public_anchor_package_lean_theorem)
+        || accepted_anchor_case
+            .get("accepted_public_anchor_package_bound")
+            .and_then(Value::as_bool)
+            != Some(true)
+        || accepted_anchor_case
+            .get("accepted_bundle_simulatable_from_public_anchors")
+            .and_then(Value::as_bool)
+            != Some(false)
+    {
+        return Err("no-export accepted public-anchor package Lean case drifted".to_string());
     }
 
     println!("Path 2 account-creation no-export vector consistency check passed.");

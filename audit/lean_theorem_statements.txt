@@ -126,6 +126,12 @@ theorem Descender.Path2HiddenSourceSemanticsBoundary.reviewed_fq12_hidden_source
                 Descender.Path2HiddenSourceSemanticsBoundary.ReviewedFq12HiddenSourceProofSemanticsClosed
                   selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates
 
+theorem Descender.Path2NoExportConcrete.selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1 :
+∀ (A : Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage), A.noExportSupport
+
+theorem Descender.Path2NoExportConcrete.selectedRustAcceptedPublicAnchorPackage_surfaces_v1 :
+∀ (A : Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage), A.surfaces
+
 theorem Descender.Path2NoExportConcrete.selectedRustAccountCreationPublicBundleNoExport_instantiation_v1 :
 Descender.Path2NoExportConcrete.AccountCreationPublicBundleNoExportClosure
   Descender.Path2NoExportConcrete.selectedRustAccountCreationNoExportPolicy
