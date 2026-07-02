@@ -33,7 +33,7 @@
     "digests": {
       "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
       "direct_qrom_action_boundary_report_recomputed_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
-      "direct_theorem_boundary_report_digest": "fb531836ec544e6e6eaebd70eb954b1b5afb1ecf0dec18cc29a2d37a51f02b97",
+      "direct_theorem_boundary_report_digest": "6fc8fc523106eb9c5bf99d3cd50dc6ed0c8045e5c754ce807892ca021f0220b4",
       "direct_theorem_report_qrom_action_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b"
     },
     "frozen_status": "draft_qrom_action_boundary_manifest",
@@ -109,5 +109,5 @@
     },
     "schema": "Descender.Path2.DirectQromActionBoundaryManifest.v1"
   },
-  "manifest_digest": "0bf28300029e292202bb10e1146a4cfee4784761c54265bb1e3e6521fc425bb1"
+  "manifest_digest": "a0ec70b00c881dff8e6b730ef11e578dcb6454d513cd8fd226c2715d9a6cf986"
 }

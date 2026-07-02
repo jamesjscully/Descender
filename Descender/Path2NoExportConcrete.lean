@@ -1086,6 +1086,34 @@ def noExportSupport (A : AccountCreationAcceptedPublicAnchorPackage) : Prop :=
       ¬ selectedRustAccountCreationSimulatorInputNoExportPolicy.containsDenylistedField
         A.simulatorInputOutput
 
+/--
+Boundary predicate consumed by the future accepted-bundle simulator theorem.
+
+This is still only a public-anchor/allowlist boundary: it says the accepted
+package determines the selected public-bundle surface and selected
+simulator-input surface, and that both surfaces satisfy the current denylist
+closures.  It does not assert distributional simulation.
+-/
+def publicAnchorSimulationBoundary
+    (A : AccountCreationAcceptedPublicAnchorPackage) : Prop :=
+  A.surfaces ∧
+    A.noExportSupport ∧
+      A.publicBundleOutput =
+        selectedRustAccountCreationPublicBundleSerializer.publicBundleOutputOf
+          A.accountId A.slotId A.accountStateRoot A.verifierVersion
+          A.packedWitnessCommitment A.nativeRoleRootCommitment
+          A.maskedProjection A.accountStarkBundleBytesOrDigest
+          A.publicReplayPayloadDigest A.lifecycleAnchor A.transcriptSurface
+          A.stateTransitionBoundary A.accountNamespace A.authorizationClass ∧
+        A.simulatorInputOutput =
+          selectedRustAccountCreationSimulatorInputSerializer.simulatorInputOf
+            A.leafContextDigest A.creationProofBindingDigest
+            A.nativeRoleRootCommitment A.aggregationContextDigest A.slotId
+            A.maskedProjection A.accountStarkBundleBytesOrDigest
+            A.publicReplayPayloadDigest A.accountId A.accountStateRoot
+            A.lifecycleAnchor A.verifierVersion A.packedWitnessCommitment
+            A.publicRejectionCode
+
 end AccountCreationAcceptedPublicAnchorPackage
 
 /-- The accepted public-anchor package is bound to the selected public surfaces. -/
@@ -1131,6 +1159,23 @@ theorem selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1 :
       hSurfaces.1,
     selectedRustAccountCreationSimulatorInputNoExport_instantiation_v1
       hSurfaces.2⟩
+
+/--
+Selected Rust accepted-bundle public-anchor simulation-boundary hook.
+
+This proves that the public-anchor package is the exact public surface a future
+simulator theorem may consume, together with the current denylist closures.
+The theorem deliberately does not prove
+`accepted_bundle_simulatable_from_public_anchors`.
+-/
+theorem selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1 :
+    forall A : AccountCreationAcceptedPublicAnchorPackage,
+      A.publicAnchorSimulationBoundary := by
+  intro A
+  have hSurfaces := selectedRustAcceptedPublicAnchorPackage_surfaces_v1 A
+  have hNoExport :=
+    selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1 A
+  exact ⟨hSurfaces, hNoExport, rfl, rfl⟩
 
 end Path2NoExportConcrete
 end Descender

@@ -55,6 +55,8 @@ fn manifest_body() -> Result<Value, String> {
                 report.simulator_input_allowlist_lean_theorem,
             "accepted_public_anchor_package_lean_theorem":
                 report.accepted_public_anchor_package_lean_theorem,
+            "accepted_bundle_public_anchor_simulation_boundary_lean_theorem":
+                report.accepted_bundle_public_anchor_simulation_boundary_lean_theorem,
             "named_break": report.named_break,
             "blocker": report.blocker
         },
@@ -92,6 +94,8 @@ fn manifest_body() -> Result<Value, String> {
                     report.simulator_input_allowlist_predicate_instantiated,
                 "accepted_public_anchor_package_bound":
                     report.accepted_public_anchor_package_bound,
+                "accepted_bundle_public_anchor_simulation_boundary_bound":
+                    report.accepted_bundle_public_anchor_simulation_boundary_bound,
                 "simulator_theorem_instantiated": report.simulator_theorem_instantiated,
                 "no_export_theorem_instantiated": report.no_export_theorem_instantiated,
                 "accepted_bundle_simulatable_from_public_anchors":
@@ -109,6 +113,8 @@ fn manifest_body() -> Result<Value, String> {
                 report.simulator_input_allowlist_lean_theorem,
             "accepted_public_anchor_package_lean_theorem":
                 report.accepted_public_anchor_package_lean_theorem,
+            "accepted_bundle_public_anchor_simulation_boundary_lean_theorem":
+                report.accepted_bundle_public_anchor_simulation_boundary_lean_theorem,
             "no_export_vector_case_ids": report.no_export_vector_case_ids,
             "simulator_public_input_fields": report.simulator_public_input_fields,
             "no_export_private_material_fields": report.no_export_private_material_fields

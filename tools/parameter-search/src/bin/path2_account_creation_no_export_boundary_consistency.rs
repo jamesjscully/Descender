@@ -162,6 +162,10 @@ fn main() -> Result<(), String> {
             report.accepted_public_anchor_package_lean_theorem,
         ),
         (
+            "/manifest/authority_snapshot/accepted_bundle_public_anchor_simulation_boundary_lean_theorem",
+            report.accepted_bundle_public_anchor_simulation_boundary_lean_theorem,
+        ),
+        (
             "/manifest/authority_snapshot/named_break",
             report.named_break,
         ),
@@ -203,6 +207,7 @@ fn main() -> Result<(), String> {
         "/manifest/no_export_boundary/coverage/public_bundle_no_export_predicate_instantiated",
         "/manifest/no_export_boundary/coverage/simulator_input_allowlist_predicate_instantiated",
         "/manifest/no_export_boundary/coverage/accepted_public_anchor_package_bound",
+        "/manifest/no_export_boundary/coverage/accepted_bundle_public_anchor_simulation_boundary_bound",
     ] {
         if !bool_at(&manifest, pointer)? {
             return Err(format!(
@@ -271,7 +276,16 @@ fn main() -> Result<(), String> {
     )? != report.accepted_public_anchor_package_lean_theorem
     {
         return Err(
-            "account-creation no-export manifest lost accepted public-anchor Lean hook"
+            "account-creation no-export manifest lost accepted public-anchor Lean hook".to_string(),
+        );
+    }
+    if str_at(
+        &manifest,
+        "/manifest/no_export_boundary/accepted_bundle_public_anchor_simulation_boundary_lean_theorem",
+    )? != report.accepted_bundle_public_anchor_simulation_boundary_lean_theorem
+    {
+        return Err(
+            "account-creation no-export manifest lost accepted-bundle simulation-boundary Lean hook"
                 .to_string(),
         );
     }
@@ -306,6 +320,7 @@ fn main() -> Result<(), String> {
         "PATH2_ACCOUNT_CREATION_PUBLIC_BUNDLE_NO_EXPORT_LEAN_THEOREM",
         "PATH2_ACCOUNT_CREATION_SIMULATOR_INPUT_ALLOWLIST_LEAN_THEOREM",
         "PATH2_ACCOUNT_CREATION_ACCEPTED_PUBLIC_ANCHOR_PACKAGE_LEAN_THEOREM",
+        "PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_PUBLIC_ANCHOR_SIMULATION_BOUNDARY_LEAN_THEOREM",
         "PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS",
         "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS",
         "verify_path2_direct_creation_account_stark_payload_boundary",
@@ -318,8 +333,11 @@ fn main() -> Result<(), String> {
         report.public_bundle_no_export_lean_theorem,
         report.simulator_input_allowlist_lean_theorem,
         report.accepted_public_anchor_package_lean_theorem,
+        report.accepted_bundle_public_anchor_simulation_boundary_lean_theorem,
         "AccountCreationAcceptedPublicAnchorPackage",
         "selectedRustAcceptedPublicAnchorPackage_surfaces_v1",
+        "publicAnchorSimulationBoundary",
+        "selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1",
     ] {
         require_contains(&lean_source, needle, "Path2NoExportConcrete Lean source")?;
     }

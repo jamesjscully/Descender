@@ -111,6 +111,19 @@ fn manifest_body() -> Result<Value, String> {
             "all_private_material_absent": true
         }),
         json!({
+            "case_id": "no_export_accepted_bundle_public_anchor_simulation_boundary",
+            "kind": "audit",
+            "surface": "Descender.Path2NoExportConcrete",
+            "requirement": report.no_export_requirement,
+            "accepted_bundle_public_anchor_simulation_boundary_lean_theorem":
+                report.accepted_bundle_public_anchor_simulation_boundary_lean_theorem,
+            "accepted_bundle_public_anchor_simulation_boundary_bound":
+                report.accepted_bundle_public_anchor_simulation_boundary_bound,
+            "accepted_bundle_simulatable_from_public_anchors":
+                report.accepted_bundle_simulatable_from_public_anchors,
+            "all_private_material_absent": true
+        }),
+        json!({
             "case_id": "no_export_private_material_denylist_absence",
             "kind": "audit",
             "surface": "combined public payload and simulator-input fields",
@@ -187,6 +200,10 @@ fn manifest_body() -> Result<Value, String> {
                 report.accepted_public_anchor_package_lean_theorem,
             "accepted_public_anchor_package_bound":
                 report.accepted_public_anchor_package_bound,
+            "accepted_bundle_public_anchor_simulation_boundary_lean_theorem":
+                report.accepted_bundle_public_anchor_simulation_boundary_lean_theorem,
+            "accepted_bundle_public_anchor_simulation_boundary_bound":
+                report.accepted_bundle_public_anchor_simulation_boundary_bound,
             "frozen_no_export_vectors_complete": report.frozen_no_export_vectors_complete,
             "deployment_ready": report.deployment_ready,
             "blocker": report.blocker
@@ -216,6 +233,8 @@ fn manifest_body() -> Result<Value, String> {
                 report.simulator_input_allowlist_predicate_instantiated,
             "accepted_public_anchor_package_bound":
                 report.accepted_public_anchor_package_bound,
+            "accepted_bundle_public_anchor_simulation_boundary_bound":
+                report.accepted_bundle_public_anchor_simulation_boundary_bound,
             "accepted_bundle_simulatable_from_public_anchors":
                 report.accepted_bundle_simulatable_from_public_anchors,
             "frozen_no_export_vectors_complete": report.frozen_no_export_vectors_complete,

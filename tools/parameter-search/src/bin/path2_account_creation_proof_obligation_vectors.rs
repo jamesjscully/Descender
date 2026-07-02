@@ -143,6 +143,10 @@ fn manifest_body() -> Result<Value, String> {
             no_export_vectors,
             "/audit_summary/accepted_public_anchor_package_bound",
         )?
+        || !bool_at(
+            no_export_vectors,
+            "/audit_summary/accepted_bundle_public_anchor_simulation_boundary_bound",
+        )?
         || bool_at(
             no_export_vectors,
             "/audit_summary/accepted_bundle_simulatable_from_public_anchors",
@@ -368,6 +372,11 @@ fn manifest_body() -> Result<Value, String> {
                 no_export_report.accepted_public_anchor_package_lean_theorem,
             "accepted_public_anchor_package_bound":
                 no_export_report.accepted_public_anchor_package_bound,
+            "accepted_bundle_public_anchor_simulation_boundary_lean_theorem":
+                no_export_report
+                    .accepted_bundle_public_anchor_simulation_boundary_lean_theorem,
+            "accepted_bundle_public_anchor_simulation_boundary_bound":
+                no_export_report.accepted_bundle_public_anchor_simulation_boundary_bound,
             "accepted_bundle_simulatable_from_public_anchors":
                 no_export_report.accepted_bundle_simulatable_from_public_anchors,
             "frozen_no_export_vectors_complete":

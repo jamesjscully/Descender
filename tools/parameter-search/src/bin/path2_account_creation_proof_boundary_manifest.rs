@@ -431,6 +431,11 @@ fn manifest_body() -> Result<Value, String> {
                     no_export_report.accepted_public_anchor_package_lean_theorem,
                 "accepted_public_anchor_package_bound":
                     no_export_report.accepted_public_anchor_package_bound,
+                "accepted_bundle_public_anchor_simulation_boundary_lean_theorem":
+                    no_export_report
+                        .accepted_bundle_public_anchor_simulation_boundary_lean_theorem,
+                "accepted_bundle_public_anchor_simulation_boundary_bound":
+                    no_export_report.accepted_bundle_public_anchor_simulation_boundary_bound,
                 "simulator_theorem_instantiated":
                     no_export_report.simulator_theorem_instantiated,
                 "no_export_theorem_instantiated":
