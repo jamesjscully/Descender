@@ -147,6 +147,15 @@ fn main() -> Result<(), String> {
     )? {
         return Err("no-export vector corpus lost public-bundle Lean hook".to_string());
     }
+    if !bool_at(
+        corpus,
+        "/boundary_report/simulator_input_allowlist_predicate_instantiated",
+    )? || !bool_at(
+        corpus,
+        "/audit_summary/simulator_input_allowlist_predicate_instantiated",
+    )? {
+        return Err("no-export vector corpus lost simulator-input Lean hook".to_string());
+    }
     if !bool_at(corpus, "/audit_summary/all_private_material_absent")?
         || !bool_at(corpus, "/audit_summary/payload_denylist_absent")?
         || !bool_at(corpus, "/audit_summary/simulator_denylist_absent")?
@@ -231,6 +240,24 @@ fn main() -> Result<(), String> {
             != Some(true)
     {
         return Err("no-export public-bundle Lean case drifted".to_string());
+    }
+    let simulator_input_case = cases
+        .iter()
+        .find(|case| {
+            case.get("case_id").and_then(Value::as_str)
+                == Some("no_export_simulator_input_lean_predicate")
+        })
+        .ok_or_else(|| "no-export vector corpus lost simulator-input Lean case".to_string())?;
+    if simulator_input_case
+        .get("simulator_input_allowlist_lean_theorem")
+        .and_then(Value::as_str)
+        != Some(report.simulator_input_allowlist_lean_theorem)
+        || simulator_input_case
+            .get("simulator_input_allowlist_predicate_instantiated")
+            .and_then(Value::as_bool)
+            != Some(true)
+    {
+        return Err("no-export simulator-input Lean case drifted".to_string());
     }
 
     println!("Path 2 account-creation no-export vector consistency check passed.");

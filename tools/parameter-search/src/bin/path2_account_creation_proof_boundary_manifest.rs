@@ -423,6 +423,10 @@ fn manifest_body() -> Result<Value, String> {
                     no_export_report.public_bundle_no_export_lean_theorem,
                 "public_bundle_no_export_predicate_instantiated":
                     no_export_report.public_bundle_no_export_predicate_instantiated,
+                "simulator_input_allowlist_lean_theorem":
+                    no_export_report.simulator_input_allowlist_lean_theorem,
+                "simulator_input_allowlist_predicate_instantiated":
+                    no_export_report.simulator_input_allowlist_predicate_instantiated,
                 "simulator_theorem_instantiated":
                     no_export_report.simulator_theorem_instantiated,
                 "no_export_theorem_instantiated":

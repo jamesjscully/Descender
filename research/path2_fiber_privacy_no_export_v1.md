@@ -285,7 +285,11 @@ simulator semantics, no-export theorem closure, external review, and deployment
 readiness; the no-export audit vector corpus is frozen by the digest-pinned
 current vectors, and the selected Rust public-bundle denylist predicate is
 machine-checked by
-`selectedRustAccountCreationPublicBundleNoExport_instantiation_v1`. The denylist term
+`selectedRustAccountCreationPublicBundleNoExport_instantiation_v1`. The selected
+Rust simulator-input allowlist predicate is also machine-checked by
+`selectedRustAccountCreationSimulatorInputNoExport_instantiation_v1`. These are
+allowlist/denylist predicates only; they do not instantiate the simulator
+distribution theorem or accepted-bundle simulability. The denylist term
 `private_trace_material` covers private trace material.
 
 The algebra-layer simulator/no-export theorem for the selected payload is now
@@ -295,9 +299,10 @@ Real` from the allowlist alone, reducing no-export to {zk-FRI HVZK, Poseidon2
 mask-PRF, Poseidon2 commitment hiding}). It does NOT close the boundary report:
 the implementation no-export scan, pad-seed single-use lifecycle term
 (`DIR-LIFE-001`), public-anchor simulability, and external review remain the
-open blockers. The frozen no-export vector flag and public-bundle denylist
-predicate are closed; simulator, no-export, accepted-bundle simulability,
-review, and deployment flags stay false.
+open blockers. The frozen no-export vector flag, public-bundle denylist
+predicate, and simulator-input allowlist predicate are closed; simulator,
+no-export, accepted-bundle simulability, review, and deployment flags stay
+false.
 
 ## Helper API Rule
 

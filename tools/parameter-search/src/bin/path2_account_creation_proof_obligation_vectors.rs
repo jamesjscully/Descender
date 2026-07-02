@@ -135,6 +135,10 @@ fn manifest_body() -> Result<Value, String> {
             no_export_vectors,
             "/audit_summary/simulator_denylist_absent",
         )?
+        || !bool_at(
+            no_export_vectors,
+            "/audit_summary/simulator_input_allowlist_predicate_instantiated",
+        )?
         || bool_at(
             no_export_vectors,
             "/audit_summary/public_payload_exports_private_material",
@@ -348,6 +352,10 @@ fn manifest_body() -> Result<Value, String> {
                 no_export_report.public_bundle_no_export_lean_theorem,
             "public_bundle_no_export_predicate_instantiated":
                 no_export_report.public_bundle_no_export_predicate_instantiated,
+            "simulator_input_allowlist_lean_theorem":
+                no_export_report.simulator_input_allowlist_lean_theorem,
+            "simulator_input_allowlist_predicate_instantiated":
+                no_export_report.simulator_input_allowlist_predicate_instantiated,
             "frozen_no_export_vectors_complete":
                 no_export_report.frozen_no_export_vectors_complete,
             "deployment_ready": no_export_report.deployment_ready,

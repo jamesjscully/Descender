@@ -525,6 +525,21 @@ fn main() -> Result<(), String> {
         "/no_export_vector_evidence/public_bundle_no_export_predicate_instantiated",
         true,
     )?;
+    require_str(
+        corpus,
+        "/no_export_vector_evidence/public_bundle_no_export_lean_theorem",
+        no_export_report.public_bundle_no_export_lean_theorem,
+    )?;
+    require_bool(
+        corpus,
+        "/no_export_vector_evidence/simulator_input_allowlist_predicate_instantiated",
+        true,
+    )?;
+    require_str(
+        corpus,
+        "/no_export_vector_evidence/simulator_input_allowlist_lean_theorem",
+        no_export_report.simulator_input_allowlist_lean_theorem,
+    )?;
     require_bool(corpus, "/no_export_vector_evidence/deployment_ready", false)?;
     require_str(
         corpus,
@@ -558,6 +573,10 @@ fn main() -> Result<(), String> {
         || !bool_at(
             no_export_vectors,
             "/audit_summary/simulator_denylist_absent",
+        )?
+        || !bool_at(
+            no_export_vectors,
+            "/audit_summary/simulator_input_allowlist_predicate_instantiated",
         )?
         || bool_at(
             no_export_vectors,

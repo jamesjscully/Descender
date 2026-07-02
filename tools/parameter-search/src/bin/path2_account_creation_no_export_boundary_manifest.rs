@@ -51,6 +51,8 @@ fn manifest_body() -> Result<Value, String> {
             "no_export_theorem_target": report.no_export_theorem_target,
             "public_bundle_no_export_lean_theorem":
                 report.public_bundle_no_export_lean_theorem,
+            "simulator_input_allowlist_lean_theorem":
+                report.simulator_input_allowlist_lean_theorem,
             "named_break": report.named_break,
             "blocker": report.blocker
         },
@@ -84,6 +86,8 @@ fn manifest_body() -> Result<Value, String> {
                 "no_export_vectors_present": report.no_export_vectors_present,
                 "public_bundle_no_export_predicate_instantiated":
                     report.public_bundle_no_export_predicate_instantiated,
+                "simulator_input_allowlist_predicate_instantiated":
+                    report.simulator_input_allowlist_predicate_instantiated,
                 "simulator_theorem_instantiated": report.simulator_theorem_instantiated,
                 "no_export_theorem_instantiated": report.no_export_theorem_instantiated,
                 "accepted_bundle_simulatable_from_public_anchors":
@@ -97,6 +101,8 @@ fn manifest_body() -> Result<Value, String> {
             "no_export_theorem_target": report.no_export_theorem_target,
             "public_bundle_no_export_lean_theorem":
                 report.public_bundle_no_export_lean_theorem,
+            "simulator_input_allowlist_lean_theorem":
+                report.simulator_input_allowlist_lean_theorem,
             "no_export_vector_case_ids": report.no_export_vector_case_ids,
             "simulator_public_input_fields": report.simulator_public_input_fields,
             "no_export_private_material_fields": report.no_export_private_material_fields

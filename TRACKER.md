@@ -208,7 +208,12 @@ chain against the standalone KATs and deployment blocker set. The direct theorem
 validator also explicitly rejects weakened obligation coverage, missing pinned
 evidence hooks, missing direct closure-dependency rows, unexpectedly closed
 theorem/deployment flags, or blocker drift at the production-reference
-boundary.
+boundary. The no-export audit corpus now carries six digest-pinned cases, adding
+the selected Rust simulator-input allowlist predicate
+`selectedRustAccountCreationSimulatorInputNoExport_instantiation_v1` alongside
+the existing public-bundle denylist predicate while keeping simulator,
+no-export, accepted-bundle simulability, external-review, and deployment flags
+false.
 
 | ID | Status | Item | Evidence / next action |
 |---|---|---|---|

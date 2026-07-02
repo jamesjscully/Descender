@@ -1096,6 +1096,19 @@ fn check_consistency() -> Result<(), String> {
         ],
         18,
     )?;
+    let no_export_case_count = get(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "requirement_vector_corpus_evidence",
+            "no_export_vector_evidence",
+            "case_count",
+        ],
+    )?
+    .as_u64()
+    .ok_or_else(|| {
+        "account_creation_proof_boundary.requirement_vector_corpus_evidence.no_export_vector_evidence.case_count is not an unsigned integer".to_string()
+    })?;
     expect_u64(
         proof_manifest,
         &[
@@ -1104,7 +1117,7 @@ fn check_consistency() -> Result<(), String> {
             "audit_summary",
             "no_export_case_count",
         ],
-        5,
+        no_export_case_count,
     )?;
     expect_u64(
         proof_manifest,

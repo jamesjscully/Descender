@@ -2029,6 +2029,10 @@ pub fn path2_account_creation_requirement_vector_corpus_evidence_v1() -> Result<
             no_export_vectors,
             "/audit_summary/public_bundle_no_export_predicate_instantiated",
         )?
+        || !bool_at(
+            no_export_vectors,
+            "/audit_summary/simulator_input_allowlist_predicate_instantiated",
+        )?
         || bool_at(no_export_vectors, "/audit_summary/deployment_ready")?
     {
         return Err(
@@ -2148,6 +2152,10 @@ pub fn path2_account_creation_requirement_vector_corpus_evidence_v1() -> Result<
                 no_export_report.public_bundle_no_export_lean_theorem,
             "public_bundle_no_export_predicate_instantiated":
                 no_export_report.public_bundle_no_export_predicate_instantiated,
+            "simulator_input_allowlist_lean_theorem":
+                no_export_report.simulator_input_allowlist_lean_theorem,
+            "simulator_input_allowlist_predicate_instantiated":
+                no_export_report.simulator_input_allowlist_predicate_instantiated,
             "deployment_ready": no_export_report.deployment_ready,
             "blocker": no_export_report.blocker
         },

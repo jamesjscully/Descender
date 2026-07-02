@@ -788,5 +788,233 @@ theorem selectedRustAccountCreationPublicBundleNoExport_instantiation_v1 :
       selectedRustAccountCreationNoExport
       selectedRustAccountCreationPublicBundleOutputConforms) hProduced
 
+/-!
+## Account-Creation Simulator Input Allowlist No-Export
+
+The simulator theorem remains open, but the allowlist frame supplied to that
+future theorem is itself a selected public surface.  This section proves only
+that the selected simulator-input frame cannot encode denylisted private
+creation material.
+-/
+
+/-- Stable public tag for selected account-creation simulator-input frames. -/
+def accountCreationSimulatorInputOutputTag : Nat := 11
+
+/-- Public fields allowed as input to the selected account-creation simulator. -/
+def accountCreationSimulatorInputFrame
+    (leafContextDigest creationProofBindingDigest nativeRoleRootCommitment
+      aggregationContextDigest slotId maskedProjection
+      accountStarkBundleBytesOrDigest publicReplayPayloadDigest
+      deployedAccountId deployedAccountStateRoot deployedLifecycleAnchor
+      deployedVerifierVersion deployedPackedWitnessCommitment
+      publicRejectionCode : Nat) :
+    List Nat :=
+  [ accountCreationSimulatorInputOutputTag,
+    leafContextDigest,
+    creationProofBindingDigest,
+    nativeRoleRootCommitment,
+    aggregationContextDigest,
+    slotId,
+    maskedProjection,
+    accountStarkBundleBytesOrDigest,
+    publicReplayPayloadDigest,
+    deployedAccountId,
+    deployedAccountStateRoot,
+    deployedLifecycleAnchor,
+    deployedVerifierVersion,
+    deployedPackedWitnessCommitment,
+    publicRejectionCode ]
+
+/-- Simulator-input frames are public exactly when they carry the public tag. -/
+def accountCreationSimulatorInputFramePublic : List Nat -> Prop
+  | tag :: _ => tag = accountCreationSimulatorInputOutputTag
+  | [] => False
+
+/-- Public account-creation simulator-input frames cannot also be private frames. -/
+theorem accountCreationSimulatorInputFrame_not_denylisted
+    {frame : List Nat}
+    (hPublic : accountCreationSimulatorInputFramePublic frame) :
+    ¬ accountCreationDenylistedFrame frame := by
+  cases frame with
+  | nil =>
+      simp [accountCreationSimulatorInputFramePublic] at hPublic
+  | cons tag rest =>
+      intro hDeny
+      simp [accountCreationSimulatorInputFramePublic,
+        accountCreationDenylistedFrame,
+        accountCreationSimulatorInputOutputTag,
+        accountCreationPrivateMaterialTag] at hPublic hDeny
+      omega
+
+/-- Selected Rust policy over encoded account-creation simulator-input frames. -/
+def selectedRustAccountCreationSimulatorInputNoExportPolicy :
+    PublicOutputPolicy where
+  outputConforms := fun output =>
+    ∃ frame,
+      accountCreationSimulatorInputFramePublic frame ∧
+        output = selectedRustNoExportFrameEncoder.encode frame
+  containsDenylistedField := fun output =>
+    ∃ frame,
+      accountCreationDenylistedFrame frame ∧
+        output = selectedRustNoExportFrameEncoder.encode frame
+
+/- Selected simulator-input no-export rule from public/private tag disjointness. -/
+theorem selectedRustAccountCreationSimulatorInputNoExport :
+    PublicOutputNoExport
+      selectedRustAccountCreationSimulatorInputNoExportPolicy := by
+  refine { no_denylisted_field := ?_ }
+  intro output hConforms hDenylisted
+  rcases hConforms with ⟨publicFrame, hPublic, hPublicOutput⟩
+  rcases hDenylisted with ⟨denyFrame, hDeny, hDenyOutput⟩
+  have hEnc :
+      selectedRustNoExportFrameEncoder.encode publicFrame =
+        selectedRustNoExportFrameEncoder.encode denyFrame := by
+    rw [← hPublicOutput, hDenyOutput]
+  have hFrame : publicFrame = denyFrame :=
+    selectedRustNoExportFrameEncoder.injective hEnc
+  exact accountCreationSimulatorInputFrame_not_denylisted hPublic
+    (by simpa [← hFrame] using hDeny)
+
+/-- Concrete selected Rust account-creation simulator-input serializer. -/
+structure AccountCreationSimulatorInputSerializer where
+  frameEncoder : OrderedFrameEncoder
+
+namespace AccountCreationSimulatorInputSerializer
+
+/-- Encoded account-creation simulator-input output. -/
+def simulatorInputOf
+    (S : AccountCreationSimulatorInputSerializer)
+    (leafContextDigest creationProofBindingDigest nativeRoleRootCommitment
+      aggregationContextDigest slotId maskedProjection
+      accountStarkBundleBytesOrDigest publicReplayPayloadDigest
+      deployedAccountId deployedAccountStateRoot deployedLifecycleAnchor
+      deployedVerifierVersion deployedPackedWitnessCommitment
+      publicRejectionCode : Nat) :
+    Nat :=
+  S.frameEncoder.encode
+    (accountCreationSimulatorInputFrame leafContextDigest
+      creationProofBindingDigest nativeRoleRootCommitment
+      aggregationContextDigest slotId maskedProjection
+      accountStarkBundleBytesOrDigest publicReplayPayloadDigest
+      deployedAccountId deployedAccountStateRoot deployedLifecycleAnchor
+      deployedVerifierVersion deployedPackedWitnessCommitment
+      publicRejectionCode)
+
+/-- Equality surface induced by the selected simulator-input serializer. -/
+def surface (S : AccountCreationSimulatorInputSerializer) : Nat -> Prop :=
+  fun output =>
+    ∃ leafContextDigest creationProofBindingDigest nativeRoleRootCommitment
+      aggregationContextDigest slotId maskedProjection
+      accountStarkBundleBytesOrDigest publicReplayPayloadDigest
+      deployedAccountId deployedAccountStateRoot deployedLifecycleAnchor
+      deployedVerifierVersion deployedPackedWitnessCommitment
+      publicRejectionCode,
+      output =
+        S.simulatorInputOf leafContextDigest creationProofBindingDigest
+          nativeRoleRootCommitment aggregationContextDigest slotId
+          maskedProjection accountStarkBundleBytesOrDigest
+          publicReplayPayloadDigest deployedAccountId deployedAccountStateRoot
+          deployedLifecycleAnchor deployedVerifierVersion
+          deployedPackedWitnessCommitment publicRejectionCode
+
+end AccountCreationSimulatorInputSerializer
+
+/- Selected Rust account-creation simulator-input serializer. -/
+def selectedRustAccountCreationSimulatorInputSerializer :
+    AccountCreationSimulatorInputSerializer where
+  frameEncoder := selectedRustNoExportFrameEncoder
+
+/- Selected simulator-input serializer outputs conform to the public allowlist. -/
+theorem selectedRustAccountCreationSimulatorInputOutputConforms
+    (leafContextDigest creationProofBindingDigest nativeRoleRootCommitment
+      aggregationContextDigest slotId maskedProjection
+      accountStarkBundleBytesOrDigest publicReplayPayloadDigest
+      deployedAccountId deployedAccountStateRoot deployedLifecycleAnchor
+      deployedVerifierVersion deployedPackedWitnessCommitment
+      publicRejectionCode : Nat) :
+    selectedRustAccountCreationSimulatorInputNoExportPolicy.outputConforms
+      (selectedRustAccountCreationSimulatorInputSerializer.simulatorInputOf
+        leafContextDigest creationProofBindingDigest nativeRoleRootCommitment
+        aggregationContextDigest slotId maskedProjection
+        accountStarkBundleBytesOrDigest publicReplayPayloadDigest
+        deployedAccountId deployedAccountStateRoot deployedLifecycleAnchor
+        deployedVerifierVersion deployedPackedWitnessCommitment
+        publicRejectionCode) := by
+  refine
+    ⟨accountCreationSimulatorInputFrame leafContextDigest
+      creationProofBindingDigest nativeRoleRootCommitment
+      aggregationContextDigest slotId maskedProjection
+      accountStarkBundleBytesOrDigest publicReplayPayloadDigest
+      deployedAccountId deployedAccountStateRoot deployedLifecycleAnchor
+      deployedVerifierVersion deployedPackedWitnessCommitment
+      publicRejectionCode, ?_, rfl⟩
+  simp [accountCreationSimulatorInputFramePublic,
+    accountCreationSimulatorInputFrame,
+    accountCreationSimulatorInputOutputTag]
+
+/-- Lean-side closure for the selected account-creation simulator-input surface. -/
+def AccountCreationSimulatorInputNoExportClosure
+    (Policy : PublicOutputPolicy)
+    (Surface : Nat -> Prop) : Prop :=
+  forall {output}, Surface output -> ¬ Policy.containsDenylistedField output
+
+/-- Account-creation simulator-input allowlisting closes the denylist surface. -/
+theorem accountCreationSimulatorInputNoExportClosure_from_public_output_no_export
+    {Policy : PublicOutputPolicy}
+    {S : AccountCreationSimulatorInputSerializer}
+    (NoExport : PublicOutputNoExport Policy)
+    (Conforms :
+      forall leafContextDigest creationProofBindingDigest
+        nativeRoleRootCommitment aggregationContextDigest slotId
+        maskedProjection accountStarkBundleBytesOrDigest
+        publicReplayPayloadDigest deployedAccountId deployedAccountStateRoot
+        deployedLifecycleAnchor deployedVerifierVersion
+        deployedPackedWitnessCommitment publicRejectionCode,
+        Policy.outputConforms
+          (S.simulatorInputOf leafContextDigest creationProofBindingDigest
+            nativeRoleRootCommitment aggregationContextDigest slotId
+            maskedProjection accountStarkBundleBytesOrDigest
+            publicReplayPayloadDigest deployedAccountId deployedAccountStateRoot
+            deployedLifecycleAnchor deployedVerifierVersion
+            deployedPackedWitnessCommitment publicRejectionCode)) :
+    AccountCreationSimulatorInputNoExportClosure Policy (S.surface) := by
+  intro output hProduced
+  rcases hProduced with
+    ⟨leafContextDigest, creationProofBindingDigest, nativeRoleRootCommitment,
+      aggregationContextDigest, slotId, maskedProjection,
+      accountStarkBundleBytesOrDigest, publicReplayPayloadDigest,
+      deployedAccountId, deployedAccountStateRoot, deployedLifecycleAnchor,
+      deployedVerifierVersion, deployedPackedWitnessCommitment,
+      publicRejectionCode, hOutput⟩
+  rw [hOutput]
+  exact NoExport.no_denylisted_field
+    (Conforms leafContextDigest creationProofBindingDigest
+      nativeRoleRootCommitment aggregationContextDigest slotId
+      maskedProjection accountStarkBundleBytesOrDigest
+      publicReplayPayloadDigest deployedAccountId deployedAccountStateRoot
+      deployedLifecycleAnchor deployedVerifierVersion
+      deployedPackedWitnessCommitment publicRejectionCode)
+
+/--
+Selected Rust account-creation simulator-input no-export instantiation.
+
+This proves only allowlist/denylist separation for the public simulator-input
+frame.  It does not instantiate the simulator theorem or accepted-bundle
+simulability from public anchors.
+-/
+theorem selectedRustAccountCreationSimulatorInputNoExport_instantiation_v1 :
+    AccountCreationSimulatorInputNoExportClosure
+      selectedRustAccountCreationSimulatorInputNoExportPolicy
+      selectedRustAccountCreationSimulatorInputSerializer.surface := by
+  let selectedRustAccountCreationSimulatorInputNoExportProof :
+      PublicOutputNoExport
+        selectedRustAccountCreationSimulatorInputNoExportPolicy :=
+    selectedRustAccountCreationSimulatorInputNoExport
+  intro output hProduced
+  exact
+    (accountCreationSimulatorInputNoExportClosure_from_public_output_no_export
+      selectedRustAccountCreationSimulatorInputNoExportProof
+      selectedRustAccountCreationSimulatorInputOutputConforms) hProduced
+
 end Path2NoExportConcrete
 end Descender

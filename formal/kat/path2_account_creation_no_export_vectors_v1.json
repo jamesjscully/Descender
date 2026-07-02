@@ -13,13 +13,14 @@
       "public_bundle_no_export_predicate_instantiated": true,
       "public_payload_exports_private_material": false,
       "simulator_denylist_absent": true,
+      "simulator_input_allowlist_predicate_instantiated": true,
       "simulator_public_input_field_count": 14,
       "simulator_theorem_instantiated": false
     },
     "boundary_report": {
       "blocker": "account-STARK residual matrix: selected payload simulator and no-export theorem is not instantiated",
       "deployment_ready": false,
-      "digest": "ba3114d79eaca083e2be52a5a42797dd143f7693dde9489b4ac22659a0a00675",
+      "digest": "4e701ec93567f4d6d5dacf5bba2c4b32e3c10bd1db013d10e72b9aa587a86346",
       "domain": "Descender.Path2.AccountCreationNoExportBoundaryReport.v1",
       "frozen_no_export_vectors_complete": true,
       "no_export_requirement": "zero_knowledge_no_export_semantics",
@@ -28,10 +29,12 @@
       "public_bundle_no_export_lean_theorem": "selectedRustAccountCreationPublicBundleNoExport_instantiation_v1",
       "public_bundle_no_export_predicate_instantiated": true,
       "selected_payload_type": "Path2AccountStarkCreationPayloadV1",
+      "simulator_input_allowlist_lean_theorem": "selectedRustAccountCreationSimulatorInputNoExport_instantiation_v1",
+      "simulator_input_allowlist_predicate_instantiated": true,
       "simulator_theorem_instantiated": false,
       "simulator_theorem_target": "selected_account_stark_public_bundle_simulator_v1"
     },
-    "case_count": 5,
+    "case_count": 6,
     "cases": [
       {
         "all_private_material_absent": true,
@@ -96,6 +99,15 @@
       },
       {
         "all_private_material_absent": true,
+        "case_id": "no_export_simulator_input_lean_predicate",
+        "kind": "audit",
+        "requirement": "zero_knowledge_no_export_semantics",
+        "simulator_input_allowlist_lean_theorem": "selectedRustAccountCreationSimulatorInputNoExport_instantiation_v1",
+        "simulator_input_allowlist_predicate_instantiated": true,
+        "surface": "Descender.Path2NoExportConcrete"
+      },
+      {
+        "all_private_material_absent": true,
         "case_id": "no_export_private_material_denylist_absence",
         "kind": "audit",
         "private_material_denylist": [
@@ -145,5 +157,5 @@
     "schema": "Descender.Path2.AccountCreationNoExportVectors.v1",
     "status": "digest_pinned_no_export_audit_vectors"
   },
-  "corpus_digest": "204b302dab26951b7dc996bd3e3daa3d87dbbb51cc4283a5f52c1c25ab5d0d03"
+  "corpus_digest": "b0819fa0db26614382010c37ef3186c8c128c8cd82b7e33df98791e4c53d4b8e"
 }

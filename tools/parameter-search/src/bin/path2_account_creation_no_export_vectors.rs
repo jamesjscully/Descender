@@ -87,6 +87,17 @@ fn manifest_body() -> Result<Value, String> {
             "all_private_material_absent": simulator_denylist_absent
         }),
         json!({
+            "case_id": "no_export_simulator_input_lean_predicate",
+            "kind": "audit",
+            "surface": "Descender.Path2NoExportConcrete",
+            "requirement": report.no_export_requirement,
+            "simulator_input_allowlist_lean_theorem":
+                report.simulator_input_allowlist_lean_theorem,
+            "simulator_input_allowlist_predicate_instantiated":
+                report.simulator_input_allowlist_predicate_instantiated,
+            "all_private_material_absent": true
+        }),
+        json!({
             "case_id": "no_export_private_material_denylist_absence",
             "kind": "audit",
             "surface": "combined public payload and simulator-input fields",
@@ -155,6 +166,10 @@ fn manifest_body() -> Result<Value, String> {
                 report.public_bundle_no_export_lean_theorem,
             "public_bundle_no_export_predicate_instantiated":
                 report.public_bundle_no_export_predicate_instantiated,
+            "simulator_input_allowlist_lean_theorem":
+                report.simulator_input_allowlist_lean_theorem,
+            "simulator_input_allowlist_predicate_instantiated":
+                report.simulator_input_allowlist_predicate_instantiated,
             "frozen_no_export_vectors_complete": report.frozen_no_export_vectors_complete,
             "deployment_ready": report.deployment_ready,
             "blocker": report.blocker
@@ -180,6 +195,8 @@ fn manifest_body() -> Result<Value, String> {
             "no_export_theorem_instantiated": report.no_export_theorem_instantiated,
             "public_bundle_no_export_predicate_instantiated":
                 report.public_bundle_no_export_predicate_instantiated,
+            "simulator_input_allowlist_predicate_instantiated":
+                report.simulator_input_allowlist_predicate_instantiated,
             "frozen_no_export_vectors_complete": report.frozen_no_export_vectors_complete,
             "deployment_ready": report.deployment_ready
         },
