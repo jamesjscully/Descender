@@ -2,6 +2,7 @@
   "manifest": {
     "authority_snapshot": {
       "accepted_bundle_public_anchor_simulation_boundary_lean_theorem": "selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1",
+      "accepted_bundle_simulator_input_from_public_anchors_lean_theorem": "selectedRustAcceptedBundleSimulatorInputFromPublicAnchors_v1",
       "accepted_public_anchor_package_lean_theorem": "selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1",
       "blocker": "account-STARK residual matrix: selected payload simulator and no-export theorem is not instantiated",
       "named_break": "account_stark_simulator_or_no_export_break",
@@ -20,12 +21,12 @@
     "corpus_id": "Descender.Path2.AccountCreationNoExportBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_no_export_boundary_report_digest": "5205e43224acbaeab20a96daf5400808907eda28cc1f9dbf56a55bae6d12b38e",
-      "account_creation_no_export_boundary_report_recomputed_digest": "5205e43224acbaeab20a96daf5400808907eda28cc1f9dbf56a55bae6d12b38e",
-      "account_creation_proof_boundary_report_digest": "846018ef2cdfab0f20a95212b60589c7d427072d640d5f6e07dd93fd2dc28622",
+      "account_creation_no_export_boundary_report_digest": "a553175d3da3e3efc615d06cbf03aa5d3a7b8666a145b11f10c40d0b0b3e30bb",
+      "account_creation_no_export_boundary_report_recomputed_digest": "a553175d3da3e3efc615d06cbf03aa5d3a7b8666a145b11f10c40d0b0b3e30bb",
+      "account_creation_proof_boundary_report_digest": "d75b4f08a46d302e38557920e7a745f708380d5b9075cee4edc18c60d5c29b24",
       "payload_byte_model_report_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
       "payload_kat_boundary_report_digest": "ab14d77b9401e7c219a85204c19c767b958220517bd64f4a5868189bb8fbbafe",
-      "proof_boundary_report_no_export_digest": "5205e43224acbaeab20a96daf5400808907eda28cc1f9dbf56a55bae6d12b38e"
+      "proof_boundary_report_no_export_digest": "a553175d3da3e3efc615d06cbf03aa5d3a7b8666a145b11f10c40d0b0b3e30bb"
     },
     "frozen_status": "draft_no_export_boundary_manifest",
     "generator": {
@@ -34,10 +35,12 @@
     },
     "no_export_boundary": {
       "accepted_bundle_public_anchor_simulation_boundary_lean_theorem": "selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1",
+      "accepted_bundle_simulator_input_from_public_anchors_lean_theorem": "selectedRustAcceptedBundleSimulatorInputFromPublicAnchors_v1",
       "accepted_public_anchor_package_lean_theorem": "selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1",
       "coverage": {
         "accepted_bundle_public_anchor_simulation_boundary_bound": true,
         "accepted_bundle_simulatable_from_public_anchors": false,
+        "accepted_bundle_simulator_input_from_public_anchors_bound": true,
         "accepted_public_anchor_package_bound": true,
         "blocker": "account-STARK residual matrix: selected payload simulator and no-export theorem is not instantiated",
         "boundary_mapping_complete": true,
@@ -47,7 +50,7 @@
         "frozen_no_export_vectors_complete": true,
         "no_export_field_denylist_pinned": true,
         "no_export_theorem_instantiated": false,
-        "no_export_vector_case_count": 8,
+        "no_export_vector_case_count": 9,
         "no_export_vectors_present": true,
         "payload_public_field_count": 11,
         "production_gate_fail_closed": true,
@@ -75,6 +78,7 @@
         "no_export_simulator_input_lean_predicate",
         "no_export_accepted_public_anchor_package_lean_predicate",
         "no_export_accepted_bundle_public_anchor_simulation_boundary",
+        "no_export_accepted_bundle_simulator_input_from_public_anchors",
         "no_export_private_material_denylist_absence",
         "no_export_opaque_bundle_not_manifest_inlined",
         "no_export_public_bundle_lean_predicate"
@@ -102,5 +106,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.AccountCreationNoExportBoundaryManifest.v1"
   },
-  "manifest_digest": "4efb868f4c14a55cba23f19e40ecedce12701c4656cbcfda0a1f44891a610baa"
+  "manifest_digest": "aad6adc6e5bbcdfbc6f712a3a8f50e04997ba0c6e5dd3af63204c1281d0bf251"
 }

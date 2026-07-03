@@ -436,6 +436,11 @@ fn manifest_body() -> Result<Value, String> {
                         .accepted_bundle_public_anchor_simulation_boundary_lean_theorem,
                 "accepted_bundle_public_anchor_simulation_boundary_bound":
                     no_export_report.accepted_bundle_public_anchor_simulation_boundary_bound,
+                "accepted_bundle_simulator_input_from_public_anchors_lean_theorem":
+                    no_export_report
+                        .accepted_bundle_simulator_input_from_public_anchors_lean_theorem,
+                "accepted_bundle_simulator_input_from_public_anchors_bound":
+                    no_export_report.accepted_bundle_simulator_input_from_public_anchors_bound,
                 "simulator_theorem_instantiated":
                     no_export_report.simulator_theorem_instantiated,
                 "no_export_theorem_instantiated":

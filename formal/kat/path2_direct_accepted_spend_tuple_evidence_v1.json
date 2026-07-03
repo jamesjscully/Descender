@@ -216,7 +216,7 @@
       ],
       "account_creation_evidence_transcript_digest": "ef18960db93f1bf9e4e244059226549805092f6d5433186c0edd1a1f405743a0",
       "account_creation_fixture_id": "Path2AccountStarkPayloadKatFixture.v1",
-      "account_creation_proof_boundary_report_digest": "846018ef2cdfab0f20a95212b60589c7d427072d640d5f6e07dd93fd2dc28622",
+      "account_creation_proof_boundary_report_digest": "d75b4f08a46d302e38557920e7a745f708380d5b9075cee4edc18c60d5c29b24",
       "account_id": "e7e9c407d51a153ae517b874c3da8d828943c0eb4ccc8800423bf164fc4d4baf",
       "account_state_root_before": "d15959f0cfd036bbe2fced0c9cdc1b7d00476db3a17e4083b37913b878344fa6",
       "checked_core_challenge_digest": "9ef92f66561c93da37a50feff851f354a230c00b15a446e10da0d9de6fa3c7ca",
@@ -227,7 +227,7 @@
       "consume_once_state_before_digest": "f61980b7980643e1a8568a4051e21f374af7c99c8d3624932c56caf96fa4eb6a",
       "consumed_authorization_absent_before": true,
       "consumed_authorization_present_after": true,
-      "digest": "b983401de224cfd6a9b8b1a0ead9875058c46d6f0998b1bb0f7f9f7dfcffc2bb",
+      "digest": "33783057d092df28d632ee817a0bc84b10fdf3ed30b2519eeaa810cfdaaa7424",
       "direct_admission_namespace_record_digest": "d887a32e2da3a35c1c156f6b1ce77750f41c6b160a6e291694d1b1c50eb78abe",
       "direct_lifecycle_boundary_report_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
       "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
@@ -240,7 +240,7 @@
       "public_key_identity": "58f218aeb259309eeb545345a8f5c715987967b0ec724806d448394da578d0b0",
       "public_result_accepts_same_slot": true,
       "public_result_class_name": "accept_spend_slot",
-      "recomputed_digest": "b983401de224cfd6a9b8b1a0ead9875058c46d6f0998b1bb0f7f9f7dfcffc2bb",
+      "recomputed_digest": "33783057d092df28d632ee817a0bc84b10fdf3ed30b2519eeaa810cfdaaa7424",
       "replay_rejected_by_consume_once": true,
       "schema": "Descender.Path2.DirectAcceptedSpendTupleEvidence.v1",
       "selected_account_creation_payload_digest": "21795defadb54628226befbcb01ca0666d3c584c5a24e6ba05f4de8ec11cb6e0",
@@ -259,5 +259,5 @@
     "schema": "Descender.Path2.DirectAcceptedSpendTupleDeterministicKatEvidenceManifest.v1",
     "status": "digest_pinned_deterministic_kat_accepted_direct_spend_tuple_evidence"
   },
-  "manifest_digest": "65c43c46a5d0e1e52df8bda3006bf0f022c507c322eb6563c608decbe4a3253e"
+  "manifest_digest": "a0a0e8a22b382bcc3cb0e8d10da1ee25b82df6faa1f764f0d2f00b212704c80a"
 }

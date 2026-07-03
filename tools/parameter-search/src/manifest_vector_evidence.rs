@@ -2041,6 +2041,10 @@ pub fn path2_account_creation_requirement_vector_corpus_evidence_v1() -> Result<
             no_export_vectors,
             "/audit_summary/accepted_bundle_public_anchor_simulation_boundary_bound",
         )?
+        || !bool_at(
+            no_export_vectors,
+            "/audit_summary/accepted_bundle_simulator_input_from_public_anchors_bound",
+        )?
         || bool_at(
             no_export_vectors,
             "/audit_summary/accepted_bundle_simulatable_from_public_anchors",
@@ -2177,6 +2181,11 @@ pub fn path2_account_creation_requirement_vector_corpus_evidence_v1() -> Result<
                     .accepted_bundle_public_anchor_simulation_boundary_lean_theorem,
             "accepted_bundle_public_anchor_simulation_boundary_bound":
                 no_export_report.accepted_bundle_public_anchor_simulation_boundary_bound,
+            "accepted_bundle_simulator_input_from_public_anchors_lean_theorem":
+                no_export_report
+                    .accepted_bundle_simulator_input_from_public_anchors_lean_theorem,
+            "accepted_bundle_simulator_input_from_public_anchors_bound":
+                no_export_report.accepted_bundle_simulator_input_from_public_anchors_bound,
             "accepted_bundle_simulatable_from_public_anchors":
                 no_export_report.accepted_bundle_simulatable_from_public_anchors,
             "deployment_ready": no_export_report.deployment_ready,

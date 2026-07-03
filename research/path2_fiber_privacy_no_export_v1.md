@@ -295,9 +295,11 @@ allowlist/denylist and package-binding predicates only. The accepted-bundle
 public-anchor simulation-boundary hook is machine-checked by
 `selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1`; it proves the
 accepted package feeds the exact selected public-bundle and simulator-input
-surfaces a future simulator theorem may consume. It does not instantiate the
-simulator distribution theorem or accepted-bundle simulability. The denylist term
-`private_trace_material` covers private trace material.
+surfaces a future simulator theorem may consume. The typed simulator-input
+projection from accepted public anchors is machine-checked by
+`selectedRustAcceptedBundleSimulatorInputFromPublicAnchors_v1`. These hooks do
+not instantiate the simulator distribution theorem or accepted-bundle
+simulability. The denylist term `private_trace_material` covers private trace material.
 
 The algebra-layer simulator/no-export theorem for the selected payload is now
 stated and proven in
@@ -309,8 +311,9 @@ the implementation no-export scan, pad-seed single-use lifecycle term
 open blockers. The frozen no-export vector flag, public-bundle denylist
 predicate, simulator-input allowlist predicate, and accepted public-anchor
 package binding predicate, plus the accepted-bundle public-anchor
-simulation-boundary predicate, are closed; simulator, no-export,
-accepted-bundle simulability, review, and deployment flags stay false.
+simulation-boundary predicate and accepted-bundle simulator-input projection
+predicate, are closed; simulator, no-export, accepted-bundle simulability,
+review, and deployment flags stay false.
 
 ## Helper API Rule
 

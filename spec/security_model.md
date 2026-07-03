@@ -477,7 +477,11 @@ denylist predicate theorem
 Rust simulator-input allowlist theorem
 `selectedRustAccountCreationSimulatorInputNoExport_instantiation_v1`, selected
 Rust accepted public-anchor package theorem
-`selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1`, and named
+`selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1`, selected
+Rust accepted-bundle public-anchor simulation-boundary theorem
+`selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1`, selected Rust
+accepted-bundle simulator-input projection theorem
+`selectedRustAcceptedBundleSimulatorInputFromPublicAnchors_v1`, and named
 `account_stark_simulator_or_no_export_break`, while keeping simulator theorem,
 no-export theorem, accepted-bundle simulability, external review, and deployment
 readiness false.
@@ -489,6 +493,7 @@ flag; the no-export report/vector corpus pins the selected Rust public-bundle
 denylist predicate, selected Rust simulator-input allowlist predicate, and
 selected Rust accepted public-anchor package binding predicate plus the selected
 Rust accepted-bundle public-anchor simulation-boundary predicate
+and accepted-bundle simulator-input projection predicate
 without claiming simulator/no-export closure.
 The FRI/AoK extractor obligation row similarly names
 `selectedRustAcceptedBoundaryFriAokSupport_of_boundaryAccepted`, which packages
@@ -558,8 +563,9 @@ also regenerated and checked before the proof-boundary manifest so the
 no-export boundary cannot remain prose-only, and
 `formal/kat/path2_account_creation_no_export_vectors_v1.json` pins the current
 public-payload allowlist, simulator-input allowlist, private-material denylist
-absence, opaque proof-bundle manifest policy, selected Rust public-bundle Lean predicate evidence, and frozen no-export vector
-closure flag.
+absence, opaque proof-bundle manifest policy, selected Rust public-bundle Lean
+predicate evidence, selected Rust accepted public-anchor and simulator-input
+projection evidence, and frozen no-export vector closure flag.
 `formal/kat/path2_account_stark_fri_qrom_domain_vectors_v1.json` pins the
 current FRI/QROM domain audit cases before the proof-boundary manifest is
 checked. `formal/kat/path2_account_creation_proof_obligation_vectors_v1.json`
@@ -689,7 +695,7 @@ checked by `path2_account_stark_fri_aok_boundary_consistency`.
 | `Path2AccountStarkCreationPayloadV1` byte and replay binding | Wire-format digest frame, certificate/evidence binding, deployed anchor checks, active mutation tests, `Path2AccountStarkPayloadByteModelReportV1` frame/overhead/non-inlined-bundle manifest plus consistency gate, `Path2AccountStarkPayloadKatBoundaryReportV1` public rejection-class mapping, frozen manifest regeneration, deterministic digest-pinned current-row boundary vectors, manifest/vector consistency gates, and accepted-path decoded-anchor evidence for replay digest, raw verifier version, masked projection, role-root export bridge, and packed-witness commitment exist. | Full frozen byte corpus and public rejection-class mapping for every consensus-visible malformed payload beyond the current-row boundary vectors. | `account_stark_payload_binding_break` |
 | AIR relation soundness | `research/path2_account_stark_air_soundness_audit.md` reports all relation classes wired and MED findings remediated. | External proof-family review confirms the AIR constraints match the claimed creation relation and no false statement accepts except with a named proof break. | `account_stark_air_soundness_break` |
 | FRI argument-of-knowledge extractor | The AIR is fully constrained, and `Path2AccountStarkFriAokBoundaryReportV1` plus `formal/kat/path2_account_stark_fri_aok_boundary_v1.json` pin the support audit, selected proof family, FRI/QROM residual digest, residual-matrix digest, AIR coverage counts, MED remediation counts, and open extractor/review/deployment flags. | A concrete extractor theorem for the selected Plonky3/q12289 configuration shows accepting proof implies an extractable account-creation witness or exports a named FRI/AoK break. | `account_stark_fri_aok_extractor_break` |
-| Zero-knowledge simulator and no-export statement | Boundary text forbids export of pad source, projection, syndrome, opening tuple, witness, mask, and private trace material; `Path2AccountCreationNoExportBoundaryReportV1` plus `formal/kat/path2_account_creation_no_export_boundary_v1.json` pin the support file, selected payload endpoints, payload byte-model/KAT-boundary digests, denylist, simulator/no-export theorem targets, accepted-bundle simulator public-input allowlist, public-payload-only byte model, mutation coverage, frozen no-export audit vectors, selected Rust public-bundle denylist predicate, selected Rust simulator-input allowlist predicate, selected Rust accepted public-anchor package binding predicate, selected Rust accepted-bundle public-anchor simulation-boundary predicate, and fail-closed production gate while leaving simulator, no-export, accepted-bundle simulability, review, and deployment flags false. | Simulator theorem for the selected payload proves the accepted public bundle can be simulated from public anchors and allowed commitments without revealing private creation material. | `account_stark_simulator_or_no_export_break` |
+| Zero-knowledge simulator and no-export statement | Boundary text forbids export of pad source, projection, syndrome, opening tuple, witness, mask, and private trace material; `Path2AccountCreationNoExportBoundaryReportV1` plus `formal/kat/path2_account_creation_no_export_boundary_v1.json` pin the support file, selected payload endpoints, payload byte-model/KAT-boundary digests, denylist, simulator/no-export theorem targets, accepted-bundle simulator public-input allowlist, public-payload-only byte model, mutation coverage, frozen no-export audit vectors, selected Rust public-bundle denylist predicate, selected Rust simulator-input allowlist predicate, selected Rust accepted public-anchor package binding predicate, selected Rust accepted-bundle public-anchor simulation-boundary predicate, selected Rust accepted-bundle simulator-input projection predicate, and fail-closed production gate while leaving simulator, no-export, accepted-bundle simulability, review, and deployment flags false. | Simulator theorem for the selected payload proves the accepted public bundle can be simulated from public anchors and allowed commitments without revealing private creation material. | `account_stark_simulator_or_no_export_break` |
 | FRI soundness margin and recursion ledger | `Path2AccountStarkFriQromResidualReportV1` pins `log_blowup = 4`, `num_queries = 120`, query PoW 16, conservative-Johnson FRI label 256 bits, degree-8 challenge field, 139-bit Poseidon2 sponge floor, and checked-core QROM `log2(T) <= 54`; `formal/kat/path2_account_stark_fri_qrom_domain_vectors_v1.json` adds digest-pinned audit cases for the selected proof-family domain, FRI schedule, checked-core QROM import, and open theorem flags; the consistency gates compare these to active config, checked-in manifests, and generated QROM artifacts. | Residual-assumption ledger prices FRI queries, field size, the account-STARK Poseidon2/FRI transcript theorem, recursion if used, and multi-target/QROM terms against the selected deployment profile, then obtains external FRI/QROM review. | `fri_soundness_margin_break` |
 | Production admission gate and review disposition | `verify_path2_direct_creation_account_stark_payload_boundary_for_production` remains fail-closed and regression-tested. | External review, tracker disposition, and explicit maintainer decision flip the production gate; otherwise production admission must continue to reject. | `account_stark_production_gate_break` |
 | Legacy proof-route disposition | Transparent descent/native-boundary paths are fail-closed support and cannot be selected by implication. | Any route change requires an ADR that updates this matrix, wire formats, KAT scope, and tracker ownership before the route can become deployment authority. | `proof_route_authority_break` |

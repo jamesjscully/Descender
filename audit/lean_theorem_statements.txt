@@ -129,6 +129,9 @@ theorem Descender.Path2HiddenSourceSemanticsBoundary.reviewed_fq12_hidden_source
 theorem Descender.Path2NoExportConcrete.selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1 :
 ∀ (A : Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage), A.publicAnchorSimulationBoundary
 
+theorem Descender.Path2NoExportConcrete.selectedRustAcceptedBundleSimulatorInputFromPublicAnchors_v1 :
+∀ (A : Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage), A.simulatorInputFromPublicAnchors
+
 theorem Descender.Path2NoExportConcrete.selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1 :
 ∀ (A : Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage), A.noExportSupport
 

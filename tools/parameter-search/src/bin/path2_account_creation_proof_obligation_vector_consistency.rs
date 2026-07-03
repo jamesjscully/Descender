@@ -562,6 +562,16 @@ fn main() -> Result<(), String> {
     )?;
     require_bool(
         corpus,
+        "/no_export_vector_evidence/accepted_bundle_simulator_input_from_public_anchors_bound",
+        true,
+    )?;
+    require_str(
+        corpus,
+        "/no_export_vector_evidence/accepted_bundle_simulator_input_from_public_anchors_lean_theorem",
+        no_export_report.accepted_bundle_simulator_input_from_public_anchors_lean_theorem,
+    )?;
+    require_bool(
+        corpus,
         "/no_export_vector_evidence/accepted_bundle_simulatable_from_public_anchors",
         false,
     )?;
@@ -610,6 +620,10 @@ fn main() -> Result<(), String> {
         || !bool_at(
             no_export_vectors,
             "/audit_summary/accepted_bundle_public_anchor_simulation_boundary_bound",
+        )?
+        || !bool_at(
+            no_export_vectors,
+            "/audit_summary/accepted_bundle_simulator_input_from_public_anchors_bound",
         )?
         || bool_at(
             no_export_vectors,
