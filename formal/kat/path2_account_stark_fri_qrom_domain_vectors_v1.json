@@ -1,6 +1,7 @@
 {
   "corpus": {
     "audit_summary": {
+      "account_stark_fri_qrom_transcript_reduction_bound": true,
       "account_stark_transcript_qrom_theorem_instantiated": false,
       "challenge_field_pinned": true,
       "checked_core_qrom_budget_pinned": true,
@@ -15,10 +16,10 @@
     "boundary_report": {
       "blocker": "account-STARK residual matrix: FRI soundness margin, recursion, Poseidon2 transcript, and multi-target/QROM pricing are not closed",
       "deployment_ready": false,
-      "digest": "a275e34633ce69695d7c2617019f127c1a74d6de240fc6c86a156afe41781650",
+      "digest": "9bc78a2b1b97bf8506f439e74547395a46e70a514c89aa537880dd7ac4e23505",
       "domain": "Descender.Path2.AccountStarkFriQromResidualReport.v1",
       "proof_system": "Plonky3 HidingFriPcs over KoalaBear with Poseidon2-Merkle and DuplexChallenger",
-      "recomputed_digest": "a275e34633ce69695d7c2617019f127c1a74d6de240fc6c86a156afe41781650",
+      "recomputed_digest": "9bc78a2b1b97bf8506f439e74547395a46e70a514c89aa537880dd7ac4e23505",
       "selected_payload_type": "Path2AccountStarkCreationPayloadV1",
       "selected_proof_family": "Plonky3/q12289 account-creation STARK"
     },
@@ -79,6 +80,8 @@
         "surface": "Path2AccountStarkFriQromResidualReportV1.checked_core_qrom_budget"
       },
       {
+        "account_stark_fri_qrom_transcript_reduction_bound": true,
+        "account_stark_fri_qrom_transcript_reduction_lean_theorem": "selectedRustAcceptedBoundaryFriQromTranscriptReduction_v1",
         "account_stark_transcript_qrom_theorem_instantiated": false,
         "blocker": "account-STARK residual matrix: FRI soundness margin, recursion, Poseidon2 transcript, and multi-target/QROM pricing are not closed",
         "case_id": "fri_qrom_open_theorem_flags_fail_closed",
@@ -102,5 +105,5 @@
     "schema": "Descender.Path2.AccountStarkFriQromDomainVectors.v1",
     "status": "digest_pinned_fri_qrom_domain_audit_vectors"
   },
-  "corpus_digest": "0fa010a1aa275035b809d8763e6187ee7a7d9f4862edefb608ebe1d3b3e76b65"
+  "corpus_digest": "f19028e2b78e4e3b7c59c84870080ff59ccafca286aee6a4b8d9c0a108da9200"
 }

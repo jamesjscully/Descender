@@ -970,6 +970,15 @@ fn check_consistency() -> Result<(), String> {
     expect_bool(
         proof_manifest,
         &[
+            "fri_qrom_residual_snapshot",
+            "coverage",
+            "account_stark_fri_qrom_transcript_reduction_bound",
+        ],
+        true,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
             "fri_aok_boundary_snapshot",
             "coverage",
             "fri_aok_extractor_reduction_bound",

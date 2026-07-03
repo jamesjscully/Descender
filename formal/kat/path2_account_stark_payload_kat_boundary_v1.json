@@ -121,7 +121,7 @@
       "payload_kat_boundary_report_byte_model_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
       "payload_kat_boundary_report_digest": "ab14d77b9401e7c219a85204c19c767b958220517bd64f4a5868189bb8fbbafe",
       "payload_kat_boundary_report_recomputed_digest": "ab14d77b9401e7c219a85204c19c767b958220517bd64f4a5868189bb8fbbafe",
-      "residual_matrix_report_digest": "19c7189bedc511e502e3d44dfa4b8ee045e4360150b05429c03b88c2dc36346c"
+      "residual_matrix_report_digest": "f357b85b1a299591397195783d873ed50e7d85a2b37431c8f237c097dc30d5ab"
     },
     "frozen_status": "frozen_boundary_manifest",
     "generator": {
@@ -237,5 +237,5 @@
     ],
     "schema": "Descender.Path2.AccountStarkPayloadKatBoundaryManifest.v1"
   },
-  "manifest_digest": "5662757cd654f7abf62ddf22910d10714ecf26720a094540ccc507dd84959cf7"
+  "manifest_digest": "4af4c03025a9ce2864e0546055f3bc9afd284cb897949124ffd169ab34d9c0be"
 }

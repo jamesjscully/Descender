@@ -211,6 +211,10 @@ fn manifest_body() -> Result<Value, String> {
             fri_qrom_vectors,
             "/audit_summary/checked_core_qrom_budget_pinned",
         )?
+        || !bool_at(
+            fri_qrom_vectors,
+            "/audit_summary/account_stark_fri_qrom_transcript_reduction_bound",
+        )?
         || bool_at(
             fri_qrom_vectors,
             "/audit_summary/account_stark_transcript_qrom_theorem_instantiated",
@@ -436,6 +440,11 @@ fn manifest_body() -> Result<Value, String> {
                 fri_qrom_vectors,
                 "/audit_summary/checked_core_qrom_budget_pinned"
             )?,
+            "account_stark_fri_qrom_transcript_reduction_lean_theorem":
+                fri_qrom_report
+                    .account_stark_fri_qrom_transcript_reduction_lean_theorem,
+            "account_stark_fri_qrom_transcript_reduction_bound":
+                fri_qrom_report.account_stark_fri_qrom_transcript_reduction_bound,
             "account_stark_transcript_qrom_theorem_instantiated":
                 fri_qrom_report.account_stark_transcript_qrom_theorem_instantiated,
             "recursion_pricing_complete": fri_qrom_report.recursion_pricing_complete,

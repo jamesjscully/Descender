@@ -117,6 +117,10 @@ fn main() -> Result<(), String> {
         return Err("FRI/QROM domain vector corpus is not bound to residual report".to_string());
     }
     if bool_at(corpus, "/boundary_report/deployment_ready")?
+        || !bool_at(
+            corpus,
+            "/audit_summary/account_stark_fri_qrom_transcript_reduction_bound",
+        )?
         || bool_at(corpus, "/audit_summary/account_stark_transcript_qrom_theorem_instantiated")?
         || bool_at(corpus, "/audit_summary/recursion_pricing_complete")?
         || bool_at(corpus, "/audit_summary/external_fri_review_complete")?
@@ -263,6 +267,17 @@ fn main() -> Result<(), String> {
         || bool_at(&cases[4], "/deployment_ready")?
     {
         return Err("FRI/QROM open-theorem case unexpectedly closes obligations".to_string());
+    }
+    if str_at(
+        &cases[4],
+        "/account_stark_fri_qrom_transcript_reduction_lean_theorem",
+    )? != report.account_stark_fri_qrom_transcript_reduction_lean_theorem
+        || !bool_at(
+            &cases[4],
+            "/account_stark_fri_qrom_transcript_reduction_bound",
+        )?
+    {
+        return Err("FRI/QROM open-theorem case lost transcript reduction hook".to_string());
     }
 
     println!("Path 2 account-STARK FRI/QROM domain vector consistency check passed.");

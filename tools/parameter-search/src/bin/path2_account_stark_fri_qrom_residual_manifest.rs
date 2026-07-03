@@ -36,6 +36,8 @@ fn manifest_body() -> Result<Value, String> {
             "fri_qrom_residual_report_domain": report.domain,
             "selected_proof_family": report.selected_proof_family,
             "selected_payload_type": report.selected_payload_type,
+            "account_stark_fri_qrom_transcript_reduction_lean_theorem":
+                report.account_stark_fri_qrom_transcript_reduction_lean_theorem,
             "blocker": report.blocker
         },
         "digests": {
@@ -81,6 +83,8 @@ fn manifest_body() -> Result<Value, String> {
             "fri_schedule_pinned": report.fri_schedule_pinned,
             "challenge_field_pinned": report.challenge_field_pinned,
             "checked_core_qrom_budget_pinned": report.checked_core_qrom_budget_pinned,
+            "account_stark_fri_qrom_transcript_reduction_bound":
+                report.account_stark_fri_qrom_transcript_reduction_bound,
             "account_stark_transcript_qrom_theorem_instantiated":
                 report.account_stark_transcript_qrom_theorem_instantiated,
             "recursion_pricing_complete": report.recursion_pricing_complete,

@@ -719,6 +719,16 @@ fn main() -> Result<(), String> {
         "/fri_qrom_domain_vector_evidence/checked_core_qrom_budget_pinned",
         true,
     )?;
+    require_str(
+        corpus,
+        "/fri_qrom_domain_vector_evidence/account_stark_fri_qrom_transcript_reduction_lean_theorem",
+        fri_qrom_report.account_stark_fri_qrom_transcript_reduction_lean_theorem,
+    )?;
+    require_bool(
+        corpus,
+        "/fri_qrom_domain_vector_evidence/account_stark_fri_qrom_transcript_reduction_bound",
+        true,
+    )?;
     require_bool(
         corpus,
         "/audit_summary/current_fri_qrom_domain_vectors_cover_boundary_cases",
@@ -769,6 +779,10 @@ fn main() -> Result<(), String> {
         || !bool_at(
             fri_qrom_vectors,
             "/audit_summary/checked_core_qrom_budget_pinned",
+        )?
+        || !bool_at(
+            fri_qrom_vectors,
+            "/audit_summary/account_stark_fri_qrom_transcript_reduction_bound",
         )?
         || bool_at(
             fri_qrom_vectors,

@@ -71,6 +71,18 @@ fn json_str<'a>(value: &'a Value, path: &[&str]) -> Result<&'a str, String> {
         .ok_or_else(|| format!("JSON key {} is not a string", path.join(".")))
 }
 
+fn json_bool(value: &Value, path: &[&str]) -> Result<bool, String> {
+    let mut cursor = value;
+    for key in path {
+        cursor = cursor
+            .get(*key)
+            .ok_or_else(|| format!("missing JSON key {}", path.join(".")))?;
+    }
+    cursor
+        .as_bool()
+        .ok_or_else(|| format!("JSON key {} is not a boolean", path.join(".")))
+}
+
 fn json_string_vec<'a>(value: &'a Value, path: &[&str]) -> Result<Vec<&'a str>, String> {
     let mut cursor = value;
     for key in path {
@@ -106,8 +118,11 @@ fn main() -> Result<(), String> {
     if path2_account_stark_fri_qrom_residual_report_v1_digest(&report) != report.digest {
         return Err("account-STARK FRI/QROM residual report digest mismatch".to_string());
     }
-    if report.residual_pricing_complete || report.deployment_ready {
-        return Err("FRI/QROM residual unexpectedly reports deployment readiness".to_string());
+    if report.residual_pricing_complete
+        || report.deployment_ready
+        || !report.account_stark_fri_qrom_transcript_reduction_bound
+    {
+        return Err("FRI/QROM residual lost fail-closed reduction/open-boundary state".to_string());
     }
 
     let config_source =
@@ -172,6 +187,30 @@ fn main() -> Result<(), String> {
     )?;
 
     let manifest = load_json(&root, "formal/kat/path2_account_stark_fri_qrom_residual_v1.json")?;
+    check_equal(
+        "manifest transcript reduction theorem",
+        json_str(
+            &manifest,
+            &[
+                "manifest",
+                "authority_snapshot",
+                "account_stark_fri_qrom_transcript_reduction_lean_theorem",
+            ],
+        )?,
+        report.account_stark_fri_qrom_transcript_reduction_lean_theorem,
+    )?;
+    check_equal(
+        "manifest open transcript reduction bound",
+        json_bool(
+            &manifest,
+            &[
+                "manifest",
+                "open_obligations",
+                "account_stark_fri_qrom_transcript_reduction_bound",
+            ],
+        )?,
+        report.account_stark_fri_qrom_transcript_reduction_bound,
+    )?;
     check_equal(
         "FRI/QROM domain vector case count",
         json_usize(
@@ -288,6 +327,25 @@ fn main() -> Result<(), String> {
         )?,
         report.checked_core_qrom_max_target_count_log2_at_128_bits,
     )?;
+
+    let source = fs::read_to_string(root.join("tools/parameter-search/src/production_reference.rs"))
+        .map_err(|err| format!("failed to read production reference source: {err}"))?;
+    for marker in [
+        "PATH2_ACCOUNT_STARK_FRI_QROM_TRANSCRIPT_REDUCTION_LEAN_THEOREM",
+        "account_stark_fri_qrom_transcript_reduction_lean_theorem",
+        "account_stark_fri_qrom_transcript_reduction_bound",
+    ] {
+        require_contains(&source, marker, marker)?;
+    }
+
+    let lean = fs::read_to_string(root.join("Descender/Path2FullSpendConcrete.lean"))
+        .map_err(|err| format!("failed to read Path2FullSpendConcrete.lean: {err}"))?;
+    for marker in [
+        "SelectedRustAcceptedBoundaryFriQromTranscriptWith",
+        "selectedRustAcceptedBoundaryFriQromTranscriptReduction_v1",
+    ] {
+        require_contains(&lean, marker, marker)?;
+    }
 
     println!("Path 2 account-STARK FRI/QROM residual consistency check passed.");
     Ok(())

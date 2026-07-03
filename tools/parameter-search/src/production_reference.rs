@@ -9365,6 +9365,8 @@ pub struct Path2AccountStarkFriQromResidualReportV1 {
     pub checked_core_qrom_selected_transcript_term_bits: usize,
     pub checked_core_qrom_max_target_count_log2_at_128_bits: usize,
     pub qrom_domain_vector_case_count: usize,
+    pub account_stark_fri_qrom_transcript_reduction_lean_theorem: &'static str,
+    pub account_stark_fri_qrom_transcript_reduction_bound: bool,
     pub fri_schedule_pinned: bool,
     pub challenge_field_pinned: bool,
     pub checked_core_qrom_budget_pinned: bool,
@@ -12117,6 +12119,8 @@ pub const PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_SIMULATOR_NO_EXPORT_REDUCTION_L
     "selectedRustAcceptedBundleSimulatorNoExportReduction_v1";
 pub const PATH2_ACCOUNT_STARK_FRI_AOK_EXTRACTOR_REDUCTION_LEAN_THEOREM: &str =
     "selectedRustAcceptedBoundaryFriAokExtractorReduction_v1";
+pub const PATH2_ACCOUNT_STARK_FRI_QROM_TRANSCRIPT_REDUCTION_LEAN_THEOREM: &str =
+    "selectedRustAcceptedBoundaryFriQromTranscriptReduction_v1";
 pub const PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS: [&str; 14] = [
     "leaf_context_digest",
     "creation_proof_binding_digest",
@@ -12289,7 +12293,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
         supporting_surface:
             "Path2AccountStarkFriQromResidualReportV1 + accepted-boundary Lean FRI/QROM support",
         current_evidence:
-            "selectedRustAcceptedBoundaryFriQromSupport_of_boundaryAccepted packages FRI/QROM residual digest/nonzero, residual-pricing tracking, direct proof-family break mapping, and the still-open proof-family flag while the report pins active FRI parameters, degree-8 challenge field, Poseidon2 sponge floor, checked-core QROM artifacts, and fail-closed theorem flags",
+            "selectedRustAcceptedBoundaryFriQromSupport_of_boundaryAccepted packages FRI/QROM residual digest/nonzero, residual-pricing tracking, direct proof-family break mapping, and the still-open proof-family flag while the report pins active FRI parameters, degree-8 challenge field, Poseidon2 sponge floor, checked-core QROM artifacts, selected Rust accepted-boundary FRI/QROM transcript reduction evidence, and fail-closed theorem flags",
         required_closure: "price the account-STARK FRI transcript theorem, recursion if used, and multi-target/QROM terms against the selected deployment profile",
         named_break: "fri_soundness_margin_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
@@ -12783,6 +12787,9 @@ pub fn path2_account_stark_fri_qrom_residual_report_v1() -> Path2AccountStarkFri
         checked_core_qrom_max_target_count_log2_at_128_bits:
             PATH2_CHECKED_CORE_QROM_MAX_TARGET_COUNT_LOG2_AT_128_BITS,
         qrom_domain_vector_case_count: PATH2_ACCOUNT_STARK_FRI_QROM_DOMAIN_CASES.len(),
+        account_stark_fri_qrom_transcript_reduction_lean_theorem:
+            PATH2_ACCOUNT_STARK_FRI_QROM_TRANSCRIPT_REDUCTION_LEAN_THEOREM,
+        account_stark_fri_qrom_transcript_reduction_bound: true,
         fri_schedule_pinned: true,
         challenge_field_pinned: true,
         checked_core_qrom_budget_pinned: true,
@@ -12825,6 +12832,9 @@ pub fn validate_path2_account_stark_fri_qrom_residual_report_v1(
     }
     if report.residual_pricing_complete
         || report.deployment_ready
+        || report.account_stark_fri_qrom_transcript_reduction_lean_theorem
+            != PATH2_ACCOUNT_STARK_FRI_QROM_TRANSCRIPT_REDUCTION_LEAN_THEOREM
+        || !report.account_stark_fri_qrom_transcript_reduction_bound
         || report.account_stark_transcript_qrom_theorem_instantiated
         || report.recursion_pricing_complete
         || report.external_fri_review_complete
@@ -51484,6 +51494,8 @@ fn path2_full_signature_execution_source_boundary_present_in_source_v1(
         "selectedRustAcceptedBoundaryFriAokSupport_of_boundaryAccepted",
         "SelectedRustAcceptedBoundaryFriQromSupport",
         "selectedRustAcceptedBoundaryFriQromSupport_of_boundaryAccepted",
+        "SelectedRustAcceptedBoundaryFriQromTranscriptWith",
+        "selectedRustAcceptedBoundaryFriQromTranscriptReduction_v1",
         "SelectedRustAcceptedBoundaryProductionGateSupport",
         "selectedRustAcceptedBoundaryProductionGateSupport_of_boundaryAccepted",
     ];
@@ -70263,6 +70275,18 @@ fn path2_account_stark_fri_qrom_residual_report_v1_frame(
         &mut frame,
         b"qrom_domain_vector_case_count",
         report.qrom_domain_vector_case_count as u64,
+    );
+    append_frame(
+        &mut frame,
+        b"account_stark_fri_qrom_transcript_reduction_lean_theorem",
+        report
+            .account_stark_fri_qrom_transcript_reduction_lean_theorem
+            .as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"account_stark_fri_qrom_transcript_reduction_bound",
+        u64::from(report.account_stark_fri_qrom_transcript_reduction_bound),
     );
     append_u64(
         &mut frame,
@@ -114681,6 +114705,11 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.checked_core_qrom_max_target_count_log2_at_128_bits,
             54
         );
+        assert_eq!(
+            report.account_stark_fri_qrom_transcript_reduction_lean_theorem,
+            PATH2_ACCOUNT_STARK_FRI_QROM_TRANSCRIPT_REDUCTION_LEAN_THEOREM
+        );
+        assert!(report.account_stark_fri_qrom_transcript_reduction_bound);
         assert!(report.fri_schedule_pinned);
         assert!(report.challenge_field_pinned);
         assert!(report.checked_core_qrom_budget_pinned);

@@ -591,6 +591,9 @@ fn manifest_body() -> Result<Value, String> {
                 "challenge_field_pinned": fri_qrom_residual_report.challenge_field_pinned,
                 "checked_core_qrom_budget_pinned":
                     fri_qrom_residual_report.checked_core_qrom_budget_pinned,
+                "account_stark_fri_qrom_transcript_reduction_bound":
+                    fri_qrom_residual_report
+                        .account_stark_fri_qrom_transcript_reduction_bound,
                 "account_stark_transcript_qrom_theorem_instantiated":
                     fri_qrom_residual_report
                         .account_stark_transcript_qrom_theorem_instantiated,
@@ -649,6 +652,9 @@ fn manifest_body() -> Result<Value, String> {
                 "max_target_count_log2_at_128_bits":
                     fri_qrom_residual_report
                         .checked_core_qrom_max_target_count_log2_at_128_bits,
+                "account_stark_fri_qrom_transcript_reduction_lean_theorem":
+                    fri_qrom_residual_report
+                        .account_stark_fri_qrom_transcript_reduction_lean_theorem,
                 "scope_note":
                     "checked-core spend transcript ledger; not a substitute for the open account-STARK FRI transcript QROM theorem"
             }

@@ -87,6 +87,10 @@ fn manifest_body() -> Result<Value, String> {
             "case_id": "fri_qrom_open_theorem_flags_fail_closed",
             "kind": "audit",
             "surface": "Path2AccountStarkFriQromResidualReportV1.open_obligations",
+            "account_stark_fri_qrom_transcript_reduction_lean_theorem":
+                report.account_stark_fri_qrom_transcript_reduction_lean_theorem,
+            "account_stark_fri_qrom_transcript_reduction_bound":
+                report.account_stark_fri_qrom_transcript_reduction_bound,
             "account_stark_transcript_qrom_theorem_instantiated":
                 report.account_stark_transcript_qrom_theorem_instantiated,
             "recursion_pricing_complete": report.recursion_pricing_complete,
@@ -134,6 +138,8 @@ fn manifest_body() -> Result<Value, String> {
             "fri_schedule_pinned": report.fri_schedule_pinned,
             "challenge_field_pinned": report.challenge_field_pinned,
             "checked_core_qrom_budget_pinned": report.checked_core_qrom_budget_pinned,
+            "account_stark_fri_qrom_transcript_reduction_bound":
+                report.account_stark_fri_qrom_transcript_reduction_bound,
             "account_stark_transcript_qrom_theorem_instantiated":
                 report.account_stark_transcript_qrom_theorem_instantiated,
             "recursion_pricing_complete": report.recursion_pricing_complete,

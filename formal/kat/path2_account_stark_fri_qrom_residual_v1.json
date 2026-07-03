@@ -1,6 +1,7 @@
 {
   "manifest": {
     "authority_snapshot": {
+      "account_stark_fri_qrom_transcript_reduction_lean_theorem": "selectedRustAcceptedBoundaryFriQromTranscriptReduction_v1",
       "blocker": "account-STARK residual matrix: FRI soundness margin, recursion, Poseidon2 transcript, and multi-target/QROM pricing are not closed",
       "fri_qrom_residual_report_domain": "Descender.Path2.AccountStarkFriQromResidualReport.v1",
       "selected_payload_type": "Path2AccountStarkCreationPayloadV1",
@@ -34,8 +35,8 @@
     "corpus_id": "Descender.Path2.AccountStarkFriQromResidual.v1",
     "corpus_version": 1,
     "digests": {
-      "account_stark_fri_qrom_residual_report_digest": "a275e34633ce69695d7c2617019f127c1a74d6de240fc6c86a156afe41781650",
-      "account_stark_fri_qrom_residual_report_recomputed_digest": "a275e34633ce69695d7c2617019f127c1a74d6de240fc6c86a156afe41781650"
+      "account_stark_fri_qrom_residual_report_digest": "9bc78a2b1b97bf8506f439e74547395a46e70a514c89aa537880dd7ac4e23505",
+      "account_stark_fri_qrom_residual_report_recomputed_digest": "9bc78a2b1b97bf8506f439e74547395a46e70a514c89aa537880dd7ac4e23505"
     },
     "fri_schedule": {
       "challenge_extension_degree": 8,
@@ -57,6 +58,7 @@
       "source": "tools/parameter-search/src/bin/path2_account_stark_fri_qrom_residual_manifest.rs"
     },
     "open_obligations": {
+      "account_stark_fri_qrom_transcript_reduction_bound": true,
       "account_stark_transcript_qrom_theorem_instantiated": false,
       "challenge_field_pinned": true,
       "checked_core_qrom_budget_pinned": true,
@@ -71,5 +73,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.AccountStarkFriQromResidualManifest.v1"
   },
-  "manifest_digest": "4d2d928433b3710678d8a0a5929077d87bd4831fe0f23c869b71c6daf58b893c"
+  "manifest_digest": "d11d7cc6b7e45161ed7f34aa25afccec4e00820fbc3a47b9b7675d0fdcb58f84"
 }

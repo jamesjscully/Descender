@@ -1136,6 +1136,7 @@ fn main() -> Result<(), String> {
     )?;
     if fri_qrom_report.deployment_ready
         || fri_qrom_report.residual_pricing_complete
+        || !fri_qrom_report.account_stark_fri_qrom_transcript_reduction_bound
         || fri_qrom_report.account_stark_transcript_qrom_theorem_instantiated
         || fri_qrom_report.recursion_pricing_complete
         || fri_qrom_report.external_fri_review_complete

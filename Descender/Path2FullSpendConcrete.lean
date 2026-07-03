@@ -1717,6 +1717,47 @@ theorem selectedRustAcceptedBoundaryFriQromSupport_of_boundaryAccepted
     hProofFamilyOpen⟩
 
 /--
+Accepted-boundary FRI/QROM closure reduced to a supplied transcript-soundness
+relation.
+
+`FriQromTranscriptSound` is the remaining account-STARK transcript QROM theorem
+surface. This predicate keeps the current accepted-boundary FRI/QROM support
+explicit so the reduction cannot consume unpinned FRI parameters, unchecked
+QROM-budget evidence, or a closed deployment profile.
+-/
+def SelectedRustAcceptedBoundaryFriQromTranscriptWith
+    (FriQromTranscriptSound : ConcreteSpendTuple -> Prop)
+    (spend : ConcreteSpendTuple) : Prop :=
+  SelectedRustAcceptedBoundaryFriQromSupport spend ∧
+    FriQromTranscriptSound spend
+
+/--
+Selected Rust accepted-boundary FRI/QROM transcript reduction hook.
+
+If the remaining account-STARK transcript theorem proves soundness for every
+accepted boundary carrying the current FRI/QROM support slice, then every
+selected accepted boundary has that transcript support. This deliberately keeps
+the transcript relation as an explicit hypothesis and does not instantiate the
+account-STARK FRI transcript QROM theorem, recursion pricing, deployment-profile
+acceptance, or deployment readiness.
+-/
+theorem selectedRustAcceptedBoundaryFriQromTranscriptReduction_v1
+    (FriQromTranscriptSound : ConcreteSpendTuple -> Prop)
+    (hTranscript :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustAcceptedBoundaryFriQromSupport spend ->
+          FriQromTranscriptSound spend) :
+    forall spend : ConcreteSpendTuple,
+      AccountCreationProofBoundaryEvidenceAccepted
+        selectedRustConcreteGameConfig spend ->
+        SelectedRustAcceptedBoundaryFriQromTranscriptWith
+          FriQromTranscriptSound spend := by
+  intro spend hAccepted
+  have hSupport :=
+    selectedRustAcceptedBoundaryFriQromSupport_of_boundaryAccepted hAccepted
+  exact ⟨hSupport, hTranscript spend hSupport⟩
+
+/--
 Accepted selected-Rust boundary evidence carries the production-gate support
 slice: the selected proof-boundary report and accepted-evidence digests are
 pinned, the public boundary accepted, and the production gate remains
