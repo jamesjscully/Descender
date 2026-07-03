@@ -299,7 +299,10 @@ surfaces a future simulator theorem may consume. The typed public-bundle
 projection from accepted public anchors is machine-checked by
 `selectedRustAcceptedBundlePublicBundleFromPublicAnchors_v1`, and the typed
 simulator-input projection from accepted public anchors is machine-checked by
-`selectedRustAcceptedBundleSimulatorInputFromPublicAnchors_v1`. These hooks do
+`selectedRustAcceptedBundleSimulatorInputFromPublicAnchors_v1`. The selected
+Rust accepted-bundle simulator/no-export reduction hook is machine-checked by
+`selectedRustAcceptedBundleSimulatorNoExportReduction_v1`; it packages those
+typed public-anchor projections with a supplied simulator relation, but does
 not instantiate the simulator distribution theorem or accepted-bundle
 simulability. The denylist term `private_trace_material` covers private trace material.
 

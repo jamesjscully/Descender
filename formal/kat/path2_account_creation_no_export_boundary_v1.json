@@ -4,6 +4,7 @@
       "accepted_bundle_public_anchor_simulation_boundary_lean_theorem": "selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1",
       "accepted_bundle_public_bundle_from_public_anchors_lean_theorem": "selectedRustAcceptedBundlePublicBundleFromPublicAnchors_v1",
       "accepted_bundle_simulator_input_from_public_anchors_lean_theorem": "selectedRustAcceptedBundleSimulatorInputFromPublicAnchors_v1",
+      "accepted_bundle_simulator_no_export_reduction_lean_theorem": "selectedRustAcceptedBundleSimulatorNoExportReduction_v1",
       "accepted_public_anchor_package_lean_theorem": "selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1",
       "blocker": "account-STARK residual matrix: selected payload simulator and no-export theorem is not instantiated",
       "named_break": "account_stark_simulator_or_no_export_break",
@@ -22,12 +23,12 @@
     "corpus_id": "Descender.Path2.AccountCreationNoExportBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_no_export_boundary_report_digest": "89c722c5245e367735e00d6b4523aec59958e5d27400f2d306f8e25140e55e5e",
-      "account_creation_no_export_boundary_report_recomputed_digest": "89c722c5245e367735e00d6b4523aec59958e5d27400f2d306f8e25140e55e5e",
-      "account_creation_proof_boundary_report_digest": "6f0ebefaacb425b568a3ac7828a0c42f8b651c4306433c61d7e764caaf0d8025",
+      "account_creation_no_export_boundary_report_digest": "e976304c536f9815329bedccc56e2ef72a45b08ff404fa8102b3f6a2449486e5",
+      "account_creation_no_export_boundary_report_recomputed_digest": "e976304c536f9815329bedccc56e2ef72a45b08ff404fa8102b3f6a2449486e5",
+      "account_creation_proof_boundary_report_digest": "ded2601c924cfe0f526a1f2e631037248c7f755114c343cdb362421117a5fcbd",
       "payload_byte_model_report_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
       "payload_kat_boundary_report_digest": "ab14d77b9401e7c219a85204c19c767b958220517bd64f4a5868189bb8fbbafe",
-      "proof_boundary_report_no_export_digest": "89c722c5245e367735e00d6b4523aec59958e5d27400f2d306f8e25140e55e5e"
+      "proof_boundary_report_no_export_digest": "e976304c536f9815329bedccc56e2ef72a45b08ff404fa8102b3f6a2449486e5"
     },
     "frozen_status": "draft_no_export_boundary_manifest",
     "generator": {
@@ -38,12 +39,14 @@
       "accepted_bundle_public_anchor_simulation_boundary_lean_theorem": "selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1",
       "accepted_bundle_public_bundle_from_public_anchors_lean_theorem": "selectedRustAcceptedBundlePublicBundleFromPublicAnchors_v1",
       "accepted_bundle_simulator_input_from_public_anchors_lean_theorem": "selectedRustAcceptedBundleSimulatorInputFromPublicAnchors_v1",
+      "accepted_bundle_simulator_no_export_reduction_lean_theorem": "selectedRustAcceptedBundleSimulatorNoExportReduction_v1",
       "accepted_public_anchor_package_lean_theorem": "selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1",
       "coverage": {
         "accepted_bundle_public_anchor_simulation_boundary_bound": true,
         "accepted_bundle_public_bundle_from_public_anchors_bound": true,
         "accepted_bundle_simulatable_from_public_anchors": false,
         "accepted_bundle_simulator_input_from_public_anchors_bound": true,
+        "accepted_bundle_simulator_no_export_reduction_bound": true,
         "accepted_public_anchor_package_bound": true,
         "blocker": "account-STARK residual matrix: selected payload simulator and no-export theorem is not instantiated",
         "boundary_mapping_complete": true,
@@ -53,7 +56,7 @@
         "frozen_no_export_vectors_complete": true,
         "no_export_field_denylist_pinned": true,
         "no_export_theorem_instantiated": false,
-        "no_export_vector_case_count": 10,
+        "no_export_vector_case_count": 11,
         "no_export_vectors_present": true,
         "payload_public_field_count": 11,
         "production_gate_fail_closed": true,
@@ -83,6 +86,7 @@
         "no_export_accepted_bundle_public_anchor_simulation_boundary",
         "no_export_accepted_bundle_public_bundle_from_public_anchors",
         "no_export_accepted_bundle_simulator_input_from_public_anchors",
+        "no_export_accepted_bundle_simulator_no_export_reduction",
         "no_export_private_material_denylist_absence",
         "no_export_opaque_bundle_not_manifest_inlined",
         "no_export_public_bundle_lean_predicate"
@@ -110,5 +114,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.AccountCreationNoExportBoundaryManifest.v1"
   },
-  "manifest_digest": "269a43c9eca6f9c3cf992ce23a9739c017faee01b09525299b1649fd577806ad"
+  "manifest_digest": "ddf6fdad6b1ea10b7649342e356ace0849cffcc11355819e6460472901b30fe4"
 }

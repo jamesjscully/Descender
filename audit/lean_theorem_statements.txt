@@ -135,6 +135,17 @@ theorem Descender.Path2NoExportConcrete.selectedRustAcceptedBundlePublicBundleFr
 theorem Descender.Path2NoExportConcrete.selectedRustAcceptedBundleSimulatorInputFromPublicAnchors_v1 :
 ∀ (A : Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage), A.simulatorInputFromPublicAnchors
 
+theorem Descender.Path2NoExportConcrete.selectedRustAcceptedBundleSimulatorNoExportReduction_v1 :
+∀
+  (Simulates :
+    Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.PublicBundleInputs →
+      Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.SimulatorPublicInputs → Prop),
+  (∀ (A : Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage),
+      A.publicAnchorSimulationBoundary → Simulates A.publicBundleInputs A.simulatorPublicInputs) →
+    ∀ (A : Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage),
+      Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.acceptedBundleSimulatorNoExportWith
+        Simulates A
+
 theorem Descender.Path2NoExportConcrete.selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1 :
 ∀ (A : Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage), A.noExportSupport
 

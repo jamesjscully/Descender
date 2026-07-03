@@ -61,6 +61,8 @@ fn manifest_body() -> Result<Value, String> {
                 report.accepted_bundle_public_bundle_from_public_anchors_lean_theorem,
             "accepted_bundle_simulator_input_from_public_anchors_lean_theorem":
                 report.accepted_bundle_simulator_input_from_public_anchors_lean_theorem,
+            "accepted_bundle_simulator_no_export_reduction_lean_theorem":
+                report.accepted_bundle_simulator_no_export_reduction_lean_theorem,
             "named_break": report.named_break,
             "blocker": report.blocker
         },
@@ -104,6 +106,8 @@ fn manifest_body() -> Result<Value, String> {
                     report.accepted_bundle_public_bundle_from_public_anchors_bound,
                 "accepted_bundle_simulator_input_from_public_anchors_bound":
                     report.accepted_bundle_simulator_input_from_public_anchors_bound,
+                "accepted_bundle_simulator_no_export_reduction_bound":
+                    report.accepted_bundle_simulator_no_export_reduction_bound,
                 "simulator_theorem_instantiated": report.simulator_theorem_instantiated,
                 "no_export_theorem_instantiated": report.no_export_theorem_instantiated,
                 "accepted_bundle_simulatable_from_public_anchors":
@@ -127,6 +131,8 @@ fn manifest_body() -> Result<Value, String> {
                 report.accepted_bundle_public_bundle_from_public_anchors_lean_theorem,
             "accepted_bundle_simulator_input_from_public_anchors_lean_theorem":
                 report.accepted_bundle_simulator_input_from_public_anchors_lean_theorem,
+            "accepted_bundle_simulator_no_export_reduction_lean_theorem":
+                report.accepted_bundle_simulator_no_export_reduction_lean_theorem,
             "no_export_vector_case_ids": report.no_export_vector_case_ids,
             "simulator_public_input_fields": report.simulator_public_input_fields,
             "no_export_private_material_fields": report.no_export_private_material_fields

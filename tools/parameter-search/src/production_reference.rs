@@ -9633,6 +9633,8 @@ pub struct Path2AccountCreationNoExportBoundaryReportV1 {
     pub accepted_bundle_public_bundle_from_public_anchors_bound: bool,
     pub accepted_bundle_simulator_input_from_public_anchors_lean_theorem: &'static str,
     pub accepted_bundle_simulator_input_from_public_anchors_bound: bool,
+    pub accepted_bundle_simulator_no_export_reduction_lean_theorem: &'static str,
+    pub accepted_bundle_simulator_no_export_reduction_bound: bool,
     pub simulator_theorem_instantiated: bool,
     pub no_export_theorem_instantiated: bool,
     pub accepted_bundle_simulatable_from_public_anchors: bool,
@@ -11868,7 +11870,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHOR_CASES: [&str; 2]
     "rebound_native_role_root_anchor",
     "rebound_masked_projection_anchor",
 ];
-pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES: [&str; 10] = [
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES: [&str; 11] = [
     "no_export_public_payload_field_allowlist",
     "no_export_simulator_public_input_allowlist",
     "no_export_simulator_input_lean_predicate",
@@ -11876,6 +11878,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES: [&str; 10] = [
     "no_export_accepted_bundle_public_anchor_simulation_boundary",
     "no_export_accepted_bundle_public_bundle_from_public_anchors",
     "no_export_accepted_bundle_simulator_input_from_public_anchors",
+    "no_export_accepted_bundle_simulator_no_export_reduction",
     "no_export_private_material_denylist_absence",
     "no_export_opaque_bundle_not_manifest_inlined",
     "no_export_public_bundle_lean_predicate",
@@ -12108,6 +12111,8 @@ pub const PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_PUBLIC_BUNDLE_FROM_PUBLIC_ANCHO
     "selectedRustAcceptedBundlePublicBundleFromPublicAnchors_v1";
 pub const PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_SIMULATOR_INPUT_FROM_PUBLIC_ANCHORS_LEAN_THEOREM: &str =
     "selectedRustAcceptedBundleSimulatorInputFromPublicAnchors_v1";
+pub const PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_SIMULATOR_NO_EXPORT_REDUCTION_LEAN_THEOREM: &str =
+    "selectedRustAcceptedBundleSimulatorNoExportReduction_v1";
 pub const PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS: [&str; 14] = [
     "leaf_context_digest",
     "creation_proof_binding_digest",
@@ -12256,7 +12261,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
         supporting_surface:
             "Path2AccountCreationNoExportBoundaryReportV1 + accepted-boundary Lean no-export support",
         current_evidence:
-            "selectedRustAcceptedBoundaryNoExportSupport_of_boundaryAccepted packages no-export boundary digest/nonzero, simulator/no-export tracking, direct proof-family break mapping, and the still-open proof-family flag while the report pins public-input allowlist, private-material denylist, frozen no-export vectors, selected Rust public-bundle denylist predicate, selected Rust simulator-input allowlist predicate, selected Rust accepted public-anchor package binding predicate, selected Rust accepted-bundle public-anchor simulation-boundary predicate, selected Rust accepted-bundle simulator-input-from-public-anchors predicate, and fail-closed flags",
+            "selectedRustAcceptedBoundaryNoExportSupport_of_boundaryAccepted packages no-export boundary digest/nonzero, simulator/no-export tracking, direct proof-family break mapping, and the still-open proof-family flag while the report pins public-input allowlist, private-material denylist, frozen no-export vectors, selected Rust public-bundle denylist predicate, selected Rust simulator-input allowlist predicate, selected Rust accepted public-anchor package binding predicate, selected Rust accepted-bundle public-anchor simulation-boundary predicate, selected Rust accepted-bundle public-bundle-from-public-anchors predicate, selected Rust accepted-bundle simulator-input-from-public-anchors predicate, selected Rust accepted-bundle simulator/no-export reduction predicate, and fail-closed flags",
         required_closure: "prove accepted public bundles are simulatable from public anchors and allowed commitments without exporting private creation material",
         named_break: "account_stark_simulator_or_no_export_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
@@ -13249,6 +13254,9 @@ pub fn path2_account_creation_no_export_boundary_report_v1(
         accepted_bundle_simulator_input_from_public_anchors_lean_theorem:
             PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_SIMULATOR_INPUT_FROM_PUBLIC_ANCHORS_LEAN_THEOREM,
         accepted_bundle_simulator_input_from_public_anchors_bound: true,
+        accepted_bundle_simulator_no_export_reduction_lean_theorem:
+            PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_SIMULATOR_NO_EXPORT_REDUCTION_LEAN_THEOREM,
+        accepted_bundle_simulator_no_export_reduction_bound: true,
         simulator_theorem_instantiated: false,
         no_export_theorem_instantiated: false,
         accepted_bundle_simulatable_from_public_anchors: false,
@@ -13325,6 +13333,9 @@ pub fn validate_path2_account_creation_no_export_boundary_report_v1(
         || report.accepted_bundle_simulator_input_from_public_anchors_lean_theorem
             != PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_SIMULATOR_INPUT_FROM_PUBLIC_ANCHORS_LEAN_THEOREM
         || !report.accepted_bundle_simulator_input_from_public_anchors_bound
+        || report.accepted_bundle_simulator_no_export_reduction_lean_theorem
+            != PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_SIMULATOR_NO_EXPORT_REDUCTION_LEAN_THEOREM
+        || !report.accepted_bundle_simulator_no_export_reduction_bound
         || report.public_payload_exports_private_material
         || report.simulator_theorem_instantiated
         || report.no_export_theorem_instantiated
@@ -71152,6 +71163,18 @@ fn path2_account_creation_no_export_boundary_report_v1_frame(
         b"accepted_bundle_simulator_input_from_public_anchors_bound",
         u64::from(report.accepted_bundle_simulator_input_from_public_anchors_bound),
     );
+    append_frame(
+        &mut frame,
+        b"accepted_bundle_simulator_no_export_reduction_lean_theorem",
+        report
+            .accepted_bundle_simulator_no_export_reduction_lean_theorem
+            .as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_bundle_simulator_no_export_reduction_bound",
+        u64::from(report.accepted_bundle_simulator_no_export_reduction_bound),
+    );
     append_u64(
         &mut frame,
         b"simulator_theorem_instantiated",
@@ -115194,6 +115217,11 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_SIMULATOR_INPUT_FROM_PUBLIC_ANCHORS_LEAN_THEOREM
         );
         assert!(report.accepted_bundle_simulator_input_from_public_anchors_bound);
+        assert_eq!(
+            report.accepted_bundle_simulator_no_export_reduction_lean_theorem,
+            PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_SIMULATOR_NO_EXPORT_REDUCTION_LEAN_THEOREM
+        );
+        assert!(report.accepted_bundle_simulator_no_export_reduction_bound);
         assert!(!report.simulator_theorem_instantiated);
         assert!(!report.no_export_theorem_instantiated);
         assert!(!report.accepted_bundle_simulatable_from_public_anchors);

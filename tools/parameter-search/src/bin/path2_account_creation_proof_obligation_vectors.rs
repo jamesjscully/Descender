@@ -1,3 +1,5 @@
+#![recursion_limit = "256"]
+
 use descender_parameter_search::{
     manifest_vector_evidence::{
         path2_account_creation_accepted_proof_boundary_evidence_artifact_v1,
@@ -154,6 +156,10 @@ fn manifest_body() -> Result<Value, String> {
         || !bool_at(
             no_export_vectors,
             "/audit_summary/accepted_bundle_simulator_input_from_public_anchors_bound",
+        )?
+        || !bool_at(
+            no_export_vectors,
+            "/audit_summary/accepted_bundle_simulator_no_export_reduction_bound",
         )?
         || bool_at(
             no_export_vectors,
@@ -395,6 +401,10 @@ fn manifest_body() -> Result<Value, String> {
                     .accepted_bundle_simulator_input_from_public_anchors_lean_theorem,
             "accepted_bundle_simulator_input_from_public_anchors_bound":
                 no_export_report.accepted_bundle_simulator_input_from_public_anchors_bound,
+            "accepted_bundle_simulator_no_export_reduction_lean_theorem":
+                no_export_report.accepted_bundle_simulator_no_export_reduction_lean_theorem,
+            "accepted_bundle_simulator_no_export_reduction_bound":
+                no_export_report.accepted_bundle_simulator_no_export_reduction_bound,
             "accepted_bundle_simulatable_from_public_anchors":
                 no_export_report.accepted_bundle_simulatable_from_public_anchors,
             "frozen_no_export_vectors_complete":

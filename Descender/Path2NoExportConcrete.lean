@@ -1257,6 +1257,32 @@ def publicAnchorSimulationBoundary
                 A.lifecycleAnchor A.verifierVersion A.packedWitnessCommitment
                 A.publicRejectionCode
 
+/--
+Accepted-bundle simulability reduced to a supplied public simulator relation.
+
+`Simulates` is the remaining algebraic simulator theorem surface: it relates the
+typed public-bundle inputs to the typed simulator inputs.  This predicate keeps
+the public-anchor boundary explicit so the reduction cannot silently consume a
+non-public or unbound simulator input.
+-/
+def acceptedBundleSimulatableFromPublicAnchorsWith
+    (Simulates : PublicBundleInputs -> SimulatorPublicInputs -> Prop)
+    (A : AccountCreationAcceptedPublicAnchorPackage) : Prop :=
+  A.publicAnchorSimulationBoundary ∧
+    Simulates A.publicBundleInputs A.simulatorPublicInputs
+
+/--
+Accepted-bundle simulator/no-export closure reduced to the supplied simulator
+relation and the already-proved public-anchor no-export boundary.
+
+This is still a reduction target, not the distributional simulator theorem.
+-/
+def acceptedBundleSimulatorNoExportWith
+    (Simulates : PublicBundleInputs -> SimulatorPublicInputs -> Prop)
+    (A : AccountCreationAcceptedPublicAnchorPackage) : Prop :=
+  A.acceptedBundleSimulatableFromPublicAnchorsWith Simulates ∧
+    A.noExportSupport
+
 end AccountCreationAcceptedPublicAnchorPackage
 
 /-- The accepted public-anchor package is bound to the selected public surfaces. -/
@@ -1377,6 +1403,32 @@ theorem selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1 :
   exact
     ⟨hSurfaces, hNoExport, hPublicBundleFromAnchors,
       hSimulatorInputFromAnchors, rfl, rfl⟩
+
+/--
+Selected Rust accepted-bundle simulator/no-export reduction hook.
+
+If the remaining algebraic simulator theorem proves simulation for every
+accepted public-anchor package satisfying the selected boundary, then every
+selected accepted bundle is simulatable from the typed public anchors and has
+the current no-export support.  This deliberately keeps the simulator relation
+as an explicit hypothesis and does not instantiate
+`selected_account_stark_public_bundle_simulator_v1`,
+`selected_account_stark_no_export_v1`, or deployment readiness.
+-/
+theorem selectedRustAcceptedBundleSimulatorNoExportReduction_v1
+    (Simulates :
+      AccountCreationAcceptedPublicAnchorPackage.PublicBundleInputs ->
+        AccountCreationAcceptedPublicAnchorPackage.SimulatorPublicInputs -> Prop)
+    (hSimulator :
+      forall A : AccountCreationAcceptedPublicAnchorPackage,
+        A.publicAnchorSimulationBoundary ->
+          Simulates A.publicBundleInputs A.simulatorPublicInputs) :
+    forall A : AccountCreationAcceptedPublicAnchorPackage,
+      A.acceptedBundleSimulatorNoExportWith Simulates := by
+  intro A
+  have hBoundary :=
+    selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1 A
+  exact ⟨⟨hBoundary, hSimulator A hBoundary⟩, hBoundary.2.1⟩
 
 end Path2NoExportConcrete
 end Descender

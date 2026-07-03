@@ -5,6 +5,7 @@
       "accepted_bundle_public_bundle_from_public_anchors_bound": true,
       "accepted_bundle_simulatable_from_public_anchors": false,
       "accepted_bundle_simulator_input_from_public_anchors_bound": true,
+      "accepted_bundle_simulator_no_export_reduction_bound": true,
       "accepted_public_anchor_package_bound": true,
       "all_private_material_absent": true,
       "deployment_ready": false,
@@ -29,11 +30,13 @@
       "accepted_bundle_public_bundle_from_public_anchors_lean_theorem": "selectedRustAcceptedBundlePublicBundleFromPublicAnchors_v1",
       "accepted_bundle_simulator_input_from_public_anchors_bound": true,
       "accepted_bundle_simulator_input_from_public_anchors_lean_theorem": "selectedRustAcceptedBundleSimulatorInputFromPublicAnchors_v1",
+      "accepted_bundle_simulator_no_export_reduction_bound": true,
+      "accepted_bundle_simulator_no_export_reduction_lean_theorem": "selectedRustAcceptedBundleSimulatorNoExportReduction_v1",
       "accepted_public_anchor_package_bound": true,
       "accepted_public_anchor_package_lean_theorem": "selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1",
       "blocker": "account-STARK residual matrix: selected payload simulator and no-export theorem is not instantiated",
       "deployment_ready": false,
-      "digest": "89c722c5245e367735e00d6b4523aec59958e5d27400f2d306f8e25140e55e5e",
+      "digest": "e976304c536f9815329bedccc56e2ef72a45b08ff404fa8102b3f6a2449486e5",
       "domain": "Descender.Path2.AccountCreationNoExportBoundaryReport.v1",
       "frozen_no_export_vectors_complete": true,
       "no_export_requirement": "zero_knowledge_no_export_semantics",
@@ -47,7 +50,7 @@
       "simulator_theorem_instantiated": false,
       "simulator_theorem_target": "selected_account_stark_public_bundle_simulator_v1"
     },
-    "case_count": 10,
+    "case_count": 11,
     "cases": [
       {
         "all_private_material_absent": true,
@@ -160,6 +163,18 @@
         "surface": "Descender.Path2NoExportConcrete"
       },
       {
+        "accepted_bundle_simulatable_from_public_anchors": false,
+        "accepted_bundle_simulator_no_export_reduction_bound": true,
+        "accepted_bundle_simulator_no_export_reduction_lean_theorem": "selectedRustAcceptedBundleSimulatorNoExportReduction_v1",
+        "all_private_material_absent": true,
+        "case_id": "no_export_accepted_bundle_simulator_no_export_reduction",
+        "kind": "audit",
+        "no_export_theorem_instantiated": false,
+        "requirement": "zero_knowledge_no_export_semantics",
+        "simulator_theorem_instantiated": false,
+        "surface": "Descender.Path2NoExportConcrete"
+      },
+      {
         "all_private_material_absent": true,
         "case_id": "no_export_private_material_denylist_absence",
         "kind": "audit",
@@ -210,5 +225,5 @@
     "schema": "Descender.Path2.AccountCreationNoExportVectors.v1",
     "status": "digest_pinned_no_export_audit_vectors"
   },
-  "corpus_digest": "d0007dddf63c5e2f1c593e81599be34f7817d51b379a8b5d0e225ae148ed462d"
+  "corpus_digest": "dcad67f685fb4fe63715e209f089867ac8b0815d3a07aba897adb4c2320054db"
 }
