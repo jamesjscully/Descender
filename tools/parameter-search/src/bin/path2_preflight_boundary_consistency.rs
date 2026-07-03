@@ -1147,6 +1147,7 @@ fn main() -> Result<(), String> {
         );
     }
     if fri_aok_report.deployment_ready
+        || !fri_aok_report.fri_aok_extractor_reduction_bound
         || fri_aok_report.fri_aok_extractor_theorem_instantiated
         || fri_aok_report.accepting_proof_implies_extractable_witness
         || fri_aok_report.external_extractor_review_complete

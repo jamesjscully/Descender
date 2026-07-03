@@ -170,6 +170,8 @@ fn manifest_body() -> Result<Value, String> {
             "fri_aok_named_break": fri_aok_boundary_report.named_break,
             "fri_aok_extractor_theorem_target":
                 fri_aok_boundary_report.extractor_theorem_target,
+            "fri_aok_extractor_reduction_lean_theorem":
+                fri_aok_boundary_report.fri_aok_extractor_reduction_lean_theorem,
             "sampler_theorem_target": sampler_timing_report.sampler_theorem_target,
             "timing_break_class": sampler_timing_report.timing_break_class,
             "selected_proof_family": residual_matrix_report.selected_proof_family,
@@ -560,6 +562,8 @@ fn manifest_body() -> Result<Value, String> {
                     fri_aok_boundary_report.air_false_accept_hole_found,
                 "fri_schedule_pinned": fri_aok_boundary_report.fri_schedule_pinned,
                 "challenge_field_pinned": fri_aok_boundary_report.challenge_field_pinned,
+                "fri_aok_extractor_reduction_bound":
+                    fri_aok_boundary_report.fri_aok_extractor_reduction_bound,
                 "fri_aok_extractor_theorem_instantiated":
                     fri_aok_boundary_report.fri_aok_extractor_theorem_instantiated,
                 "accepting_proof_implies_extractable_witness":
@@ -577,6 +581,8 @@ fn manifest_body() -> Result<Value, String> {
             "proof_system": fri_aok_boundary_report.proof_system,
             "residual_item": fri_aok_boundary_report.residual_item,
             "extractor_theorem_target": fri_aok_boundary_report.extractor_theorem_target,
+            "fri_aok_extractor_reduction_lean_theorem":
+                fri_aok_boundary_report.fri_aok_extractor_reduction_lean_theorem,
             "named_break": fri_aok_boundary_report.named_break
         },
         "fri_qrom_residual_snapshot": {

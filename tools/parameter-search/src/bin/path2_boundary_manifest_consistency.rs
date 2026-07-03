@@ -972,6 +972,15 @@ fn check_consistency() -> Result<(), String> {
         &[
             "fri_aok_boundary_snapshot",
             "coverage",
+            "fri_aok_extractor_reduction_bound",
+        ],
+        true,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "fri_aok_boundary_snapshot",
+            "coverage",
             "fri_aok_extractor_theorem_instantiated",
         ],
         false,

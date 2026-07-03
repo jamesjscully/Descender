@@ -9316,6 +9316,8 @@ pub struct Path2AccountStarkFriAokBoundaryReportV1 {
     pub proof_system: &'static str,
     pub residual_item: &'static str,
     pub extractor_theorem_target: &'static str,
+    pub fri_aok_extractor_reduction_lean_theorem: &'static str,
+    pub fri_aok_extractor_reduction_bound: bool,
     pub named_break: &'static str,
     pub fri_qrom_residual_report_digest: [u8; DIGEST_BYTES],
     pub air_relation_class_count: usize,
@@ -12113,6 +12115,8 @@ pub const PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_SIMULATOR_INPUT_FROM_PUBLIC_ANC
     "selectedRustAcceptedBundleSimulatorInputFromPublicAnchors_v1";
 pub const PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_SIMULATOR_NO_EXPORT_REDUCTION_LEAN_THEOREM: &str =
     "selectedRustAcceptedBundleSimulatorNoExportReduction_v1";
+pub const PATH2_ACCOUNT_STARK_FRI_AOK_EXTRACTOR_REDUCTION_LEAN_THEOREM: &str =
+    "selectedRustAcceptedBoundaryFriAokExtractorReduction_v1";
 pub const PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS: [&str; 14] = [
     "leaf_context_digest",
     "creation_proof_binding_digest",
@@ -12273,7 +12277,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
         supporting_surface:
             "Path2AccountStarkFriAokBoundaryReportV1 + accepted-boundary Lean FRI/AoK support",
         current_evidence:
-            "selectedRustAcceptedBoundaryFriAokSupport_of_boundaryAccepted packages FRI/AoK boundary digest/nonzero, extractor-obligation tracking, direct proof-family break mapping, and the still-open proof-family flag while the report pins AIR coverage, selected proof family, FRI schedule, challenge field, and extractor theorem target",
+            "selectedRustAcceptedBoundaryFriAokSupport_of_boundaryAccepted packages FRI/AoK boundary digest/nonzero, extractor-obligation tracking, direct proof-family break mapping, and the still-open proof-family flag while the report pins AIR coverage, selected proof family, FRI schedule, challenge field, extractor theorem target, and selected Rust accepted-boundary FRI/AoK extractor reduction predicate",
         required_closure: "prove every accepting proof for the selected Plonky3/q12289 configuration implies an extractable account-creation witness or a named FRI/AoK break",
         named_break: "account_stark_fri_aok_extractor_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
@@ -12847,6 +12851,9 @@ pub fn path2_account_stark_fri_aok_boundary_report_v1() -> Path2AccountStarkFriA
         proof_system: PATH2_ACCOUNT_STARK_PROOF_SYSTEM,
         residual_item: "FRI argument-of-knowledge extractor",
         extractor_theorem_target: "selected_plonky3_q12289_fri_iop_aok_extractor",
+        fri_aok_extractor_reduction_lean_theorem:
+            PATH2_ACCOUNT_STARK_FRI_AOK_EXTRACTOR_REDUCTION_LEAN_THEOREM,
+        fri_aok_extractor_reduction_bound: true,
         named_break: "account_stark_fri_aok_extractor_break",
         fri_qrom_residual_report_digest: fri_qrom_residual_report.digest,
         air_relation_class_count: 8,
@@ -12894,6 +12901,9 @@ pub fn validate_path2_account_stark_fri_aok_boundary_report_v1(
         || report.air_false_accept_hole_found
         || !report.fri_schedule_pinned
         || !report.challenge_field_pinned
+        || report.fri_aok_extractor_reduction_lean_theorem
+            != PATH2_ACCOUNT_STARK_FRI_AOK_EXTRACTOR_REDUCTION_LEAN_THEOREM
+        || !report.fri_aok_extractor_reduction_bound
         || report.fri_aok_extractor_theorem_instantiated
         || report.accepting_proof_implies_extractable_witness
         || report.external_extractor_review_complete
@@ -70341,6 +70351,17 @@ fn path2_account_stark_fri_aok_boundary_report_v1_frame(
         b"extractor_theorem_target",
         report.extractor_theorem_target.as_bytes(),
     );
+    append_frame(
+        &mut frame,
+        b"fri_aok_extractor_reduction_lean_theorem",
+        report.fri_aok_extractor_reduction_lean_theorem
+            .as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"fri_aok_extractor_reduction_bound",
+        u64::from(report.fri_aok_extractor_reduction_bound),
+    );
     append_frame(&mut frame, b"named_break", report.named_break.as_bytes());
     append_frame(
         &mut frame,
@@ -114720,6 +114741,11 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.extractor_theorem_target,
             "selected_plonky3_q12289_fri_iop_aok_extractor"
         );
+        assert_eq!(
+            report.fri_aok_extractor_reduction_lean_theorem,
+            PATH2_ACCOUNT_STARK_FRI_AOK_EXTRACTOR_REDUCTION_LEAN_THEOREM
+        );
+        assert!(report.fri_aok_extractor_reduction_bound);
         assert_eq!(report.named_break, "account_stark_fri_aok_extractor_break");
         assert_eq!(
             report.fri_qrom_residual_report_digest,

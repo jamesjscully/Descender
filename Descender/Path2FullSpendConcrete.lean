@@ -1624,6 +1624,45 @@ theorem selectedRustAcceptedBoundaryFriAokSupport_of_boundaryAccepted
     hProofFamilyOpen⟩
 
 /--
+Accepted-boundary FRI/AoK closure reduced to a supplied extractor relation.
+
+`FriAokExtractorSound` is the remaining selected Plonky3/q12289 extractor theorem
+surface.  This predicate keeps the current accepted-boundary support explicit so
+the reduction cannot consume an unpinned proof-family or unnamed break surface.
+-/
+def SelectedRustAcceptedBoundaryFriAokExtractorWith
+    (FriAokExtractorSound : ConcreteSpendTuple -> Prop)
+    (spend : ConcreteSpendTuple) : Prop :=
+  SelectedRustAcceptedBoundaryFriAokSupport spend ∧
+    FriAokExtractorSound spend
+
+/--
+Selected Rust accepted-boundary FRI/AoK extractor reduction hook.
+
+If the remaining extractor theorem proves soundness for every accepted boundary
+that carries the current FRI/AoK support slice, then every selected accepted
+boundary has that extractor support.  This deliberately keeps the extractor
+relation as an explicit hypothesis and does not instantiate
+`selected_plonky3_q12289_fri_iop_aok_extractor`, accepting-proof extraction, or
+deployment readiness.
+-/
+theorem selectedRustAcceptedBoundaryFriAokExtractorReduction_v1
+    (FriAokExtractorSound : ConcreteSpendTuple -> Prop)
+    (hExtractor :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustAcceptedBoundaryFriAokSupport spend ->
+          FriAokExtractorSound spend) :
+    forall spend : ConcreteSpendTuple,
+      AccountCreationProofBoundaryEvidenceAccepted
+        selectedRustConcreteGameConfig spend ->
+        SelectedRustAcceptedBoundaryFriAokExtractorWith
+          FriAokExtractorSound spend := by
+  intro spend hAccepted
+  have hSupport :=
+    selectedRustAcceptedBoundaryFriAokSupport_of_boundaryAccepted hAccepted
+  exact ⟨hSupport, hExtractor spend hSupport⟩
+
+/--
 Accepted selected-Rust boundary evidence carries the current FRI/QROM residual
 support slice: the selected FRI/QROM residual digest is pinned and nonzero, the
 residual-pricing row is explicitly tracked, it maps to the direct theorem's

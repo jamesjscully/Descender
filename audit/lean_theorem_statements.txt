@@ -80,6 +80,15 @@ Exists fun selectedRustFullExecutionSource =>
   Descender.Path2FullSpendConcrete.ConcreteFullExecutionAcceptedSpendLift
     Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig selectedRustFullExecutionSource
 
+theorem Descender.Path2FullSpendConcrete.selectedRustAcceptedBoundaryFriAokExtractorReduction_v1 :
+∀ (FriAokExtractorSound : Descender.Path2FullSpendConcrete.ConcreteSpendTuple → Prop),
+  (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+      Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryFriAokSupport spend → FriAokExtractorSound spend) →
+    ∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+      Descender.Path2FullSpendConcrete.AccountCreationProofBoundaryEvidenceAccepted
+          Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend →
+        Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryFriAokExtractorWith FriAokExtractorSound spend
+
 theorem Descender.Path2HashDomainAndMultiTarget.checkedCoreFrameByteDomainSeparated_of_instantiation :
 ∀ {R : Descender.Path2HashDomainAndMultiTarget.ActiveHashDomainRegistry}
   (I : Descender.Path2HashDomainAndMultiTarget.ActiveHashByteDomainInstantiation R),

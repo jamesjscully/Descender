@@ -59,6 +59,8 @@ fn manifest_body() -> Result<Value, String> {
             "proof_system": report.proof_system,
             "residual_item": report.residual_item,
             "extractor_theorem_target": report.extractor_theorem_target,
+            "fri_aok_extractor_reduction_lean_theorem":
+                report.fri_aok_extractor_reduction_lean_theorem,
             "named_break": report.named_break,
             "blocker": report.blocker
         },
@@ -102,6 +104,8 @@ fn manifest_body() -> Result<Value, String> {
             "proof_system": report.proof_system
         },
         "open_obligations": {
+            "fri_aok_extractor_reduction_bound":
+                report.fri_aok_extractor_reduction_bound,
             "fri_aok_extractor_theorem_instantiated":
                 report.fri_aok_extractor_theorem_instantiated,
             "accepting_proof_implies_extractable_witness":

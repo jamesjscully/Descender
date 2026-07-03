@@ -15,6 +15,7 @@
       "blocker": "account-STARK residual matrix: selected Plonky3/q12289 FRI argument-of-knowledge extractor theorem is not instantiated",
       "extractor_theorem_target": "selected_plonky3_q12289_fri_iop_aok_extractor",
       "fri_aok_boundary_report_domain": "Descender.Path2.AccountStarkFriAokBoundaryReport.v1",
+      "fri_aok_extractor_reduction_lean_theorem": "selectedRustAcceptedBoundaryFriAokExtractorReduction_v1",
       "named_break": "account_stark_fri_aok_extractor_break",
       "proof_system": "Plonky3 HidingFriPcs over KoalaBear with Poseidon2-Merkle and DuplexChallenger",
       "residual_item": "FRI argument-of-knowledge extractor",
@@ -25,12 +26,12 @@
     "corpus_id": "Descender.Path2.AccountStarkFriAokBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "account_stark_fri_aok_boundary_report_digest": "f3b0efdd4358fdd06f07415cf9059034f1fbaf4ee732000bd8af4194e0d06a6c",
-      "account_stark_fri_aok_boundary_report_recomputed_digest": "f3b0efdd4358fdd06f07415cf9059034f1fbaf4ee732000bd8af4194e0d06a6c",
+      "account_stark_fri_aok_boundary_report_digest": "32f637f1e44588d54dfbb469cccc667033bf4ed57da880f742533147d62ee4c8",
+      "account_stark_fri_aok_boundary_report_recomputed_digest": "32f637f1e44588d54dfbb469cccc667033bf4ed57da880f742533147d62ee4c8",
       "account_stark_fri_qrom_residual_report_digest": "a275e34633ce69695d7c2617019f127c1a74d6de240fc6c86a156afe41781650",
-      "account_stark_residual_matrix_report_digest": "fb4b0a6de14d9af71193e91fac04dcb2897a734491ae51c4fe672afabe4b263d",
+      "account_stark_residual_matrix_report_digest": "19c7189bedc511e502e3d44dfa4b8ee045e4360150b05429c03b88c2dc36346c",
       "fri_aok_boundary_report_fri_qrom_digest": "a275e34633ce69695d7c2617019f127c1a74d6de240fc6c86a156afe41781650",
-      "residual_matrix_report_fri_aok_digest": "f3b0efdd4358fdd06f07415cf9059034f1fbaf4ee732000bd8af4194e0d06a6c"
+      "residual_matrix_report_fri_aok_digest": "32f637f1e44588d54dfbb469cccc667033bf4ed57da880f742533147d62ee4c8"
     },
     "fri_and_challenge_inputs": {
       "account_stark_config_source": "tools/descender-account-stark/src/config.rs",
@@ -49,10 +50,11 @@
       "blocker": "account-STARK residual matrix: selected Plonky3/q12289 FRI argument-of-knowledge extractor theorem is not instantiated",
       "deployment_ready": false,
       "external_extractor_review_complete": false,
+      "fri_aok_extractor_reduction_bound": true,
       "fri_aok_extractor_theorem_instantiated": false
     },
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.AccountStarkFriAokBoundaryManifest.v1"
   },
-  "manifest_digest": "40d5a9ca8082da348972f794cda3d3850a0a0d8ab4a2ba65a88105825286391b"
+  "manifest_digest": "179bfbb3253d7ab0269d2dc1c033d344df57d177b9be6f466c5b8948a778990c"
 }

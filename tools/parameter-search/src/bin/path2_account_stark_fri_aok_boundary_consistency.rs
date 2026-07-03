@@ -121,6 +121,7 @@ fn main() -> Result<(), String> {
         return Err("residual matrix report is not bound to FRI/AoK report".to_string());
     }
     if report.fri_aok_extractor_theorem_instantiated
+        || !report.fri_aok_extractor_reduction_bound
         || report.accepting_proof_implies_extractable_witness
         || report.external_extractor_review_complete
         || report.deployment_ready
@@ -215,6 +216,18 @@ fn main() -> Result<(), String> {
         report.extractor_theorem_target,
     )?;
     check_equal(
+        "manifest extractor reduction theorem",
+        json_str(
+            &manifest,
+            &[
+                "manifest",
+                "authority_snapshot",
+                "fri_aok_extractor_reduction_lean_theorem",
+            ],
+        )?,
+        report.fri_aok_extractor_reduction_lean_theorem,
+    )?;
+    check_equal(
         "manifest relation class count",
         json_usize(
             &manifest,
@@ -233,6 +246,18 @@ fn main() -> Result<(), String> {
             &["manifest", "air_audit_evidence", "med_findings_remediated"],
         )?,
         report.med_findings_remediated,
+    )?;
+    check_equal(
+        "manifest extractor reduction bound",
+        json_bool(
+            &manifest,
+            &[
+                "manifest",
+                "open_obligations",
+                "fri_aok_extractor_reduction_bound",
+            ],
+        )?,
+        true,
     )?;
     check_equal(
         "manifest open theorem flag",
@@ -309,9 +334,19 @@ fn main() -> Result<(), String> {
         "path2_account_stark_fri_aok_boundary_report_v1",
         "validate_path2_account_stark_fri_aok_boundary_report_v1",
         "fri_aok_boundary_report_digest",
+        "PATH2_ACCOUNT_STARK_FRI_AOK_EXTRACTOR_REDUCTION_LEAN_THEOREM",
         "account_stark_fri_aok_extractor_break",
     ] {
         require_contains(&source, marker, marker)?;
+    }
+
+    let lean = fs::read_to_string(root.join("Descender/Path2FullSpendConcrete.lean"))
+        .map_err(|err| format!("failed to read Path2FullSpendConcrete.lean: {err}"))?;
+    for marker in [
+        "SelectedRustAcceptedBoundaryFriAokExtractorWith",
+        "selectedRustAcceptedBoundaryFriAokExtractorReduction_v1",
+    ] {
+        require_contains(&lean, marker, marker)?;
     }
 
     println!("Path 2 account-STARK FRI/AoK boundary consistency check passed.");
