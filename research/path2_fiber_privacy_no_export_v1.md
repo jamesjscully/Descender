@@ -295,8 +295,10 @@ allowlist/denylist and package-binding predicates only. The accepted-bundle
 public-anchor simulation-boundary hook is machine-checked by
 `selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1`; it proves the
 accepted package feeds the exact selected public-bundle and simulator-input
-surfaces a future simulator theorem may consume. The typed simulator-input
+surfaces a future simulator theorem may consume. The typed public-bundle
 projection from accepted public anchors is machine-checked by
+`selectedRustAcceptedBundlePublicBundleFromPublicAnchors_v1`, and the typed
+simulator-input projection from accepted public anchors is machine-checked by
 `selectedRustAcceptedBundleSimulatorInputFromPublicAnchors_v1`. These hooks do
 not instantiate the simulator distribution theorem or accepted-bundle
 simulability. The denylist term `private_trace_material` covers private trace material.

@@ -169,7 +169,9 @@ syndrome preimage / gauge / randomizer` beyond the public class — the
   `selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1`. The
   selected Rust accepted-bundle public-anchor simulation-boundary predicate is
   machine-checked by
-  `selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1`, and the typed
+  `selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1`, the typed
+  public-bundle projection from accepted public anchors is machine-checked by
+  `selectedRustAcceptedBundlePublicBundleFromPublicAnchors_v1`, and the typed
   simulator-input projection from accepted public anchors is machine-checked by
   `selectedRustAcceptedBundleSimulatorInputFromPublicAnchors_v1`, while full
   public-anchor simulability and external review remain.

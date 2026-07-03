@@ -1072,6 +1072,47 @@ def simulatorInputOutput (A : AccountCreationAcceptedPublicAnchorPackage) :
     A.publicRejectionCode
 
 /--
+Typed public-bundle inputs derived only from accepted public anchors.
+
+This is the object shape a future accepted-bundle simulator theorem may expose
+as its public output.  It carries no distributional claim by itself.
+-/
+structure PublicBundleInputs where
+  accountId : Nat
+  slotId : Nat
+  accountStateRoot : Nat
+  verifierVersion : Nat
+  packedWitnessCommitment : Nat
+  nativeRoleRootCommitment : Nat
+  maskedProjection : Nat
+  accountStarkBundleBytesOrDigest : Nat
+  publicReplayPayloadDigest : Nat
+  lifecycleAnchor : Nat
+  transcriptSurface : Nat
+  stateTransitionBoundary : Nat
+  accountNamespace : Nat
+  authorizationClass : Nat
+
+namespace PublicBundleInputs
+
+/-- Selected public-bundle output induced by typed public inputs. -/
+def output (I : PublicBundleInputs) : Nat :=
+  selectedRustAccountCreationPublicBundleSerializer.publicBundleOutputOf
+    I.accountId I.slotId I.accountStateRoot I.verifierVersion
+    I.packedWitnessCommitment I.nativeRoleRootCommitment I.maskedProjection
+    I.accountStarkBundleBytesOrDigest I.publicReplayPayloadDigest
+    I.lifecycleAnchor I.transcriptSurface I.stateTransitionBoundary
+    I.accountNamespace I.authorizationClass
+
+/-- Typed public-bundle surface and denylist support. -/
+def noExportSupport (I : PublicBundleInputs) : Prop :=
+  selectedRustAccountCreationPublicBundleSerializer.surface I.output ∧
+    ¬ selectedRustAccountCreationNoExportPolicy.containsDenylistedField
+      I.output
+
+end PublicBundleInputs
+
+/--
 Typed simulator public inputs derived only from accepted public anchors.
 
 This is the object shape a future simulator theorem may consume.  It carries no
@@ -1113,6 +1154,24 @@ def noExportSupport (I : SimulatorPublicInputs) : Prop :=
 
 end SimulatorPublicInputs
 
+/-- Accepted public anchors projected into the selected public-bundle inputs. -/
+def publicBundleInputs
+    (A : AccountCreationAcceptedPublicAnchorPackage) : PublicBundleInputs where
+  accountId := A.accountId
+  slotId := A.slotId
+  accountStateRoot := A.accountStateRoot
+  verifierVersion := A.verifierVersion
+  packedWitnessCommitment := A.packedWitnessCommitment
+  nativeRoleRootCommitment := A.nativeRoleRootCommitment
+  maskedProjection := A.maskedProjection
+  accountStarkBundleBytesOrDigest := A.accountStarkBundleBytesOrDigest
+  publicReplayPayloadDigest := A.publicReplayPayloadDigest
+  lifecycleAnchor := A.lifecycleAnchor
+  transcriptSurface := A.transcriptSurface
+  stateTransitionBoundary := A.stateTransitionBoundary
+  accountNamespace := A.accountNamespace
+  authorizationClass := A.authorizationClass
+
 /-- Accepted public anchors projected into the selected simulator public inputs. -/
 def simulatorPublicInputs
     (A : AccountCreationAcceptedPublicAnchorPackage) : SimulatorPublicInputs where
@@ -1130,6 +1189,17 @@ def simulatorPublicInputs
   deployedVerifierVersion := A.verifierVersion
   deployedPackedWitnessCommitment := A.packedWitnessCommitment
   publicRejectionCode := A.publicRejectionCode
+
+/--
+The accepted package feeds the selected public bundle through public anchors.
+
+This is a typed projection/boundary predicate, not accepted-bundle
+simulatability or a distributional simulator theorem.
+-/
+def publicBundleFromPublicAnchors
+    (A : AccountCreationAcceptedPublicAnchorPackage) : Prop :=
+  A.publicBundleInputs.output = A.publicBundleOutput ∧
+    A.publicBundleInputs.noExportSupport
 
 /--
 The accepted package feeds the selected simulator input through public anchors.
@@ -1169,22 +1239,23 @@ def publicAnchorSimulationBoundary
     (A : AccountCreationAcceptedPublicAnchorPackage) : Prop :=
   A.surfaces ∧
     A.noExportSupport ∧
-      A.simulatorInputFromPublicAnchors ∧
-        A.publicBundleOutput =
-          selectedRustAccountCreationPublicBundleSerializer.publicBundleOutputOf
-            A.accountId A.slotId A.accountStateRoot A.verifierVersion
-            A.packedWitnessCommitment A.nativeRoleRootCommitment
-            A.maskedProjection A.accountStarkBundleBytesOrDigest
-            A.publicReplayPayloadDigest A.lifecycleAnchor A.transcriptSurface
-            A.stateTransitionBoundary A.accountNamespace A.authorizationClass ∧
-          A.simulatorInputOutput =
-            selectedRustAccountCreationSimulatorInputSerializer.simulatorInputOf
-              A.leafContextDigest A.creationProofBindingDigest
-              A.nativeRoleRootCommitment A.aggregationContextDigest A.slotId
+      A.publicBundleFromPublicAnchors ∧
+        A.simulatorInputFromPublicAnchors ∧
+          A.publicBundleOutput =
+            selectedRustAccountCreationPublicBundleSerializer.publicBundleOutputOf
+              A.accountId A.slotId A.accountStateRoot A.verifierVersion
+              A.packedWitnessCommitment A.nativeRoleRootCommitment
               A.maskedProjection A.accountStarkBundleBytesOrDigest
-              A.publicReplayPayloadDigest A.accountId A.accountStateRoot
-              A.lifecycleAnchor A.verifierVersion A.packedWitnessCommitment
-              A.publicRejectionCode
+              A.publicReplayPayloadDigest A.lifecycleAnchor A.transcriptSurface
+              A.stateTransitionBoundary A.accountNamespace A.authorizationClass ∧
+            A.simulatorInputOutput =
+              selectedRustAccountCreationSimulatorInputSerializer.simulatorInputOf
+                A.leafContextDigest A.creationProofBindingDigest
+                A.nativeRoleRootCommitment A.aggregationContextDigest A.slotId
+                A.maskedProjection A.accountStarkBundleBytesOrDigest
+                A.publicReplayPayloadDigest A.accountId A.accountStateRoot
+                A.lifecycleAnchor A.verifierVersion A.packedWitnessCommitment
+                A.publicRejectionCode
 
 end AccountCreationAcceptedPublicAnchorPackage
 
@@ -1233,6 +1304,32 @@ theorem selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1 :
       hSurfaces.2⟩
 
 /--
+Selected Rust accepted-bundle public-bundle public-anchor projection hook.
+
+This proves that the selected public bundle is exactly the typed public-input
+package derived from accepted public anchors, with public-bundle denylist
+support.  It deliberately does not prove distributional simulation or
+`accepted_bundle_simulatable_from_public_anchors`.
+-/
+theorem selectedRustAcceptedBundlePublicBundleFromPublicAnchors_v1 :
+    forall A : AccountCreationAcceptedPublicAnchorPackage,
+      A.publicBundleFromPublicAnchors := by
+  intro A
+  have hSurfaces := selectedRustAcceptedPublicAnchorPackage_surfaces_v1 A
+  have hNoExport :=
+    selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1 A
+  refine ⟨rfl, ?_⟩
+  exact ⟨
+    by
+      simpa [
+        AccountCreationAcceptedPublicAnchorPackage.publicBundleInputs,
+        AccountCreationAcceptedPublicAnchorPackage.PublicBundleInputs.output] using hSurfaces.1,
+    by
+      simpa [
+        AccountCreationAcceptedPublicAnchorPackage.publicBundleInputs,
+        AccountCreationAcceptedPublicAnchorPackage.PublicBundleInputs.output] using hNoExport.2.1⟩
+
+/--
 Selected Rust accepted-bundle simulator-input public-anchor projection hook.
 
 This proves that the selected simulator input is exactly the typed public-input
@@ -1273,9 +1370,13 @@ theorem selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1 :
   have hSurfaces := selectedRustAcceptedPublicAnchorPackage_surfaces_v1 A
   have hNoExport :=
     selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1 A
+  have hPublicBundleFromAnchors :=
+    selectedRustAcceptedBundlePublicBundleFromPublicAnchors_v1 A
   have hSimulatorInputFromAnchors :=
     selectedRustAcceptedBundleSimulatorInputFromPublicAnchors_v1 A
-  exact ⟨hSurfaces, hNoExport, hSimulatorInputFromAnchors, rfl, rfl⟩
+  exact
+    ⟨hSurfaces, hNoExport, hPublicBundleFromAnchors,
+      hSimulatorInputFromAnchors, rfl, rfl⟩
 
 end Path2NoExportConcrete
 end Descender
