@@ -345,6 +345,15 @@ then carries that erased boundary to the fixed active 128-bit accepted-spend
 probability target, while
 `selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget_of_remaining_break_bounds`
 names the matching erased accepted-spend bound target. The same trace-model
+route now has hard-pricing counterparts
+`selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds_and_current_hard_pricing_facts`,
+`selectedRustAcceptedSpendSoundnessCertificate_of_remaining_break_bounds_and_current_hard_pricing_facts`,
+and
+`selectedRustAcceptedSpendSoundnessBoundary_of_remaining_break_bounds_and_current_hard_pricing_facts`,
+so the accepted-spend trace erasure can consume the exact four-fact hard pricing
+surface rather than the broader pricing half; the Rust source-shape gate
+requires those names and rejects spoofed hard trace source/boundary variants.
+The same trace-model
 route now continues into the
 full-signature layer through
 `selectedRustFullSignatureReductionProductionWitness_of_remaining_break_bounds`,

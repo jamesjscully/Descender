@@ -2547,6 +2547,41 @@ def selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds
     (SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate W)
 
 /--
+Selected accepted-spend numeric source obtained from the faithful trace model
+and the four hard current accepted-spend pricing facts.
+-/
+def selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds_and_current_hard_pricing_facts
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hHardPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete) :
+    Path2AcceptedSpendProbability.SelectedAcceptedSpendNumericSource :=
+  selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds
+    traceDist observe acceptedSpendBound remainingBreakBound
+    hAccept hBreak hAcceptBudget hBreakBudget hPriced
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
+      hHardPricing)
+
+/--
 Selected accepted-spend certificate built from the faithful trace model and the
 seven remaining cryptographic break bounds.
 
@@ -2633,6 +2668,80 @@ def selectedRustAcceptedSpendSoundnessCertificate_of_remaining_break_bounds
     noExportClosedProof
 
 /--
+Selected accepted-spend certificate built from the faithful trace model and the
+four hard current accepted-spend pricing facts.
+-/
+def selectedRustAcceptedSpendSoundnessCertificate_of_remaining_break_bounds_and_current_hard_pricing_facts
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hHardPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete)
+    (productionAcceptedSpendForgeryProb : ℝ)
+    (productionAcceptedSpendForgeryBound : ℝ)
+    (acceptedSpendForgeryProbPinned :
+      (selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds_and_current_hard_pricing_facts
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing).pricedCertificate.unionBound =
+        productionAcceptedSpendForgeryProb)
+    (acceptedSpendForgeryBoundPinned :
+      (selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds_and_current_hard_pricing_facts
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing).pricedCertificate.pricedBound =
+        productionAcceptedSpendForgeryBound)
+    (hiddenSourceProofSemanticsClosed : Prop)
+    (checkedCoreCompositionClosed : Prop)
+    (lifecycleReplayClosed : Prop)
+    (noExportClosed : Prop)
+    (hiddenSourceProofSemanticsClosedProof :
+      hiddenSourceProofSemanticsClosed)
+    (checkedCoreCompositionClosedProof :
+      checkedCoreCompositionClosed)
+    (lifecycleReplayClosedProof :
+      lifecycleReplayClosed)
+    (noExportClosedProof :
+      noExportClosed) :
+    Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessCertificate :=
+  selectedRustAcceptedSpendSoundnessCertificate_of_remaining_break_bounds
+    traceDist observe acceptedSpendBound remainingBreakBound
+    hAccept hBreak hAcceptBudget hBreakBudget hPriced
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
+      hHardPricing)
+    productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+    (by
+      simpa [selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds_and_current_hard_pricing_facts]
+        using acceptedSpendForgeryProbPinned)
+    (by
+      simpa [selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds_and_current_hard_pricing_facts]
+        using acceptedSpendForgeryBoundPinned)
+    hiddenSourceProofSemanticsClosed
+    checkedCoreCompositionClosed
+    lifecycleReplayClosed
+    noExportClosed
+    hiddenSourceProofSemanticsClosedProof
+    checkedCoreCompositionClosedProof
+    lifecycleReplayClosedProof
+    noExportClosedProof
+
+/--
 Erase the trace-model selected accepted-spend certificate into the active
 accepted-spend soundness boundary.
 -/
@@ -2688,6 +2797,69 @@ def selectedRustAcceptedSpendSoundnessBoundary_of_remaining_break_bounds
   (selectedRustAcceptedSpendSoundnessCertificate_of_remaining_break_bounds
     traceDist observe acceptedSpendBound remainingBreakBound
     hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing
+    productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+    acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+    hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+    lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+    checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+    noExportClosedProof).toAcceptedSpendSoundnessBoundary
+
+/--
+Erase the trace-model selected accepted-spend certificate into the active
+accepted-spend soundness boundary from the four hard current pricing facts.
+-/
+def selectedRustAcceptedSpendSoundnessBoundary_of_remaining_break_bounds_and_current_hard_pricing_facts
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hHardPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete)
+    (productionAcceptedSpendForgeryProb : ℝ)
+    (productionAcceptedSpendForgeryBound : ℝ)
+    (acceptedSpendForgeryProbPinned :
+      (selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds_and_current_hard_pricing_facts
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing).pricedCertificate.unionBound =
+        productionAcceptedSpendForgeryProb)
+    (acceptedSpendForgeryBoundPinned :
+      (selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds_and_current_hard_pricing_facts
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing).pricedCertificate.pricedBound =
+        productionAcceptedSpendForgeryBound)
+    (hiddenSourceProofSemanticsClosed : Prop)
+    (checkedCoreCompositionClosed : Prop)
+    (lifecycleReplayClosed : Prop)
+    (noExportClosed : Prop)
+    (hiddenSourceProofSemanticsClosedProof :
+      hiddenSourceProofSemanticsClosed)
+    (checkedCoreCompositionClosedProof :
+      checkedCoreCompositionClosed)
+    (lifecycleReplayClosedProof :
+      lifecycleReplayClosed)
+    (noExportClosedProof :
+      noExportClosed) :
+    Path2NativeAccountDesign.NativeAcceptedSpendSoundnessBoundary :=
+  (selectedRustAcceptedSpendSoundnessCertificate_of_remaining_break_bounds_and_current_hard_pricing_facts
+    traceDist observe acceptedSpendBound remainingBreakBound
+    hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing
     productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
     acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
     hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
