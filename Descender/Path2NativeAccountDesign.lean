@@ -3468,6 +3468,20 @@ def SelectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete
   E.allActiveQuerySymbolsPriced = true ∧
   E.verifierGameMatchesProductionExecution = true
 
+/--
+The hard production facts still supplied by the full-signature reduction model.
+
+For the current selected report, the verifier-game/production-execution binding
+is already proved true, so these four bits are the exact remaining production
+surface that must be supplied before `ProductionFactsComplete` can hold.
+-/
+def SelectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete
+    (E : SelectedRustFullSignatureReductionEvidenceReport) : Prop :=
+  E.productionSignatureProbabilityPinned = true ∧
+  E.signatureSuccessMatchesAcceptedSpendGame = true ∧
+  E.acceptedSpendProbabilityLinked = true ∧
+  E.allActiveQuerySymbolsPriced = true
+
 /-- Full-reduction completeness is exactly structural evidence plus production facts. -/
 theorem SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_iff_structural_and_production
     (E : SelectedRustFullSignatureReductionEvidenceReport) :
@@ -3534,6 +3548,13 @@ theorem SelectedRustFullSignatureReductionEvidenceReport.productionFactsComplete
     (h : E.ProductionFactsComplete) :
     E.verifierGameMatchesProductionExecution = true :=
   h.2.2.2.2
+
+/-- A complete production half includes the four hard production facts. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.productionFactsComplete_hardProductionFactsComplete
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.ProductionFactsComplete) :
+    E.HardProductionFactsComplete :=
+  ⟨h.1, h.2.1, h.2.2.1, h.2.2.2.1⟩
 
 /-- A complete full-reduction report pins the production signature probability. -/
 theorem SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_productionSignatureProbabilityPinned
@@ -3701,6 +3722,32 @@ selected production execution source.
 theorem selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatchesProductionExecution_true :
     selectedRustFullSignatureReductionEvidenceReport.verifierGameMatchesProductionExecution = true := by
   native_decide
+
+/--
+For the current selected report, the four hard production facts complete the
+full production half because verifier-game/production-execution binding is
+already selected and proved true.
+-/
+theorem selectedRustFullSignatureReductionEvidenceReport_productionFactsComplete_of_hardProductionFactsComplete
+    (hHard :
+      selectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete) :
+    selectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete :=
+  ⟨hHard.1, hHard.2.1, hHard.2.2.1, hHard.2.2.2,
+    selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatchesProductionExecution_true⟩
+
+/--
+For the current selected report, `ProductionFactsComplete` is exactly the four
+remaining hard production bits; the fifth production bit is already closed.
+-/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionFactsComplete_iff_hardProductionFactsComplete :
+    selectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete ↔
+      selectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete := by
+  constructor
+  · exact
+      SelectedRustFullSignatureReductionEvidenceReport.productionFactsComplete_hardProductionFactsComplete
+        selectedRustFullSignatureReductionEvidenceReport
+  · exact
+      selectedRustFullSignatureReductionEvidenceReport_productionFactsComplete_of_hardProductionFactsComplete
 
 /--
 Finite taxonomy for the selected full-reduction report's production half.
@@ -4107,6 +4154,69 @@ def SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndReductionPr
     multiTargetLossPricedProof
 
 /--
+Active AP2-N003 constructor for the selected full-signature reduction
+certificate from the four hard current production facts.  The selected report's
+verifier-game/production-execution bit is already proved true and is supplied
+internally.
+-/
+def SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndCurrentHardProductionFacts
+    (selectedRustFullSignatureReductionHardProductionFactsCompleteProof :
+      selectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete)
+    (acceptedSpendCertificate : SelectedRustAcceptedSpendSoundnessCertificate)
+    (hashBoundary : NativeHashBudgetBoundary)
+    (signatureForgerySuccessProb : ℝ)
+    (productionSignatureForgerySuccessProb : ℝ)
+    (signatureForgerySuccessProbPinned :
+      signatureForgerySuccessProb = productionSignatureForgerySuccessProb)
+    (signatureForgerySuccessMatchesAcceptedSpendGame :
+      signatureForgerySuccessProb =
+        acceptedSpendCertificate.pricedNumericCertificate.successProb)
+    (keygenDistributionModeled : Prop)
+    (keygenDistributionModeledProof : keygenDistributionModeled)
+    (signingOracleModeled : Prop)
+    (signingOracleModeledProof : signingOracleModeled)
+    (completenessModeled : Prop)
+    (completenessModeledProof : completenessModeled)
+    (verifierRelationMatchesImplementation : Prop)
+    (verifierRelationMatchesImplementationProof :
+      verifierRelationMatchesImplementation)
+    (fullForgeryImpliesAcceptedSpendForgery : Prop)
+    (fullForgeryImpliesAcceptedSpendForgeryProof :
+      fullForgeryImpliesAcceptedSpendForgery)
+    (checkedCoreFrameDomainSeparatedProof :
+      hashBoundary.checkedCoreFrameDomainSeparated)
+    (hiddenSourceFrameDomainSeparatedProof :
+      hashBoundary.hiddenSourceFrameDomainSeparated)
+    (queryBudgetPricedProof :
+      hashBoundary.queryBudgetPriced)
+    (multiTargetLossPricedProof :
+      hashBoundary.multiTargetLossPriced) :
+    SelectedRustFullSignatureReductionCertificate :=
+  SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndReductionProductionFacts
+    (selectedRustFullSignatureReductionEvidenceReport_productionFactsComplete_of_hardProductionFactsComplete
+      selectedRustFullSignatureReductionHardProductionFactsCompleteProof)
+    acceptedSpendCertificate
+    hashBoundary
+    signatureForgerySuccessProb
+    productionSignatureForgerySuccessProb
+    signatureForgerySuccessProbPinned
+    signatureForgerySuccessMatchesAcceptedSpendGame
+    keygenDistributionModeled
+    keygenDistributionModeledProof
+    signingOracleModeled
+    signingOracleModeledProof
+    completenessModeled
+    completenessModeledProof
+    verifierRelationMatchesImplementation
+    verifierRelationMatchesImplementationProof
+    fullForgeryImpliesAcceptedSpendForgery
+    fullForgeryImpliesAcceptedSpendForgeryProof
+    checkedCoreFrameDomainSeparatedProof
+    hiddenSourceFrameDomainSeparatedProof
+    queryBudgetPricedProof
+    multiTargetLossPricedProof
+
+/--
 Production-reduction witness for the active selected full-signature report.
 
 This packages the report production bits together with the actual probability
@@ -4237,6 +4347,72 @@ def SelectedRustFullSignatureReductionProductionWitness.ofAcceptedSpendAndReport
   verifierGameMatchesProductionExecutionProof :=
     verifierGameMatchesProductionExecutionProof
 
+/--
+Named constructor for the selected full-reduction production witness from the
+four hard current production facts.  The selected verifier-game/production-
+execution binding proof is imported from the current report instead of being
+resupplied by future AP2-N003 callers.
+-/
+def SelectedRustFullSignatureReductionProductionWitness.ofAcceptedSpendAndCurrentHardProductionFacts
+    (acceptedSpendCertificate : SelectedRustAcceptedSpendSoundnessCertificate)
+    (hashBoundary : NativeHashBudgetBoundary)
+    (signatureForgerySuccessProb : ℝ)
+    (productionSignatureForgerySuccessProb : ℝ)
+    (signatureForgerySuccessProbPinned :
+      signatureForgerySuccessProb = productionSignatureForgerySuccessProb)
+    (signatureForgerySuccessMatchesAcceptedSpendGame :
+      signatureForgerySuccessProb =
+        acceptedSpendCertificate.pricedNumericCertificate.successProb)
+    (keygenDistributionModeled : Prop)
+    (keygenDistributionModeledProof : keygenDistributionModeled)
+    (signingOracleModeled : Prop)
+    (signingOracleModeledProof : signingOracleModeled)
+    (completenessModeled : Prop)
+    (completenessModeledProof : completenessModeled)
+    (verifierRelationMatchesImplementation : Prop)
+    (verifierRelationMatchesImplementationProof :
+      verifierRelationMatchesImplementation)
+    (fullForgeryImpliesAcceptedSpendForgery : Prop)
+    (fullForgeryImpliesAcceptedSpendForgeryProof :
+      fullForgeryImpliesAcceptedSpendForgery)
+    (checkedCoreFrameDomainSeparatedProof :
+      hashBoundary.checkedCoreFrameDomainSeparated)
+    (hiddenSourceFrameDomainSeparatedProof :
+      hashBoundary.hiddenSourceFrameDomainSeparated)
+    (queryBudgetPricedProof :
+      hashBoundary.queryBudgetPriced)
+    (multiTargetLossPricedProof :
+      hashBoundary.multiTargetLossPriced)
+    (hardProductionFactsComplete :
+      selectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete) :
+    SelectedRustFullSignatureReductionProductionWitness :=
+  SelectedRustFullSignatureReductionProductionWitness.ofAcceptedSpendAndReportBits
+    acceptedSpendCertificate
+    hashBoundary
+    signatureForgerySuccessProb
+    productionSignatureForgerySuccessProb
+    signatureForgerySuccessProbPinned
+    signatureForgerySuccessMatchesAcceptedSpendGame
+    keygenDistributionModeled
+    keygenDistributionModeledProof
+    signingOracleModeled
+    signingOracleModeledProof
+    completenessModeled
+    completenessModeledProof
+    verifierRelationMatchesImplementation
+    verifierRelationMatchesImplementationProof
+    fullForgeryImpliesAcceptedSpendForgery
+    fullForgeryImpliesAcceptedSpendForgeryProof
+    checkedCoreFrameDomainSeparatedProof
+    hiddenSourceFrameDomainSeparatedProof
+    queryBudgetPricedProof
+    multiTargetLossPricedProof
+    hardProductionFactsComplete.1
+    hardProductionFactsComplete.2.1
+    hardProductionFactsComplete.2.2.1
+    hardProductionFactsComplete.2.2.2
+    selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatchesProductionExecution_true
+
 namespace SelectedRustFullSignatureReductionProductionWitness
 
 /-- The selected production witness supplies the active report production half. -/
@@ -4249,6 +4425,14 @@ theorem productionFactsComplete
     W.acceptedSpendProbabilityLinkedProof,
     W.allActiveQuerySymbolsPricedProof,
     W.verifierGameMatchesProductionExecutionProof⟩
+
+/-- The selected production witness supplies the four hard production facts. -/
+theorem hardProductionFactsComplete
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    selectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete :=
+  SelectedRustFullSignatureReductionEvidenceReport.productionFactsComplete_hardProductionFactsComplete
+    selectedRustFullSignatureReductionEvidenceReport
+    (productionFactsComplete W)
 
 /-- The production witness exposes the active signature-probability pinning bit. -/
 theorem productionSignatureProbabilityPinned

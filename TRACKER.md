@@ -457,6 +457,23 @@ open-obligation clearance gate. The preflight source-shape gate requires those
 names and rejects a spoofed closure-input cardinality before accepting the
 selected proof-family closure route.
 
+Current full-reduction production slice:
+`Descender/Path2NativeAccountDesign.lean` now names the selected report's
+four-bit hard production surface as
+`SelectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete`
+and proves
+`selectedRustFullSignatureReductionEvidenceReport_currentProductionFactsComplete_iff_hardProductionFactsComplete`:
+for the current selected report, `ProductionFactsComplete` is exactly the four
+still-missing production bits because
+`selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatchesProductionExecution_true`
+already supplies the fifth bit. The certificate and production-witness
+constructors now have current-hard-fact variants, and
+`Descender/Path2TraceModel.lean` exposes remaining-break package adapters for
+the same four-bit handoff, including the concrete execution-source route. The
+Rust source-shape gate requires those names and rejects spoofed hard-fact
+equivalence or concrete-source hard-fact adapter names before accepting a future
+full-reduction instantiation candidate.
+
 | ID | Status | Item | Evidence / next action |
 |---|---|---|---|
 | SPEC-DIR-001 | verified | Normative spec spine exists | `ADR-0001`; current `spec/*.md` spine plus `decisions/` and `TRACKER.md`; `scripts/check_doc_authority.py` dynamically gates the spec spine index, active normative markers, selected-support anchors, and ADR affected-row reciprocity; `scripts/check_requirement_traceability.py` gates tracker ownership for selected normative open-evidence sections |
