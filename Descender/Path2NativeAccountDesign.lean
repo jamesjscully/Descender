@@ -2305,6 +2305,126 @@ theorem selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_
   native_decide
 
 /--
+Finite taxonomy for the selected accepted-spend report's pricing half.
+
+The pricing half has seven facts: four cryptographic pricing facts are still
+false in the current selected evidence, while the numeric budget and transcript
+capacity facts are already true.
+-/
+inductive AcceptedSpendPricingFact
+  | acceptedSpendNumericBoundPriced
+  | acceptedSpendEventBoundPriced
+  | namedBreakEventBoundsPriced
+  | breakPricingBudgetMeetsPricedBound
+  | acceptedSpendNumericBudgetMeetsTarget
+  | pricedBoundSecurityMeetsTarget
+  | pricedBoundSecurityWithinTranscript
+  deriving DecidableEq, Fintype
+
+/-- All selected accepted-spend pricing facts. -/
+def acceptedSpendPricingFacts : Finset AcceptedSpendPricingFact :=
+  { AcceptedSpendPricingFact.acceptedSpendNumericBoundPriced,
+    AcceptedSpendPricingFact.acceptedSpendEventBoundPriced,
+    AcceptedSpendPricingFact.namedBreakEventBoundsPriced,
+    AcceptedSpendPricingFact.breakPricingBudgetMeetsPricedBound,
+    AcceptedSpendPricingFact.acceptedSpendNumericBudgetMeetsTarget,
+    AcceptedSpendPricingFact.pricedBoundSecurityMeetsTarget,
+    AcceptedSpendPricingFact.pricedBoundSecurityWithinTranscript }
+
+/-- Accepted-spend pricing facts still missing in the current selected report. -/
+def currentMissingAcceptedSpendPricingFacts : Finset AcceptedSpendPricingFact :=
+  { AcceptedSpendPricingFact.acceptedSpendNumericBoundPriced,
+    AcceptedSpendPricingFact.acceptedSpendEventBoundPriced,
+    AcceptedSpendPricingFact.namedBreakEventBoundsPriced,
+    AcceptedSpendPricingFact.breakPricingBudgetMeetsPricedBound }
+
+/-- Accepted-spend pricing facts already completed in the current selected report. -/
+def currentCompletedAcceptedSpendPricingFacts : Finset AcceptedSpendPricingFact :=
+  { AcceptedSpendPricingFact.acceptedSpendNumericBudgetMeetsTarget,
+    AcceptedSpendPricingFact.pricedBoundSecurityMeetsTarget,
+    AcceptedSpendPricingFact.pricedBoundSecurityWithinTranscript }
+
+/-- The current selected report proposition for one accepted-spend pricing fact. -/
+def AcceptedSpendPricingFact.currentSelectedReportFactHolds :
+    AcceptedSpendPricingFact → Prop
+  | AcceptedSpendPricingFact.acceptedSpendNumericBoundPriced =>
+      selectedRustAcceptedSpendEvidenceReport.acceptedSpendNumericBoundPriced = true
+  | AcceptedSpendPricingFact.acceptedSpendEventBoundPriced =>
+      selectedRustAcceptedSpendEvidenceReport.acceptedSpendEventBoundPriced = true
+  | AcceptedSpendPricingFact.namedBreakEventBoundsPriced =>
+      selectedRustAcceptedSpendEvidenceReport.namedBreakEventBoundsPriced = true
+  | AcceptedSpendPricingFact.breakPricingBudgetMeetsPricedBound =>
+      selectedRustAcceptedSpendEvidenceReport.breakPricingBudgetMeetsPricedBound = true
+  | AcceptedSpendPricingFact.acceptedSpendNumericBudgetMeetsTarget =>
+      selectedRustAcceptedSpendEvidenceReport.acceptedSpendNumericBudgetMeetsTarget = true
+  | AcceptedSpendPricingFact.pricedBoundSecurityMeetsTarget =>
+      selectedRustAcceptedSpendEvidenceReport.targetSecurityBits ≤
+        selectedRustAcceptedSpendEvidenceReport.acceptedSpendPricedBoundSecurityBits
+  | AcceptedSpendPricingFact.pricedBoundSecurityWithinTranscript =>
+      selectedRustAcceptedSpendEvidenceReport.acceptedSpendPricedBoundSecurityBits +
+          selectedRustAcceptedSpendEvidenceReport.selectedMultiTargetHorizonLog2 ≤
+        selectedRustAcceptedSpendEvidenceReport.transcriptTermBitsAfterQromLoss
+
+/-- Predicate for currently missing accepted-spend pricing facts. -/
+def IsCurrentMissingAcceptedSpendPricingFact
+    (fact : AcceptedSpendPricingFact) : Prop :=
+  ¬ fact.currentSelectedReportFactHolds
+
+/-- Predicate for currently completed accepted-spend pricing facts. -/
+def IsCurrentCompletedAcceptedSpendPricingFact
+    (fact : AcceptedSpendPricingFact) : Prop :=
+  fact.currentSelectedReportFactHolds
+
+/-- The accepted-spend pricing surface has exactly seven report facts. -/
+theorem acceptedSpendPricingFacts_card :
+    acceptedSpendPricingFacts.card = 7 := by
+  native_decide
+
+/-- The explicit missing-pricing set matches the current false report facts. -/
+theorem mem_currentMissingAcceptedSpendPricingFacts_iff
+    (fact : AcceptedSpendPricingFact) :
+    fact ∈ currentMissingAcceptedSpendPricingFacts ↔
+      IsCurrentMissingAcceptedSpendPricingFact fact := by
+  cases fact <;>
+    simp [currentMissingAcceptedSpendPricingFacts,
+      IsCurrentMissingAcceptedSpendPricingFact,
+      AcceptedSpendPricingFact.currentSelectedReportFactHolds,
+      selectedRustAcceptedSpendEvidenceReport]
+
+/-- The current selected accepted-spend report is missing exactly four pricing facts. -/
+theorem currentMissingAcceptedSpendPricingFacts_card :
+    currentMissingAcceptedSpendPricingFacts.card = 4 := by
+  native_decide
+
+/-- The explicit completed-pricing set matches the current true report facts. -/
+theorem mem_currentCompletedAcceptedSpendPricingFacts_iff
+    (fact : AcceptedSpendPricingFact) :
+    fact ∈ currentCompletedAcceptedSpendPricingFacts ↔
+      IsCurrentCompletedAcceptedSpendPricingFact fact := by
+  cases fact <;>
+    simp [currentCompletedAcceptedSpendPricingFacts,
+      IsCurrentCompletedAcceptedSpendPricingFact,
+      AcceptedSpendPricingFact.currentSelectedReportFactHolds,
+      selectedRustAcceptedSpendEvidenceReport]
+
+/-- The current selected accepted-spend report has exactly three completed pricing facts. -/
+theorem currentCompletedAcceptedSpendPricingFacts_card :
+    currentCompletedAcceptedSpendPricingFacts.card = 3 := by
+  native_decide
+
+/-- No current accepted-spend pricing fact is both missing and complete. -/
+theorem no_currentAcceptedSpendPricingFact_missing_and_completed
+    (fact : AcceptedSpendPricingFact) :
+    ¬ (fact ∈ currentMissingAcceptedSpendPricingFacts ∧
+        fact ∈ currentCompletedAcceptedSpendPricingFacts) := by
+  intro h
+  have hMissing :=
+    (mem_currentMissingAcceptedSpendPricingFacts_iff fact).1 h.1
+  have hCompleted :=
+    (mem_currentCompletedAcceptedSpendPricingFacts_iff fact).1 h.2
+  exact hMissing hCompleted
+
+/--
 Lean mirror of the current accepted-spend pricing diagnostic.
 
 This is deliberately fail-closed: it records the hard pricing facts that the

@@ -244,6 +244,21 @@ bits by pinning `acceptedSpendPricedBoundSecurityBits = 128` and
 diagnostic is narrowed to four cryptographic pricing facts: aggregate numeric
 pricing, accepted-spend event pricing, named-break event pricing, and
 component-budget-to-priced-bound pricing.
+Lean now enumerates that accepted-spend pricing half with
+`AcceptedSpendPricingFact`, `acceptedSpendPricingFacts`,
+`currentMissingAcceptedSpendPricingFacts`, and
+`currentCompletedAcceptedSpendPricingFacts`, with
+`acceptedSpendPricingFacts_card`,
+`currentMissingAcceptedSpendPricingFacts_card`,
+`currentCompletedAcceptedSpendPricingFacts_card`,
+`mem_currentMissingAcceptedSpendPricingFacts_iff`,
+`mem_currentCompletedAcceptedSpendPricingFacts_iff`, and
+`no_currentAcceptedSpendPricingFact_missing_and_completed` pinning the exact
+7/4/3 accounting: the four cryptographic pricing facts remain missing, while
+numeric-budget target, priced-bound target, and priced-bound transcript-cap
+facts are already complete. The accepted-spend source-shape gate requires those
+names and rejects a spoofed missing-pricing cardinality before accepting future
+AP2-N003 instantiation candidates.
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage` now packages the
 accepted-spend bound, the seven remaining-break bounds, their proportional
 budgets, selected pricing facts, and the real-valued priced-bound inequality

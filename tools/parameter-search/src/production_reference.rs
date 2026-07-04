@@ -53312,6 +53312,19 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendEvidenceReport_currentStructuralFactsComplete",
         "selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete",
         "selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete",
+        "AcceptedSpendPricingFact",
+        "acceptedSpendPricingFacts",
+        "currentMissingAcceptedSpendPricingFacts",
+        "currentCompletedAcceptedSpendPricingFacts",
+        "AcceptedSpendPricingFact.currentSelectedReportFactHolds",
+        "IsCurrentMissingAcceptedSpendPricingFact",
+        "IsCurrentCompletedAcceptedSpendPricingFact",
+        "acceptedSpendPricingFacts_card",
+        "mem_currentMissingAcceptedSpendPricingFacts_iff",
+        "currentMissingAcceptedSpendPricingFacts_card",
+        "mem_currentCompletedAcceptedSpendPricingFacts_iff",
+        "currentCompletedAcceptedSpendPricingFacts_card",
+        "no_currentAcceptedSpendPricingFact_missing_and_completed",
         "SelectedRustAcceptedSpendPricingObligationGap",
         "selectedRustAcceptedSpendEvidenceReport_currentPricingObligationGap",
         "selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete",
@@ -53631,6 +53644,19 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendEvidenceReport_currentStructuralFactsComplete",
         "selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete",
         "selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete",
+        "AcceptedSpendPricingFact",
+        "acceptedSpendPricingFacts",
+        "currentMissingAcceptedSpendPricingFacts",
+        "currentCompletedAcceptedSpendPricingFacts",
+        "AcceptedSpendPricingFact.currentSelectedReportFactHolds",
+        "IsCurrentMissingAcceptedSpendPricingFact",
+        "IsCurrentCompletedAcceptedSpendPricingFact",
+        "acceptedSpendPricingFacts_card",
+        "mem_currentMissingAcceptedSpendPricingFacts_iff",
+        "currentMissingAcceptedSpendPricingFacts_card",
+        "mem_currentCompletedAcceptedSpendPricingFacts_iff",
+        "currentCompletedAcceptedSpendPricingFacts_card",
+        "no_currentAcceptedSpendPricingFact_missing_and_completed",
         "SelectedRustAcceptedSpendPricingObligationGap",
         "selectedRustAcceptedSpendEvidenceReport_currentPricingObligationGap",
         "selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete",
@@ -90637,6 +90663,32 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete
   let _acceptedSpendCurrentFactsIffPricingHalf :=
     selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete
+  let _acceptedSpendPricingFactSurface :=
+    AcceptedSpendPricingFact
+  let _acceptedSpendAllPricingFacts :=
+    acceptedSpendPricingFacts
+  let _acceptedSpendMissingPricingFacts :=
+    currentMissingAcceptedSpendPricingFacts
+  let _acceptedSpendCompletedPricingFacts :=
+    currentCompletedAcceptedSpendPricingFacts
+  let _acceptedSpendPricingFactHolds :=
+    AcceptedSpendPricingFact.currentSelectedReportFactHolds
+  let _acceptedSpendMissingPricingPredicate :=
+    IsCurrentMissingAcceptedSpendPricingFact
+  let _acceptedSpendCompletedPricingPredicate :=
+    IsCurrentCompletedAcceptedSpendPricingFact
+  let _acceptedSpendPricingFactsCard :=
+    acceptedSpendPricingFacts_card
+  let _acceptedSpendMissingPricingFactsIff :=
+    mem_currentMissingAcceptedSpendPricingFacts_iff
+  let _acceptedSpendMissingPricingFactsCard :=
+    currentMissingAcceptedSpendPricingFacts_card
+  let _acceptedSpendCompletedPricingFactsIff :=
+    mem_currentCompletedAcceptedSpendPricingFacts_iff
+  let _acceptedSpendCompletedPricingFactsCard :=
+    currentCompletedAcceptedSpendPricingFacts_card
+  let _acceptedSpendPricingFactsDisjoint :=
+    no_currentAcceptedSpendPricingFact_missing_and_completed
   let _acceptedSpendCurrentPricingGap :=
     SelectedRustAcceptedSpendPricingObligationGap
   let _acceptedSpendCurrentPricingGapSelected :=
@@ -90879,6 +90931,32 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete
   let _acceptedSpendCurrentFactsIffPricingHalf :=
     selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete
+  let _acceptedSpendPricingFactSurface :=
+    AcceptedSpendPricingFact
+  let _acceptedSpendAllPricingFacts :=
+    acceptedSpendPricingFacts
+  let _acceptedSpendMissingPricingFacts :=
+    currentMissingAcceptedSpendPricingFacts
+  let _acceptedSpendCompletedPricingFacts :=
+    currentCompletedAcceptedSpendPricingFacts
+  let _acceptedSpendPricingFactHolds :=
+    AcceptedSpendPricingFact.currentSelectedReportFactHolds
+  let _acceptedSpendMissingPricingPredicate :=
+    IsCurrentMissingAcceptedSpendPricingFact
+  let _acceptedSpendCompletedPricingPredicate :=
+    IsCurrentCompletedAcceptedSpendPricingFact
+  let _acceptedSpendPricingFactsCard :=
+    acceptedSpendPricingFacts_card
+  let _acceptedSpendMissingPricingFactsIff :=
+    mem_currentMissingAcceptedSpendPricingFacts_iff
+  let _acceptedSpendMissingPricingFactsCard :=
+    currentMissingAcceptedSpendPricingFacts_card
+  let _acceptedSpendCompletedPricingFactsIff :=
+    mem_currentCompletedAcceptedSpendPricingFacts_iff
+  let _acceptedSpendCompletedPricingFactsCard :=
+    currentCompletedAcceptedSpendPricingFacts_card
+  let _acceptedSpendPricingFactsDisjoint :=
+    no_currentAcceptedSpendPricingFact_missing_and_completed
   let _acceptedSpendCurrentPricingGap :=
     SelectedRustAcceptedSpendPricingObligationGap
   let _acceptedSpendCurrentPricingGapSelected :=
@@ -91605,6 +91683,32 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete
   let _acceptedSpendCurrentFactsIffPricingHalf :=
     selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete
+  let _acceptedSpendPricingFactSurface :=
+    AcceptedSpendPricingFact
+  let _acceptedSpendAllPricingFacts :=
+    acceptedSpendPricingFacts
+  let _acceptedSpendMissingPricingFacts :=
+    currentMissingAcceptedSpendPricingFacts
+  let _acceptedSpendCompletedPricingFacts :=
+    currentCompletedAcceptedSpendPricingFacts
+  let _acceptedSpendPricingFactHolds :=
+    AcceptedSpendPricingFact.currentSelectedReportFactHolds
+  let _acceptedSpendMissingPricingPredicate :=
+    IsCurrentMissingAcceptedSpendPricingFact
+  let _acceptedSpendCompletedPricingPredicate :=
+    IsCurrentCompletedAcceptedSpendPricingFact
+  let _acceptedSpendPricingFactsCard :=
+    acceptedSpendPricingFacts_card
+  let _acceptedSpendMissingPricingFactsIff :=
+    mem_currentMissingAcceptedSpendPricingFacts_iff
+  let _acceptedSpendMissingPricingFactsCard :=
+    currentMissingAcceptedSpendPricingFacts_card
+  let _acceptedSpendCompletedPricingFactsIff :=
+    mem_currentCompletedAcceptedSpendPricingFacts_iff
+  let _acceptedSpendCompletedPricingFactsCard :=
+    currentCompletedAcceptedSpendPricingFacts_card
+  let _acceptedSpendPricingFactsDisjoint :=
+    no_currentAcceptedSpendPricingFact_missing_and_completed
   let _acceptedSpendCurrentPricingGap :=
     SelectedRustAcceptedSpendPricingObligationGap
   let _acceptedSpendCurrentPricingGapSelected :=
@@ -92006,6 +92110,16 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_accepted_spend_current_facts_equivalence
+            )
+        );
+        let suffixed_accepted_spend_missing_pricing_card =
+            accepted_spend_instantiation_shape.replace(
+                "currentMissingAcceptedSpendPricingFacts_card",
+                "currentMissingAcceptedSpendPricingFacts_cardSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_accepted_spend_missing_pricing_card
             )
         );
         let global_vacuous_accepted_spend_report_proofs = format!(
