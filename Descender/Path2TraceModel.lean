@@ -861,6 +861,145 @@ theorem selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_acc
       hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing)
 
 /--
+The trace-model pricing witness carries the concrete accepted-spend probability
+to the fixed active 128-bit target at the remaining-break endpoint.
+-/
+theorem selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_active128BitTarget_of_remaining_break_bounds
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete) :
+    let W :=
+      selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing
+    W.concreteCertificate.pricedCertificate.acceptedSpendProb ≤
+      ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_active128BitTarget
+    (selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
+      traceDist observe acceptedSpendBound remainingBreakBound
+      hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing)
+
+/--
+The trace-model pricing witness carries every remaining cryptographic
+named-break probability to its proportional 2^-133 component target.
+-/
+theorem selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakProb_le_2pow_neg133_of_remaining_break_bounds
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete)
+    (breakEvent : RemainingCryptographicBreak) :
+    let W :=
+      selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        W.concreteCertificate.pricedCertificate.Trace
+        W.concreteCertificate.pricedCertificate.Outcome
+        W.concreteCertificate.pricedCertificate.Break
+        W.concreteCertificate.pricedCertificate.traceFintype
+        W.concreteCertificate.pricedCertificate.breakFintype
+        W.concreteCertificate.pricedCertificate.game breakEvent.1 ≤
+      (1 : ℝ) / 2 ^ 133 :=
+  le_trans
+    (SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_breakBound
+      (selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing)
+      breakEvent.1)
+    (SelectedRustConcreteAcceptedSpendPricingWitness.breakBound_le_2pow_neg133
+      (selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing)
+      breakEvent.1)
+
+/--
+The trace-model pricing witness carries every remaining cryptographic
+named-break probability to the fixed active 128-bit target.
+-/
+theorem selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakProb_le_active128BitTarget_of_remaining_break_bounds
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete)
+    (breakEvent : RemainingCryptographicBreak) :
+    let W :=
+      selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        W.concreteCertificate.pricedCertificate.Trace
+        W.concreteCertificate.pricedCertificate.Outcome
+        W.concreteCertificate.pricedCertificate.Break
+        W.concreteCertificate.pricedCertificate.traceFintype
+        W.concreteCertificate.pricedCertificate.breakFintype
+        W.concreteCertificate.pricedCertificate.game breakEvent.1 ≤
+      ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_active128BitTarget
+    (selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
+      traceDist observe acceptedSpendBound remainingBreakBound
+      hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing)
+    breakEvent.1
+
+/--
 The trace-model pricing witness composes its remaining-break component
 budgets into the fixed active 128-bit component budget.
 -/
@@ -898,6 +1037,45 @@ theorem selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_activ
             W.concreteCertificate.pricedCertificate.breakBound ≤
       ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
   SelectedRustConcreteAcceptedSpendPricingWitness.componentBudget_le_active128BitTarget_of_proportional_bounds
+    (selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
+      traceDist observe acceptedSpendBound remainingBreakBound
+      hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing)
+
+/--
+The trace-model pricing witness carries the accepted-spend union expression to
+the fixed active 128-bit target at the remaining-break endpoint.
+-/
+theorem selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_remaining_break_bounds
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete) :
+    let W :=
+      selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing
+    W.concreteCertificate.pricedCertificate.unionBound ≤
+      ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  SelectedRustConcreteAcceptedSpendPricingWitness.unionBound_le_active128BitTarget
     (selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
       traceDist observe acceptedSpendBound remainingBreakBound
       hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing)
