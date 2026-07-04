@@ -3902,6 +3902,88 @@ structure SelectedRustFullSignatureReductionProductionWitness where
   verifierGameMatchesProductionExecutionProof :
     selectedRustFullSignatureReductionEvidenceReport.verifierGameMatchesProductionExecution = true
 
+/--
+Named constructor for the selected full-reduction production witness.
+
+This deliberately keeps the five hard production report bits as separate inputs
+instead of accepting only a bundled `ProductionFactsComplete` proof.
+-/
+def SelectedRustFullSignatureReductionProductionWitness.ofAcceptedSpendAndReportBits
+    (acceptedSpendCertificate : SelectedRustAcceptedSpendSoundnessCertificate)
+    (hashBoundary : NativeHashBudgetBoundary)
+    (signatureForgerySuccessProb : ℝ)
+    (productionSignatureForgerySuccessProb : ℝ)
+    (signatureForgerySuccessProbPinned :
+      signatureForgerySuccessProb = productionSignatureForgerySuccessProb)
+    (signatureForgerySuccessMatchesAcceptedSpendGame :
+      signatureForgerySuccessProb =
+        acceptedSpendCertificate.pricedNumericCertificate.successProb)
+    (keygenDistributionModeled : Prop)
+    (keygenDistributionModeledProof : keygenDistributionModeled)
+    (signingOracleModeled : Prop)
+    (signingOracleModeledProof : signingOracleModeled)
+    (completenessModeled : Prop)
+    (completenessModeledProof : completenessModeled)
+    (verifierRelationMatchesImplementation : Prop)
+    (verifierRelationMatchesImplementationProof :
+      verifierRelationMatchesImplementation)
+    (fullForgeryImpliesAcceptedSpendForgery : Prop)
+    (fullForgeryImpliesAcceptedSpendForgeryProof :
+      fullForgeryImpliesAcceptedSpendForgery)
+    (checkedCoreFrameDomainSeparatedProof :
+      hashBoundary.checkedCoreFrameDomainSeparated)
+    (hiddenSourceFrameDomainSeparatedProof :
+      hashBoundary.hiddenSourceFrameDomainSeparated)
+    (queryBudgetPricedProof :
+      hashBoundary.queryBudgetPriced)
+    (multiTargetLossPricedProof :
+      hashBoundary.multiTargetLossPriced)
+    (productionSignatureProbabilityPinnedProof :
+      selectedRustFullSignatureReductionEvidenceReport.productionSignatureProbabilityPinned = true)
+    (signatureSuccessMatchesAcceptedSpendGameProof :
+      selectedRustFullSignatureReductionEvidenceReport.signatureSuccessMatchesAcceptedSpendGame = true)
+    (acceptedSpendProbabilityLinkedProof :
+      selectedRustFullSignatureReductionEvidenceReport.acceptedSpendProbabilityLinked = true)
+    (allActiveQuerySymbolsPricedProof :
+      selectedRustFullSignatureReductionEvidenceReport.allActiveQuerySymbolsPriced = true)
+    (verifierGameMatchesProductionExecutionProof :
+      selectedRustFullSignatureReductionEvidenceReport.verifierGameMatchesProductionExecution = true) :
+    SelectedRustFullSignatureReductionProductionWitness where
+  acceptedSpendCertificate := acceptedSpendCertificate
+  hashBoundary := hashBoundary
+  signatureForgerySuccessProb := signatureForgerySuccessProb
+  productionSignatureForgerySuccessProb := productionSignatureForgerySuccessProb
+  signatureForgerySuccessProbPinned := signatureForgerySuccessProbPinned
+  signatureForgerySuccessMatchesAcceptedSpendGame :=
+    signatureForgerySuccessMatchesAcceptedSpendGame
+  keygenDistributionModeled := keygenDistributionModeled
+  keygenDistributionModeledProof := keygenDistributionModeledProof
+  signingOracleModeled := signingOracleModeled
+  signingOracleModeledProof := signingOracleModeledProof
+  completenessModeled := completenessModeled
+  completenessModeledProof := completenessModeledProof
+  verifierRelationMatchesImplementation := verifierRelationMatchesImplementation
+  verifierRelationMatchesImplementationProof :=
+    verifierRelationMatchesImplementationProof
+  fullForgeryImpliesAcceptedSpendForgery := fullForgeryImpliesAcceptedSpendForgery
+  fullForgeryImpliesAcceptedSpendForgeryProof :=
+    fullForgeryImpliesAcceptedSpendForgeryProof
+  checkedCoreFrameDomainSeparatedProof :=
+    checkedCoreFrameDomainSeparatedProof
+  hiddenSourceFrameDomainSeparatedProof :=
+    hiddenSourceFrameDomainSeparatedProof
+  queryBudgetPricedProof := queryBudgetPricedProof
+  multiTargetLossPricedProof := multiTargetLossPricedProof
+  productionSignatureProbabilityPinnedProof :=
+    productionSignatureProbabilityPinnedProof
+  signatureSuccessMatchesAcceptedSpendGameProof :=
+    signatureSuccessMatchesAcceptedSpendGameProof
+  acceptedSpendProbabilityLinkedProof :=
+    acceptedSpendProbabilityLinkedProof
+  allActiveQuerySymbolsPricedProof := allActiveQuerySymbolsPricedProof
+  verifierGameMatchesProductionExecutionProof :=
+    verifierGameMatchesProductionExecutionProof
+
 namespace SelectedRustFullSignatureReductionProductionWitness
 
 /-- The selected production witness supplies the active report production half. -/

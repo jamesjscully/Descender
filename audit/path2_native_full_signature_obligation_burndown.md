@@ -2443,6 +2443,9 @@ requires these witness-level projections along with the selected full-reduction
 certificate constructor, so the final AP2-N003 theorem must keep the production
 witness on the proof path through boundary erasure instead of hiding the hard
 production bits behind only `ProductionFactsComplete`.
+`SelectedRustFullSignatureReductionProductionWitness.ofAcceptedSpendAndReportBits`
+now provides the named witness constructor for that route while still requiring
+the five production report-bit proofs independently.
 AP2-N003 priced-bound transcript-cap guard note:
 The accepted-spend fail-closed regression now forges an otherwise pricing-ready
 report whose priced-bound security bits consume the whole QROM-discounted

@@ -161,7 +161,12 @@ future accepted-spend pricing can consume it. Lean also mirrors the current
 accepted-spend pricing and full-reduction production missing-obligation
 diagnostics as explicit gap records that block `PricingFactsComplete` and
 `ProductionFactsComplete`, and the Rust future-theorem scanners require those
-gap names in the AP2-N003 route. Lean now also lifts the active 9-event
+gap names in the AP2-N003 route. The full-reduction production witness now has
+the named constructor
+`SelectedRustFullSignatureReductionProductionWitness.ofAcceptedSpendAndReportBits`,
+which keeps the five hard production report bits as separate inputs rather than
+collapsing them behind only `ProductionFactsComplete`. Lean now also lifts the
+active 9-event
 arithmetic check through `PricedAcceptedSpendNumericCertificate`,
 `SelectedAcceptedSpendNumericSource`, and the selected concrete/source numeric
 certificates: component bounds at 2^-129 for accepted-spend and 2^-133 for each
