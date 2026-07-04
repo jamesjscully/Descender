@@ -214,7 +214,16 @@ leaving the production probability pins and four full-boundary closure
 propositions explicit; the boundary projection
 `selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget_of_remaining_break_bounds`
 then carries that erased boundary to the fixed active 128-bit accepted-spend
-probability target.
+probability target. The same trace-model route now continues into the
+full-signature layer through
+`selectedRustFullSignatureReductionProductionWitness_of_remaining_break_bounds`,
+`selectedRustFullSignatureReductionCertificate_of_remaining_break_bounds`, and
+`selectedRustNativeFullSignatureSecurityBoundary_of_remaining_break_bounds`;
+`selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget_of_remaining_break_bounds`
+projects the erased native full-signature boundary to the fixed active target
+while keeping selected `ProductionFactsComplete` bits, hash-budget facts,
+production signature probability pinning, and verifier/model obligations
+explicit.
 Pricing and per-event cryptographic bounds remain open. The
 Lean concrete full-spend carrier now makes account creation acceptance consume
 an explicit `AccountCreationProofBoundaryEvidenceAccepted` predicate, binding

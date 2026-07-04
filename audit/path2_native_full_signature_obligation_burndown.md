@@ -2318,6 +2318,16 @@ inputs to that erasure.
 `selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget_of_remaining_break_bounds`
 then projects the erased boundary's accepted-spend forgery probability to the
 active 128-bit target.
+`selectedRustFullSignatureReductionProductionWitness_of_remaining_break_bounds`,
+`selectedRustFullSignatureReductionCertificate_of_remaining_break_bounds`, and
+`selectedRustNativeFullSignatureSecurityBoundary_of_remaining_break_bounds` now
+continue the same trace-model accepted-spend certificate into the selected
+full-reduction production witness, selected full-reduction certificate, and
+erased native full-signature boundary.
+`selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget_of_remaining_break_bounds`
+packages the final active-target projection for that erased full-signature
+boundary while leaving production report bits, hash-budget facts, probability
+pinning, and verifier/model obligations explicit.
 AP2-N003 pricing-witness proportional-obligation note:
 `SelectedRustConcreteAcceptedSpendPricingWitness` now carries the proportional
 component facts as fields and projects
