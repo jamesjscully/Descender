@@ -359,6 +359,14 @@ full-signature layer through
 `selectedRustFullSignatureReductionProductionWitness_of_remaining_break_bounds`,
 `selectedRustFullSignatureReductionCertificate_of_remaining_break_bounds`, and
 `selectedRustNativeFullSignatureSecurityBoundary_of_remaining_break_bounds`;
+hard-pricing counterparts
+`selectedRustFullSignatureReductionProductionWitness_of_remaining_break_bounds_and_current_hard_pricing_facts`,
+`selectedRustFullSignatureReductionCertificate_of_remaining_break_bounds_and_current_hard_pricing_facts`,
+and
+`selectedRustNativeFullSignatureSecurityBoundary_of_remaining_break_bounds_and_current_hard_pricing_facts`
+now carry the same full-signature handoff from the exact four hard
+accepted-spend pricing facts, and the full-reduction source-shape gate requires
+those names while rejecting spoofed hard-pricing trace witness/boundary variants;
 `selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget_of_remaining_break_bounds`
 projects the erased native full-signature boundary to the fixed active target
 while keeping selected `ProductionFactsComplete` bits, hash-budget facts,
