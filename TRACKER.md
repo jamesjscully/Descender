@@ -222,7 +222,10 @@ leaving the production probability pins and four full-boundary closure
 propositions explicit; the boundary projection
 `selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget_of_remaining_break_bounds`
 then carries that erased boundary to the fixed active 128-bit accepted-spend
-probability target. The same trace-model route now continues into the
+probability target, while
+`selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget_of_remaining_break_bounds`
+names the matching erased accepted-spend bound target. The same trace-model
+route now continues into the
 full-signature layer through
 `selectedRustFullSignatureReductionProductionWitness_of_remaining_break_bounds`,
 `selectedRustFullSignatureReductionCertificate_of_remaining_break_bounds`, and
@@ -235,9 +238,11 @@ explicit. The trace-model route also exposes
 `selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_acceptedSpendForgeryProb_of_remaining_break_bounds`
 and
 `selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound_of_remaining_break_bounds`,
-plus nonnegative and at-most-one signature-success endpoints, so the final
-boundary's accepted-spend reduction, probability shape, and active Path 2
-handoff remain named after erasure.
+plus
+`selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_remaining_break_bounds`
+and nonnegative and at-most-one signature-success endpoints, so the final
+boundary's accepted-spend reduction, probability shape, active Path 2 handoff,
+and fixed active-target bound remain named after erasure.
 Generic certificate and production-witness projections now also keep
 the erased full-signature boundary's accepted-spend reduction, active Path 2
 bound handoff, nonnegative success probability, and at-most-one success

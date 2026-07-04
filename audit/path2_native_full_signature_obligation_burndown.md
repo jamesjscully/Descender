@@ -2489,6 +2489,13 @@ now mirror the erased boundary's probability-shape facts at the same endpoint.
 now mirrors the active Path 2 bound handoff there, so the faithful AP2-N003 route
 names the native-boundary erasure consequences without dropping probability
 shape.
+`selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget_of_remaining_break_bounds`
+and
+`selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_remaining_break_bounds`
+now also expose the erased accepted-spend bound and erased full-signature active
+Path 2 bound at the fixed active 128-bit target. The Rust accepted-spend and
+full-reduction source-shape gates require those names and reject suffixed
+variants in future final instantiation candidates.
 AP2-N003 priced-bound transcript-cap guard note:
 The accepted-spend fail-closed regression now forges an otherwise pricing-ready
 report whose priced-bound security bits consume the whole QROM-discounted
