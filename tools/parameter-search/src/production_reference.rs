@@ -52538,6 +52538,10 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget",
         "selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_remaining_break_bounds",
         "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitness",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionCertificate",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget",
         "selectedRustFullSignatureKeygenModeled",
         "selectedRustFullSignatureKeygenModeledProof",
         "selectedRustFullSignatureSigningOracleModeled",
@@ -52638,6 +52642,10 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget",
         "selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_remaining_break_bounds",
         "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitness",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionCertificate",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget",
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary",
         "NativeFullSignatureSecurityBoundary.keygenDistributionModeled_holds",
         "NativeFullSignatureSecurityBoundary.signingOracleModeled_holds",
@@ -89377,6 +89385,14 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
       selectedRustFullSignatureReductionCertificate
   let _fullReductionTraceFullSignatureActiveTarget :=
     selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds
+  let _fullReductionRemainingBreakPackageProductionWitness :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitness
+  let _fullReductionRemainingBreakPackageCertificate :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionCertificate
+  let _fullReductionRemainingBreakPackageBoundary :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary
+  let _fullReductionRemainingBreakPackageFullSignatureTarget :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget
   let _fullReductionCertificateKeygen :=
     SelectedRustFullSignatureReductionCertificate.keygenDistributionModeled_holds
   let _fullReductionCertificateSigning :=
@@ -89466,6 +89482,16 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_composed_target
+            )
+        );
+        let suffixed_full_signature_package_target =
+            full_signature_reduction_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTargetSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_package_target
             )
         );
         let suffixed_full_signature_current_facts_equivalence =

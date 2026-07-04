@@ -2336,6 +2336,11 @@ The same package now erases through the selected accepted-spend soundness
 certificate and native accepted-spend boundary while keeping production
 probability pins and the four closure propositions explicit; the source-shape
 gate requires those package-level boundary names too.
+It now also continues through the selected full-signature reduction production
+witness, full-reduction certificate, native full-signature boundary, and final
+full-signature active-target projection while keeping hash-budget facts,
+production signature probability pinning, verifier/model obligations, and the
+full-forgery reduction proof explicit.
 `selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds`,
 `selectedRustAcceptedSpendSoundnessCertificate_of_remaining_break_bounds`, and
 `selectedRustAcceptedSpendSoundnessBoundary_of_remaining_break_bounds` now erase
