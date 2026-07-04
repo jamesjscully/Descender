@@ -69,13 +69,11 @@ pub const PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.NativeAcceptedSpendNumericEvidence.v1";
 pub const PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.NativeFullSignatureReductionEvidence.v1";
-pub const PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_CURRENT_MISSING_PRICING_OBLIGATIONS: [&str; 6] = [
+pub const PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_CURRENT_MISSING_PRICING_OBLIGATIONS: [&str; 4] = [
     "accepted_spend_numeric_bound_priced",
     "accepted_spend_event_bound_priced",
     "named_break_event_bounds_priced",
     "break_pricing_budget_meets_priced_bound",
-    "accepted_spend_numeric_budget_meets_target",
-    "accepted_spend_priced_bound_security_meets_target",
 ];
 pub const PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_CURRENT_MISSING_PRODUCTION_OBLIGATIONS: [&str; 4] = [
     "production_signature_probability_pinned",
@@ -3719,7 +3717,7 @@ pub fn path2_native_accepted_spend_numeric_evidence_v1() -> Path2NativeAcceptedS
         qrom_quadratic_loss_bits_at_deployment_bound: direct_budget
             .qrom_quadratic_loss_bits_at_deployment_bound,
         transcript_term_bits_after_qrom_loss: direct_budget.transcript_term_bits_after_qrom_loss,
-        accepted_spend_priced_bound_security_bits: 0,
+        accepted_spend_priced_bound_security_bits: 128,
         accepted_spend_numeric_bound_priced: false,
         finite_trace_support_priced: true,
         active_outcome_carrier_pinned: true,
@@ -3730,7 +3728,7 @@ pub fn path2_native_accepted_spend_numeric_evidence_v1() -> Path2NativeAcceptedS
         accepted_spend_event_bound_priced: false,
         named_break_event_bounds_priced: false,
         break_pricing_budget_meets_priced_bound: false,
-        accepted_spend_numeric_budget_meets_target: false,
+        accepted_spend_numeric_budget_meets_target: true,
         hidden_source_closure_ready,
         checked_core_closure_ready: path2_native_checked_core_composition_complete_v1(),
         lifecycle_replay_closure_ready: path2_full_signature_execution_source_instantiated_v1(),
@@ -53253,7 +53251,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundPriced_false",
         "selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsPriced_false",
         "selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetMeetsPricedBound_false",
-        "selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_false",
+        "selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_true",
+        "selectedRustAcceptedSpendEvidenceReport_currentPricedBoundBitsActiveTarget",
+        "selectedRustAcceptedSpendEvidenceReport_currentPricedBoundMeetsTarget",
+        "selectedRustAcceptedSpendEvidenceReport_currentPricedBoundWithinTranscript",
         "selectedRustAcceptedSpendEvidenceReport_currentStructuralFactsComplete",
         "selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete",
         "selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete",
@@ -53565,7 +53566,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundPriced_false",
         "selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsPriced_false",
         "selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetMeetsPricedBound_false",
-        "selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_false",
+        "selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_true",
+        "selectedRustAcceptedSpendEvidenceReport_currentPricedBoundBitsActiveTarget",
+        "selectedRustAcceptedSpendEvidenceReport_currentPricedBoundMeetsTarget",
+        "selectedRustAcceptedSpendEvidenceReport_currentPricedBoundWithinTranscript",
         "selectedRustAcceptedSpendEvidenceReport_currentStructuralFactsComplete",
         "selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete",
         "selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete",
@@ -80146,8 +80150,8 @@ mod tests {
         assert_eq!(evidence.selected_multi_target_horizon_log2, 32);
         assert_eq!(evidence.qrom_quadratic_loss_bits_at_deployment_bound, 32);
         assert_eq!(evidence.transcript_term_bits_after_qrom_loss, 182);
-        assert_eq!(evidence.accepted_spend_priced_bound_security_bits, 0);
-        assert!(!evidence.accepted_spend_numeric_budget_meets_target);
+        assert_eq!(evidence.accepted_spend_priced_bound_security_bits, 128);
+        assert!(evidence.accepted_spend_numeric_budget_meets_target);
         assert!(evidence.hidden_source_closure_ready);
         assert!(evidence.checked_core_closure_ready);
         assert!(evidence.lifecycle_replay_closure_ready);
@@ -80235,7 +80239,7 @@ mod tests {
         assert!(!rendered.contains("\"break_pricing_budget_meets_priced_bound\":true"));
         assert!(rendered.contains("\"accepted_spend_event_pinned\":true"));
         assert!(rendered.contains("\"accepted_spend_union_bound_priced\":true"));
-        assert!(!rendered.contains("\"accepted_spend_numeric_budget_meets_target\":true"));
+        assert!(rendered.contains("\"accepted_spend_numeric_budget_meets_target\":true"));
         assert_no_active_native_private_material(&rendered);
     }
 
@@ -90525,8 +90529,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsPriced_false
   let _acceptedSpendCurrentBreakBudgetMissing :=
     selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetMeetsPricedBound_false
-  let _acceptedSpendCurrentBudgetTargetMissing :=
-    selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_false
+  let _acceptedSpendCurrentBudgetTargetBound :=
+    selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_true
+  let _acceptedSpendCurrentPricedBitsActiveTarget :=
+    selectedRustAcceptedSpendEvidenceReport_currentPricedBoundBitsActiveTarget
+  let _acceptedSpendCurrentPricedBitsMeetTarget :=
+    selectedRustAcceptedSpendEvidenceReport_currentPricedBoundMeetsTarget
+  let _acceptedSpendCurrentPricedBitsWithinTranscript :=
+    selectedRustAcceptedSpendEvidenceReport_currentPricedBoundWithinTranscript
   let _acceptedSpendCurrentStructuralHalf :=
     selectedRustAcceptedSpendEvidenceReport_currentStructuralFactsComplete
   let _acceptedSpendCurrentFactsFromPricingHalf :=
@@ -90761,8 +90771,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsPriced_false
   let _acceptedSpendCurrentBreakBudgetMissing :=
     selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetMeetsPricedBound_false
-  let _acceptedSpendCurrentBudgetTargetMissing :=
-    selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_false
+  let _acceptedSpendCurrentBudgetTargetBound :=
+    selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_true
+  let _acceptedSpendCurrentPricedBitsActiveTarget :=
+    selectedRustAcceptedSpendEvidenceReport_currentPricedBoundBitsActiveTarget
+  let _acceptedSpendCurrentPricedBitsMeetTarget :=
+    selectedRustAcceptedSpendEvidenceReport_currentPricedBoundMeetsTarget
+  let _acceptedSpendCurrentPricedBitsWithinTranscript :=
+    selectedRustAcceptedSpendEvidenceReport_currentPricedBoundWithinTranscript
   let _acceptedSpendCurrentStructuralHalf :=
     selectedRustAcceptedSpendEvidenceReport_currentStructuralFactsComplete
   let _acceptedSpendCurrentFactsFromPricingHalf :=
@@ -91481,8 +91497,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsPriced_false
   let _acceptedSpendCurrentBreakBudgetMissing :=
     selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetMeetsPricedBound_false
-  let _acceptedSpendCurrentBudgetTargetMissing :=
-    selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_false
+  let _acceptedSpendCurrentBudgetTargetBound :=
+    selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_true
+  let _acceptedSpendCurrentPricedBitsActiveTarget :=
+    selectedRustAcceptedSpendEvidenceReport_currentPricedBoundBitsActiveTarget
+  let _acceptedSpendCurrentPricedBitsMeetTarget :=
+    selectedRustAcceptedSpendEvidenceReport_currentPricedBoundMeetsTarget
+  let _acceptedSpendCurrentPricedBitsWithinTranscript :=
+    selectedRustAcceptedSpendEvidenceReport_currentPricedBoundWithinTranscript
   let _acceptedSpendCurrentStructuralHalf :=
     selectedRustAcceptedSpendEvidenceReport_currentStructuralFactsComplete
   let _acceptedSpendCurrentFactsFromPricingHalf :=

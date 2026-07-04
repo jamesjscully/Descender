@@ -231,6 +231,12 @@ each remaining-break probability, the union expression, and the component
 budget at the active target before certificate erasure;
 the Rust accepted-spend source-shape gate now requires these endpoint names in
 future AP2-N003 instantiation candidates.
+The accepted-spend numeric report now closes the selected budget arithmetic
+bits by pinning `acceptedSpendPricedBoundSecurityBits = 128` and
+`acceptedSpendNumericBudgetMeetsTarget = true`; its current missing-pricing
+diagnostic is narrowed to four cryptographic pricing facts: aggregate numeric
+pricing, accepted-spend event pricing, named-break event pricing, and
+component-budget-to-priced-bound pricing.
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage` now packages the
 accepted-spend bound, the seven remaining-break bounds, their proportional
 budgets, selected pricing facts, and the real-valued priced-bound inequality

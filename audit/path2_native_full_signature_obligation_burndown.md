@@ -1604,8 +1604,10 @@ transcriptTermBitsAfterQromLoss`, and
 transcriptTermBitsAfterQromLoss`; Rust mirrors those checks in the evidence
 `all_facts_true` helper. This prevents over-reporting claimed priced-bound
 bits beyond the active QROM-discounted transcript budget. The canonical Rust
-evidence still has priced-bound security bits `0` and the target predicate
-false, so it remains fail-closed.
+evidence now carries the selected 128-bit priced-bound claim and sets the
+numeric budget target predicate true, while accepted-spend event pricing,
+named-break event pricing, component-budget-to-priced-bound pricing, and the
+aggregate numeric-bound pricing bit remain false, so it remains fail-closed.
 Lean now exposes report-derived theorem facts that the accepted-spend
 priced-bound bits meet target, the selected 32-bit multi-target horizon fits
 inside the 182-bit QROM-discounted transcript term, the claimed priced-bound
@@ -2457,9 +2459,11 @@ AP2-N003 public missing-obligation diagnostic note:
 Rust now exposes fixed current-missing obligation arrays and computed helpers
 for the two hard halves: `path2_native_accepted_spend_numeric_missing_pricing_obligations_v1`
 and `path2_native_full_signature_reduction_missing_production_obligations_v1`.
-The accepted-spend diagnostic reports the current missing aggregate numeric
-pricing, accepted-spend event pricing, named-break pricing, component-budget
-pricing, numeric target budget, and priced-bound target-security obligations.
+The accepted-spend diagnostic now reports four current missing pricing
+obligations: aggregate numeric pricing, accepted-spend event pricing,
+named-break pricing, and component-budget pricing. The active 128-bit
+priced-bound claim, numeric target budget, and transcript-cap checks are no
+longer in the selected report's missing array.
 The full-reduction diagnostic now reports four current missing production
 obligations: production probability pin, accepted-spend-game linkage,
 accepted-spend probability linkage, and all-active-query-symbol pricing. The
@@ -2473,7 +2477,9 @@ AP2-N003 pricing-witness hard-bit projection note:
 for every accepted-spend pricing-half report fact: aggregate numeric pricing,
 accepted-spend event pricing, named-break pricing, component-budget pricing,
 numeric target budget, priced-bound target security, and priced-bound transcript
-capacity. The accepted-spend source gate requires these witness-level names, so
+capacity. The first four remain the current fail-closed hard pricing bits; the
+numeric target and security-bit/transcript-cap projections are now current true
+facts. The accepted-spend source gate requires these witness-level names, so
 the final theorem must keep the individual hard pricing bits visible at the
 single witness object rather than only passing around a tuple-shaped
 `PricingFactsComplete` proof.
@@ -2559,8 +2565,24 @@ production diagnostic as
 values prove that the current report values block `PricingFactsComplete` and
 `ProductionFactsComplete`, and the Rust future-theorem scanners require those
 gap mirrors in the accepted-spend and full-reduction instantiation shapes. This
-keeps the fail-closed AP2-N003 hard halves visible without flipping any pricing
-or production-readiness bit.
+keeps the fail-closed AP2-N003 hard halves visible while allowing already
+selected budget arithmetic bits to close separately from the still-missing
+cryptographic pricing facts.
+AP2-N003 accepted-spend numeric budget bit closure note:
+The selected accepted-spend report now sets
+`acceptedSpendPricedBoundSecurityBits = 128` and
+`acceptedSpendNumericBudgetMeetsTarget = true`, with Lean exposing
+`selectedRustAcceptedSpendEvidenceReport_currentPricedBoundBitsActiveTarget`,
+`selectedRustAcceptedSpendEvidenceReport_currentPricedBoundMeetsTarget`,
+`selectedRustAcceptedSpendEvidenceReport_currentPricedBoundWithinTranscript`,
+and
+`selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_true`.
+Rust reduces
+`PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_CURRENT_MISSING_PRICING_OBLIGATIONS`
+from six rows to four for the selected report. The report is still fail-closed:
+aggregate numeric pricing, accepted-spend event pricing, named-break event
+pricing, and component-budget-to-priced-bound pricing remain false, and
+`PricingFactsComplete` is still impossible for the current report.
 AP2-N003 concrete execution-source package adapter note:
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage` now exposes
 `toFullSignatureReductionProductionWitnessWithConcreteExecutionSource`,

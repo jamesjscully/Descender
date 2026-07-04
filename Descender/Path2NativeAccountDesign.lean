@@ -2157,9 +2157,9 @@ def selectedRustAcceptedSpendEvidenceReport :
       184, 94, 226, 157, 26, 55, 237, 33, 21, 223, 183, 249, 34, 163, 53,
       42, 43, 237, 74, 214]
   acceptedSpendEventSemanticsDigest :=
-    ByteArray.mk #[210, 89, 237, 215, 149, 145, 168, 145, 13, 248, 7, 40,
-      54, 124, 13, 146, 219, 84, 126, 101, 113, 53, 1, 93, 94, 229, 78,
-      83, 24, 46, 5, 5]
+    ByteArray.mk #[35, 65, 67, 124, 201, 208, 218, 210, 237, 210, 97, 133,
+      169, 250, 226, 203, 205, 32, 97, 64, 113, 250, 85, 134, 122, 143,
+      222, 95, 6, 221, 238, 15]
   activeBreakFamilyDigest :=
     ByteArray.mk #[111, 3, 153, 201, 118, 101, 3, 131, 125, 95, 74, 112,
       104, 81, 255, 126, 60, 29, 241, 180, 122, 212, 12, 39, 240, 46, 175,
@@ -2180,7 +2180,7 @@ def selectedRustAcceptedSpendEvidenceReport :
   selectedMultiTargetHorizonLog2 := 32
   qromQuadraticLossBitsAtDeploymentBound := 32
   transcriptTermBitsAfterQromLoss := 182
-  acceptedSpendPricedBoundSecurityBits := 0
+  acceptedSpendPricedBoundSecurityBits := 128
   acceptedSpendNumericBoundPriced := false
   finiteTraceSupportPriced := true
   activeOutcomeCarrierPinned := true
@@ -2191,7 +2191,7 @@ def selectedRustAcceptedSpendEvidenceReport :
   acceptedSpendEventBoundPriced := false
   namedBreakEventBoundsPriced := false
   breakPricingBudgetMeetsPricedBound := false
-  acceptedSpendNumericBudgetMeetsTarget := false
+  acceptedSpendNumericBudgetMeetsTarget := true
   hiddenSourceClosureReady := true
   checkedCoreClosureReady := true
   lifecycleReplayClosureReady := true
@@ -2199,9 +2199,9 @@ def selectedRustAcceptedSpendEvidenceReport :
 
 /-- Digest pin for the selected Rust accepted-spend numeric evidence report. -/
 def selectedRustAcceptedSpendEvidenceDigest : ByteArray :=
-  ByteArray.mk #[38, 33, 182, 212, 151, 86, 163, 115, 226, 44, 196, 118,
-    63, 3, 61, 199, 33, 146, 190, 107, 76, 67, 247, 175, 49, 179, 30, 29,
-    29, 57, 224, 172]
+  ByteArray.mk #[58, 41, 97, 234, 177, 225, 24, 187, 29, 73, 144, 50,
+    225, 195, 151, 44, 234, 221, 153, 89, 136, 196, 214, 185, 75, 82,
+    138, 5, 39, 121, 187, 218]
 
 /-- Selected digest-slot certificate for the current accepted-spend numeric report. -/
 def selectedRustAcceptedSpendNumericDigestSlotsCertificate :
@@ -2236,15 +2236,22 @@ theorem selectedRustAcceptedSpendEvidenceReport_currentBudgetCapacity :
       selectedRustAcceptedSpendEvidenceReport.transcriptTermBitsAfterQromLoss := by
   native_decide
 
-/-- The current selected accepted-spend report still carries zero priced-bound bits. -/
-theorem selectedRustAcceptedSpendEvidenceReport_currentPricedBoundBitsZero :
-    selectedRustAcceptedSpendEvidenceReport.acceptedSpendPricedBoundSecurityBits = 0 := by
+/-- The current selected accepted-spend report carries the active 128-bit priced-bound claim. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentPricedBoundBitsActiveTarget :
+    selectedRustAcceptedSpendEvidenceReport.acceptedSpendPricedBoundSecurityBits = 128 := by
   native_decide
 
-/-- The current selected accepted-spend report's priced-bound bits do not meet target. -/
-theorem selectedRustAcceptedSpendEvidenceReport_currentPricedBoundBelowTarget :
-    selectedRustAcceptedSpendEvidenceReport.acceptedSpendPricedBoundSecurityBits <
-      selectedRustAcceptedSpendEvidenceReport.targetSecurityBits := by
+/-- The current selected accepted-spend report's priced-bound bits meet the active target. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentPricedBoundMeetsTarget :
+    selectedRustAcceptedSpendEvidenceReport.targetSecurityBits <=
+      selectedRustAcceptedSpendEvidenceReport.acceptedSpendPricedBoundSecurityBits := by
+  native_decide
+
+/-- The current selected accepted-spend report's priced-bound bits fit the transcript cap. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentPricedBoundWithinTranscript :
+    selectedRustAcceptedSpendEvidenceReport.acceptedSpendPricedBoundSecurityBits +
+        selectedRustAcceptedSpendEvidenceReport.selectedMultiTargetHorizonLog2 <=
+      selectedRustAcceptedSpendEvidenceReport.transcriptTermBitsAfterQromLoss := by
   native_decide
 
 /-- The current selected accepted-spend report carries the structural numeric-source pins. -/
@@ -2268,8 +2275,7 @@ theorem selectedRustAcceptedSpendEvidenceReport_currentMissingPricingFactsFalse 
     selectedRustAcceptedSpendEvidenceReport.acceptedSpendNumericBoundPriced = false ∧
     selectedRustAcceptedSpendEvidenceReport.acceptedSpendEventBoundPriced = false ∧
     selectedRustAcceptedSpendEvidenceReport.namedBreakEventBoundsPriced = false ∧
-    selectedRustAcceptedSpendEvidenceReport.breakPricingBudgetMeetsPricedBound = false ∧
-    selectedRustAcceptedSpendEvidenceReport.acceptedSpendNumericBudgetMeetsTarget = false := by
+    selectedRustAcceptedSpendEvidenceReport.breakPricingBudgetMeetsPricedBound = false := by
   native_decide
 
 /-- The current selected accepted-spend report has not priced the aggregate numeric bound. -/
@@ -2290,12 +2296,12 @@ theorem selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsPric
 /-- The current selected accepted-spend report has not shown the component budget fits the priced bound. -/
 theorem selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetMeetsPricedBound_false :
     selectedRustAcceptedSpendEvidenceReport.breakPricingBudgetMeetsPricedBound = false :=
-  selectedRustAcceptedSpendEvidenceReport_currentMissingPricingFactsFalse.2.2.2.1
+  selectedRustAcceptedSpendEvidenceReport_currentMissingPricingFactsFalse.2.2.2
 
-/-- The current selected accepted-spend report has not shown the numeric budget reaches target. -/
-theorem selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_false :
-    selectedRustAcceptedSpendEvidenceReport.acceptedSpendNumericBudgetMeetsTarget = false :=
-  selectedRustAcceptedSpendEvidenceReport_currentMissingPricingFactsFalse.2.2.2.2
+/-- The current selected accepted-spend report has shown the numeric budget reaches target. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_true :
+    selectedRustAcceptedSpendEvidenceReport.acceptedSpendNumericBudgetMeetsTarget = true := by
+  native_decide
 
 /--
 Lean mirror of the current accepted-spend pricing diagnostic.
@@ -2312,13 +2318,6 @@ structure SelectedRustAcceptedSpendPricingObligationGap where
     selectedRustAcceptedSpendEvidenceReport.namedBreakEventBoundsPriced = false
   breakPricingBudgetMeetsPricedBoundMissing :
     selectedRustAcceptedSpendEvidenceReport.breakPricingBudgetMeetsPricedBound = false
-  acceptedSpendNumericBudgetMeetsTargetMissing :
-    selectedRustAcceptedSpendEvidenceReport.acceptedSpendNumericBudgetMeetsTarget = false
-  acceptedSpendPricedBoundSecurityBitsZero :
-    selectedRustAcceptedSpendEvidenceReport.acceptedSpendPricedBoundSecurityBits = 0
-  acceptedSpendPricedBoundSecurityBelowTarget :
-    selectedRustAcceptedSpendEvidenceReport.acceptedSpendPricedBoundSecurityBits <
-      selectedRustAcceptedSpendEvidenceReport.targetSecurityBits
 
 /-- Current selected accepted-spend pricing obligations still missing in Lean. -/
 def selectedRustAcceptedSpendEvidenceReport_currentPricingObligationGap :
@@ -2331,12 +2330,6 @@ def selectedRustAcceptedSpendEvidenceReport_currentPricingObligationGap :
     selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsPriced_false
   breakPricingBudgetMeetsPricedBoundMissing :=
     selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetMeetsPricedBound_false
-  acceptedSpendNumericBudgetMeetsTargetMissing :=
-    selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_false
-  acceptedSpendPricedBoundSecurityBitsZero :=
-    selectedRustAcceptedSpendEvidenceReport_currentPricedBoundBitsZero
-  acceptedSpendPricedBoundSecurityBelowTarget :=
-    selectedRustAcceptedSpendEvidenceReport_currentPricedBoundBelowTarget
 
 /-- The current accepted-spend pricing gap blocks the selected pricing half. -/
 theorem selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete
