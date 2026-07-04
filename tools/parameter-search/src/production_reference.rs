@@ -53225,6 +53225,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_2pow_neg128_of_proportional_bounds",
         "SelectedRustConcreteAcceptedSpendPricingWitness.componentBudget_le_active128BitTarget_of_proportional_bounds",
         "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_active128BitTarget_of_proportional_bounds",
+        "remainingCryptographicBreakEvents",
+        "mem_remainingCryptographicBreakEvents_iff",
+        "remainingCryptographicBreakEvents_card",
+        "remainingCryptographicBreak_mem_remainingCryptographicBreakEvents",
         "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendBound_le_2pow_neg129_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakBound_le_2pow_neg133_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_acceptedSpendBound_of_remaining_break_bounds",
@@ -53540,6 +53544,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_2pow_neg128_of_proportional_bounds",
         "SelectedRustConcreteAcceptedSpendPricingWitness.componentBudget_le_active128BitTarget_of_proportional_bounds",
         "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_active128BitTarget_of_proportional_bounds",
+        "remainingCryptographicBreakEvents",
+        "mem_remainingCryptographicBreakEvents_iff",
+        "remainingCryptographicBreakEvents_card",
+        "remainingCryptographicBreak_mem_remainingCryptographicBreakEvents",
         "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendBound_le_2pow_neg129_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakBound_le_2pow_neg133_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_acceptedSpendBound_of_remaining_break_bounds",
@@ -91549,6 +91557,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
   let selectedRustAcceptedSpendNumericSource :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedAcceptedSpendNumericSource
       selectedRustConcreteAcceptedSpendNumericSourceCertificate
+  let _acceptedSpendRemainingBreakEventSet :=
+    remainingCryptographicBreakEvents
+  let _acceptedSpendRemainingBreakEventSetMembership :=
+    mem_remainingCryptographicBreakEvents_iff
+  let _acceptedSpendRemainingBreakEventSetCardinality :=
+    remainingCryptographicBreakEvents_card
+  let _acceptedSpendRemainingBreakSubtypeProjectsToEventSet :=
+    remainingCryptographicBreak_mem_remainingCryptographicBreakEvents
   let _acceptedSpendTracePricingWitnessAcceptedComponentEndpoint :=
     selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendBound_le_2pow_neg129_of_remaining_break_bounds
   let _acceptedSpendTracePricingWitnessBreakComponentEndpoint :=
@@ -91804,6 +91820,16 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &missing_trace_endpoint_component_budget
+            )
+        );
+        let suffixed_remaining_break_event_set_cardinality =
+            accepted_spend_instantiation_shape.replace(
+                "remainingCryptographicBreakEvents_card",
+                "remainingCryptographicBreakEvents_cardSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_remaining_break_event_set_cardinality
             )
         );
         let suffixed_trace_endpoint_remaining_break_prob_active_target =

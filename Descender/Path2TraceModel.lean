@@ -329,6 +329,40 @@ abbrev RemainingCryptographicBreak : Type :=
   { breakEvent : Path2FullSpendGame.BreakEvent //
     IsRemainingCryptographicBreak breakEvent }
 
+/-- Exact finite set of named breaks still priced by cryptographic evidence. -/
+def remainingCryptographicBreakEvents :
+    Finset Path2FullSpendGame.BreakEvent :=
+  { Path2FullSpendGame.BreakEvent.creationTimeHiddenSourceSoundnessBreak,
+    Path2FullSpendGame.BreakEvent.prevalidationLeafBindingBreak,
+    Path2FullSpendGame.BreakEvent.prevalidationRegistryBindingBreak,
+    Path2FullSpendGame.BreakEvent.prevalidationDataAvailabilityBreak,
+    Path2FullSpendGame.BreakEvent.postchallengeSlotCreationOrRewriteBreak,
+    Path2FullSpendGame.BreakEvent.checkedCoreMessageBindingBreak,
+    Path2FullSpendGame.BreakEvent.slotReplayOrRollbackBreak }
+
+/--
+The explicit remaining-break set is exactly the subtype predicate used by the
+pricing package: the only excluded finite events are the two structurally-zero
+slots discharged in this trace model.
+-/
+theorem mem_remainingCryptographicBreakEvents_iff
+    (breakEvent : Path2FullSpendGame.BreakEvent) :
+    breakEvent ∈ remainingCryptographicBreakEvents ↔
+      IsRemainingCryptographicBreak breakEvent := by
+  cases breakEvent <;>
+    simp [remainingCryptographicBreakEvents, IsRemainingCryptographicBreak]
+
+/-- The active remaining cryptographic break surface has seven events. -/
+theorem remainingCryptographicBreakEvents_card :
+    remainingCryptographicBreakEvents.card = 7 := by
+  native_decide
+
+/-- Every subtype witness projects into the explicit remaining-break set. -/
+theorem remainingCryptographicBreak_mem_remainingCryptographicBreakEvents
+    (breakEvent : RemainingCryptographicBreak) :
+    breakEvent.1 ∈ remainingCryptographicBreakEvents :=
+  (mem_remainingCryptographicBreakEvents_iff breakEvent.1).2 breakEvent.2
+
 /--
 Extend caller-supplied remaining-break bounds to the full active break family
 by assigning zero budget to the structurally impossible events.

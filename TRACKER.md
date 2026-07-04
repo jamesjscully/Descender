@@ -230,7 +230,14 @@ so the faithful trace-model route exposes the accepted-spend probability,
 each remaining-break probability, the union expression, and the component
 budget at the active target before certificate erasure;
 the Rust accepted-spend source-shape gate now requires these endpoint names in
-future AP2-N003 instantiation candidates.
+future AP2-N003 instantiation candidates. Lean now also names the exact
+remaining-break finite set with `remainingCryptographicBreakEvents`,
+`mem_remainingCryptographicBreakEvents_iff`,
+`remainingCryptographicBreakEvents_card`, and
+`remainingCryptographicBreak_mem_remainingCryptographicBreakEvents`, proving
+that the pricing package's remaining-break subtype is precisely the seven
+non-structural finite events; the Rust source-shape gate requires those names
+so future evidence cannot silently drift from that event family.
 The accepted-spend numeric report now closes the selected budget arithmetic
 bits by pinning `acceptedSpendPricedBoundSecurityBits = 128` and
 `acceptedSpendNumericBudgetMeetsTarget = true`; its current missing-pricing
