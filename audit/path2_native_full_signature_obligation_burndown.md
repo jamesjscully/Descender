@@ -2267,6 +2267,18 @@ accepted-spend source gate exact-checks these identifiers, so the remaining
 proof work is the cryptographic pricing evidence for accepted-spend at 2^-129
 and each active named break at 2^-133, not the final 2^-128 arithmetic
 composition.
+AP2-N003 pricing-witness proportional-obligation note:
+`SelectedRustConcreteAcceptedSpendPricingWitness` now carries the proportional
+component facts as fields and projects
+`acceptedSpendBound_le_2pow_neg129`, `breakBound_le_2pow_neg133`,
+`componentBudget_le_2pow_neg128_of_proportional_bounds`,
+`successProb_le_2pow_neg128_of_proportional_bounds`,
+`componentBudget_le_active128BitTarget_of_proportional_bounds`, and
+`successProb_le_active128BitTarget_of_proportional_bounds`. The accepted-spend
+source gate exact-checks those witness-level projections, so the future
+selected pricing witness cannot close AP2-N003 with only a priced-bound
+inequality and report bits; it must carry the accepted-spend and per-break
+cryptographic component prices that feed the 128-bit arithmetic closure.
 AP2-N003 witness fail-closed note: Lean now proves the current selected
 accepted-spend report cannot produce
 `SelectedRustConcreteAcceptedSpendPricingWitness`, and the current selected

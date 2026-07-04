@@ -53136,6 +53136,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendPricedBoundSecurityMeetsTarget",
         "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendPricedBoundSecurityWithinTranscript",
         "SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_reportedSecurity",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendBound_le_2pow_neg129",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.breakBound_le_2pow_neg133",
         "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_acceptedSpendBound",
         "SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_breakBound",
         "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendBound_le_componentBudget",
@@ -53154,6 +53156,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendPricingWitness.unionBound_eq_acceptedSpendProb_add_breakProb_sum",
         "SelectedRustConcreteAcceptedSpendPricingWitness.unionBound_le_componentBudget",
         "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_componentBudget",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.componentBudget_le_2pow_neg128_of_proportional_bounds",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_2pow_neg128_of_proportional_bounds",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.componentBudget_le_active128BitTarget_of_proportional_bounds",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_active128BitTarget_of_proportional_bounds",
         "SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedReport_impossible",
         "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundPriced_false",
         "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundPriced_false",
@@ -53407,6 +53413,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendPricedBoundSecurityMeetsTarget",
         "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendPricedBoundSecurityWithinTranscript",
         "SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_reportedSecurity",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendBound_le_2pow_neg129",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.breakBound_le_2pow_neg133",
         "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_acceptedSpendBound",
         "SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_breakBound",
         "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendBound_le_componentBudget",
@@ -53425,6 +53433,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendPricingWitness.unionBound_eq_acceptedSpendProb_add_breakProb_sum",
         "SelectedRustConcreteAcceptedSpendPricingWitness.unionBound_le_componentBudget",
         "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_componentBudget",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.componentBudget_le_2pow_neg128_of_proportional_bounds",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_2pow_neg128_of_proportional_bounds",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.componentBudget_le_active128BitTarget_of_proportional_bounds",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_active128BitTarget_of_proportional_bounds",
         "SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedReport_impossible",
         "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundPriced_false",
         "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundPriced_false",
@@ -90207,6 +90219,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendPricedBoundSecurityWithinTranscript
   let _acceptedSpendConcretePricingWitnessBound :=
     SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_reportedSecurity
+  let _acceptedSpendConcretePricingWitnessAcceptedComponentProportional :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendBound_le_2pow_neg129
+  let _acceptedSpendConcretePricingWitnessBreakComponentProportional :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.breakBound_le_2pow_neg133
   let _acceptedSpendConcretePricingWitnessAcceptedBound :=
     SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_acceptedSpendBound
   let _acceptedSpendConcretePricingWitnessBreakBound :=
@@ -90243,6 +90259,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.unionBound_le_componentBudget
   let _acceptedSpendConcretePricingWitnessSuccessComponentBudget :=
     SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_componentBudget
+  let _acceptedSpendConcretePricingWitnessComponentProportionalBudget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.componentBudget_le_2pow_neg128_of_proportional_bounds
+  let _acceptedSpendConcretePricingWitnessSuccessProportionalBudget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_2pow_neg128_of_proportional_bounds
+  let _acceptedSpendConcretePricingWitnessComponentProportionalActiveTarget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.componentBudget_le_active128BitTarget_of_proportional_bounds
+  let _acceptedSpendConcretePricingWitnessSuccessProportionalActiveTarget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_active128BitTarget_of_proportional_bounds
   let _acceptedSpendConcretePricingWitnessCurrentImpossible :=
     SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedReport_impossible
   let _acceptedSpendCurrentNumericBoundMissing :=
@@ -90421,6 +90445,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendPricedBoundSecurityWithinTranscript
   let _acceptedSpendConcretePricingWitnessBound :=
     SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_reportedSecurity
+  let _acceptedSpendConcretePricingWitnessAcceptedComponentProportional :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendBound_le_2pow_neg129
+  let _acceptedSpendConcretePricingWitnessBreakComponentProportional :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.breakBound_le_2pow_neg133
   let _acceptedSpendConcretePricingWitnessAcceptedBound :=
     SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_acceptedSpendBound
   let _acceptedSpendConcretePricingWitnessBreakBound :=
@@ -90457,6 +90485,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.unionBound_le_componentBudget
   let _acceptedSpendConcretePricingWitnessSuccessComponentBudget :=
     SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_componentBudget
+  let _acceptedSpendConcretePricingWitnessComponentProportionalBudget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.componentBudget_le_2pow_neg128_of_proportional_bounds
+  let _acceptedSpendConcretePricingWitnessSuccessProportionalBudget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_2pow_neg128_of_proportional_bounds
+  let _acceptedSpendConcretePricingWitnessComponentProportionalActiveTarget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.componentBudget_le_active128BitTarget_of_proportional_bounds
+  let _acceptedSpendConcretePricingWitnessSuccessProportionalActiveTarget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_active128BitTarget_of_proportional_bounds
   let _acceptedSpendConcretePricingWitnessCurrentImpossible :=
     SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedReport_impossible
   let _acceptedSpendCurrentNumericBoundMissing :=
@@ -91089,6 +91125,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendPricedBoundSecurityWithinTranscript
   let _acceptedSpendConcretePricingWitnessBound :=
     SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_reportedSecurity
+  let _acceptedSpendConcretePricingWitnessAcceptedComponentProportional :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendBound_le_2pow_neg129
+  let _acceptedSpendConcretePricingWitnessBreakComponentProportional :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.breakBound_le_2pow_neg133
   let _acceptedSpendConcretePricingWitnessAcceptedBound :=
     SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_acceptedSpendBound
   let _acceptedSpendConcretePricingWitnessBreakBound :=
@@ -91125,6 +91165,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.unionBound_le_componentBudget
   let _acceptedSpendConcretePricingWitnessSuccessComponentBudget :=
     SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_componentBudget
+  let _acceptedSpendConcretePricingWitnessComponentProportionalBudget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.componentBudget_le_2pow_neg128_of_proportional_bounds
+  let _acceptedSpendConcretePricingWitnessSuccessProportionalBudget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_2pow_neg128_of_proportional_bounds
+  let _acceptedSpendConcretePricingWitnessComponentProportionalActiveTarget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.componentBudget_le_active128BitTarget_of_proportional_bounds
+  let _acceptedSpendConcretePricingWitnessSuccessProportionalActiveTarget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_active128BitTarget_of_proportional_bounds
   let _acceptedSpendConcretePricingWitnessCurrentImpossible :=
     SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedReport_impossible
   let _acceptedSpendCurrentNumericBoundMissing :=

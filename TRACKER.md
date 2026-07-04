@@ -166,7 +166,11 @@ arithmetic check through `PricedAcceptedSpendNumericCertificate`,
 `SelectedAcceptedSpendNumericSource`, and the selected concrete/source numeric
 certificates: component bounds at 2^-129 for accepted-spend and 2^-133 for each
 named break mechanically yield the deployed 2^-128 component and success
-budgets. Pricing and per-event cryptographic bounds remain open. The
+budgets. `SelectedRustConcreteAcceptedSpendPricingWitness` now carries those
+proportional component facts directly and projects the derived 2^-128 component
+and success bounds, so the remaining accepted-spend hard half must supply the
+per-event cryptographic pricing evidence rather than only an opaque aggregate
+priced bound. Pricing and per-event cryptographic bounds remain open. The
 Lean concrete full-spend carrier now makes account creation acceptance consume
 an explicit `AccountCreationProofBoundaryEvidenceAccepted` predicate, binding
 the proof-boundary report digest, accepted proof-boundary evidence digest,

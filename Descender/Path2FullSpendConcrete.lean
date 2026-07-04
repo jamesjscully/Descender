@@ -3774,6 +3774,13 @@ structure SelectedRustConcreteAcceptedSpendPricingWitness where
     concreteCertificate.pricedCertificate.pricedBound <=
       ((2 : ℝ) ^
         (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹
+  acceptedSpendComponentBoundMeetsProportionalTarget :
+    concreteCertificate.pricedCertificate.acceptedSpendBound <=
+      (1 : ℝ) / 2 ^ 129
+  namedBreakComponentBoundsMeetProportionalTarget :
+    ∀ breakEvent : concreteCertificate.pricedCertificate.Break,
+      concreteCertificate.pricedCertificate.breakBound breakEvent <=
+        (1 : ℝ) / 2 ^ 133
   acceptedSpendNumericBoundPricedProof :
     (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendNumericBoundPriced = true
   acceptedSpendEventBoundPricedProof :
@@ -3885,6 +3892,21 @@ theorem pricedBound_le_reportedSecurity
       ((2 : ℝ) ^
         (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹ :=
   W.acceptedSpendPricedBoundSecurityPriced
+
+/-- The selected pricing witness carries the accepted-spend component at `2^-129`. -/
+theorem acceptedSpendBound_le_2pow_neg129
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    W.concreteCertificate.pricedCertificate.acceptedSpendBound <=
+      (1 : ℝ) / 2 ^ 129 :=
+  W.acceptedSpendComponentBoundMeetsProportionalTarget
+
+/-- The selected pricing witness carries every named-break component at `2^-133`. -/
+theorem breakBound_le_2pow_neg133
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness)
+    (breakEvent : W.concreteCertificate.pricedCertificate.Break) :
+    W.concreteCertificate.pricedCertificate.breakBound breakEvent <=
+      (1 : ℝ) / 2 ^ 133 :=
+  W.namedBreakComponentBoundsMeetProportionalTarget breakEvent
 
 /-- The selected pricing witness exposes the concrete accepted-spend component bound. -/
 theorem acceptedSpendProb_le_acceptedSpendBound
@@ -4009,6 +4031,33 @@ theorem successProb_le_componentBudget
             W.concreteCertificate.pricedCertificate.breakBound :=
   W.concreteCertificate.pricedCertificate.successProb_le_componentBudget
 
+/--
+The selected pricing witness composes its proportional component bounds into
+the deployed 128-bit component budget.
+-/
+theorem componentBudget_le_2pow_neg128_of_proportional_bounds
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    W.concreteCertificate.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ W.concreteCertificate.pricedCertificate.Break
+          W.concreteCertificate.pricedCertificate.breakFintype).sum
+            W.concreteCertificate.pricedCertificate.breakBound <=
+      (1 : ℝ) / 2 ^ 128 :=
+  W.concreteCertificate.pricedCertificate.componentBudget_le_2pow_neg128_of_proportional_bounds
+    (acceptedSpendBound_le_2pow_neg129 W)
+    (breakBound_le_2pow_neg133 W)
+
+/--
+The selected pricing witness composes its proportional component bounds into
+the deployed 128-bit success bound.
+-/
+theorem successProb_le_2pow_neg128_of_proportional_bounds
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    W.concreteCertificate.pricedCertificate.successProb <=
+      (1 : ℝ) / 2 ^ 128 :=
+  W.concreteCertificate.pricedCertificate.successProb_le_2pow_neg128_of_proportional_bounds
+    (acceptedSpendBound_le_2pow_neg129 W)
+    (breakBound_le_2pow_neg133 W)
+
 /-- The selected pricing witness prices its concrete bound by the selected target bits. -/
 theorem pricedBound_le_targetSecurity
     (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
@@ -4046,6 +4095,20 @@ theorem componentBudget_le_active128BitTarget
       ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
   le_trans (breakBudget_le_pricedBound W) (pricedBound_le_active128BitTarget W)
 
+/--
+The selected pricing witness derives the active 128-bit component target
+directly from the proportional per-event component bounds.
+-/
+theorem componentBudget_le_active128BitTarget_of_proportional_bounds
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    W.concreteCertificate.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ W.concreteCertificate.pricedCertificate.Break
+          W.concreteCertificate.pricedCertificate.breakFintype).sum
+            W.concreteCertificate.pricedCertificate.breakBound <=
+      ((2 : ℝ) ^ (128 : Nat))⁻¹ := by
+  simpa [one_div] using
+    componentBudget_le_2pow_neg128_of_proportional_bounds W
+
 /-- The selected pricing witness prices the union expression by the active 128-bit target. -/
 theorem unionBound_le_active128BitTarget
     (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
@@ -4082,6 +4145,17 @@ theorem successProb_le_active128BitTarget
     W.concreteCertificate.pricedCertificate.successProb <=
       ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
   le_trans (successProb_le_pricedBound W) (pricedBound_le_active128BitTarget W)
+
+/--
+The selected pricing witness derives the active 128-bit success target directly
+from the proportional per-event component bounds.
+-/
+theorem successProb_le_active128BitTarget_of_proportional_bounds
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    W.concreteCertificate.pricedCertificate.successProb <=
+      ((2 : ℝ) ^ (128 : Nat))⁻¹ := by
+  simpa [one_div] using
+    successProb_le_2pow_neg128_of_proportional_bounds W
 
 /-- No selected pricing witness exists for the current fail-closed accepted-spend report. -/
 theorem currentSelectedReport_impossible
