@@ -342,6 +342,16 @@ fn manifest_body() -> Result<Value, String> {
                     .accepted_boundary_production_gate_review_reduction_lean_theorem,
             "accepted_boundary_production_gate_review_reduction_bound":
                 proof_report.accepted_boundary_production_gate_review_reduction_bound,
+            "accepted_boundary_proof_family_closure_reductions_lean_theorem":
+                proof_report
+                    .accepted_boundary_proof_family_closure_reductions_lean_theorem,
+            "accepted_boundary_proof_family_closure_reductions_bound":
+                proof_report.accepted_boundary_proof_family_closure_reductions_bound,
+            "accepted_boundary_proof_family_closure_witness_reduction_lean_theorem":
+                proof_report
+                    .accepted_boundary_proof_family_closure_witness_reduction_lean_theorem,
+            "accepted_boundary_proof_family_closure_witness_reduction_bound":
+                proof_report.accepted_boundary_proof_family_closure_witness_reduction_bound,
             "every_proof_obligation_has_named_break":
                 proof_report.every_proof_obligation_has_named_break,
             "every_open_proof_obligation_blocks_deployment":
@@ -543,6 +553,16 @@ fn manifest_body() -> Result<Value, String> {
                     .accepted_boundary_production_gate_review_reduction_lean_theorem,
             "accepted_boundary_production_gate_review_reduction_bound":
                 proof_report.accepted_boundary_production_gate_review_reduction_bound,
+            "accepted_boundary_proof_family_closure_reductions_lean_theorem":
+                proof_report
+                    .accepted_boundary_proof_family_closure_reductions_lean_theorem,
+            "accepted_boundary_proof_family_closure_reductions_bound":
+                proof_report.accepted_boundary_proof_family_closure_reductions_bound,
+            "accepted_boundary_proof_family_closure_witness_reduction_lean_theorem":
+                proof_report
+                    .accepted_boundary_proof_family_closure_witness_reduction_lean_theorem,
+            "accepted_boundary_proof_family_closure_witness_reduction_bound":
+                proof_report.accepted_boundary_proof_family_closure_witness_reduction_bound,
             "current_payload_kat_vectors_cover_every_boundary_row": bool_at(
                 payload_vectors,
                 "/boundary_report/every_current_row_has_generated_vector"

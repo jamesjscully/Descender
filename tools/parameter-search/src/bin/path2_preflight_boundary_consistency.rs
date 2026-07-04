@@ -1024,11 +1024,43 @@ fn main() -> Result<(), String> {
         )?
         || str_at(
             proof_boundary,
+            "/proof_obligation_vector_corpus_evidence/audit_summary/accepted_boundary_proof_family_closure_reductions_lean_theorem",
+        )? != "selectedRustAcceptedBoundaryProofFamilyClosureReductions_v1"
+        || !bool_at(
+            proof_boundary,
+            "/proof_obligation_vector_corpus_evidence/audit_summary/accepted_boundary_proof_family_closure_reductions_bound",
+        )?
+        || str_at(
+            proof_boundary,
+            "/proof_obligation_vector_corpus_evidence/audit_summary/accepted_boundary_proof_family_closure_witness_reduction_lean_theorem",
+        )? != "selectedRustAcceptedBoundaryProofFamilyClosureWitnessReduction_v1"
+        || !bool_at(
+            proof_boundary,
+            "/proof_obligation_vector_corpus_evidence/audit_summary/accepted_boundary_proof_family_closure_witness_reduction_bound",
+        )?
+        || str_at(
+            proof_boundary,
             "/coverage/accepted_boundary_production_gate_review_reduction_lean_theorem",
         )? != "selectedRustAcceptedBoundaryProductionGateReviewReduction_v1"
         || !bool_at(
             proof_boundary,
             "/coverage/accepted_boundary_production_gate_review_reduction_bound",
+        )?
+        || str_at(
+            proof_boundary,
+            "/coverage/accepted_boundary_proof_family_closure_reductions_lean_theorem",
+        )? != "selectedRustAcceptedBoundaryProofFamilyClosureReductions_v1"
+        || !bool_at(
+            proof_boundary,
+            "/coverage/accepted_boundary_proof_family_closure_reductions_bound",
+        )?
+        || str_at(
+            proof_boundary,
+            "/coverage/accepted_boundary_proof_family_closure_witness_reduction_lean_theorem",
+        )? != "selectedRustAcceptedBoundaryProofFamilyClosureWitnessReduction_v1"
+        || !bool_at(
+            proof_boundary,
+            "/coverage/accepted_boundary_proof_family_closure_witness_reduction_bound",
         )?
     {
         return Err(

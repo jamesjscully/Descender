@@ -1316,6 +1316,42 @@ fn check_consistency() -> Result<(), String> {
         proof_manifest,
         &[
             "account_creation_proof_boundary",
+            "coverage",
+            "accepted_boundary_proof_family_closure_reductions_lean_theorem",
+        ],
+        "selectedRustAcceptedBoundaryProofFamilyClosureReductions_v1",
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "accepted_boundary_proof_family_closure_reductions_bound",
+        ],
+        true,
+    )?;
+    expect_str(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "accepted_boundary_proof_family_closure_witness_reduction_lean_theorem",
+        ],
+        "selectedRustAcceptedBoundaryProofFamilyClosureWitnessReduction_v1",
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "accepted_boundary_proof_family_closure_witness_reduction_bound",
+        ],
+        true,
+    )?;
+    expect_str(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
             "proof_obligation_vector_corpus_evidence",
             "audit_summary",
             "accepted_boundary_production_gate_review_reduction_lean_theorem",
@@ -1329,6 +1365,46 @@ fn check_consistency() -> Result<(), String> {
             "proof_obligation_vector_corpus_evidence",
             "audit_summary",
             "accepted_boundary_production_gate_review_reduction_bound",
+        ],
+        true,
+    )?;
+    expect_str(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "proof_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "accepted_boundary_proof_family_closure_reductions_lean_theorem",
+        ],
+        "selectedRustAcceptedBoundaryProofFamilyClosureReductions_v1",
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "proof_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "accepted_boundary_proof_family_closure_reductions_bound",
+        ],
+        true,
+    )?;
+    expect_str(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "proof_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "accepted_boundary_proof_family_closure_witness_reduction_lean_theorem",
+        ],
+        "selectedRustAcceptedBoundaryProofFamilyClosureWitnessReduction_v1",
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "proof_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "accepted_boundary_proof_family_closure_witness_reduction_bound",
         ],
         true,
     )?;

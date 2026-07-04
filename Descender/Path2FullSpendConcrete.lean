@@ -1983,6 +1983,103 @@ theorem selectedRustAcceptedBoundaryProductionGateReviewReduction_v1
       hAccepted
   exact ⟨hSupport, hReview spend hSupport⟩
 
+/--
+Aggregate selected-Rust accepted-boundary proof-family closure reductions.
+
+This packages the five currently external proof-family surfaces — simulator /
+no-export, FRI/AoK, FRI/QROM, frozen payload-KAT corpus, and production
+gate/review — after each has been reduced to its accepted-boundary support
+predicate.  The package deliberately does not clear
+`proofFamilyObligationsStillOpen`, choose the post-quantum soundness target, or
+establish the global pad-seed uniqueness invariant.
+-/
+structure SelectedRustAcceptedBoundaryProofFamilyClosureReductionsWith
+    (SimulatorNoExportSound : ConcreteSpendTuple -> Prop)
+    (FriAokExtractorSound : ConcreteSpendTuple -> Prop)
+    (FriQromTranscriptSound : ConcreteSpendTuple -> Prop)
+    (FrozenPayloadKatsComplete : ConcreteSpendTuple -> Prop)
+    (ProductionGateReviewAccepted : ConcreteSpendTuple -> Prop)
+    (spend : ConcreteSpendTuple) where
+  simulatorNoExport :
+    SelectedRustAcceptedBoundarySimulatorNoExportWith
+      SimulatorNoExportSound spend
+  friAokExtractor :
+    SelectedRustAcceptedBoundaryFriAokExtractorWith
+      FriAokExtractorSound spend
+  friQromTranscript :
+    SelectedRustAcceptedBoundaryFriQromTranscriptWith
+      FriQromTranscriptSound spend
+  frozenPayloadKats :
+    SelectedRustAcceptedBoundaryPayloadKatCorpusWith
+      FrozenPayloadKatsComplete spend
+  productionGateReview :
+    SelectedRustAcceptedBoundaryProductionGateReviewWith
+      ProductionGateReviewAccepted spend
+
+/--
+Selected Rust accepted-boundary proof-family aggregate reduction hook.
+
+If each residual surface is supplied as a theorem over its pinned
+accepted-boundary support slice, then an accepted selected-Rust proof boundary
+packages all five reductions at once.  This is only the named residual reduction
+bundle; it does not instantiate deployment readiness or clear the open-obligation
+flag.
+-/
+theorem selectedRustAcceptedBoundaryProofFamilyClosureReductions_v1
+    (SimulatorNoExportSound : ConcreteSpendTuple -> Prop)
+    (FriAokExtractorSound : ConcreteSpendTuple -> Prop)
+    (FriQromTranscriptSound : ConcreteSpendTuple -> Prop)
+    (FrozenPayloadKatsComplete : ConcreteSpendTuple -> Prop)
+    (ProductionGateReviewAccepted : ConcreteSpendTuple -> Prop)
+    (hSimulatorNoExport :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustAcceptedBoundaryNoExportSupport spend ->
+          SimulatorNoExportSound spend)
+    (hFriAok :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustAcceptedBoundaryFriAokSupport spend ->
+          FriAokExtractorSound spend)
+    (hFriQrom :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustAcceptedBoundaryFriQromSupport spend ->
+          FriQromTranscriptSound spend)
+    (hFrozenKats :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustAcceptedBoundaryPayloadKatSupport spend ->
+          FrozenPayloadKatsComplete spend)
+    (hProductionGateReview :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustAcceptedBoundaryProductionGateSupport spend ->
+          ProductionGateReviewAccepted spend) :
+    forall spend : ConcreteSpendTuple,
+      AccountCreationProofBoundaryEvidenceAccepted
+        selectedRustConcreteGameConfig spend ->
+        SelectedRustAcceptedBoundaryProofFamilyClosureReductionsWith
+          SimulatorNoExportSound
+          FriAokExtractorSound
+          FriQromTranscriptSound
+          FrozenPayloadKatsComplete
+          ProductionGateReviewAccepted
+          spend := by
+  intro spend hAccepted
+  exact {
+    simulatorNoExport :=
+      selectedRustAcceptedBoundarySimulatorNoExportReduction_v1
+        SimulatorNoExportSound hSimulatorNoExport spend hAccepted
+    friAokExtractor :=
+      selectedRustAcceptedBoundaryFriAokExtractorReduction_v1
+        FriAokExtractorSound hFriAok spend hAccepted
+    friQromTranscript :=
+      selectedRustAcceptedBoundaryFriQromTranscriptReduction_v1
+        FriQromTranscriptSound hFriQrom spend hAccepted
+    frozenPayloadKats :=
+      selectedRustAcceptedBoundaryPayloadKatCorpusReduction_v1
+        FrozenPayloadKatsComplete hFrozenKats spend hAccepted
+    productionGateReview :=
+      selectedRustAcceptedBoundaryProductionGateReviewReduction_v1
+        ProductionGateReviewAccepted hProductionGateReview spend hAccepted
+  }
+
 /-- Accepted proof-boundary evidence exposes the detailed-to-direct break taxonomy coverage. -/
 theorem accountCreationProofFamilyResidualBreakClassesCovered_of_boundaryAccepted
     {C : ConcreteGameConfig}
@@ -2084,6 +2181,105 @@ def accountCreationProofFamilyClosureWitness_of_deployableAssumptions
   frozenPayloadKatsClosedProof := hAssume.frozenPayloadKatsCompleteProof
   productionGateReviewClosedProof := hAssume.productionGateReviewAcceptedProof
   proofFamilyObligationsClosed := hAssume.obligationsCleared
+
+/--
+Selected Rust accepted-boundary proof-family closure reduction.
+
+The accepted boundary supplies the selected digest chain and residual break-class
+coverage.  The aggregate reduction bundle supplies the five named external
+residual theorem instances.  The closure witness is still blocked unless the
+post-quantum target, global pad-seed uniqueness invariant, and cleared
+open-obligation flag are supplied explicitly.
+-/
+theorem selectedRustAcceptedBoundaryProofFamilyClosureWitnessReduction_v1
+    (SimulatorNoExportSound : ConcreteSpendTuple -> Prop)
+    (FriAokExtractorSound : ConcreteSpendTuple -> Prop)
+    (FriQromTranscriptSound : ConcreteSpendTuple -> Prop)
+    (FrozenPayloadKatsComplete : ConcreteSpendTuple -> Prop)
+    (ProductionGateReviewAccepted : ConcreteSpendTuple -> Prop)
+    (PostQuantumSoundnessTargetMet : Prop)
+    (PadSeedGloballyReorgSafeUnique : Prop)
+    (hSimulatorNoExport :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustAcceptedBoundaryNoExportSupport spend ->
+          SimulatorNoExportSound spend)
+    (hFriAok :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustAcceptedBoundaryFriAokSupport spend ->
+          FriAokExtractorSound spend)
+    (hFriQrom :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustAcceptedBoundaryFriQromSupport spend ->
+          FriQromTranscriptSound spend)
+    (hFrozenKats :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustAcceptedBoundaryPayloadKatSupport spend ->
+          FrozenPayloadKatsComplete spend)
+    (hProductionGateReview :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustAcceptedBoundaryProductionGateSupport spend ->
+          ProductionGateReviewAccepted spend)
+    {spend : ConcreteSpendTuple}
+    (hAccepted :
+      AccountCreationProofBoundaryEvidenceAccepted
+        selectedRustConcreteGameConfig spend)
+    (hPostQuantumTarget : PostQuantumSoundnessTargetMet)
+    (hPadSeedUnique : PadSeedGloballyReorgSafeUnique)
+    (hObligationsCleared :
+      ¬ spend.creationEvidence.proofFamilyObligationsStillOpen) :
+    Nonempty
+      (AccountCreationProofFamilyClosureWitness
+        selectedRustConcreteGameConfig spend) := by
+  have hReductions :
+      SelectedRustAcceptedBoundaryProofFamilyClosureReductionsWith
+        SimulatorNoExportSound
+        FriAokExtractorSound
+        FriQromTranscriptSound
+        FrozenPayloadKatsComplete
+        ProductionGateReviewAccepted
+        spend :=
+    selectedRustAcceptedBoundaryProofFamilyClosureReductions_v1
+      SimulatorNoExportSound
+      FriAokExtractorSound
+      FriQromTranscriptSound
+      FrozenPayloadKatsComplete
+      ProductionGateReviewAccepted
+      hSimulatorNoExport
+      hFriAok
+      hFriQrom
+      hFrozenKats
+      hProductionGateReview
+      spend
+      hAccepted
+  have hResiduals :
+      AccountCreationProofFamilyResidualsTracked
+        selectedRustConcreteGameConfig spend :=
+    accountCreationProofFamilyResidualsTracked_of_boundaryAccepted hAccepted
+  let hAssume : DeployableProofFamilyAssumptions
+      selectedRustConcreteGameConfig spend := {
+    friAokExtractorSound := FriAokExtractorSound spend
+    friQromTranscriptSound := FriQromTranscriptSound spend
+    simulatorNoExportHolds := SimulatorNoExportSound spend
+    frozenPayloadKatsComplete := FrozenPayloadKatsComplete spend
+    productionGateReviewAccepted := ProductionGateReviewAccepted spend
+    postQuantumSoundnessTargetMet := PostQuantumSoundnessTargetMet
+    padSeedGloballyReorgSafeUnique := PadSeedGloballyReorgSafeUnique
+    friAokExtractorSoundProof := hReductions.friAokExtractor.2
+    friQromTranscriptSoundProof := hReductions.friQromTranscript.2
+    simulatorNoExportHoldsProof := hReductions.simulatorNoExport.2
+    frozenPayloadKatsCompleteProof := hReductions.frozenPayloadKats.2
+    productionGateReviewAcceptedProof :=
+      hReductions.productionGateReview.2
+    postQuantumSoundnessTargetMetProof := hPostQuantumTarget
+    padSeedGloballyReorgSafeUniqueProof := hPadSeedUnique
+    obligationsCleared := hObligationsCleared
+  }
+  exact ⟨accountCreationProofFamilyClosureWitness_of_deployableAssumptions
+    (accountCreationProofFamilyDigestChainPinned_of_residualsTracked
+      hResiduals)
+    (accountCreationProofFamilyResidualBreakClassesCovered_of_boundaryAccepted
+      hAccepted)
+    hAssume⟩
 
 /--
 A global pad-seed admission registry: each pad-seed digest maps to at most one

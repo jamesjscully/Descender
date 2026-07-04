@@ -121,6 +121,60 @@ theorem Descender.Path2FullSpendConcrete.selectedRustAcceptedBoundaryProductionG
         Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryProductionGateReviewWith
           ProductionGateReviewAccepted spend
 
+theorem Descender.Path2FullSpendConcrete.selectedRustAcceptedBoundaryProofFamilyClosureReductions_v1 :
+∀
+  (SimulatorNoExportSound FriAokExtractorSound FriQromTranscriptSound FrozenPayloadKatsComplete
+    ProductionGateReviewAccepted : Descender.Path2FullSpendConcrete.ConcreteSpendTuple → Prop),
+  (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+      Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryNoExportSupport spend →
+        SimulatorNoExportSound spend) →
+    (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+        Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryFriAokSupport spend → FriAokExtractorSound spend) →
+      (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+          Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryFriQromSupport spend →
+            FriQromTranscriptSound spend) →
+        (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+            Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryPayloadKatSupport spend →
+              FrozenPayloadKatsComplete spend) →
+          (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+              Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryProductionGateSupport spend →
+                ProductionGateReviewAccepted spend) →
+            ∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+              Descender.Path2FullSpendConcrete.AccountCreationProofBoundaryEvidenceAccepted
+                  Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend →
+                Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryProofFamilyClosureReductionsWith
+                  SimulatorNoExportSound FriAokExtractorSound FriQromTranscriptSound FrozenPayloadKatsComplete
+                  ProductionGateReviewAccepted spend
+
+theorem Descender.Path2FullSpendConcrete.selectedRustAcceptedBoundaryProofFamilyClosureWitnessReduction_v1 :
+∀
+  (SimulatorNoExportSound FriAokExtractorSound FriQromTranscriptSound FrozenPayloadKatsComplete
+    ProductionGateReviewAccepted : Descender.Path2FullSpendConcrete.ConcreteSpendTuple → Prop)
+  (PostQuantumSoundnessTargetMet PadSeedGloballyReorgSafeUnique : Prop),
+  (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+      Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryNoExportSupport spend →
+        SimulatorNoExportSound spend) →
+    (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+        Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryFriAokSupport spend → FriAokExtractorSound spend) →
+      (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+          Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryFriQromSupport spend →
+            FriQromTranscriptSound spend) →
+        (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+            Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryPayloadKatSupport spend →
+              FrozenPayloadKatsComplete spend) →
+          (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+              Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryProductionGateSupport spend →
+                ProductionGateReviewAccepted spend) →
+            ∀ {spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple},
+              Descender.Path2FullSpendConcrete.AccountCreationProofBoundaryEvidenceAccepted
+                  Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend →
+                PostQuantumSoundnessTargetMet →
+                  PadSeedGloballyReorgSafeUnique →
+                    Not spend.creationEvidence.proofFamilyObligationsStillOpen →
+                      Nonempty
+                        (Descender.Path2FullSpendConcrete.AccountCreationProofFamilyClosureWitness
+                          Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend)
+
 theorem Descender.Path2FullSpendConcrete.selectedRustAcceptedBoundarySimulatorNoExportReduction_v1 :
 ∀ (SimulatorNoExportSound : Descender.Path2FullSpendConcrete.ConcreteSpendTuple → Prop),
   (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),

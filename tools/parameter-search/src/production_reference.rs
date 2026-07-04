@@ -9814,6 +9814,10 @@ pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub production_gate_fail_closed: bool,
     pub accepted_boundary_production_gate_review_reduction_lean_theorem: &'static str,
     pub accepted_boundary_production_gate_review_reduction_bound: bool,
+    pub accepted_boundary_proof_family_closure_reductions_lean_theorem: &'static str,
+    pub accepted_boundary_proof_family_closure_reductions_bound: bool,
+    pub accepted_boundary_proof_family_closure_witness_reduction_lean_theorem: &'static str,
+    pub accepted_boundary_proof_family_closure_witness_reduction_bound: bool,
     pub simulator_theorem_instantiated: bool,
     pub fri_aok_extractor_theorem_instantiated: bool,
     pub fri_qrom_residual_priced: bool,
@@ -12133,6 +12137,10 @@ pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_CORPUS_REDUCTION_LEAN_THEOREM: &str =
     "selectedRustAcceptedBoundaryPayloadKatCorpusReduction_v1";
 pub const PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_PRODUCTION_GATE_REVIEW_REDUCTION_LEAN_THEOREM:
     &str = "selectedRustAcceptedBoundaryProductionGateReviewReduction_v1";
+pub const PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_PROOF_FAMILY_CLOSURE_REDUCTIONS_LEAN_THEOREM:
+    &str = "selectedRustAcceptedBoundaryProofFamilyClosureReductions_v1";
+pub const PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_PROOF_FAMILY_CLOSURE_WITNESS_REDUCTION_LEAN_THEOREM:
+    &str = "selectedRustAcceptedBoundaryProofFamilyClosureWitnessReduction_v1";
 pub const PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS: [&str; 14] = [
     "leaf_context_digest",
     "creation_proof_binding_digest",
@@ -13773,6 +13781,12 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
         accepted_boundary_production_gate_review_reduction_lean_theorem:
             PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_PRODUCTION_GATE_REVIEW_REDUCTION_LEAN_THEOREM,
         accepted_boundary_production_gate_review_reduction_bound: true,
+        accepted_boundary_proof_family_closure_reductions_lean_theorem:
+            PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_PROOF_FAMILY_CLOSURE_REDUCTIONS_LEAN_THEOREM,
+        accepted_boundary_proof_family_closure_reductions_bound: true,
+        accepted_boundary_proof_family_closure_witness_reduction_lean_theorem:
+            PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_PROOF_FAMILY_CLOSURE_WITNESS_REDUCTION_LEAN_THEOREM,
+        accepted_boundary_proof_family_closure_witness_reduction_bound: true,
         simulator_theorem_instantiated: false,
         fri_aok_extractor_theorem_instantiated: false,
         fri_qrom_residual_priced: false,
@@ -14033,6 +14047,12 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
         || report.accepted_boundary_production_gate_review_reduction_lean_theorem
             != PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_PRODUCTION_GATE_REVIEW_REDUCTION_LEAN_THEOREM
         || !report.accepted_boundary_production_gate_review_reduction_bound
+        || report.accepted_boundary_proof_family_closure_reductions_lean_theorem
+            != PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_PROOF_FAMILY_CLOSURE_REDUCTIONS_LEAN_THEOREM
+        || !report.accepted_boundary_proof_family_closure_reductions_bound
+        || report.accepted_boundary_proof_family_closure_witness_reduction_lean_theorem
+            != PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_PROOF_FAMILY_CLOSURE_WITNESS_REDUCTION_LEAN_THEOREM
+        || !report.accepted_boundary_proof_family_closure_witness_reduction_bound
         || report.simulator_theorem_instantiated
         || report.fri_aok_extractor_theorem_instantiated
         || report.fri_qrom_residual_priced
@@ -71035,6 +71055,30 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
         &mut frame,
         b"accepted_boundary_production_gate_review_reduction_bound",
         u64::from(report.accepted_boundary_production_gate_review_reduction_bound),
+    );
+    append_frame(
+        &mut frame,
+        b"accepted_boundary_proof_family_closure_reductions_lean_theorem",
+        report
+            .accepted_boundary_proof_family_closure_reductions_lean_theorem
+            .as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_boundary_proof_family_closure_reductions_bound",
+        u64::from(report.accepted_boundary_proof_family_closure_reductions_bound),
+    );
+    append_frame(
+        &mut frame,
+        b"accepted_boundary_proof_family_closure_witness_reduction_lean_theorem",
+        report
+            .accepted_boundary_proof_family_closure_witness_reduction_lean_theorem
+            .as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_boundary_proof_family_closure_witness_reduction_bound",
+        u64::from(report.accepted_boundary_proof_family_closure_witness_reduction_bound),
     );
     append_u64(
         &mut frame,

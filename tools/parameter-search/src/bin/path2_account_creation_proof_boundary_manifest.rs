@@ -356,6 +356,18 @@ fn manifest_body() -> Result<Value, String> {
                 "accepted_boundary_production_gate_review_reduction_bound":
                     proof_boundary_report
                         .accepted_boundary_production_gate_review_reduction_bound,
+                "accepted_boundary_proof_family_closure_reductions_lean_theorem":
+                    proof_boundary_report
+                        .accepted_boundary_proof_family_closure_reductions_lean_theorem,
+                "accepted_boundary_proof_family_closure_reductions_bound":
+                    proof_boundary_report
+                        .accepted_boundary_proof_family_closure_reductions_bound,
+                "accepted_boundary_proof_family_closure_witness_reduction_lean_theorem":
+                    proof_boundary_report
+                        .accepted_boundary_proof_family_closure_witness_reduction_lean_theorem,
+                "accepted_boundary_proof_family_closure_witness_reduction_bound":
+                    proof_boundary_report
+                        .accepted_boundary_proof_family_closure_witness_reduction_bound,
                 "simulator_theorem_instantiated":
                     proof_boundary_report.simulator_theorem_instantiated,
                 "fri_aok_extractor_theorem_instantiated":

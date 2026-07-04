@@ -1525,6 +1525,22 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
             corpus,
             "/audit_summary/accepted_boundary_production_gate_review_reduction_bound",
         )?
+        || str_at(
+            corpus,
+            "/audit_summary/accepted_boundary_proof_family_closure_reductions_lean_theorem",
+        )? != proof_report.accepted_boundary_proof_family_closure_reductions_lean_theorem
+        || !bool_at(
+            corpus,
+            "/audit_summary/accepted_boundary_proof_family_closure_reductions_bound",
+        )?
+        || str_at(
+            corpus,
+            "/audit_summary/accepted_boundary_proof_family_closure_witness_reduction_lean_theorem",
+        )? != proof_report.accepted_boundary_proof_family_closure_witness_reduction_lean_theorem
+        || !bool_at(
+            corpus,
+            "/audit_summary/accepted_boundary_proof_family_closure_witness_reduction_bound",
+        )?
         || bool_at(corpus, "/audit_summary/simulator_theorem_instantiated")?
         || bool_at(
             corpus,
@@ -1608,6 +1624,22 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
             "accepted_boundary_production_gate_review_reduction_bound": bool_at(
                 corpus,
                 "/audit_summary/accepted_boundary_production_gate_review_reduction_bound"
+            )?,
+            "accepted_boundary_proof_family_closure_reductions_lean_theorem": str_at(
+                corpus,
+                "/audit_summary/accepted_boundary_proof_family_closure_reductions_lean_theorem"
+            )?,
+            "accepted_boundary_proof_family_closure_reductions_bound": bool_at(
+                corpus,
+                "/audit_summary/accepted_boundary_proof_family_closure_reductions_bound"
+            )?,
+            "accepted_boundary_proof_family_closure_witness_reduction_lean_theorem": str_at(
+                corpus,
+                "/audit_summary/accepted_boundary_proof_family_closure_witness_reduction_lean_theorem"
+            )?,
+            "accepted_boundary_proof_family_closure_witness_reduction_bound": bool_at(
+                corpus,
+                "/audit_summary/accepted_boundary_proof_family_closure_witness_reduction_bound"
             )?,
             "simulator_theorem_instantiated": bool_at(
                 corpus,

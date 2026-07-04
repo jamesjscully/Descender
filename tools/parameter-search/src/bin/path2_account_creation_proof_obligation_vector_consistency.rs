@@ -1144,12 +1144,44 @@ fn main() -> Result<(), String> {
         )? != proof_report.accepted_boundary_production_gate_review_reduction_lean_theorem
         || !bool_at(
             corpus,
+            "/proof_boundary_report/accepted_boundary_proof_family_closure_reductions_bound",
+        )?
+        || str_at(
+            corpus,
+            "/proof_boundary_report/accepted_boundary_proof_family_closure_reductions_lean_theorem",
+        )? != proof_report.accepted_boundary_proof_family_closure_reductions_lean_theorem
+        || !bool_at(
+            corpus,
+            "/proof_boundary_report/accepted_boundary_proof_family_closure_witness_reduction_bound",
+        )?
+        || str_at(
+            corpus,
+            "/proof_boundary_report/accepted_boundary_proof_family_closure_witness_reduction_lean_theorem",
+        )? != proof_report.accepted_boundary_proof_family_closure_witness_reduction_lean_theorem
+        || !bool_at(
+            corpus,
             "/audit_summary/accepted_boundary_production_gate_review_reduction_bound",
         )?
         || str_at(
             corpus,
             "/audit_summary/accepted_boundary_production_gate_review_reduction_lean_theorem",
         )? != proof_report.accepted_boundary_production_gate_review_reduction_lean_theorem
+        || !bool_at(
+            corpus,
+            "/audit_summary/accepted_boundary_proof_family_closure_reductions_bound",
+        )?
+        || str_at(
+            corpus,
+            "/audit_summary/accepted_boundary_proof_family_closure_reductions_lean_theorem",
+        )? != proof_report.accepted_boundary_proof_family_closure_reductions_lean_theorem
+        || !bool_at(
+            corpus,
+            "/audit_summary/accepted_boundary_proof_family_closure_witness_reduction_bound",
+        )?
+        || str_at(
+            corpus,
+            "/audit_summary/accepted_boundary_proof_family_closure_witness_reduction_lean_theorem",
+        )? != proof_report.accepted_boundary_proof_family_closure_witness_reduction_lean_theorem
         || !bool_at(
             corpus,
             "/proof_boundary_report/every_proof_obligation_has_named_break",

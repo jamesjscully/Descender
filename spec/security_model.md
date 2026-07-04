@@ -525,6 +525,15 @@ external review, maintainer approval, or deployment readiness.
 that accepted-boundary support package to a supplied external-review/maintainer
 gate theorem while keeping that theorem external and the production-gate,
 external-review, and deployment-ready flags false.
+The accepted-boundary proof-family aggregate hook
+`selectedRustAcceptedBoundaryProofFamilyClosureReductions_v1` now packages the
+simulator/no-export, FRI/AoK, FRI/QROM, frozen payload-KAT, and production-gate
+reduction rows into a single residual bundle. The follow-on theorem
+`selectedRustAcceptedBoundaryProofFamilyClosureWitnessReduction_v1` only proves
+nonempty closure-witness availability when those five residual theorem
+instances are supplied together with an explicit post-quantum target, global
+pad-seed uniqueness invariant, and cleared `proofFamilyObligationsStillOpen`
+flag, so the current boundary remains fail-closed.
 `formal/kat/path2_account_creation_proof_boundary_v1.json` is regenerated from
 that report, the selected `Path2AccountStarkResidualMatrixReportV1`, the current
 `Path2AccountStarkPayloadKatBoundaryReportV1`, the current sampler/timing
