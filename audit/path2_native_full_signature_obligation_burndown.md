@@ -2555,3 +2555,19 @@ values prove that the current report values block `PricingFactsComplete` and
 gap mirrors in the accepted-spend and full-reduction instantiation shapes. This
 keeps the fail-closed AP2-N003 hard halves visible without flipping any pricing
 or production-readiness bit.
+AP2-N003 concrete execution-source package adapter note:
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage` now exposes
+`toFullSignatureReductionProductionWitnessWithConcreteExecutionSource`,
+`toFullSignatureReductionCertificateWithConcreteExecutionSource`,
+`toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource`, and
+`toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource_fullSignatureSuccessProb_le_active128BitTarget`.
+These adapters set the production witness's full-forgery obligation to
+`ConcreteFullExecutionAcceptedSpendLift C Source` and discharge it with
+`concrete_fullExecutionAcceptedSpendLift C Source`, so the package-level
+full-reduction route can consume the already selected concrete full-execution
+source instead of accepting that proof obligation as an abstract proposition.
+The Rust full-reduction source-shape gate now requires the concrete-source
+adapter names and rejects a suffixed active-target adapter in the future
+AP2-N003 theorem fixture. This still leaves the five current full-reduction
+production facts false; it only removes one abstract proof-input shape from the
+route into the final full-signature boundary.

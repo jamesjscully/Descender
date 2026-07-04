@@ -244,7 +244,13 @@ It now also continues through the selected full-signature reduction production
 witness, full-reduction certificate, native full-signature boundary, and final
 full-signature active-target projection while keeping hash-budget facts,
 production signature probability pinning, verifier/model obligations, and the
-full-forgery reduction proof explicit.
+full-forgery reduction proof explicit. The same package now also exposes
+`WithConcreteExecutionSource` production-witness, certificate, native-boundary,
+and active-target adapters, which install `ConcreteFullExecutionAcceptedSpendLift`
+from a `ConcreteFullSignatureExecutionSource` instead of accepting the
+full-forgery reduction as a free proposition; the Rust full-reduction
+source-shape gate requires these concrete-source adapter names in future
+AP2-N003 instantiation candidates.
 The trace-model route now also erases that
 witness through
 `selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds`,
