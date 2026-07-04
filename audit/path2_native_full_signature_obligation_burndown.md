@@ -1724,7 +1724,11 @@ selected source prove its `breakProb` is `0` and hence below the active
 certificate, source certificate, and pricing witness project the same facts,
 and the AP2-N003 source gate exact-checks the theorem names. This closes a
 state-machine zero-probability subcase only; the cryptographic per-event
-pricing obligations remain open.
+pricing obligations remain open. `Path2TraceModel` now consumes that subcase in
+`concreteNumericClosure_of_remaining_cryptographic_bounds`, whose caller only
+has to supply cryptographic break-probability bounds for the non-structural
+named breaks while the QROM/domain-separation and live-slot/keygen slots are
+handled internally by zero-probability plus nonnegative component budgets.
 The accepted-spend numeric and full-signature reduction certificates now bind
 their evidence reports and digests by equality to concrete selected Rust
 report/digest constants, rather than by arbitrary `Prop` slots. The selected

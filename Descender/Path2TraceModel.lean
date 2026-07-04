@@ -261,6 +261,57 @@ theorem concreteNumericClosure_of_cryptographic_bounds
     (concreteNumericGame C traceDist observe)
     acceptedSpendBound breakBound hAccept hBreak hAcceptBudget hBreakBudget
 
+/--
+Concrete 128-bit closure with the two structurally-impossible breaks discharged
+inside the trace model.
+
+The caller supplies cryptographic probability bounds only for the remaining
+named breaks.  The QROM/domain-separation and live-slot/keygen events are
+handled here by their proven zero-probability facts, plus nonnegative component
+budgets for their slots.
+-/
+theorem concreteNumericClosure_of_remaining_cryptographic_bounds
+    {Trace : Type*} [Fintype Trace]
+    (C : ConcreteGameConfig)
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (breakBound : Path2FullSpendGame.BreakEvent → ℝ)
+    (hAccept :
+      (concreteNumericGame C traceDist observe).acceptedSpendProb ≤
+        acceptedSpendBound)
+    (hBreak :
+      ∀ b,
+        b ≠ Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak →
+        b ≠ Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak →
+          (concreteNumericGame C traceDist observe).breakProb b ≤
+            breakBound b)
+    (hQromBreakBound_nonneg :
+      0 ≤ breakBound
+        Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak)
+    (hLiveSlotBreakBound_nonneg :
+      0 ≤ breakBound
+        Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget : ∀ b, breakBound b ≤ (1 : ℝ) / 2 ^ 133) :
+    (concreteNumericGame C traceDist observe).successProb ≤ (1 : ℝ) / 2 ^ 128 := by
+  refine
+    concreteNumericClosure_of_cryptographic_bounds
+      C traceDist observe acceptedSpendBound breakBound hAccept ?_
+      hAcceptBudget hBreakBudget
+  intro b
+  by_cases hQrom :
+      b = Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak
+  · subst b
+    rw [qromBreakProb_eq_zero]
+    exact hQromBreakBound_nonneg
+  · by_cases hLive :
+        b = Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak
+    · subst b
+      rw [liveSlotLeakageBreakProb_eq_zero]
+      exact hLiveSlotBreakBound_nonneg
+    · exact hBreak b hQrom hLive
+
 end
 
 end Path2TraceModel

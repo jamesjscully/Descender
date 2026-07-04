@@ -177,6 +177,11 @@ through `PricedAcceptedSpendNumericCertificate`,
 `SelectedRustConcreteAcceptedSpendPricingWitness`, and the selected
 concrete/source numeric certificates, and the Rust source-shape gate requires
 those names before accepting the AP2-N003 route.
+`Path2TraceModel.concreteNumericClosure_of_remaining_cryptographic_bounds` now
+uses those structural zero facts to remove the QROM/domain-separation and
+live-slot/keygen events from the caller-supplied cryptographic break-bound
+hypotheses, leaving only the accepted-spend bound and the remaining named
+breaks to price.
 Pricing and per-event cryptographic bounds remain open. The
 Lean concrete full-spend carrier now makes account creation acceptance consume
 an explicit `AccountCreationProofBoundaryEvidenceAccepted` predicate, binding
