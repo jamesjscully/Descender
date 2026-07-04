@@ -230,7 +230,13 @@ so the faithful trace-model route exposes the accepted-spend probability,
 each remaining-break probability, the union expression, and the component
 budget at the active target before certificate erasure;
 the Rust accepted-spend source-shape gate now requires these endpoint names in
-future AP2-N003 instantiation candidates. The trace-model route now also erases that
+future AP2-N003 instantiation candidates.
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage` now packages the
+accepted-spend bound, the seven remaining-break bounds, their proportional
+budgets, selected pricing facts, and the real-valued priced-bound inequality
+into one AP2-N003 hard-half object; the Rust source-shape gate requires its
+erasure and projection names before accepting future instantiation candidates.
+The trace-model route now also erases that
 witness through
 `selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds`,
 `selectedRustAcceptedSpendSoundnessCertificate_of_remaining_break_bounds`, and

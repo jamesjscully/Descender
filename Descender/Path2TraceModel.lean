@@ -1081,6 +1081,146 @@ theorem selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128B
       hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing)
 
 /--
+Single AP2-N003 hard-half package for selected accepted-spend pricing over the
+faithful remaining-break trace model.
+
+This packages the accepted-spend bound, the seven remaining cryptographic break
+bounds, their proportional budgets, the selected report pricing bits, and the
+real-valued priced-bound security inequality into one object. Constructing this
+package is still the hard production pricing work; consuming it is no longer a
+long anonymous argument list.
+-/
+structure SelectedRustAcceptedSpendRemainingBreakPricingPackage where
+  Trace : Type
+  [traceFintype : Fintype Trace]
+  traceDist : FiniteProbability Trace
+  observe : Trace → ConcreteOutcome
+  acceptedSpendBound : ℝ
+  remainingBreakBound : RemainingCryptographicBreak → ℝ
+  acceptedSpendProb_le_bound :
+    (concreteNumericGame selectedRustConcreteGameConfig traceDist
+        observe).acceptedSpendProb ≤ acceptedSpendBound
+  remainingBreakProb_le_bound :
+    ∀ breakEvent : RemainingCryptographicBreak,
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).breakProb breakEvent.1 ≤
+        remainingBreakBound breakEvent
+  acceptedSpendBound_le_2pow_neg129 :
+    acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129
+  remainingBreakBound_le_2pow_neg133 :
+    ∀ breakEvent : RemainingCryptographicBreak,
+      remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133
+  activePricedBound_le_reportedSecurity :
+    (1 : ℝ) / 2 ^ 128 ≤
+      ((2 : ℝ) ^
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹
+  pricingFactsComplete :
+    Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete
+
+namespace SelectedRustAcceptedSpendRemainingBreakPricingPackage
+
+/-- Erase the packaged hard-half input into the selected pricing witness. -/
+def toPricingWitness
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
+    SelectedRustConcreteAcceptedSpendPricingWitness := by
+  letI := P.traceFintype
+  exact
+    selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
+      P.traceDist
+      P.observe
+      P.acceptedSpendBound
+      P.remainingBreakBound
+      P.acceptedSpendProb_le_bound
+      P.remainingBreakProb_le_bound
+      P.acceptedSpendBound_le_2pow_neg129
+      P.remainingBreakBound_le_2pow_neg133
+      P.activePricedBound_le_reportedSecurity
+      P.pricingFactsComplete
+
+/-- The package supplies the active selected report pricing half. -/
+theorem toPricingWitness_pricingFactsComplete
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
+    Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete :=
+  SelectedRustConcreteAcceptedSpendPricingWitness.pricingFactsComplete
+    (toPricingWitness P)
+
+/--
+The package keeps the concrete accepted-spend probability on the fixed
+active-target route.
+-/
+theorem acceptedSpendProb_le_active128BitTarget
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
+    (toPricingWitness P).concreteCertificate.pricedCertificate.acceptedSpendProb ≤
+      ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_active128BitTarget
+    (toPricingWitness P)
+
+/--
+The package keeps every remaining cryptographic break probability on its
+proportional component route.
+-/
+theorem remainingBreakProb_le_2pow_neg133
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage)
+    (breakEvent : RemainingCryptographicBreak) :
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        (toPricingWitness P).concreteCertificate.pricedCertificate.Trace
+        (toPricingWitness P).concreteCertificate.pricedCertificate.Outcome
+        (toPricingWitness P).concreteCertificate.pricedCertificate.Break
+        (toPricingWitness P).concreteCertificate.pricedCertificate.traceFintype
+        (toPricingWitness P).concreteCertificate.pricedCertificate.breakFintype
+        (toPricingWitness P).concreteCertificate.pricedCertificate.game breakEvent.1 ≤
+      (1 : ℝ) / 2 ^ 133 :=
+  le_trans
+    (SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_breakBound
+      (toPricingWitness P) breakEvent.1)
+    (SelectedRustConcreteAcceptedSpendPricingWitness.breakBound_le_2pow_neg133
+      (toPricingWitness P) breakEvent.1)
+
+/--
+The package keeps every remaining cryptographic break probability on the fixed
+active-target route.
+-/
+theorem remainingBreakProb_le_active128BitTarget
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage)
+    (breakEvent : RemainingCryptographicBreak) :
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        (toPricingWitness P).concreteCertificate.pricedCertificate.Trace
+        (toPricingWitness P).concreteCertificate.pricedCertificate.Outcome
+        (toPricingWitness P).concreteCertificate.pricedCertificate.Break
+        (toPricingWitness P).concreteCertificate.pricedCertificate.traceFintype
+        (toPricingWitness P).concreteCertificate.pricedCertificate.breakFintype
+        (toPricingWitness P).concreteCertificate.pricedCertificate.game breakEvent.1 ≤
+      ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_active128BitTarget
+    (toPricingWitness P) breakEvent.1
+
+/-- The package keeps the accepted-spend union expression on the active target. -/
+theorem unionBound_le_active128BitTarget
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
+    (toPricingWitness P).concreteCertificate.pricedCertificate.unionBound ≤
+      ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  SelectedRustConcreteAcceptedSpendPricingWitness.unionBound_le_active128BitTarget
+    (toPricingWitness P)
+
+/-- The package keeps full numeric success on the active target. -/
+theorem successProb_le_active128BitTarget
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
+    (toPricingWitness P).concreteCertificate.pricedCertificate.successProb ≤
+      ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_active128BitTarget
+    (toPricingWitness P)
+
+/-- Erase the package into the selected accepted-spend numeric source. -/
+def toSelectedAcceptedSpendNumericSource
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
+    Path2AcceptedSpendProbability.SelectedAcceptedSpendNumericSource :=
+  SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedAcceptedSpendNumericSource
+    (SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate
+      (toPricingWitness P))
+
+end SelectedRustAcceptedSpendRemainingBreakPricingPackage
+
+/--
 Selected accepted-spend numeric source obtained by erasing the trace-model
 pricing witness.
 
