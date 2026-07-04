@@ -223,7 +223,10 @@ full-signature layer through
 projects the erased native full-signature boundary to the fixed active target
 while keeping selected `ProductionFactsComplete` bits, hash-budget facts,
 production signature probability pinning, and verifier/model obligations
-explicit. Generic certificate and production-witness projections now also keep
+explicit. The trace-model route also exposes
+`selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound_of_remaining_break_bounds`,
+so the final boundary's active Path 2 handoff remains named after erasure.
+Generic certificate and production-witness projections now also keep
 the erased full-signature boundary's accepted-spend reduction, active Path 2
 bound handoff, nonnegative success probability, and at-most-one success
 probability facts named after erasure through
