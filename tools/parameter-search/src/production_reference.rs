@@ -9812,6 +9812,8 @@ pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub requirement_coverage_matrix_pinned: bool,
     pub proof_obligation_rows_pinned: bool,
     pub production_gate_fail_closed: bool,
+    pub accepted_boundary_production_gate_review_reduction_lean_theorem: &'static str,
+    pub accepted_boundary_production_gate_review_reduction_bound: bool,
     pub simulator_theorem_instantiated: bool,
     pub fri_aok_extractor_theorem_instantiated: bool,
     pub fri_qrom_residual_priced: bool,
@@ -12129,6 +12131,8 @@ pub const PATH2_ACCOUNT_STARK_FRI_QROM_TRANSCRIPT_REDUCTION_LEAN_THEOREM: &str =
     "selectedRustAcceptedBoundaryFriQromTranscriptReduction_v1";
 pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_CORPUS_REDUCTION_LEAN_THEOREM: &str =
     "selectedRustAcceptedBoundaryPayloadKatCorpusReduction_v1";
+pub const PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_PRODUCTION_GATE_REVIEW_REDUCTION_LEAN_THEOREM:
+    &str = "selectedRustAcceptedBoundaryProductionGateReviewReduction_v1";
 pub const PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS: [&str; 14] = [
     "leaf_context_digest",
     "creation_proof_binding_digest",
@@ -12322,9 +12326,9 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
         obligation_id: "creation_proof_obligation_production_gate_and_review",
         closure_target: "selected_account_stark_production_admission_gate_v1",
         supporting_surface:
-            "Path2AccountStarkResidualMatrixReportV1 + accepted-boundary Lean production-gate fail-closed support",
+            "Path2AccountStarkResidualMatrixReportV1 + accepted-boundary Lean production-gate/review support",
         current_evidence:
-            "selectedRustAcceptedBoundaryProductionGateSupport_of_boundaryAccepted packages selected proof-boundary and accepted-evidence digests, proof-boundary validation, verifier acceptance, production-gate fail-closed tracking, direct proof-family break mapping, and the still-open proof-family flag while the residual matrix pins production-gate, external-review, and deployment-readiness flags false",
+            "selectedRustAcceptedBoundaryProductionGateSupport_of_boundaryAccepted packages selected proof-boundary and accepted-evidence digests, proof-boundary validation, verifier acceptance, production-gate fail-closed tracking, direct proof-family break mapping, and the still-open proof-family flag while selectedRustAcceptedBoundaryProductionGateReviewReduction_v1 reduces the accepted-boundary support package to a supplied external-review/maintainer-gate theorem and the residual matrix pins production-gate, external-review, and deployment-readiness flags false",
         required_closure: "obtain external review, record tracker disposition, and make an explicit maintainer decision before production admission can open",
         named_break: "account_stark_production_gate_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
@@ -13766,6 +13770,9 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
         requirement_coverage_matrix_pinned: true,
         proof_obligation_rows_pinned: true,
         production_gate_fail_closed: true,
+        accepted_boundary_production_gate_review_reduction_lean_theorem:
+            PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_PRODUCTION_GATE_REVIEW_REDUCTION_LEAN_THEOREM,
+        accepted_boundary_production_gate_review_reduction_bound: true,
         simulator_theorem_instantiated: false,
         fri_aok_extractor_theorem_instantiated: false,
         fri_qrom_residual_priced: false,
@@ -14023,6 +14030,9 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
         || !report.deployed_anchor_rebind_tests_present
         || !report.deployed_anchor_binding_evidence_present
         || !report.production_gate_fail_closed
+        || report.accepted_boundary_production_gate_review_reduction_lean_theorem
+            != PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_PRODUCTION_GATE_REVIEW_REDUCTION_LEAN_THEOREM
+        || !report.accepted_boundary_production_gate_review_reduction_bound
         || report.simulator_theorem_instantiated
         || report.fri_aok_extractor_theorem_instantiated
         || report.fri_qrom_residual_priced
@@ -51533,6 +51543,8 @@ fn path2_full_signature_execution_source_boundary_present_in_source_v1(
         "selectedRustAcceptedBoundaryPayloadKatCorpusReduction_v1",
         "SelectedRustAcceptedBoundaryProductionGateSupport",
         "selectedRustAcceptedBoundaryProductionGateSupport_of_boundaryAccepted",
+        "SelectedRustAcceptedBoundaryProductionGateReviewWith",
+        "selectedRustAcceptedBoundaryProductionGateReviewReduction_v1",
     ];
 
     account_creation_checks
@@ -71011,6 +71023,18 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
         &mut frame,
         b"production_gate_fail_closed",
         u64::from(report.production_gate_fail_closed),
+    );
+    append_frame(
+        &mut frame,
+        b"accepted_boundary_production_gate_review_reduction_lean_theorem",
+        report
+            .accepted_boundary_production_gate_review_reduction_lean_theorem
+            .as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_boundary_production_gate_review_reduction_bound",
+        u64::from(report.accepted_boundary_production_gate_review_reduction_bound),
     );
     append_u64(
         &mut frame,
@@ -115658,6 +115682,11 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.deployed_anchor_rebind_tests_present);
         assert!(report.deployed_anchor_binding_evidence_present);
         assert!(report.production_gate_fail_closed);
+        assert_eq!(
+            report.accepted_boundary_production_gate_review_reduction_lean_theorem,
+            PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_PRODUCTION_GATE_REVIEW_REDUCTION_LEAN_THEOREM
+        );
+        assert!(report.accepted_boundary_production_gate_review_reduction_bound);
         assert!(!report.simulator_theorem_instantiated);
         assert!(!report.fri_aok_extractor_theorem_instantiated);
         assert!(!report.fri_qrom_residual_priced);
@@ -115680,6 +115709,16 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         malformed.digest = path2_account_creation_proof_boundary_report_v1_digest(&malformed);
         assert_eq!(
             validate_path2_account_creation_proof_boundary_report_v1(&malformed).unwrap_err(),
+            "Path 2 account-creation proof boundary report mismatch"
+        );
+
+        let mut malformed_review = report.clone();
+        malformed_review.accepted_boundary_production_gate_review_reduction_bound = false;
+        malformed_review.digest =
+            path2_account_creation_proof_boundary_report_v1_digest(&malformed_review);
+        assert_eq!(
+            validate_path2_account_creation_proof_boundary_report_v1(&malformed_review)
+                .unwrap_err(),
             "Path 2 account-creation proof boundary report mismatch"
         );
 

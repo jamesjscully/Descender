@@ -1294,6 +1294,44 @@ fn check_consistency() -> Result<(), String> {
         ],
         true,
     )?;
+    expect_str(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "accepted_boundary_production_gate_review_reduction_lean_theorem",
+        ],
+        "selectedRustAcceptedBoundaryProductionGateReviewReduction_v1",
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "accepted_boundary_production_gate_review_reduction_bound",
+        ],
+        true,
+    )?;
+    expect_str(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "proof_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "accepted_boundary_production_gate_review_reduction_lean_theorem",
+        ],
+        "selectedRustAcceptedBoundaryProductionGateReviewReduction_v1",
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "proof_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "accepted_boundary_production_gate_review_reduction_bound",
+        ],
+        true,
+    )?;
     expect_bool(
         proof_manifest,
         &[

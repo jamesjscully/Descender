@@ -110,6 +110,17 @@ theorem Descender.Path2FullSpendConcrete.selectedRustAcceptedBoundaryPayloadKatC
         Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryPayloadKatCorpusWith FrozenPayloadKatsComplete
           spend
 
+theorem Descender.Path2FullSpendConcrete.selectedRustAcceptedBoundaryProductionGateReviewReduction_v1 :
+∀ (ProductionGateReviewAccepted : Descender.Path2FullSpendConcrete.ConcreteSpendTuple → Prop),
+  (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+      Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryProductionGateSupport spend →
+        ProductionGateReviewAccepted spend) →
+    ∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+      Descender.Path2FullSpendConcrete.AccountCreationProofBoundaryEvidenceAccepted
+          Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend →
+        Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryProductionGateReviewWith
+          ProductionGateReviewAccepted spend
+
 theorem Descender.Path2FullSpendConcrete.selectedRustAcceptedBoundarySimulatorNoExportReduction_v1 :
 ∀ (SimulatorNoExportSound : Descender.Path2FullSpendConcrete.ConcreteSpendTuple → Prop),
   (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),

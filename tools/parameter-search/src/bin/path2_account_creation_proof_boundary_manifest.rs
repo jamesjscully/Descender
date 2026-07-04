@@ -350,6 +350,12 @@ fn manifest_body() -> Result<Value, String> {
                     proof_boundary_report.proof_obligation_rows_pinned,
                 "production_gate_fail_closed":
                     proof_boundary_report.production_gate_fail_closed,
+                "accepted_boundary_production_gate_review_reduction_lean_theorem":
+                    proof_boundary_report
+                        .accepted_boundary_production_gate_review_reduction_lean_theorem,
+                "accepted_boundary_production_gate_review_reduction_bound":
+                    proof_boundary_report
+                        .accepted_boundary_production_gate_review_reduction_bound,
                 "simulator_theorem_instantiated":
                     proof_boundary_report.simulator_theorem_instantiated,
                 "fri_aok_extractor_theorem_instantiated":

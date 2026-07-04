@@ -1133,16 +1133,32 @@ fn main() -> Result<(), String> {
                 .to_string(),
         );
     }
-    if !bool_at(
-        corpus,
-        "/proof_boundary_report/proof_obligation_rows_pinned",
-    )? || !bool_at(
-        corpus,
-        "/proof_boundary_report/every_proof_obligation_has_named_break",
-    )? || !bool_at(
-        corpus,
-        "/proof_boundary_report/every_open_proof_obligation_blocks_deployment",
-    )? || bool_at(corpus, "/audit_summary/all_cases_open")?
+    if !bool_at(corpus, "/proof_boundary_report/proof_obligation_rows_pinned")?
+        || !bool_at(
+            corpus,
+            "/proof_boundary_report/accepted_boundary_production_gate_review_reduction_bound",
+        )?
+        || str_at(
+            corpus,
+            "/proof_boundary_report/accepted_boundary_production_gate_review_reduction_lean_theorem",
+        )? != proof_report.accepted_boundary_production_gate_review_reduction_lean_theorem
+        || !bool_at(
+            corpus,
+            "/audit_summary/accepted_boundary_production_gate_review_reduction_bound",
+        )?
+        || str_at(
+            corpus,
+            "/audit_summary/accepted_boundary_production_gate_review_reduction_lean_theorem",
+        )? != proof_report.accepted_boundary_production_gate_review_reduction_lean_theorem
+        || !bool_at(
+            corpus,
+            "/proof_boundary_report/every_proof_obligation_has_named_break",
+        )?
+        || !bool_at(
+            corpus,
+            "/proof_boundary_report/every_open_proof_obligation_blocks_deployment",
+        )?
+        || bool_at(corpus, "/audit_summary/all_cases_open")?
         || !bool_at(corpus, "/audit_summary/all_cases_have_named_break")?
         || !bool_at(corpus, "/audit_summary/all_open_cases_block_deployment")?
         || open_proof_obligation_count != 4

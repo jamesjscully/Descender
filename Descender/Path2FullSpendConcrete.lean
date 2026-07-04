@@ -1942,6 +1942,47 @@ theorem selectedRustAcceptedBoundaryProductionGateSupport_of_boundaryAccepted
     rfl,
     hProofFamilyOpen⟩
 
+/--
+Accepted-boundary production-gate closure reduced to a supplied external-review
+and maintainer-gate relation.
+
+`ProductionGateReviewAccepted` is the outside review/maintainer disposition
+surface. This predicate keeps the current accepted-boundary production-gate
+support explicit so the reduction cannot consume an unpinned proof-boundary
+report, a missing fail-closed fact, or deployment readiness.
+-/
+def SelectedRustAcceptedBoundaryProductionGateReviewWith
+    (ProductionGateReviewAccepted : ConcreteSpendTuple -> Prop)
+    (spend : ConcreteSpendTuple) : Prop :=
+  SelectedRustAcceptedBoundaryProductionGateSupport spend ∧
+    ProductionGateReviewAccepted spend
+
+/--
+Selected Rust accepted-boundary production-gate/review reduction hook.
+
+If the review/maintainer evidence proves production-gate acceptance for every
+accepted boundary carrying the current fail-closed production-gate support
+slice, then every selected accepted boundary has that review support. This
+deliberately keeps the review relation explicit and does not assert production
+readiness.
+-/
+theorem selectedRustAcceptedBoundaryProductionGateReviewReduction_v1
+    (ProductionGateReviewAccepted : ConcreteSpendTuple -> Prop)
+    (hReview :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustAcceptedBoundaryProductionGateSupport spend ->
+          ProductionGateReviewAccepted spend) :
+    forall spend : ConcreteSpendTuple,
+      AccountCreationProofBoundaryEvidenceAccepted
+        selectedRustConcreteGameConfig spend ->
+        SelectedRustAcceptedBoundaryProductionGateReviewWith
+          ProductionGateReviewAccepted spend := by
+  intro spend hAccepted
+  have hSupport :=
+    selectedRustAcceptedBoundaryProductionGateSupport_of_boundaryAccepted
+      hAccepted
+  exact ⟨hSupport, hReview spend hSupport⟩
+
 /-- Accepted proof-boundary evidence exposes the detailed-to-direct break taxonomy coverage. -/
 theorem accountCreationProofFamilyResidualBreakClassesCovered_of_boundaryAccepted
     {C : ConcreteGameConfig}

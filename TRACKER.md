@@ -226,6 +226,15 @@ accepted-boundary simulator/no-export reduction predicate
 public-bundle denylist predicate while keeping simulator, no-export,
 accepted-bundle simulability, external-review, and deployment flags false.
 
+Current proof-boundary production-gate/review slice:
+`Descender/Path2FullSpendConcrete.lean` now exposes
+`selectedRustAcceptedBoundaryProductionGateReviewReduction_v1`, reducing the
+accepted-boundary fail-closed production-gate support package to a supplied
+external-review/maintainer-gate theorem. `Path2AccountCreationProofBoundaryReportV1`,
+the proof-obligation vector corpus, and boundary/preflight consistency gates pin
+that hook while keeping external review, production-gate, and deployment flags
+false.
+
 | ID | Status | Item | Evidence / next action |
 |---|---|---|---|
 | SPEC-DIR-001 | verified | Normative spec spine exists | `ADR-0001`; current `spec/*.md` spine plus `decisions/` and `TRACKER.md`; `scripts/check_doc_authority.py` dynamically gates the spec spine index, active normative markers, selected-support anchors, and ADR affected-row reciprocity; `scripts/check_requirement_traceability.py` gates tracker ownership for selected normative open-evidence sections |

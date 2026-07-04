@@ -1517,6 +1517,14 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
             corpus,
             "/audit_summary/current_payload_kat_vectors_cover_every_boundary_row",
         )?
+        || str_at(
+            corpus,
+            "/audit_summary/accepted_boundary_production_gate_review_reduction_lean_theorem",
+        )? != proof_report.accepted_boundary_production_gate_review_reduction_lean_theorem
+        || !bool_at(
+            corpus,
+            "/audit_summary/accepted_boundary_production_gate_review_reduction_bound",
+        )?
         || bool_at(corpus, "/audit_summary/simulator_theorem_instantiated")?
         || bool_at(
             corpus,
@@ -1592,6 +1600,14 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
             "current_payload_kat_vectors_cover_every_boundary_row": bool_at(
                 corpus,
                 "/audit_summary/current_payload_kat_vectors_cover_every_boundary_row"
+            )?,
+            "accepted_boundary_production_gate_review_reduction_lean_theorem": str_at(
+                corpus,
+                "/audit_summary/accepted_boundary_production_gate_review_reduction_lean_theorem"
+            )?,
+            "accepted_boundary_production_gate_review_reduction_bound": bool_at(
+                corpus,
+                "/audit_summary/accepted_boundary_production_gate_review_reduction_bound"
             )?,
             "simulator_theorem_instantiated": bool_at(
                 corpus,

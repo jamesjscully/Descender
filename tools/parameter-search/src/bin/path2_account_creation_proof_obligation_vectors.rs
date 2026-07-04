@@ -337,6 +337,11 @@ fn manifest_body() -> Result<Value, String> {
             "deployed_anchor_binding_evidence_present":
                 proof_report.deployed_anchor_binding_evidence_present,
             "proof_obligation_rows_pinned": proof_report.proof_obligation_rows_pinned,
+            "accepted_boundary_production_gate_review_reduction_lean_theorem":
+                proof_report
+                    .accepted_boundary_production_gate_review_reduction_lean_theorem,
+            "accepted_boundary_production_gate_review_reduction_bound":
+                proof_report.accepted_boundary_production_gate_review_reduction_bound,
             "every_proof_obligation_has_named_break":
                 proof_report.every_proof_obligation_has_named_break,
             "every_open_proof_obligation_blocks_deployment":
@@ -533,6 +538,11 @@ fn manifest_body() -> Result<Value, String> {
             "current_no_export_vectors_cover_boundary_cases": true,
             "current_fri_qrom_domain_vectors_cover_boundary_cases": true,
             "frozen_kat_corpus_complete": proof_report.frozen_kat_corpus_complete,
+            "accepted_boundary_production_gate_review_reduction_lean_theorem":
+                proof_report
+                    .accepted_boundary_production_gate_review_reduction_lean_theorem,
+            "accepted_boundary_production_gate_review_reduction_bound":
+                proof_report.accepted_boundary_production_gate_review_reduction_bound,
             "current_payload_kat_vectors_cover_every_boundary_row": bool_at(
                 payload_vectors,
                 "/boundary_report/every_current_row_has_generated_vector"

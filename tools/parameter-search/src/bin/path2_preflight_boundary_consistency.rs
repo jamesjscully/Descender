@@ -1014,6 +1014,28 @@ fn main() -> Result<(), String> {
                 .to_string(),
         );
     }
+    if str_at(
+        proof_boundary,
+        "/proof_obligation_vector_corpus_evidence/audit_summary/accepted_boundary_production_gate_review_reduction_lean_theorem",
+    )? != "selectedRustAcceptedBoundaryProductionGateReviewReduction_v1"
+        || !bool_at(
+            proof_boundary,
+            "/proof_obligation_vector_corpus_evidence/audit_summary/accepted_boundary_production_gate_review_reduction_bound",
+        )?
+        || str_at(
+            proof_boundary,
+            "/coverage/accepted_boundary_production_gate_review_reduction_lean_theorem",
+        )? != "selectedRustAcceptedBoundaryProductionGateReviewReduction_v1"
+        || !bool_at(
+            proof_boundary,
+            "/coverage/accepted_boundary_production_gate_review_reduction_bound",
+        )?
+    {
+        return Err(
+            "production preflight proof-boundary manifest lost production-gate review reduction evidence"
+                .to_string(),
+        );
+    }
     for pointer in [
         "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/composition_theorem_instantiated",
         "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/account_creation_proof_boundary_verified",
