@@ -350,6 +350,67 @@ def remainingCryptographicBreakBound
         ⟨breakEvent, ⟨hQrom, hLiveSlot⟩⟩
 
 /--
+The synthesized full-family break-bound map is below the active per-break
+target whenever every remaining cryptographic break is below that target.
+-/
+theorem remainingCryptographicBreakBound_le_2pow_neg133
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
+    ∀ breakEvent : Path2FullSpendGame.BreakEvent,
+      remainingCryptographicBreakBound remainingBreakBound breakEvent ≤
+        (1 : ℝ) / 2 ^ 133 := by
+  intro breakEvent
+  by_cases hQrom :
+      breakEvent =
+        Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak
+  · subst breakEvent
+    simp [remainingCryptographicBreakBound]
+  · by_cases hLiveSlot :
+        breakEvent =
+          Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak
+    · subst breakEvent
+      simp [remainingCryptographicBreakBound, hQrom]
+    · simpa [remainingCryptographicBreakBound, hQrom, hLiveSlot] using
+        hBreakBudget ⟨breakEvent, ⟨hQrom, hLiveSlot⟩⟩
+
+/--
+The faithful concrete game satisfies the synthesized full-family break-bound
+map when the caller supplies bounds for only the remaining cryptographic
+breaks.  The two structural events use their zero-probability proofs.
+-/
+theorem concreteBreakProb_le_remainingCryptographicBreakBound
+    {Trace : Type*} [Fintype Trace]
+    (C : ConcreteGameConfig)
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame C traceDist observe).breakProb
+            breakEvent.1 ≤
+          remainingBreakBound breakEvent) :
+    ∀ breakEvent : Path2FullSpendGame.BreakEvent,
+      (concreteNumericGame C traceDist observe).breakProb breakEvent ≤
+        remainingCryptographicBreakBound remainingBreakBound breakEvent := by
+  intro breakEvent
+  by_cases hQrom :
+      breakEvent =
+        Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak
+  · subst breakEvent
+    rw [qromBreakProb_eq_zero]
+    simp [remainingCryptographicBreakBound]
+  · by_cases hLiveSlot :
+        breakEvent =
+          Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak
+    · subst breakEvent
+      rw [liveSlotLeakageBreakProb_eq_zero]
+      simp [remainingCryptographicBreakBound, hQrom]
+    · simpa [remainingCryptographicBreakBound, hQrom, hLiveSlot] using
+        hBreak ⟨breakEvent, ⟨hQrom, hLiveSlot⟩⟩
+
+/--
 Concrete 128-bit closure where the caller supplies bounds only for the seven
 remaining cryptographic named breaks.
 
@@ -378,39 +439,100 @@ theorem concreteNumericClosure_of_remaining_break_bounds
       ∀ breakEvent : RemainingCryptographicBreak,
         remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
     (concreteNumericGame C traceDist observe).successProb ≤ (1 : ℝ) / 2 ^ 128 := by
-  refine
-    concreteNumericClosure_of_cryptographic_bounds
-      C traceDist observe acceptedSpendBound
-      (remainingCryptographicBreakBound remainingBreakBound)
-      hAccept ?_ hAcceptBudget ?_
-  · intro breakEvent
-    by_cases hQrom :
-        breakEvent =
-          Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak
-    · subst breakEvent
-      rw [qromBreakProb_eq_zero]
-      simp [remainingCryptographicBreakBound]
-    · by_cases hLiveSlot :
-          breakEvent =
-            Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak
-      · subst breakEvent
-        rw [liveSlotLeakageBreakProb_eq_zero]
-        simp [remainingCryptographicBreakBound, hQrom]
-      · simpa [remainingCryptographicBreakBound, hQrom, hLiveSlot] using
-          hBreak ⟨breakEvent, ⟨hQrom, hLiveSlot⟩⟩
-  · intro breakEvent
-    by_cases hQrom :
-        breakEvent =
-          Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak
-    · subst breakEvent
-      simp [remainingCryptographicBreakBound]
-    · by_cases hLiveSlot :
-          breakEvent =
-            Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak
-      · subst breakEvent
-        simp [remainingCryptographicBreakBound, hQrom]
-      · simpa [remainingCryptographicBreakBound, hQrom, hLiveSlot] using
-          hBreakBudget ⟨breakEvent, ⟨hQrom, hLiveSlot⟩⟩
+  exact concreteNumericClosure_of_cryptographic_bounds
+    C traceDist observe acceptedSpendBound
+    (remainingCryptographicBreakBound remainingBreakBound)
+    hAccept
+    (concreteBreakProb_le_remainingCryptographicBreakBound
+      C traceDist observe remainingBreakBound hBreak)
+    hAcceptBudget
+    (remainingCryptographicBreakBound_le_2pow_neg133
+      remainingBreakBound hBreakBudget)
+
+/--
+Constructive break-pricing certificate for the faithful concrete game from
+accepted-spend pricing plus the seven remaining cryptographic break bounds.
+-/
+def concreteBreakPricingCertificate_of_remaining_break_bounds
+    {Trace : Type*} [Fintype Trace]
+    (C : ConcreteGameConfig)
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame C traceDist observe).acceptedSpendProb ≤
+        acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame C traceDist observe).breakProb
+            breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
+    AcceptedSpendBreakPricingCertificate
+      (concreteNumericGame C traceDist observe) where
+  acceptedSpendBound := acceptedSpendBound
+  breakBound := remainingCryptographicBreakBound remainingBreakBound
+  pricedBound := (1 : ℝ) / 2 ^ 128
+  acceptedSpendProb_le_bound := hAccept
+  breakProb_le_bound :=
+    concreteBreakProb_le_remainingCryptographicBreakBound
+      C traceDist observe remainingBreakBound hBreak
+  breakBudget_le_priced := by
+    refine activeBudget_closes ((1 : ℝ) / 2 ^ 128) (by positivity)
+      acceptedSpendBound
+      (remainingCryptographicBreakBound remainingBreakBound) ?_ ?_
+    · have : (1 : ℝ) / 2 ^ 128 / 2 = 1 / 2 ^ 129 := by norm_num
+      rw [this]
+      exact hAcceptBudget
+    · intro breakEvent
+      have : (1 : ℝ) / 2 ^ 128 / 32 = 1 / 2 ^ 133 := by norm_num
+      rw [this]
+      exact
+        remainingCryptographicBreakBound_le_2pow_neg133
+          remainingBreakBound hBreakBudget breakEvent
+
+/--
+Packaged priced numeric certificate for the faithful concrete game from the
+accepted-spend bound and seven remaining cryptographic break bounds.
+-/
+def concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds
+    {Trace : Type} [Fintype Trace]
+    (C : ConcreteGameConfig)
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame C traceDist observe).acceptedSpendProb ≤
+        acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame C traceDist observe).breakProb
+            breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
+    PricedAcceptedSpendNumericCertificate where
+  Trace := Trace
+  Outcome := ConcreteOutcome
+  Break := Path2FullSpendGame.BreakEvent
+  traceFintype := inferInstance
+  breakFintype := inferInstance
+  breakDecidableEq := inferInstance
+  activeBreakFamilyPinned := rfl
+  game := concreteNumericGame C traceDist observe
+  breakPricing :=
+    concreteBreakPricingCertificate_of_remaining_break_bounds
+      C traceDist observe acceptedSpendBound remainingBreakBound
+      hAccept hBreak hAcceptBudget hBreakBudget
+  pricedBound := (1 : ℝ) / 2 ^ 128
+  pricedBound_eq_breakPricing := rfl
 
 end
 

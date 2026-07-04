@@ -2284,6 +2284,16 @@ accepted-spend source gate exact-checks these identifiers, so the remaining
 proof work is the cryptographic pricing evidence for accepted-spend at 2^-129
 and each active named break at 2^-133, not the final 2^-128 arithmetic
 composition.
+AP2-N003 remaining-break pricing package note:
+`Path2TraceModel.lean` now packages the faithful concrete-game endpoint as
+`concreteBreakPricingCertificate_of_remaining_break_bounds` and
+`concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds`. These
+construct the active `AcceptedSpendBreakPricingCertificate` and packaged
+`PricedAcceptedSpendNumericCertificate` from an accepted-spend component bound
+plus bounds for only the seven non-structural `RemainingCryptographicBreak`
+cases, inserting the QROM/domain-separation and live-slot/keygen zero budgets
+internally. This removes another full-family hand-assembly step, while the
+accepted-spend and seven cryptographic per-event prices remain the open inputs.
 AP2-N003 pricing-witness proportional-obligation note:
 `SelectedRustConcreteAcceptedSpendPricingWitness` now carries the proportional
 component facts as fields and projects

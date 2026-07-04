@@ -184,7 +184,12 @@ hypotheses, leaving only the accepted-spend bound and the remaining named
 breaks to price. `RemainingCryptographicBreak` and
 `concreteNumericClosure_of_remaining_break_bounds` tighten that endpoint by
 accepting a bound map over only those seven remaining breaks and extending it
-with zero budgets for the two structural slots inside the theorem.
+with zero budgets for the two structural slots inside the theorem. The same
+remaining-break interface now constructs
+`concreteBreakPricingCertificate_of_remaining_break_bounds` and
+`concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds`,
+packaging the full active `Path2FullSpendGame.BreakEvent` pricing certificate
+from the accepted-spend component bound plus the seven remaining break bounds.
 Pricing and per-event cryptographic bounds remain open. The
 Lean concrete full-spend carrier now makes account creation acceptance consume
 an explicit `AccountCreationProofBoundaryEvidenceAccepted` predicate, binding
