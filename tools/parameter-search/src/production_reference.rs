@@ -51143,6 +51143,17 @@ fn path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
         "toInstantiation",
     ];
     let budget_exact_declarations = [
+        "\ninductive DirectQuerySymbol",
+        "\ndef activeDirectQuerySymbols",
+        "\ndef inactiveDirectQuerySymbols",
+        "\ndef IsActiveDirectQuerySymbol",
+        "\ntheorem mem_activeDirectQuerySymbols_iff",
+        "\ntheorem mem_inactiveDirectQuerySymbols_iff",
+        "\ntheorem activeDirectQuerySymbols_card",
+        "\ntheorem inactiveDirectQuerySymbols_card",
+        "\ntheorem q_batch_not_mem_activeDirectQuerySymbols",
+        "\ntheorem q_batch_mem_inactiveDirectQuerySymbols",
+        "\ntheorem no_direct_query_symbol_active_and_inactive",
         "\ndef path2DirectQueryBudgetV1",
         "\ndef AuxiliaryFq12ChallengeShapeComplete",
         "\ndef Fq12ActionCollisionBudgetPriced",

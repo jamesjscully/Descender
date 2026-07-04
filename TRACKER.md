@@ -269,6 +269,16 @@ execution-source route, so the full-reduction production diagnostic is narrowed
 to four remaining missing facts: production signature probability pinning,
 signature-success/accepted-spend-game linkage, accepted-spend probability
 linkage, and all-active-query-symbol pricing.
+Lean now mirrors the direct-mode query-symbol taxonomy with
+`DirectQuerySymbol`, `activeDirectQuerySymbols`,
+`inactiveDirectQuerySymbols`, `mem_activeDirectQuerySymbols_iff`,
+`mem_inactiveDirectQuerySymbols_iff`, `activeDirectQuerySymbols_card`,
+`inactiveDirectQuerySymbols_card`, `q_batch_not_mem_activeDirectQuerySymbols`,
+`q_batch_mem_inactiveDirectQuerySymbols`, and
+`no_direct_query_symbol_active_and_inactive`; the source-shape gate requires
+those names so future `all_active_query_symbols_priced` evidence remains tied
+to the explicit 15-active/1-inactive direct query surface instead of only the
+older `qBatchActive` boolean.
 The trace-model route now also erases that
 witness through
 `selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds`,

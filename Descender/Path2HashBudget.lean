@@ -1,4 +1,5 @@
 import Descender.Path2NativeAccountDesign
+import Mathlib.Data.Fintype.Basic
 
 namespace Descender
 namespace Path2HashBudget
@@ -43,6 +44,117 @@ structure Path2DirectQueryBudgetV1 where
   transcriptTermExceedsTargetPlusMargin :
     transcriptTermBitsAfterQromLoss >
       targetSecurityBits + minimumDeploymentMarginBits
+
+/-- Query symbols tracked by the executable direct-mode budget. -/
+inductive DirectQuerySymbol where
+  | q_leaf
+  | q_auth
+  | q_evidence
+  | q_stmt
+  | q_pad
+  | q_mask
+  | q_chal
+  | q_life
+  | q_transparent_trace_commit
+  | q_transparent_query_index
+  | q_transparent_query_row
+  | q_transparent_merkle_open
+  | q_transparent_consistency
+  | q_transparent_extractor
+  | q_transparent_simulator
+  | q_batch
+  deriving DecidableEq
+
+instance : Fintype DirectQuerySymbol where
+  elems :=
+    { DirectQuerySymbol.q_leaf,
+      DirectQuerySymbol.q_auth,
+      DirectQuerySymbol.q_evidence,
+      DirectQuerySymbol.q_stmt,
+      DirectQuerySymbol.q_pad,
+      DirectQuerySymbol.q_mask,
+      DirectQuerySymbol.q_chal,
+      DirectQuerySymbol.q_life,
+      DirectQuerySymbol.q_transparent_trace_commit,
+      DirectQuerySymbol.q_transparent_query_index,
+      DirectQuerySymbol.q_transparent_query_row,
+      DirectQuerySymbol.q_transparent_merkle_open,
+      DirectQuerySymbol.q_transparent_consistency,
+      DirectQuerySymbol.q_transparent_extractor,
+      DirectQuerySymbol.q_transparent_simulator,
+      DirectQuerySymbol.q_batch }
+  complete := by
+    intro symbol
+    cases symbol <;> simp
+
+/-- Direct-mode active query-symbol set mirrored from Rust `active_query_symbols`. -/
+def activeDirectQuerySymbols : Finset DirectQuerySymbol :=
+  { DirectQuerySymbol.q_leaf,
+    DirectQuerySymbol.q_auth,
+    DirectQuerySymbol.q_evidence,
+    DirectQuerySymbol.q_stmt,
+    DirectQuerySymbol.q_pad,
+    DirectQuerySymbol.q_mask,
+    DirectQuerySymbol.q_chal,
+    DirectQuerySymbol.q_life,
+    DirectQuerySymbol.q_transparent_trace_commit,
+    DirectQuerySymbol.q_transparent_query_index,
+    DirectQuerySymbol.q_transparent_query_row,
+    DirectQuerySymbol.q_transparent_merkle_open,
+    DirectQuerySymbol.q_transparent_consistency,
+    DirectQuerySymbol.q_transparent_extractor,
+    DirectQuerySymbol.q_transparent_simulator }
+
+/-- Direct-mode inactive query-symbol set mirrored from Rust `inactive_query_symbols`. -/
+def inactiveDirectQuerySymbols : Finset DirectQuerySymbol :=
+  { DirectQuerySymbol.q_batch }
+
+/-- Active direct-mode symbols are exactly all symbols except optional aggregation. -/
+def IsActiveDirectQuerySymbol (symbol : DirectQuerySymbol) : Prop :=
+  symbol ≠ DirectQuerySymbol.q_batch
+
+/-- The explicit active-symbol set is exactly the active direct-mode predicate. -/
+theorem mem_activeDirectQuerySymbols_iff
+    (symbol : DirectQuerySymbol) :
+    symbol ∈ activeDirectQuerySymbols ↔ IsActiveDirectQuerySymbol symbol := by
+  cases symbol <;> simp [activeDirectQuerySymbols, IsActiveDirectQuerySymbol]
+
+/-- The explicit inactive-symbol set is exactly `q_batch`. -/
+theorem mem_inactiveDirectQuerySymbols_iff
+    (symbol : DirectQuerySymbol) :
+    symbol ∈ inactiveDirectQuerySymbols ↔
+      symbol = DirectQuerySymbol.q_batch := by
+  cases symbol <;> simp [inactiveDirectQuerySymbols]
+
+/-- Direct mode has fifteen active query symbols. -/
+theorem activeDirectQuerySymbols_card :
+    activeDirectQuerySymbols.card = 15 := by
+  native_decide
+
+/-- Direct mode has one inactive query symbol. -/
+theorem inactiveDirectQuerySymbols_card :
+    inactiveDirectQuerySymbols.card = 1 := by
+  native_decide
+
+/-- Optional aggregation is not active in the direct query budget. -/
+theorem q_batch_not_mem_activeDirectQuerySymbols :
+    DirectQuerySymbol.q_batch ∉ activeDirectQuerySymbols := by
+  simp [activeDirectQuerySymbols]
+
+/-- Optional aggregation is the inactive direct-mode query symbol. -/
+theorem q_batch_mem_inactiveDirectQuerySymbols :
+    DirectQuerySymbol.q_batch ∈ inactiveDirectQuerySymbols := by
+  simp [inactiveDirectQuerySymbols]
+
+/-- No direct query symbol is both active and inactive. -/
+theorem no_direct_query_symbol_active_and_inactive
+    (symbol : DirectQuerySymbol) :
+    symbol ∈ activeDirectQuerySymbols →
+      symbol ∈ inactiveDirectQuerySymbols → False := by
+  intro hActive hInactive
+  exact
+    (mem_activeDirectQuerySymbols_iff symbol).1 hActive
+      ((mem_inactiveDirectQuerySymbols_iff symbol).1 hInactive)
 
 /--
 The active direct-mode budget pinned by `path2_direct_query_budget_v1`.
