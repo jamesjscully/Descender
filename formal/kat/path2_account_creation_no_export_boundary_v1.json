@@ -1,6 +1,7 @@
 {
   "manifest": {
     "authority_snapshot": {
+      "accepted_boundary_simulator_no_export_reduction_lean_theorem": "selectedRustAcceptedBoundarySimulatorNoExportReduction_v1",
       "accepted_bundle_public_anchor_simulation_boundary_lean_theorem": "selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1",
       "accepted_bundle_public_bundle_from_public_anchors_lean_theorem": "selectedRustAcceptedBundlePublicBundleFromPublicAnchors_v1",
       "accepted_bundle_simulator_input_from_public_anchors_lean_theorem": "selectedRustAcceptedBundleSimulatorInputFromPublicAnchors_v1",
@@ -23,12 +24,12 @@
     "corpus_id": "Descender.Path2.AccountCreationNoExportBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_no_export_boundary_report_digest": "9e642bf2c44bbc6fc01dc55e292b06135c87767c7e4e8a46dd0698837bd3e4af",
-      "account_creation_no_export_boundary_report_recomputed_digest": "9e642bf2c44bbc6fc01dc55e292b06135c87767c7e4e8a46dd0698837bd3e4af",
-      "account_creation_proof_boundary_report_digest": "983befa2f93a17a692a2356edb6a611152d8d9c0383fa0321d5fd6a30deef625",
+      "account_creation_no_export_boundary_report_digest": "4bdfcea4ebedcc49db3d74873e4537767497b846e651199cd4405b96c5fd0568",
+      "account_creation_no_export_boundary_report_recomputed_digest": "4bdfcea4ebedcc49db3d74873e4537767497b846e651199cd4405b96c5fd0568",
+      "account_creation_proof_boundary_report_digest": "5ca7a9935222341441e1965d994832d8606b97f92065894c07e90b311c54136c",
       "payload_byte_model_report_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
       "payload_kat_boundary_report_digest": "f04603708bf738b85704207309e71450d40c5b32f3f2b316cdaea38b35f9a474",
-      "proof_boundary_report_no_export_digest": "9e642bf2c44bbc6fc01dc55e292b06135c87767c7e4e8a46dd0698837bd3e4af"
+      "proof_boundary_report_no_export_digest": "4bdfcea4ebedcc49db3d74873e4537767497b846e651199cd4405b96c5fd0568"
     },
     "frozen_status": "draft_no_export_boundary_manifest",
     "generator": {
@@ -36,12 +37,14 @@
       "source": "tools/parameter-search/src/bin/path2_account_creation_no_export_boundary_manifest.rs"
     },
     "no_export_boundary": {
+      "accepted_boundary_simulator_no_export_reduction_lean_theorem": "selectedRustAcceptedBoundarySimulatorNoExportReduction_v1",
       "accepted_bundle_public_anchor_simulation_boundary_lean_theorem": "selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1",
       "accepted_bundle_public_bundle_from_public_anchors_lean_theorem": "selectedRustAcceptedBundlePublicBundleFromPublicAnchors_v1",
       "accepted_bundle_simulator_input_from_public_anchors_lean_theorem": "selectedRustAcceptedBundleSimulatorInputFromPublicAnchors_v1",
       "accepted_bundle_simulator_no_export_reduction_lean_theorem": "selectedRustAcceptedBundleSimulatorNoExportReduction_v1",
       "accepted_public_anchor_package_lean_theorem": "selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1",
       "coverage": {
+        "accepted_boundary_simulator_no_export_reduction_bound": true,
         "accepted_bundle_public_anchor_simulation_boundary_bound": true,
         "accepted_bundle_public_bundle_from_public_anchors_bound": true,
         "accepted_bundle_simulatable_from_public_anchors": false,
@@ -114,5 +117,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.AccountCreationNoExportBoundaryManifest.v1"
   },
-  "manifest_digest": "94cbb11e4fe13d2c83218dcd80c34b11c693f591b9693a7265662ee544a7c897"
+  "manifest_digest": "707170bfd6e8c1920a2dae04a1ea8c94cd541d4c9bcafa81edb04d277580c3de"
 }

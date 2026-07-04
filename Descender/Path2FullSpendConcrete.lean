@@ -1570,6 +1570,43 @@ theorem selectedRustAcceptedBoundaryNoExportSupport_of_boundaryAccepted
     hProofFamilyOpen⟩
 
 /--
+`SimulatorNoExportSound` is the remaining selected account-STARK
+simulator/no-export theorem for accepted public bundles. This carrier packages
+the already-pinned accepted-boundary support with a supplied theorem predicate,
+without claiming that the theorem is currently instantiated.
+-/
+def SelectedRustAcceptedBoundarySimulatorNoExportWith
+    (SimulatorNoExportSound : ConcreteSpendTuple -> Prop)
+    (spend : ConcreteSpendTuple) : Prop :=
+  SelectedRustAcceptedBoundaryNoExportSupport spend ∧
+    SimulatorNoExportSound spend
+
+/--
+Reduction hook for the selected Rust accepted-boundary simulator/no-export row:
+once the remaining simulator/no-export theorem is supplied for every accepted
+boundary support package, accepted account-creation proof-boundary evidence
+produces the bundled simulator/no-export witness. The current reports keep the
+theorem-instantiated and deployment flags false; this only fixes the shape of
+the missing theorem import.
+-/
+theorem selectedRustAcceptedBoundarySimulatorNoExportReduction_v1
+    (SimulatorNoExportSound : ConcreteSpendTuple -> Prop)
+    (hSound :
+      ∀ spend,
+        SelectedRustAcceptedBoundaryNoExportSupport spend ->
+          SimulatorNoExportSound spend) :
+    ∀ spend,
+      AccountCreationProofBoundaryEvidenceAccepted
+        selectedRustConcreteGameConfig spend ->
+        SelectedRustAcceptedBoundarySimulatorNoExportWith
+          SimulatorNoExportSound spend := by
+  intro spend hAccepted
+  have hSupport :
+      SelectedRustAcceptedBoundaryNoExportSupport spend :=
+    selectedRustAcceptedBoundaryNoExportSupport_of_boundaryAccepted hAccepted
+  exact ⟨hSupport, hSound spend hSupport⟩
+
+/--
 Accepted selected-Rust boundary evidence carries the current FRI/AoK extractor
 support slice: the selected FRI/AoK boundary digest is pinned and nonzero, the
 extractor row is explicitly tracked, it maps to the direct theorem's

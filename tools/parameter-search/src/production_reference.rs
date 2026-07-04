@@ -9641,6 +9641,8 @@ pub struct Path2AccountCreationNoExportBoundaryReportV1 {
     pub accepted_bundle_simulator_input_from_public_anchors_bound: bool,
     pub accepted_bundle_simulator_no_export_reduction_lean_theorem: &'static str,
     pub accepted_bundle_simulator_no_export_reduction_bound: bool,
+    pub accepted_boundary_simulator_no_export_reduction_lean_theorem: &'static str,
+    pub accepted_boundary_simulator_no_export_reduction_bound: bool,
     pub simulator_theorem_instantiated: bool,
     pub no_export_theorem_instantiated: bool,
     pub accepted_bundle_simulatable_from_public_anchors: bool,
@@ -12119,6 +12121,8 @@ pub const PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_SIMULATOR_INPUT_FROM_PUBLIC_ANC
     "selectedRustAcceptedBundleSimulatorInputFromPublicAnchors_v1";
 pub const PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_SIMULATOR_NO_EXPORT_REDUCTION_LEAN_THEOREM: &str =
     "selectedRustAcceptedBundleSimulatorNoExportReduction_v1";
+pub const PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_SIMULATOR_NO_EXPORT_REDUCTION_LEAN_THEOREM: &str =
+    "selectedRustAcceptedBoundarySimulatorNoExportReduction_v1";
 pub const PATH2_ACCOUNT_STARK_FRI_AOK_EXTRACTOR_REDUCTION_LEAN_THEOREM: &str =
     "selectedRustAcceptedBoundaryFriAokExtractorReduction_v1";
 pub const PATH2_ACCOUNT_STARK_FRI_QROM_TRANSCRIPT_REDUCTION_LEAN_THEOREM: &str =
@@ -12273,7 +12277,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
         supporting_surface:
             "Path2AccountCreationNoExportBoundaryReportV1 + accepted-boundary Lean no-export support",
         current_evidence:
-            "selectedRustAcceptedBoundaryNoExportSupport_of_boundaryAccepted packages no-export boundary digest/nonzero, simulator/no-export tracking, direct proof-family break mapping, and the still-open proof-family flag while the report pins public-input allowlist, private-material denylist, frozen no-export vectors, selected Rust public-bundle denylist predicate, selected Rust simulator-input allowlist predicate, selected Rust accepted public-anchor package binding predicate, selected Rust accepted-bundle public-anchor simulation-boundary predicate, selected Rust accepted-bundle public-bundle-from-public-anchors predicate, selected Rust accepted-bundle simulator-input-from-public-anchors predicate, selected Rust accepted-bundle simulator/no-export reduction predicate, and fail-closed flags",
+            "selectedRustAcceptedBoundaryNoExportSupport_of_boundaryAccepted packages no-export boundary digest/nonzero, simulator/no-export tracking, direct proof-family break mapping, and the still-open proof-family flag while selectedRustAcceptedBoundarySimulatorNoExportReduction_v1 reduces the accepted-boundary support package to a supplied simulator/no-export theorem and the report pins public-input allowlist, private-material denylist, frozen no-export vectors, selected Rust public-bundle denylist predicate, selected Rust simulator-input allowlist predicate, selected Rust accepted public-anchor package binding predicate, selected Rust accepted-bundle public-anchor simulation-boundary predicate, selected Rust accepted-bundle public-bundle-from-public-anchors predicate, selected Rust accepted-bundle simulator-input-from-public-anchors predicate, selected Rust accepted-bundle simulator/no-export reduction predicate, and fail-closed flags",
         required_closure: "prove accepted public bundles are simulatable from public anchors and allowed commitments without exporting private creation material",
         named_break: "account_stark_simulator_or_no_export_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
@@ -13294,6 +13298,9 @@ pub fn path2_account_creation_no_export_boundary_report_v1(
         accepted_bundle_simulator_no_export_reduction_lean_theorem:
             PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_SIMULATOR_NO_EXPORT_REDUCTION_LEAN_THEOREM,
         accepted_bundle_simulator_no_export_reduction_bound: true,
+        accepted_boundary_simulator_no_export_reduction_lean_theorem:
+            PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_SIMULATOR_NO_EXPORT_REDUCTION_LEAN_THEOREM,
+        accepted_boundary_simulator_no_export_reduction_bound: true,
         simulator_theorem_instantiated: false,
         no_export_theorem_instantiated: false,
         accepted_bundle_simulatable_from_public_anchors: false,
@@ -13373,6 +13380,9 @@ pub fn validate_path2_account_creation_no_export_boundary_report_v1(
         || report.accepted_bundle_simulator_no_export_reduction_lean_theorem
             != PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_SIMULATOR_NO_EXPORT_REDUCTION_LEAN_THEOREM
         || !report.accepted_bundle_simulator_no_export_reduction_bound
+        || report.accepted_boundary_simulator_no_export_reduction_lean_theorem
+            != PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_SIMULATOR_NO_EXPORT_REDUCTION_LEAN_THEOREM
+        || !report.accepted_boundary_simulator_no_export_reduction_bound
         || report.public_payload_exports_private_material
         || report.simulator_theorem_instantiated
         || report.no_export_theorem_instantiated
@@ -51509,6 +51519,8 @@ fn path2_full_signature_execution_source_boundary_present_in_source_v1(
         "selectedRustFullHonestSamplerIntegrationComplete_of_boundaryAccepted",
         "SelectedRustAcceptedBoundaryNoExportSupport",
         "selectedRustAcceptedBoundaryNoExportSupport_of_boundaryAccepted",
+        "SelectedRustAcceptedBoundarySimulatorNoExportWith",
+        "selectedRustAcceptedBoundarySimulatorNoExportReduction_v1",
         "SelectedRustAcceptedBoundaryFriAokSupport",
         "selectedRustAcceptedBoundaryFriAokSupport_of_boundaryAccepted",
         "SelectedRustAcceptedBoundaryFriQromSupport",
@@ -71252,6 +71264,18 @@ fn path2_account_creation_no_export_boundary_report_v1_frame(
         &mut frame,
         b"accepted_bundle_simulator_no_export_reduction_bound",
         u64::from(report.accepted_bundle_simulator_no_export_reduction_bound),
+    );
+    append_frame(
+        &mut frame,
+        b"accepted_boundary_simulator_no_export_reduction_lean_theorem",
+        report
+            .accepted_boundary_simulator_no_export_reduction_lean_theorem
+            .as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_boundary_simulator_no_export_reduction_bound",
+        u64::from(report.accepted_boundary_simulator_no_export_reduction_bound),
     );
     append_u64(
         &mut frame,
@@ -115325,6 +115349,11 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_SIMULATOR_NO_EXPORT_REDUCTION_LEAN_THEOREM
         );
         assert!(report.accepted_bundle_simulator_no_export_reduction_bound);
+        assert_eq!(
+            report.accepted_boundary_simulator_no_export_reduction_lean_theorem,
+            PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_SIMULATOR_NO_EXPORT_REDUCTION_LEAN_THEOREM
+        );
+        assert!(report.accepted_boundary_simulator_no_export_reduction_bound);
         assert!(!report.simulator_theorem_instantiated);
         assert!(!report.no_export_theorem_instantiated);
         assert!(!report.accepted_bundle_simulatable_from_public_anchors);
@@ -115343,6 +115372,13 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
 
         let mut malformed = report.clone();
         malformed.no_export_theorem_instantiated = true;
+        malformed.digest = path2_account_creation_no_export_boundary_report_v1_digest(&malformed);
+        assert_eq!(
+            validate_path2_account_creation_no_export_boundary_report_v1(&malformed).unwrap_err(),
+            "Path 2 account-creation no-export boundary report mismatch"
+        );
+        malformed = report.clone();
+        malformed.accepted_boundary_simulator_no_export_reduction_bound = false;
         malformed.digest = path2_account_creation_no_export_boundary_report_v1_digest(&malformed);
         assert_eq!(
             validate_path2_account_creation_no_export_boundary_report_v1(&malformed).unwrap_err(),

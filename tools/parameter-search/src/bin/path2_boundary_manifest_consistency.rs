@@ -53,6 +53,18 @@ fn expect_bool(value: &Value, path: &[&str], expected: bool) -> Result<(), Strin
     }
 }
 
+fn expect_str(value: &Value, path: &[&str], expected: &str) -> Result<(), String> {
+    let actual = get(value, path)?;
+    match actual.as_str() {
+        Some(actual_str) if actual_str == expected => Ok(()),
+        Some(actual_str) => Err(format!(
+            "{} was {actual_str:?}, expected {expected:?}",
+            path.join(".")
+        )),
+        None => Err(format!("{} is not a string", path.join("."))),
+    }
+}
+
 fn expect_u64(value: &Value, path: &[&str], expected: u64) -> Result<(), String> {
     let actual = get(value, path)?;
     match actual.as_u64() {
@@ -1011,6 +1023,24 @@ fn check_consistency() -> Result<(), String> {
     expect_bool(
         proof_manifest,
         &[
+            "no_export_boundary_snapshot",
+            "coverage",
+            "accepted_boundary_simulator_no_export_reduction_bound",
+        ],
+        true,
+    )?;
+    expect_str(
+        proof_manifest,
+        &[
+            "no_export_boundary_snapshot",
+            "coverage",
+            "accepted_boundary_simulator_no_export_reduction_lean_theorem",
+        ],
+        "selectedRustAcceptedBoundarySimulatorNoExportReduction_v1",
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
             "payload_kat_boundary_snapshot",
             "coverage",
             "deployment_ready",
@@ -1145,6 +1175,26 @@ fn check_consistency() -> Result<(), String> {
             "no_export_case_count",
         ],
         no_export_case_count,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "requirement_vector_corpus_evidence",
+            "no_export_vector_evidence",
+            "accepted_boundary_simulator_no_export_reduction_bound",
+        ],
+        true,
+    )?;
+    expect_str(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "requirement_vector_corpus_evidence",
+            "no_export_vector_evidence",
+            "accepted_boundary_simulator_no_export_reduction_lean_theorem",
+        ],
+        "selectedRustAcceptedBoundarySimulatorNoExportReduction_v1",
     )?;
     expect_u64(
         proof_manifest,

@@ -213,6 +213,18 @@ fn main() -> Result<(), String> {
                 .to_string(),
         );
     }
+    if !bool_at(
+        corpus,
+        "/boundary_report/accepted_boundary_simulator_no_export_reduction_bound",
+    )? || !bool_at(
+        corpus,
+        "/audit_summary/accepted_boundary_simulator_no_export_reduction_bound",
+    )? {
+        return Err(
+            "no-export vector corpus lost accepted-boundary simulator/no-export reduction hook"
+                .to_string(),
+        );
+    }
     if bool_at(
         corpus,
         "/audit_summary/accepted_bundle_simulatable_from_public_anchors",
@@ -445,6 +457,14 @@ fn main() -> Result<(), String> {
             .and_then(Value::as_bool)
             != Some(true)
         || accepted_reduction_case
+            .get("accepted_boundary_simulator_no_export_reduction_lean_theorem")
+            .and_then(Value::as_str)
+            != Some(report.accepted_boundary_simulator_no_export_reduction_lean_theorem)
+        || accepted_reduction_case
+            .get("accepted_boundary_simulator_no_export_reduction_bound")
+            .and_then(Value::as_bool)
+            != Some(true)
+        || accepted_reduction_case
             .get("accepted_bundle_simulatable_from_public_anchors")
             .and_then(Value::as_bool)
             != Some(false)
@@ -458,8 +478,7 @@ fn main() -> Result<(), String> {
             != Some(false)
     {
         return Err(
-            "no-export accepted-bundle simulator/no-export reduction Lean case drifted"
-                .to_string(),
+            "no-export accepted-bundle simulator/no-export reduction Lean case drifted".to_string(),
         );
     }
 

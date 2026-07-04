@@ -78,6 +78,7 @@ fn main() -> Result<(), String> {
     )?;
     let source = load_text(&root, "tools/parameter-search/src/production_reference.rs")?;
     let lean_source = load_text(&root, "Descender/Path2NoExportConcrete.lean")?;
+    let full_spend_source = load_text(&root, "Descender/Path2FullSpendConcrete.lean")?;
 
     let report = path2_account_creation_no_export_boundary_report_v1();
     let proof_report = path2_account_creation_proof_boundary_report_v1();
@@ -178,6 +179,10 @@ fn main() -> Result<(), String> {
             report.accepted_bundle_simulator_no_export_reduction_lean_theorem,
         ),
         (
+            "/manifest/authority_snapshot/accepted_boundary_simulator_no_export_reduction_lean_theorem",
+            report.accepted_boundary_simulator_no_export_reduction_lean_theorem,
+        ),
+        (
             "/manifest/authority_snapshot/named_break",
             report.named_break,
         ),
@@ -223,6 +228,7 @@ fn main() -> Result<(), String> {
         "/manifest/no_export_boundary/coverage/accepted_bundle_public_bundle_from_public_anchors_bound",
         "/manifest/no_export_boundary/coverage/accepted_bundle_simulator_input_from_public_anchors_bound",
         "/manifest/no_export_boundary/coverage/accepted_bundle_simulator_no_export_reduction_bound",
+        "/manifest/no_export_boundary/coverage/accepted_boundary_simulator_no_export_reduction_bound",
     ] {
         if !bool_at(&manifest, pointer)? {
             return Err(format!(
@@ -334,6 +340,16 @@ fn main() -> Result<(), String> {
                 .to_string(),
         );
     }
+    if str_at(
+        &manifest,
+        "/manifest/no_export_boundary/accepted_boundary_simulator_no_export_reduction_lean_theorem",
+    )? != report.accepted_boundary_simulator_no_export_reduction_lean_theorem
+    {
+        return Err(
+            "account-creation no-export manifest lost accepted-boundary simulator/no-export reduction Lean hook"
+                .to_string(),
+        );
+    }
 
     let support_doc = load_text(&root, report.support_file)?;
     for needle in [
@@ -369,6 +385,7 @@ fn main() -> Result<(), String> {
         "PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_PUBLIC_BUNDLE_FROM_PUBLIC_ANCHORS_LEAN_THEOREM",
         "PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_SIMULATOR_INPUT_FROM_PUBLIC_ANCHORS_LEAN_THEOREM",
         "PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_SIMULATOR_NO_EXPORT_REDUCTION_LEAN_THEOREM",
+        "PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_SIMULATOR_NO_EXPORT_REDUCTION_LEAN_THEOREM",
         "PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS",
         "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS",
         "verify_path2_direct_creation_account_stark_payload_boundary",
@@ -399,6 +416,17 @@ fn main() -> Result<(), String> {
         "selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1",
     ] {
         require_contains(&lean_source, needle, "Path2NoExportConcrete Lean source")?;
+    }
+    for needle in [
+        report.accepted_boundary_simulator_no_export_reduction_lean_theorem,
+        "SelectedRustAcceptedBoundarySimulatorNoExportWith",
+        "selectedRustAcceptedBoundarySimulatorNoExportReduction_v1",
+    ] {
+        require_contains(
+            &full_spend_source,
+            needle,
+            "Path2FullSpendConcrete Lean source",
+        )?;
     }
 
     println!("Path 2 account-creation no-export boundary consistency check passed.");

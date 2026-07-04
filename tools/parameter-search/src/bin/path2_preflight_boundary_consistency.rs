@@ -1000,6 +1000,20 @@ fn main() -> Result<(), String> {
                 .to_string(),
         );
     }
+    if str_at(
+        proof_boundary,
+        "/requirement_vector_corpus_evidence/no_export_vector_evidence/accepted_boundary_simulator_no_export_reduction_lean_theorem",
+    )? != "selectedRustAcceptedBoundarySimulatorNoExportReduction_v1"
+        || !bool_at(
+            proof_boundary,
+            "/requirement_vector_corpus_evidence/no_export_vector_evidence/accepted_boundary_simulator_no_export_reduction_bound",
+        )?
+    {
+        return Err(
+            "production preflight proof-boundary manifest lost no-export reduction evidence"
+                .to_string(),
+        );
+    }
     for pointer in [
         "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/composition_theorem_instantiated",
         "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/account_creation_proof_boundary_verified",
@@ -1114,9 +1128,7 @@ fn main() -> Result<(), String> {
         || proof_report.external_review_complete
         || proof_report.production_gate_open
     {
-        return Err(
-            "account-creation proof boundary has inconsistent closure status".to_string(),
-        );
+        return Err("account-creation proof boundary has inconsistent closure status".to_string());
     }
     let open_proof_closure_dependency_count = proof_report
         .closure_dependency_rows

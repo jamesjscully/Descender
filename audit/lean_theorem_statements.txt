@@ -110,6 +110,16 @@ theorem Descender.Path2FullSpendConcrete.selectedRustAcceptedBoundaryPayloadKatC
         Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryPayloadKatCorpusWith FrozenPayloadKatsComplete
           spend
 
+theorem Descender.Path2FullSpendConcrete.selectedRustAcceptedBoundarySimulatorNoExportReduction_v1 :
+∀ (SimulatorNoExportSound : Descender.Path2FullSpendConcrete.ConcreteSpendTuple → Prop),
+  (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+      Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryNoExportSupport spend →
+        SimulatorNoExportSound spend) →
+    ∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+      Descender.Path2FullSpendConcrete.AccountCreationProofBoundaryEvidenceAccepted
+          Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend →
+        Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundarySimulatorNoExportWith SimulatorNoExportSound spend
+
 theorem Descender.Path2HashDomainAndMultiTarget.checkedCoreFrameByteDomainSeparated_of_instantiation :
 ∀ {R : Descender.Path2HashDomainAndMultiTarget.ActiveHashDomainRegistry}
   (I : Descender.Path2HashDomainAndMultiTarget.ActiveHashByteDomainInstantiation R),

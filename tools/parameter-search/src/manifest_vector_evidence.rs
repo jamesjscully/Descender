@@ -2203,6 +2203,10 @@ pub fn path2_account_creation_requirement_vector_corpus_evidence_v1() -> Result<
                 no_export_report.accepted_bundle_simulator_no_export_reduction_lean_theorem,
             "accepted_bundle_simulator_no_export_reduction_bound":
                 no_export_report.accepted_bundle_simulator_no_export_reduction_bound,
+            "accepted_boundary_simulator_no_export_reduction_lean_theorem":
+                no_export_report.accepted_boundary_simulator_no_export_reduction_lean_theorem,
+            "accepted_boundary_simulator_no_export_reduction_bound":
+                no_export_report.accepted_boundary_simulator_no_export_reduction_bound,
             "accepted_bundle_simulatable_from_public_anchors":
                 no_export_report.accepted_bundle_simulatable_from_public_anchors,
             "deployment_ready": no_export_report.deployment_ready,

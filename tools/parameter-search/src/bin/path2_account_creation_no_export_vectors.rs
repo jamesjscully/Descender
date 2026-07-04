@@ -152,12 +152,16 @@ fn manifest_body() -> Result<Value, String> {
         json!({
             "case_id": "no_export_accepted_bundle_simulator_no_export_reduction",
             "kind": "audit",
-            "surface": "Descender.Path2NoExportConcrete",
+            "surface": "Descender.Path2NoExportConcrete + Descender.Path2FullSpendConcrete",
             "requirement": report.no_export_requirement,
             "accepted_bundle_simulator_no_export_reduction_lean_theorem":
                 report.accepted_bundle_simulator_no_export_reduction_lean_theorem,
             "accepted_bundle_simulator_no_export_reduction_bound":
                 report.accepted_bundle_simulator_no_export_reduction_bound,
+            "accepted_boundary_simulator_no_export_reduction_lean_theorem":
+                report.accepted_boundary_simulator_no_export_reduction_lean_theorem,
+            "accepted_boundary_simulator_no_export_reduction_bound":
+                report.accepted_boundary_simulator_no_export_reduction_bound,
             "accepted_bundle_simulatable_from_public_anchors":
                 report.accepted_bundle_simulatable_from_public_anchors,
             "simulator_theorem_instantiated": report.simulator_theorem_instantiated,
@@ -257,6 +261,10 @@ fn manifest_body() -> Result<Value, String> {
                 report.accepted_bundle_simulator_no_export_reduction_lean_theorem,
             "accepted_bundle_simulator_no_export_reduction_bound":
                 report.accepted_bundle_simulator_no_export_reduction_bound,
+            "accepted_boundary_simulator_no_export_reduction_lean_theorem":
+                report.accepted_boundary_simulator_no_export_reduction_lean_theorem,
+            "accepted_boundary_simulator_no_export_reduction_bound":
+                report.accepted_boundary_simulator_no_export_reduction_bound,
             "frozen_no_export_vectors_complete": report.frozen_no_export_vectors_complete,
             "deployment_ready": report.deployment_ready,
             "blocker": report.blocker
@@ -294,6 +302,8 @@ fn manifest_body() -> Result<Value, String> {
                 report.accepted_bundle_simulator_input_from_public_anchors_bound,
             "accepted_bundle_simulator_no_export_reduction_bound":
                 report.accepted_bundle_simulator_no_export_reduction_bound,
+            "accepted_boundary_simulator_no_export_reduction_bound":
+                report.accepted_boundary_simulator_no_export_reduction_bound,
             "accepted_bundle_simulatable_from_public_anchors":
                 report.accepted_bundle_simulatable_from_public_anchors,
             "frozen_no_export_vectors_complete": report.frozen_no_export_vectors_complete,

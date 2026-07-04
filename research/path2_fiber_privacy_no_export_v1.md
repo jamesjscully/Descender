@@ -304,7 +304,12 @@ Rust accepted-bundle simulator/no-export reduction hook is machine-checked by
 `selectedRustAcceptedBundleSimulatorNoExportReduction_v1`; it packages those
 typed public-anchor projections with a supplied simulator relation, but does
 not instantiate the simulator distribution theorem or accepted-bundle
-simulability. The denylist term `private_trace_material` covers private trace material.
+simulability. The selected Rust full-spend accepted-boundary
+simulator/no-export reduction hook is machine-checked by
+`selectedRustAcceptedBoundarySimulatorNoExportReduction_v1`; it packages the
+accepted-boundary no-export support with a supplied simulator/no-export theorem
+without instantiating that theorem, review, or deployment readiness. The
+denylist term `private_trace_material` covers private trace material.
 
 The algebra-layer simulator/no-export theorem for the selected payload is now
 stated and proven in
@@ -317,8 +322,9 @@ open blockers. The frozen no-export vector flag, public-bundle denylist
 predicate, simulator-input allowlist predicate, and accepted public-anchor
 package binding predicate, plus the accepted-bundle public-anchor
 simulation-boundary predicate and accepted-bundle simulator-input projection
-predicate, are closed; simulator, no-export, accepted-bundle simulability,
-review, and deployment flags stay false.
+predicate, and the accepted-boundary simulator/no-export reduction hook are
+closed; simulator, no-export, accepted-bundle simulability, review, and
+deployment flags stay false.
 
 ## Helper API Rule
 
