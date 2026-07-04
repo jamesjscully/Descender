@@ -1218,6 +1218,177 @@ def toSelectedAcceptedSpendNumericSource
     (SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate
       (toPricingWitness P))
 
+/--
+Erase the package into the selected accepted-spend soundness certificate while
+keeping production probability pins and closure propositions explicit.
+-/
+def toSelectedRustAcceptedSpendSoundnessCertificate
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage)
+    (productionAcceptedSpendForgeryProb : ℝ)
+    (productionAcceptedSpendForgeryBound : ℝ)
+    (acceptedSpendForgeryProbPinned :
+      (toSelectedAcceptedSpendNumericSource P).pricedCertificate.unionBound =
+        productionAcceptedSpendForgeryProb)
+    (acceptedSpendForgeryBoundPinned :
+      (toSelectedAcceptedSpendNumericSource P).pricedCertificate.pricedBound =
+        productionAcceptedSpendForgeryBound)
+    (hiddenSourceProofSemanticsClosed : Prop)
+    (checkedCoreCompositionClosed : Prop)
+    (lifecycleReplayClosed : Prop)
+    (noExportClosed : Prop)
+    (hiddenSourceProofSemanticsClosedProof :
+      hiddenSourceProofSemanticsClosed)
+    (checkedCoreCompositionClosedProof :
+      checkedCoreCompositionClosed)
+    (lifecycleReplayClosedProof :
+      lifecycleReplayClosed)
+    (noExportClosedProof :
+      noExportClosed) :
+    Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessCertificate := by
+  let W := toPricingWitness P
+  let Source := toSelectedAcceptedSpendNumericSource P
+  exact
+    SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessCertificate
+      W
+      Source.pricedCertificate.unionBound
+      Source.pricedCertificate.pricedBound
+      productionAcceptedSpendForgeryProb
+      productionAcceptedSpendForgeryBound
+      rfl
+      rfl
+      (by
+        simpa [Source] using acceptedSpendForgeryProbPinned)
+      (by
+        simpa [Source] using acceptedSpendForgeryBoundPinned)
+      hiddenSourceProofSemanticsClosed
+      checkedCoreCompositionClosed
+      lifecycleReplayClosed
+      noExportClosed
+      hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof
+      lifecycleReplayClosedProof
+      noExportClosedProof
+
+/-- Erase the package-level accepted-spend certificate into the native boundary. -/
+def toAcceptedSpendSoundnessBoundary
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage)
+    (productionAcceptedSpendForgeryProb : ℝ)
+    (productionAcceptedSpendForgeryBound : ℝ)
+    (acceptedSpendForgeryProbPinned :
+      (toSelectedAcceptedSpendNumericSource P).pricedCertificate.unionBound =
+        productionAcceptedSpendForgeryProb)
+    (acceptedSpendForgeryBoundPinned :
+      (toSelectedAcceptedSpendNumericSource P).pricedCertificate.pricedBound =
+        productionAcceptedSpendForgeryBound)
+    (hiddenSourceProofSemanticsClosed : Prop)
+    (checkedCoreCompositionClosed : Prop)
+    (lifecycleReplayClosed : Prop)
+    (noExportClosed : Prop)
+    (hiddenSourceProofSemanticsClosedProof :
+      hiddenSourceProofSemanticsClosed)
+    (checkedCoreCompositionClosedProof :
+      checkedCoreCompositionClosed)
+    (lifecycleReplayClosedProof :
+      lifecycleReplayClosed)
+    (noExportClosedProof :
+      noExportClosed) :
+    Path2NativeAccountDesign.NativeAcceptedSpendSoundnessBoundary :=
+  (toSelectedRustAcceptedSpendSoundnessCertificate
+    P productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+    acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+    hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+    lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+    checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+    noExportClosedProof).toAcceptedSpendSoundnessBoundary
+
+/--
+The package-level accepted-spend boundary reaches the fixed active
+128-bit probability target.
+-/
+theorem toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage)
+    (productionAcceptedSpendForgeryProb : ℝ)
+    (productionAcceptedSpendForgeryBound : ℝ)
+    (acceptedSpendForgeryProbPinned :
+      (toSelectedAcceptedSpendNumericSource P).pricedCertificate.unionBound =
+        productionAcceptedSpendForgeryProb)
+    (acceptedSpendForgeryBoundPinned :
+      (toSelectedAcceptedSpendNumericSource P).pricedCertificate.pricedBound =
+        productionAcceptedSpendForgeryBound)
+    (hiddenSourceProofSemanticsClosed : Prop)
+    (checkedCoreCompositionClosed : Prop)
+    (lifecycleReplayClosed : Prop)
+    (noExportClosed : Prop)
+    (hiddenSourceProofSemanticsClosedProof :
+      hiddenSourceProofSemanticsClosed)
+    (checkedCoreCompositionClosedProof :
+      checkedCoreCompositionClosed)
+    (lifecycleReplayClosedProof :
+      lifecycleReplayClosed)
+    (noExportClosedProof :
+      noExportClosed) :
+    let B :=
+      toAcceptedSpendSoundnessBoundary
+        P productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+        acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+        hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+        lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+        checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+        noExportClosedProof
+    B.acceptedSpendForgeryProb ≤ ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget
+    (toSelectedRustAcceptedSpendSoundnessCertificate
+      P productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+      acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+      hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+      lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+      noExportClosedProof)
+
+/--
+The package-level accepted-spend boundary keeps the exported accepted-spend
+bound on the fixed active 128-bit target.
+-/
+theorem toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage)
+    (productionAcceptedSpendForgeryProb : ℝ)
+    (productionAcceptedSpendForgeryBound : ℝ)
+    (acceptedSpendForgeryProbPinned :
+      (toSelectedAcceptedSpendNumericSource P).pricedCertificate.unionBound =
+        productionAcceptedSpendForgeryProb)
+    (acceptedSpendForgeryBoundPinned :
+      (toSelectedAcceptedSpendNumericSource P).pricedCertificate.pricedBound =
+        productionAcceptedSpendForgeryBound)
+    (hiddenSourceProofSemanticsClosed : Prop)
+    (checkedCoreCompositionClosed : Prop)
+    (lifecycleReplayClosed : Prop)
+    (noExportClosed : Prop)
+    (hiddenSourceProofSemanticsClosedProof :
+      hiddenSourceProofSemanticsClosed)
+    (checkedCoreCompositionClosedProof :
+      checkedCoreCompositionClosed)
+    (lifecycleReplayClosedProof :
+      lifecycleReplayClosed)
+    (noExportClosedProof :
+      noExportClosed) :
+    let B :=
+      toAcceptedSpendSoundnessBoundary
+        P productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+        acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+        hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+        lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+        checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+        noExportClosedProof
+    B.acceptedSpendForgeryBound ≤ ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget
+    (toSelectedRustAcceptedSpendSoundnessCertificate
+      P productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+      acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+      hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+      lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+      noExportClosedProof)
+
 end SelectedRustAcceptedSpendRemainingBreakPricingPackage
 
 /--

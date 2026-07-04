@@ -2332,6 +2332,10 @@ accepted-spend bound, the seven remaining-break bounds, their proportional
 budgets, selected pricing facts, and the real-valued priced-bound inequality
 into one AP2-N003 hard-half object; the Rust source-shape gate requires its
 erasure and projection names before accepting future instantiation candidates.
+The same package now erases through the selected accepted-spend soundness
+certificate and native accepted-spend boundary while keeping production
+probability pins and the four closure propositions explicit; the source-shape
+gate requires those package-level boundary names too.
 `selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds`,
 `selectedRustAcceptedSpendSoundnessCertificate_of_remaining_break_bounds`, and
 `selectedRustAcceptedSpendSoundnessBoundary_of_remaining_break_bounds` now erase

@@ -53229,6 +53229,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.unionBound_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.successProb_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toSelectedAcceptedSpendNumericSource",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toSelectedRustAcceptedSpendSoundnessCertificate",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toAcceptedSpendSoundnessBoundary",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget",
         "SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedReport_impossible",
         "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundPriced_false",
         "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundPriced_false",
@@ -53537,6 +53541,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.unionBound_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.successProb_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toSelectedAcceptedSpendNumericSource",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toSelectedRustAcceptedSpendSoundnessCertificate",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toAcceptedSpendSoundnessBoundary",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget",
         "SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedReport_impossible",
         "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundPriced_false",
         "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundPriced_false",
@@ -91502,6 +91510,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.successProb_le_active128BitTarget
   let _acceptedSpendRemainingBreakPackageSource :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.toSelectedAcceptedSpendNumericSource
+  let _acceptedSpendRemainingBreakPackageCertificate :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.toSelectedRustAcceptedSpendSoundnessCertificate
+  let _acceptedSpendRemainingBreakPackageBoundary :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.toAcceptedSpendSoundnessBoundary
+  let _acceptedSpendRemainingBreakPackageBoundaryProbTarget :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget
+  let _acceptedSpendRemainingBreakPackageBoundaryBoundTarget :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget
   let _acceptedSpendConcreteSourceAcceptedBoundNonnegative :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendBound_nonneg
   let _acceptedSpendConcreteSourceBreakBoundNonnegative :=
@@ -91735,6 +91751,16 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_remaining_break_package_witness
+            )
+        );
+        let suffixed_remaining_break_package_boundary =
+            accepted_spend_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toAcceptedSpendSoundnessBoundary",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toAcceptedSpendSoundnessBoundarySpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_remaining_break_package_boundary
             )
         );
         let report_only_concrete_source_numeric_fact = accepted_spend_instantiation_shape.replace(
