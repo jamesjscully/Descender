@@ -1832,6 +1832,21 @@ def SelectedRustAcceptedSpendSoundnessEvidenceReport.PricingFactsComplete
   E.acceptedSpendPricedBoundSecurityBits + E.selectedMultiTargetHorizonLog2 ≤
     E.transcriptTermBitsAfterQromLoss
 
+/--
+The hard accepted-spend pricing facts still supplied by the production pricing
+model.
+
+For the current selected report, the numeric-budget target and transcript-cap
+facts are already proved true, so these four bits are the exact remaining
+pricing surface that must be supplied before `PricingFactsComplete` can hold.
+-/
+def SelectedRustAcceptedSpendSoundnessEvidenceReport.HardPricingFactsComplete
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport) : Prop :=
+  E.acceptedSpendNumericBoundPriced = true ∧
+  E.acceptedSpendEventBoundPriced = true ∧
+  E.namedBreakEventBoundsPriced = true ∧
+  E.breakPricingBudgetMeetsPricedBound = true
+
 /-- Accepted-spend report completeness is exactly structural evidence plus pricing evidence. -/
 theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_iff_structural_and_pricing
     (E : SelectedRustAcceptedSpendSoundnessEvidenceReport) :
@@ -1923,6 +1938,13 @@ theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_pr
     E.acceptedSpendPricedBoundSecurityBits + E.selectedMultiTargetHorizonLog2 ≤
       E.transcriptTermBitsAfterQromLoss :=
   h.2.2.2.2.2.2
+
+/-- A complete pricing half includes the four hard accepted-spend pricing facts. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_hardPricingFactsComplete
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.PricingFactsComplete) :
+    E.HardPricingFactsComplete :=
+  ⟨h.1, h.2.1, h.2.2.1, h.2.2.2.1⟩
 
 /-- A complete accepted-spend report says the selected numeric bound is priced. -/
 theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_numericBoundPriced
@@ -2305,6 +2327,35 @@ theorem selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_
   native_decide
 
 /--
+For the current selected report, the four hard pricing facts complete the full
+pricing half because the numeric-budget target and transcript-cap facts are
+already selected and proved true.
+-/
+theorem selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
+    (hHard :
+      selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete) :
+    selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete :=
+  ⟨hHard.1, hHard.2.1, hHard.2.2.1, hHard.2.2.2,
+    selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_true,
+    selectedRustAcceptedSpendEvidenceReport_currentPricedBoundMeetsTarget,
+    selectedRustAcceptedSpendEvidenceReport_currentPricedBoundWithinTranscript⟩
+
+/--
+For the current selected report, `PricingFactsComplete` is exactly the four
+remaining hard pricing bits; the numeric target and transcript-cap facts are
+already closed.
+-/
+theorem selectedRustAcceptedSpendEvidenceReport_currentPricingFactsComplete_iff_hardPricingFactsComplete :
+    selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete ↔
+      selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete := by
+  constructor
+  · exact
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_hardPricingFactsComplete
+        selectedRustAcceptedSpendEvidenceReport
+  · exact
+      selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
+
+/--
 Finite taxonomy for the selected accepted-spend report's pricing half.
 
 The pricing half has seven facts: four cryptographic pricing facts are still
@@ -2679,6 +2730,68 @@ def SelectedRustAcceptedSpendSoundnessCertificate.ofSelectedReportAndBoundPricin
     selectedRustAcceptedSpendEvidenceReportVerifiedProof
     (selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete
       selectedRustAcceptedSpendPricingFactsCompleteProof)
+    numericSource
+    acceptedSpendForgeryProb
+    acceptedSpendForgeryBound
+    productionAcceptedSpendForgeryProb
+    productionAcceptedSpendForgeryBound
+    acceptedSpendForgeryProbMatchesUnionBound
+    acceptedSpendForgeryBoundMatchesPriced
+    acceptedSpendPricedBoundSecurityPriced
+    acceptedSpendForgeryProbPinned
+    acceptedSpendForgeryBoundPinned
+    hiddenSourceProofSemanticsClosed
+    checkedCoreCompositionClosed
+    lifecycleReplayClosed
+    noExportClosed
+    hiddenSourceProofSemanticsClosedProof
+    checkedCoreCompositionClosedProof
+    lifecycleReplayClosedProof
+    noExportClosedProof
+
+/--
+Active AP2-N003 constructor for the selected accepted-spend certificate from
+the four hard current pricing facts. The selected report's numeric-budget
+target and transcript-cap facts are already proved true and are supplied
+internally.
+-/
+def SelectedRustAcceptedSpendSoundnessCertificate.ofSelectedReportAndBoundHardPricingFacts
+    (selectedRustAcceptedSpendHardPricingFactsCompleteProof :
+      selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete)
+    (numericSource :
+      Path2AcceptedSpendProbability.SelectedAcceptedSpendNumericSource)
+    (acceptedSpendForgeryProb : ℝ)
+    (acceptedSpendForgeryBound : ℝ)
+    (productionAcceptedSpendForgeryProb : ℝ)
+    (productionAcceptedSpendForgeryBound : ℝ)
+    (acceptedSpendForgeryProbMatchesUnionBound :
+      acceptedSpendForgeryProb = numericSource.pricedCertificate.unionBound)
+    (acceptedSpendForgeryBoundMatchesPriced :
+      acceptedSpendForgeryBound = numericSource.pricedCertificate.pricedBound)
+    (acceptedSpendPricedBoundSecurityPriced :
+      numericSource.pricedCertificate.pricedBound <=
+        ((2 : ℝ) ^
+          selectedRustAcceptedSpendEvidenceReport.acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (acceptedSpendForgeryProbPinned :
+      acceptedSpendForgeryProb = productionAcceptedSpendForgeryProb)
+    (acceptedSpendForgeryBoundPinned :
+      acceptedSpendForgeryBound = productionAcceptedSpendForgeryBound)
+    (hiddenSourceProofSemanticsClosed : Prop)
+    (checkedCoreCompositionClosed : Prop)
+    (lifecycleReplayClosed : Prop)
+    (noExportClosed : Prop)
+    (hiddenSourceProofSemanticsClosedProof :
+      hiddenSourceProofSemanticsClosed)
+    (checkedCoreCompositionClosedProof :
+      checkedCoreCompositionClosed)
+    (lifecycleReplayClosedProof :
+      lifecycleReplayClosed)
+    (noExportClosedProof :
+      noExportClosed) :
+    SelectedRustAcceptedSpendSoundnessCertificate :=
+  SelectedRustAcceptedSpendSoundnessCertificate.ofSelectedReportAndBoundPricingFacts
+    (selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
+      selectedRustAcceptedSpendHardPricingFactsCompleteProof)
     numericSource
     acceptedSpendForgeryProb
     acceptedSpendForgeryBound

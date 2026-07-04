@@ -259,6 +259,18 @@ numeric-budget target, priced-bound target, and priced-bound transcript-cap
 facts are already complete. The accepted-spend source-shape gate requires those
 names and rejects a spoofed missing-pricing cardinality before accepting future
 AP2-N003 instantiation candidates.
+Lean now names the exact hard-pricing handoff with
+`SelectedRustAcceptedSpendSoundnessEvidenceReport.HardPricingFactsComplete`,
+`SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_hardPricingFactsComplete`,
+`selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete`,
+and
+`selectedRustAcceptedSpendEvidenceReport_currentPricingFactsComplete_iff_hardPricingFactsComplete`:
+for the current selected report, the four hard cryptographic pricing bits are
+equivalent to the full accepted-spend pricing half because the numeric-budget
+target, priced-bound target, and transcript-cap facts are already proved. The
+trace-model witness endpoint and remaining-break package now have hard-pricing
+constructors/projections, and the Rust source-shape gate requires and spoofs
+those names before accepting future AP2-N003 instantiation candidates.
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage` now packages the
 accepted-spend bound, the seven remaining-break bounds, their proportional
 budgets, selected pricing facts, and the real-valued priced-bound inequality

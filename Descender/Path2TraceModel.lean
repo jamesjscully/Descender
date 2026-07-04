@@ -734,6 +734,43 @@ def selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
     acceptedSpendPricedBoundDigestBoundProof := rfl }
 
 /--
+Selected pricing witness from the four hard current accepted-spend pricing
+facts. The selected report's numeric-budget target and transcript-cap pricing
+facts are already proved in `Path2NativeAccountDesign` and are supplied
+internally.
+-/
+def selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hHardPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete) :
+    SelectedRustConcreteAcceptedSpendPricingWitness :=
+  selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
+    traceDist observe acceptedSpendBound remainingBreakBound hAccept hBreak
+    hAcceptBudget hBreakBudget hPriced
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
+      hHardPricing)
+
+/--
 Active-target consequence for the selected trace-model pricing witness.
 
 This theorem gives the future AP2-N003 instantiation a single named endpoint
@@ -1153,6 +1190,55 @@ structure SelectedRustAcceptedSpendRemainingBreakPricingPackage where
 
 namespace SelectedRustAcceptedSpendRemainingBreakPricingPackage
 
+/--
+Construct the remaining-break pricing package from the four hard current
+accepted-spend pricing facts.  The current selected report supplies the already
+closed numeric-budget target and transcript-cap facts internally.
+-/
+def ofCurrentHardPricingFacts
+    (Trace : Type) [traceFintype : Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (acceptedSpendProb_le_bound :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (remainingBreakProb_le_bound :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (acceptedSpendBound_le_2pow_neg129 :
+      acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (remainingBreakBound_le_2pow_neg133 :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
+    (activePricedBound_le_reportedSecurity :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hardPricingFactsComplete :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete) :
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage where
+  Trace := Trace
+  traceFintype := traceFintype
+  traceDist := traceDist
+  observe := observe
+  acceptedSpendBound := acceptedSpendBound
+  remainingBreakBound := remainingBreakBound
+  acceptedSpendProb_le_bound := acceptedSpendProb_le_bound
+  remainingBreakProb_le_bound := remainingBreakProb_le_bound
+  acceptedSpendBound_le_2pow_neg129 :=
+    acceptedSpendBound_le_2pow_neg129
+  remainingBreakBound_le_2pow_neg133 :=
+    remainingBreakBound_le_2pow_neg133
+  activePricedBound_le_reportedSecurity :=
+    activePricedBound_le_reportedSecurity
+  pricingFactsComplete :=
+    Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
+      hardPricingFactsComplete
+
 /-- Erase the packaged hard-half input into the selected pricing witness. -/
 def toPricingWitness
     (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
@@ -1177,6 +1263,14 @@ theorem toPricingWitness_pricingFactsComplete
     Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete :=
   SelectedRustConcreteAcceptedSpendPricingWitness.pricingFactsComplete
     (toPricingWitness P)
+
+/-- The package exposes the four hard accepted-spend pricing facts. -/
+theorem toPricingWitness_hardPricingFactsComplete
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
+    Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete :=
+  Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_hardPricingFactsComplete
+    Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport
+    (toPricingWitness_pricingFactsComplete P)
 
 /--
 The package keeps the concrete accepted-spend probability on the fixed
