@@ -1773,12 +1773,12 @@ impossible, and full-reduction `StructuralFactsComplete` holds while
 missing pricing/production proof content, not report parsing, digest presence,
 QROM capacity, or structural source consumption.
 Lean now also exposes individual theorem names for every currently false
-accepted-spend pricing bit and full-reduction production bit. The Rust source
-gates require those names, so the fail-closed state is tracked at the specific
-missing-obligation level: aggregate numeric pricing, accepted-spend event
-pricing, named-break pricing, component-budget pricing, numeric target budget,
-production probability pinning, accepted-spend-game linkage, accepted-spend
-probability linkage, final query-symbol pricing, and verifier-game binding.
+accepted-spend pricing bit and remaining full-reduction production bit. The Rust
+source gates require those names, so the fail-closed state is tracked at the
+specific missing-obligation level: aggregate numeric pricing, accepted-spend
+event pricing, named-break pricing, component-budget pricing, numeric target
+budget, production probability pinning, accepted-spend-game linkage,
+accepted-spend probability linkage, and final query-symbol pricing.
 The hard halves also now have named projection theorems, so future closure can
 consume pricing/production facts by name: accepted-spend component pricing,
 named-break component pricing, break-budget pricing, target/security cap
@@ -2459,12 +2459,14 @@ and `path2_native_full_signature_reduction_missing_production_obligations_v1`.
 The accepted-spend diagnostic reports the current missing aggregate numeric
 pricing, accepted-spend event pricing, named-break pricing, component-budget
 pricing, numeric target budget, and priced-bound target-security obligations.
-The full-reduction diagnostic reports the current missing production probability
-pin, accepted-spend-game linkage, accepted-spend probability linkage,
-all-active-query-symbol pricing, and verifier-game binding obligations. The
-focused fail-closed tests assert these exact arrays for the selected AP2-N003
-reports, and the production-reference facade exports the arrays/helpers for
-deployability tooling.
+The full-reduction diagnostic now reports four current missing production
+obligations: production probability pin, accepted-spend-game linkage,
+accepted-spend probability linkage, and all-active-query-symbol pricing. The
+verifier-game/production-execution binding bit is no longer in the missing
+array after the selected concrete full-execution source was routed into the
+full-reduction package. The focused fail-closed tests assert these exact arrays
+for the selected AP2-N003 reports, and the production-reference facade exports
+the arrays/helpers for deployability tooling.
 AP2-N003 pricing-witness hard-bit projection note:
 `SelectedRustConcreteAcceptedSpendPricingWitness` now exposes named projections
 for every accepted-spend pricing-half report fact: aggregate numeric pricing,
@@ -2568,6 +2570,16 @@ full-reduction route can consume the already selected concrete full-execution
 source instead of accepting that proof obligation as an abstract proposition.
 The Rust full-reduction source-shape gate now requires the concrete-source
 adapter names and rejects a suffixed active-target adapter in the future
-AP2-N003 theorem fixture. This still leaves the five current full-reduction
-production facts false; it only removes one abstract proof-input shape from the
-route into the final full-signature boundary.
+AP2-N003 theorem fixture.
+AP2-N003 verifier-game production bit closure note:
+The selected full-reduction report now sets
+`verifierGameMatchesProductionExecution = true`, with Lean exposing
+`selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatchesProductionExecution_true`
+and Rust reducing
+`PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_CURRENT_MISSING_PRODUCTION_OBLIGATIONS`
+from five rows to four. This closes the report bit that binds the verifier game
+to the selected production execution source while preserving fail-closed status:
+production signature probability pinning, signature-success/accepted-spend-game
+linkage, accepted-spend probability linkage, and all-active-query-symbol pricing
+remain false, and `ProductionFactsComplete` is still impossible for the current
+report.

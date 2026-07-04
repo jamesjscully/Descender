@@ -3518,13 +3518,13 @@ def selectedRustFullSignatureReductionEvidenceReport :
   activeHashBoundaryConsumed := true
   allActiveQuerySymbolsPriced := false
   multiTargetHorizonPriced := true
-  verifierGameMatchesProductionExecution := false
+  verifierGameMatchesProductionExecution := true
 
 /-- Digest pin for the selected Rust full-signature reduction evidence report. -/
 def selectedRustFullSignatureReductionEvidenceDigest : ByteArray :=
-  ByteArray.mk #[132, 227, 18, 82, 85, 156, 153, 34, 175, 229, 119, 109,
-    129, 110, 75, 25, 40, 30, 31, 128, 169, 61, 181, 22, 116, 120, 133,
-    132, 63, 195, 154, 56]
+  ByteArray.mk #[65, 129, 52, 192, 126, 122, 172, 232, 192, 29, 252, 16,
+    28, 17, 209, 81, 101, 244, 26, 145, 214, 144, 191, 46, 180, 14, 170,
+    81, 16, 97, 161, 239]
 
 /-- The selected full-reduction report has verified public digest slots. -/
 theorem selectedRustFullSignatureReductionVerifiedProof :
@@ -3552,13 +3552,12 @@ theorem selectedRustFullSignatureReductionEvidenceReport_currentStructuralFactsC
   simp [SelectedRustFullSignatureReductionEvidenceReport.StructuralFactsComplete,
     selectedRustFullSignatureReductionEvidenceReport]
 
-/-- The current selected full-reduction report is still missing production reduction facts. -/
+/-- The current selected full-reduction report is still missing four production reduction facts. -/
 theorem selectedRustFullSignatureReductionEvidenceReport_currentMissingReductionFactsFalse :
     selectedRustFullSignatureReductionEvidenceReport.productionSignatureProbabilityPinned = false ∧
     selectedRustFullSignatureReductionEvidenceReport.signatureSuccessMatchesAcceptedSpendGame = false ∧
     selectedRustFullSignatureReductionEvidenceReport.acceptedSpendProbabilityLinked = false ∧
-    selectedRustFullSignatureReductionEvidenceReport.allActiveQuerySymbolsPriced = false ∧
-    selectedRustFullSignatureReductionEvidenceReport.verifierGameMatchesProductionExecution = false := by
+    selectedRustFullSignatureReductionEvidenceReport.allActiveQuerySymbolsPriced = false := by
   native_decide
 
 /-- The current selected full-reduction report has not pinned production signature probability. -/
@@ -3579,12 +3578,15 @@ theorem selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendPro
 /-- The current selected full-reduction report has not priced every active final query symbol. -/
 theorem selectedRustFullSignatureReductionEvidenceReport_currentAllActiveQuerySymbolsPriced_false :
     selectedRustFullSignatureReductionEvidenceReport.allActiveQuerySymbolsPriced = false :=
-  selectedRustFullSignatureReductionEvidenceReport_currentMissingReductionFactsFalse.2.2.2.1
+  selectedRustFullSignatureReductionEvidenceReport_currentMissingReductionFactsFalse.2.2.2
 
-/-- The current selected full-reduction report has not bound the verifier game to production execution. -/
-theorem selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatchesProductionExecution_false :
-    selectedRustFullSignatureReductionEvidenceReport.verifierGameMatchesProductionExecution = false :=
-  selectedRustFullSignatureReductionEvidenceReport_currentMissingReductionFactsFalse.2.2.2.2
+/--
+The current selected full-reduction report now binds the verifier game to the
+selected production execution source.
+-/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatchesProductionExecution_true :
+    selectedRustFullSignatureReductionEvidenceReport.verifierGameMatchesProductionExecution = true := by
+  native_decide
 
 /--
 Lean mirror of the current full-reduction production diagnostic.
@@ -3601,8 +3603,6 @@ structure SelectedRustFullSignatureReductionProductionObligationGap where
     selectedRustFullSignatureReductionEvidenceReport.acceptedSpendProbabilityLinked = false
   allActiveQuerySymbolsPricedMissing :
     selectedRustFullSignatureReductionEvidenceReport.allActiveQuerySymbolsPriced = false
-  verifierGameMatchesProductionExecutionMissing :
-    selectedRustFullSignatureReductionEvidenceReport.verifierGameMatchesProductionExecution = false
 
 /-- Current selected full-reduction production obligations still missing in Lean. -/
 def selectedRustFullSignatureReductionEvidenceReport_currentProductionObligationGap :
@@ -3615,8 +3615,6 @@ def selectedRustFullSignatureReductionEvidenceReport_currentProductionObligation
     selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityLinked_false
   allActiveQuerySymbolsPricedMissing :=
     selectedRustFullSignatureReductionEvidenceReport_currentAllActiveQuerySymbolsPriced_false
-  verifierGameMatchesProductionExecutionMissing :=
-    selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatchesProductionExecution_false
 
 /-- The current full-reduction production gap blocks the selected production half. -/
 theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksProductionFactsComplete

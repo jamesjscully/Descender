@@ -250,7 +250,12 @@ and active-target adapters, which install `ConcreteFullExecutionAcceptedSpendLif
 from a `ConcreteFullSignatureExecutionSource` instead of accepting the
 full-forgery reduction as a free proposition; the Rust full-reduction
 source-shape gate requires these concrete-source adapter names in future
-AP2-N003 instantiation candidates.
+AP2-N003 instantiation candidates. The active full-reduction report now marks
+`verifierGameMatchesProductionExecution` true from that selected concrete
+execution-source route, so the full-reduction production diagnostic is narrowed
+to four remaining missing facts: production signature probability pinning,
+signature-success/accepted-spend-game linkage, accepted-spend probability
+linkage, and all-active-query-symbol pricing.
 The trace-model route now also erases that
 witness through
 `selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds`,
