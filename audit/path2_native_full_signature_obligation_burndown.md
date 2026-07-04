@@ -2468,10 +2468,12 @@ The Rust full-reduction source-shape gate now requires those erased-boundary
 projection names and the native
 `fullSignatureSuccessProb_le_activePathForgeryBound` handoff in the future final
 instantiation theorem.
+`selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_acceptedSpendForgeryProb_of_remaining_break_bounds`
+now mirrors the direct accepted-spend reduction at the trace-model
+remaining-break-bounds endpoint.
 `selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound_of_remaining_break_bounds`
-now mirrors that handoff at the trace-model remaining-break-bounds endpoint, so
-the faithful AP2-N003 route names the accepted-spend active-bound reduction
-after native boundary erasure.
+now mirrors the active Path 2 bound handoff there, so the faithful AP2-N003 route
+names both native-boundary erasure consequences.
 AP2-N003 priced-bound transcript-cap guard note:
 The accepted-spend fail-closed regression now forges an otherwise pricing-ready
 report whose priced-bound security bits consume the whole QROM-discounted
