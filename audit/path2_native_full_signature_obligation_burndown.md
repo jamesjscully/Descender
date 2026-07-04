@@ -2294,6 +2294,11 @@ plus bounds for only the seven non-structural `RemainingCryptographicBreak`
 cases, inserting the QROM/domain-separation and live-slot/keygen zero budgets
 internally. This removes another full-family hand-assembly step, while the
 accepted-spend and seven cryptographic per-event prices remain the open inputs.
+`selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds`
+now wraps that same faithful trace-model package into the selected AP2-N003
+concrete numeric certificate, with the selected full-forgery outcome carrier,
+accepted-spend event semantics, active break family, and named-break event pins
+proved from the concrete trace model rather than assumed by a separate wrapper.
 AP2-N003 pricing-witness proportional-obligation note:
 `SelectedRustConcreteAcceptedSpendPricingWitness` now carries the proportional
 component facts as fields and projects

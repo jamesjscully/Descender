@@ -189,7 +189,11 @@ remaining-break interface now constructs
 `concreteBreakPricingCertificate_of_remaining_break_bounds` and
 `concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds`,
 packaging the full active `Path2FullSpendGame.BreakEvent` pricing certificate
-from the accepted-spend component bound plus the seven remaining break bounds.
+from the accepted-spend component bound plus the seven remaining break bounds;
+`selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds`
+then wraps that faithful trace-model certificate into the selected AP2-N003
+concrete numeric certificate with active outcome, accepted-event, and
+break-family pins proved by reduction.
 Pricing and per-event cryptographic bounds remain open. The
 Lean concrete full-spend carrier now makes account creation acceptance consume
 an explicit `AccountCreationProofBoundaryEvidenceAccepted` predicate, binding

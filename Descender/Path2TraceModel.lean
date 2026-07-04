@@ -534,6 +534,74 @@ def concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds
   pricedBound := (1 : ℝ) / 2 ^ 128
   pricedBound_eq_breakPricing := rfl
 
+/--
+Selected-Rust concrete numeric certificate wrapper built from the faithful
+trace model and the seven remaining cryptographic break bounds.
+
+The trace support and distribution are still caller supplied; this constructor
+only removes the proof-convenience step of first building an arbitrary
+full-family pricing certificate before wrapping it for AP2-N003.
+-/
+def selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (finiteTraceSupportDigest : ByteArray)
+    (activeOutcomeCarrierDigest : ByteArray)
+    (acceptedSpendEventSemanticsDigest : ByteArray)
+    (activeBreakFamilyDigest : ByteArray)
+    (namedBreakEventsDigest : ByteArray)
+    (acceptedSpendUnionBoundPricingDigest : ByteArray)
+    (acceptedSpendPricedBoundDigest : ByteArray)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
+    SelectedRustConcreteAcceptedSpendNumericCertificate where
+  pricedCertificate :=
+    concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds
+      selectedRustConcreteGameConfig traceDist observe acceptedSpendBound
+      remainingBreakBound hAccept hBreak hAcceptBudget hBreakBudget
+  finiteTraceSupportDigest := finiteTraceSupportDigest
+  activeOutcomeCarrierDigest := activeOutcomeCarrierDigest
+  acceptedSpendEventSemanticsDigest := acceptedSpendEventSemanticsDigest
+  activeBreakFamilyDigest := activeBreakFamilyDigest
+  namedBreakEventsDigest := namedBreakEventsDigest
+  acceptedSpendUnionBoundPricingDigest := acceptedSpendUnionBoundPricingDigest
+  acceptedSpendPricedBoundDigest := acceptedSpendPricedBoundDigest
+  outcomeCarrierPinned := rfl
+  acceptedSpendEventPinned := by
+    intro trace hAccepted
+    have hEvent :
+        concreteAcceptedSpendForgery selectedRustConcreteGameConfig
+            (observe trace) = true := by
+      simpa [concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+        concreteBreakPricingCertificate_of_remaining_break_bounds,
+        concreteNumericGame, PricedAcceptedSpendNumericCertificate.acceptedSpendEvent,
+        PricedAcceptedSpendNumericCertificate.observe] using hAccepted
+    simpa [concreteAcceptedSpendForgery] using of_decide_eq_true hEvent
+  breakFamilyPinned := rfl
+  namedBreakEventsPinned := by
+    intro trace breakEvent hBreakEvent
+    have hEvent :
+        concreteNamedBreak selectedRustConcreteGameConfig breakEvent
+            (observe trace) = true := by
+      simpa [concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+        concreteBreakPricingCertificate_of_remaining_break_bounds,
+        concreteNumericGame, PricedAcceptedSpendNumericCertificate.namedBreakEvent,
+        PricedAcceptedSpendNumericCertificate.observe] using hBreakEvent
+    simpa [concreteNamedBreak] using of_decide_eq_true hEvent
+
 end
 
 end Path2TraceModel
