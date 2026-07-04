@@ -271,6 +271,16 @@ target, priced-bound target, and transcript-cap facts are already proved. The
 trace-model witness endpoint and remaining-break package now have hard-pricing
 constructors/projections, and the Rust source-shape gate requires and spoofs
 those names before accepting future AP2-N003 instantiation candidates.
+The concrete full-spend pricing witness now exposes the same four-fact surface
+with `SelectedRustConcreteAcceptedSpendPricingWitness.hardPricingFactsComplete`,
+and erases through hard-pricing source, certificate, and boundary adapters:
+`SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofSelectedReportAndConcreteCertificateHardPricingFacts`,
+`SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificateHardPricingFacts`,
+`SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessCertificateHardPricingFacts`,
+and
+`SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessBoundaryHardPricingFacts`.
+The source-shape gate now requires those names and rejects spoofed hard-pricing
+witness/source-constructor variants.
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage` now packages the
 accepted-spend bound, the seven remaining-break bounds, their proportional
 budgets, selected pricing facts, and the real-valued priced-bound inequality

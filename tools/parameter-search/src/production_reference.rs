@@ -53294,6 +53294,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate",
         "SelectedRustConcreteAcceptedSpendPricingWitness",
         "SelectedRustConcreteAcceptedSpendPricingWitness.pricingFactsComplete",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.hardPricingFactsComplete",
         "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendNumericBoundPriced",
         "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendEventBoundPriced",
         "SelectedRustConcreteAcceptedSpendPricingWitness.namedBreakEventBoundsPriced",
@@ -53389,10 +53390,14 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendEvidenceReport_currentPricingObligationGap",
         "selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificateHardPricingFacts",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessCertificate",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessCertificateHardPricingFacts",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessBoundary",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessBoundaryHardPricingFacts",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofSelectedReportAndConcreteCertificatePricingFacts",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofSelectedReportAndConcreteCertificateHardPricingFacts",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toConcreteAcceptedSpendNumericCertificate",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedAcceptedSpendNumericSource",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.finiteTraceSupportDigest_bound",
@@ -53634,6 +53639,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendNumericCertificate.toPricedAcceptedSpendNumericCertificate",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource",
         "SelectedRustConcreteAcceptedSpendPricingWitness.pricingFactsComplete",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.hardPricingFactsComplete",
         "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendNumericBoundPriced",
         "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendEventBoundPriced",
         "SelectedRustConcreteAcceptedSpendPricingWitness.namedBreakEventBoundsPriced",
@@ -53729,10 +53735,14 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendEvidenceReport_currentPricingObligationGap",
         "selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificateHardPricingFacts",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessCertificate",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessCertificateHardPricingFacts",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessBoundary",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessBoundaryHardPricingFacts",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofSelectedReportAndConcreteCertificatePricingFacts",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofSelectedReportAndConcreteCertificateHardPricingFacts",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toConcreteAcceptedSpendNumericCertificate",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedAcceptedSpendNumericSource",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.finiteTraceSupportDigest_bound",
@@ -90689,6 +90699,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness
   let _acceptedSpendConcretePricingWitnessFacts :=
     SelectedRustConcreteAcceptedSpendPricingWitness.pricingFactsComplete
+  let _acceptedSpendConcretePricingWitnessHardPricingFacts :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.hardPricingFactsComplete
   let _acceptedSpendConcretePricingWitnessNumericBoundPriced :=
     SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendNumericBoundPriced
   let _acceptedSpendConcretePricingWitnessAcceptedSpendEventPriced :=
@@ -91091,12 +91103,20 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete
   let _acceptedSpendConcretePricingWitnessSource :=
     SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate
+  let _acceptedSpendConcretePricingWitnessHardPricingSource :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificateHardPricingFacts
   let _acceptedSpendConcretePricingWitnessCertificate :=
     SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessCertificate
+  let _acceptedSpendConcretePricingWitnessHardPricingCertificate :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessCertificateHardPricingFacts
   let _acceptedSpendConcretePricingWitnessBoundary :=
     SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessBoundary
+  let _acceptedSpendConcretePricingWitnessHardPricingBoundary :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessBoundaryHardPricingFacts
   let _acceptedSpendConcreteNumericSourceSelectedConstructor :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofSelectedReportAndConcreteCertificatePricingFacts
+  let _acceptedSpendConcreteNumericSourceHardPricingConstructor :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofSelectedReportAndConcreteCertificateHardPricingFacts
   let selectedRustConcreteAcceptedSpendNumericSourceCertificate :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate
       selectedRustAcceptedSpendEvidenceReport
@@ -91905,6 +91925,16 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
   let _acceptedSpendCurrentPricingFactsIffHardPricingFacts :=
     selectedRustAcceptedSpendEvidenceReport_currentPricingFactsComplete_iff_hardPricingFactsComplete
+  let _acceptedSpendConcretePricingWitnessHardPricingFacts :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.hardPricingFactsComplete
+  let _acceptedSpendConcretePricingWitnessHardPricingSource :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificateHardPricingFacts
+  let _acceptedSpendConcretePricingWitnessHardPricingCertificate :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessCertificateHardPricingFacts
+  let _acceptedSpendConcretePricingWitnessHardPricingBoundary :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessBoundaryHardPricingFacts
+  let _acceptedSpendConcreteNumericSourceHardPricingConstructor :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofSelectedReportAndConcreteCertificateHardPricingFacts
   let _acceptedSpendTracePricingWitnessHardPricingEndpoint :=
     selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _acceptedSpendRemainingBreakPricingPackage :=
@@ -92192,6 +92222,36 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_remaining_break_package_hard_pricing_constructor
+            )
+        );
+        let suffixed_pricing_witness_hard_pricing_projection =
+            accepted_spend_instantiation_shape.replace(
+                "SelectedRustConcreteAcceptedSpendPricingWitness.hardPricingFactsComplete",
+                "SelectedRustConcreteAcceptedSpendPricingWitness.hardPricingFactsCompleteSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_pricing_witness_hard_pricing_projection
+            )
+        );
+        let suffixed_pricing_witness_hard_pricing_source =
+            accepted_spend_instantiation_shape.replace(
+                "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificateHardPricingFacts",
+                "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificateHardPricingFactsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_pricing_witness_hard_pricing_source
+            )
+        );
+        let suffixed_concrete_source_hard_pricing_constructor =
+            accepted_spend_instantiation_shape.replace(
+                "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofSelectedReportAndConcreteCertificateHardPricingFacts",
+                "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofSelectedReportAndConcreteCertificateHardPricingFactsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_concrete_source_hard_pricing_constructor
             )
         );
         let suffixed_remaining_break_package_witness =

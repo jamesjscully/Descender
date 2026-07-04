@@ -3592,6 +3592,49 @@ def ofSelectedReportAndConcreteCertificatePricingFacts
     acceptedSpendUnionBoundPricingDigestBoundProof
     acceptedSpendPricedBoundDigestBoundProof
 
+/--
+Active AP2-N003 constructor for the selected report-bound concrete numeric
+source from the four hard accepted-spend pricing facts. The selected report's
+already-closed pricing facts are supplied by `Path2NativeAccountDesign`.
+-/
+def ofSelectedReportAndConcreteCertificateHardPricingFacts
+    (evidenceHardPricingFactsCompleteProof :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete)
+    (concreteCertificate : SelectedRustConcreteAcceptedSpendNumericCertificate)
+    (finiteTraceSupportDigestBoundProof :
+      concreteCertificate.finiteTraceSupportDigest =
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).finiteTraceSupportDigest)
+    (activeOutcomeCarrierDigestBoundProof :
+      concreteCertificate.activeOutcomeCarrierDigest =
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).activeOutcomeCarrierDigest)
+    (acceptedSpendEventSemanticsDigestBoundProof :
+      concreteCertificate.acceptedSpendEventSemanticsDigest =
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendEventSemanticsDigest)
+    (activeBreakFamilyDigestBoundProof :
+      concreteCertificate.activeBreakFamilyDigest =
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).activeBreakFamilyDigest)
+    (namedBreakEventsDigestBoundProof :
+      concreteCertificate.namedBreakEventsDigest =
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).namedBreakEventsDigest)
+    (acceptedSpendUnionBoundPricingDigestBoundProof :
+      concreteCertificate.acceptedSpendUnionBoundPricingDigest =
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendUnionBoundPricingDigest)
+    (acceptedSpendPricedBoundDigestBoundProof :
+      concreteCertificate.acceptedSpendPricedBoundDigest =
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundDigest) :
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate :=
+  ofSelectedReportAndConcreteCertificatePricingFacts
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
+      evidenceHardPricingFactsCompleteProof)
+    concreteCertificate
+    finiteTraceSupportDigestBoundProof
+    activeOutcomeCarrierDigestBoundProof
+    acceptedSpendEventSemanticsDigestBoundProof
+    activeBreakFamilyDigestBoundProof
+    namedBreakEventsDigestBoundProof
+    acceptedSpendUnionBoundPricingDigestBoundProof
+    acceptedSpendPricedBoundDigestBoundProof
+
 theorem finiteTraceSupportDigest_bound
     (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
     Source.concreteCertificate.finiteTraceSupportDigest =
@@ -3935,6 +3978,14 @@ theorem pricingFactsComplete
     W.acceptedSpendNumericBudgetMeetsTargetProof,
     W.acceptedSpendPricedBoundSecurityMeetsTargetProof,
     W.acceptedSpendPricedBoundSecurityWithinTranscriptProof⟩
+
+/-- The selected pricing witness supplies the four hard current pricing facts. -/
+theorem hardPricingFactsComplete
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete :=
+  Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_hardPricingFactsComplete
+    Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport
+    (pricingFactsComplete W)
 
 /-- The selected pricing witness exposes aggregate numeric-bound pricing. -/
 theorem acceptedSpendNumericBoundPriced
@@ -4320,6 +4371,24 @@ def toConcreteNumericSourceCertificate
       W.acceptedSpendPricedBoundDigestBoundProof
 
 /--
+Turn the selected pricing witness into the report-bound concrete numeric source
+through the four-fact hard-pricing constructor.
+-/
+def toConcreteNumericSourceCertificateHardPricingFacts
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate :=
+  SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofSelectedReportAndConcreteCertificateHardPricingFacts
+      (hardPricingFactsComplete W)
+      W.concreteCertificate
+      W.finiteTraceSupportDigestBoundProof
+      W.activeOutcomeCarrierDigestBoundProof
+      W.acceptedSpendEventSemanticsDigestBoundProof
+      W.activeBreakFamilyDigestBoundProof
+      W.namedBreakEventsDigestBoundProof
+      W.acceptedSpendUnionBoundPricingDigestBoundProof
+      W.acceptedSpendPricedBoundDigestBoundProof
+
+/--
 Turn the selected pricing witness directly into the selected accepted-spend
 certificate.  This keeps the final AP2-N003 route tied to the single witness
 that carries the concrete pricing inequalities, selected report pricing facts,
@@ -4376,6 +4445,63 @@ def toSelectedRustAcceptedSpendSoundnessCertificate
     lifecycleReplayClosedProof
     noExportClosedProof
 
+/--
+Turn the selected pricing witness directly into the selected accepted-spend
+certificate through the four-fact hard-pricing constructor.
+-/
+def toSelectedRustAcceptedSpendSoundnessCertificateHardPricingFacts
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness)
+    (acceptedSpendForgeryProb : ℝ)
+    (acceptedSpendForgeryBound : ℝ)
+    (productionAcceptedSpendForgeryProb : ℝ)
+    (productionAcceptedSpendForgeryBound : ℝ)
+    (acceptedSpendForgeryProbMatchesUnionBound :
+      acceptedSpendForgeryProb =
+        (SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedAcceptedSpendNumericSource
+          (toConcreteNumericSourceCertificateHardPricingFacts W)).pricedCertificate.unionBound)
+    (acceptedSpendForgeryBoundMatchesPriced :
+      acceptedSpendForgeryBound =
+        (SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedAcceptedSpendNumericSource
+          (toConcreteNumericSourceCertificateHardPricingFacts W)).pricedCertificate.pricedBound)
+    (acceptedSpendForgeryProbPinned :
+      acceptedSpendForgeryProb = productionAcceptedSpendForgeryProb)
+    (acceptedSpendForgeryBoundPinned :
+      acceptedSpendForgeryBound = productionAcceptedSpendForgeryBound)
+    (hiddenSourceProofSemanticsClosed : Prop)
+    (checkedCoreCompositionClosed : Prop)
+    (lifecycleReplayClosed : Prop)
+    (noExportClosed : Prop)
+    (hiddenSourceProofSemanticsClosedProof :
+      hiddenSourceProofSemanticsClosed)
+    (checkedCoreCompositionClosedProof :
+      checkedCoreCompositionClosed)
+    (lifecycleReplayClosedProof :
+      lifecycleReplayClosed)
+    (noExportClosedProof :
+      noExportClosed) :
+    Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessCertificate :=
+  Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessCertificate.ofSelectedReportAndBoundHardPricingFacts
+    (hardPricingFactsComplete W)
+    (SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedAcceptedSpendNumericSource
+      (toConcreteNumericSourceCertificateHardPricingFacts W))
+    acceptedSpendForgeryProb
+    acceptedSpendForgeryBound
+    productionAcceptedSpendForgeryProb
+    productionAcceptedSpendForgeryBound
+    acceptedSpendForgeryProbMatchesUnionBound
+    acceptedSpendForgeryBoundMatchesPriced
+    (pricedBound_le_reportedSecurity W)
+    acceptedSpendForgeryProbPinned
+    acceptedSpendForgeryBoundPinned
+    hiddenSourceProofSemanticsClosed
+    checkedCoreCompositionClosed
+    lifecycleReplayClosed
+    noExportClosed
+    hiddenSourceProofSemanticsClosedProof
+    checkedCoreCompositionClosedProof
+    lifecycleReplayClosedProof
+    noExportClosedProof
+
 /-- Erase the selected pricing witness directly into the active accepted-spend boundary. -/
 def toSelectedRustAcceptedSpendSoundnessBoundary
     (W : SelectedRustConcreteAcceptedSpendPricingWitness)
@@ -4409,6 +4535,60 @@ def toSelectedRustAcceptedSpendSoundnessBoundary
       noExportClosed) :
     Path2NativeAccountDesign.NativeAcceptedSpendSoundnessBoundary :=
   (toSelectedRustAcceptedSpendSoundnessCertificate
+      W
+      acceptedSpendForgeryProb
+      acceptedSpendForgeryBound
+      productionAcceptedSpendForgeryProb
+      productionAcceptedSpendForgeryBound
+      acceptedSpendForgeryProbMatchesUnionBound
+      acceptedSpendForgeryBoundMatchesPriced
+      acceptedSpendForgeryProbPinned
+      acceptedSpendForgeryBoundPinned
+      hiddenSourceProofSemanticsClosed
+      checkedCoreCompositionClosed
+      lifecycleReplayClosed
+      noExportClosed
+      hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof
+      lifecycleReplayClosedProof
+      noExportClosedProof).toAcceptedSpendSoundnessBoundary
+
+/--
+Erase the selected pricing witness into the active accepted-spend boundary
+through the four-fact hard-pricing certificate route.
+-/
+def toSelectedRustAcceptedSpendSoundnessBoundaryHardPricingFacts
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness)
+    (acceptedSpendForgeryProb : ℝ)
+    (acceptedSpendForgeryBound : ℝ)
+    (productionAcceptedSpendForgeryProb : ℝ)
+    (productionAcceptedSpendForgeryBound : ℝ)
+    (acceptedSpendForgeryProbMatchesUnionBound :
+      acceptedSpendForgeryProb =
+        (SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedAcceptedSpendNumericSource
+          (toConcreteNumericSourceCertificateHardPricingFacts W)).pricedCertificate.unionBound)
+    (acceptedSpendForgeryBoundMatchesPriced :
+      acceptedSpendForgeryBound =
+        (SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedAcceptedSpendNumericSource
+          (toConcreteNumericSourceCertificateHardPricingFacts W)).pricedCertificate.pricedBound)
+    (acceptedSpendForgeryProbPinned :
+      acceptedSpendForgeryProb = productionAcceptedSpendForgeryProb)
+    (acceptedSpendForgeryBoundPinned :
+      acceptedSpendForgeryBound = productionAcceptedSpendForgeryBound)
+    (hiddenSourceProofSemanticsClosed : Prop)
+    (checkedCoreCompositionClosed : Prop)
+    (lifecycleReplayClosed : Prop)
+    (noExportClosed : Prop)
+    (hiddenSourceProofSemanticsClosedProof :
+      hiddenSourceProofSemanticsClosed)
+    (checkedCoreCompositionClosedProof :
+      checkedCoreCompositionClosed)
+    (lifecycleReplayClosedProof :
+      lifecycleReplayClosed)
+    (noExportClosedProof :
+      noExportClosed) :
+    Path2NativeAccountDesign.NativeAcceptedSpendSoundnessBoundary :=
+  (toSelectedRustAcceptedSpendSoundnessCertificateHardPricingFacts
       W
       acceptedSpendForgeryProb
       acceptedSpendForgeryBound
