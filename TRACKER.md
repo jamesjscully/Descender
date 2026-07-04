@@ -367,6 +367,14 @@ and
 now carry the same full-signature handoff from the exact four hard
 accepted-spend pricing facts, and the full-reduction source-shape gate requires
 those names while rejecting spoofed hard-pricing trace witness/boundary variants;
+that hard-pricing route now also names
+`selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts`,
+`selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts`,
+and
+`selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts`,
+so the active-target and composed-target projections no longer need the broader
+accepted-spend pricing half, and the full-reduction source-shape gate rejects
+spoofed hard-pricing target variants;
 `selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget_of_remaining_break_bounds`
 projects the erased native full-signature boundary to the fixed active target
 while keeping selected `ProductionFactsComplete` bits, hash-budget facts,

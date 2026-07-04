@@ -4817,6 +4817,250 @@ theorem selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb
       signatureSuccessMatchesAcceptedSpendGameProof acceptedSpendProbabilityLinkedProof
       allActiveQuerySymbolsPricedProof verifierGameMatchesProductionExecutionProof)
 
+section HardPricingFullSignatureProjection
+
+variable {Trace : Type} [Fintype Trace]
+variable (traceDist : FiniteProbability Trace)
+variable (observe : Trace → ConcreteOutcome)
+variable (acceptedSpendBound : ℝ)
+variable (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+variable (hAccept :
+  (concreteNumericGame selectedRustConcreteGameConfig traceDist
+      observe).acceptedSpendProb ≤ acceptedSpendBound)
+variable (hBreak :
+  ∀ breakEvent : RemainingCryptographicBreak,
+    (concreteNumericGame selectedRustConcreteGameConfig traceDist
+        observe).breakProb breakEvent.1 ≤
+      remainingBreakBound breakEvent)
+variable (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+variable (hBreakBudget :
+  ∀ breakEvent : RemainingCryptographicBreak,
+    remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
+variable (hPriced :
+  (1 : ℝ) / 2 ^ 128 ≤
+    ((2 : ℝ) ^
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+variable (hHardPricing :
+  Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete)
+variable (productionAcceptedSpendForgeryProb : ℝ)
+variable (productionAcceptedSpendForgeryBound : ℝ)
+variable (acceptedSpendForgeryProbPinned :
+  (selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds_and_current_hard_pricing_facts
+    traceDist observe acceptedSpendBound remainingBreakBound
+    hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing).pricedCertificate.unionBound =
+    productionAcceptedSpendForgeryProb)
+variable (acceptedSpendForgeryBoundPinned :
+  (selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds_and_current_hard_pricing_facts
+    traceDist observe acceptedSpendBound remainingBreakBound
+    hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing).pricedCertificate.pricedBound =
+    productionAcceptedSpendForgeryBound)
+variable (hiddenSourceProofSemanticsClosed : Prop)
+variable (checkedCoreCompositionClosed : Prop)
+variable (lifecycleReplayClosed : Prop)
+variable (noExportClosed : Prop)
+variable (hiddenSourceProofSemanticsClosedProof :
+  hiddenSourceProofSemanticsClosed)
+variable (checkedCoreCompositionClosedProof :
+  checkedCoreCompositionClosed)
+variable (lifecycleReplayClosedProof :
+  lifecycleReplayClosed)
+variable (noExportClosedProof :
+  noExportClosed)
+variable (hashBoundary : Path2NativeAccountDesign.NativeHashBudgetBoundary)
+variable (signatureForgerySuccessProb : ℝ)
+variable (productionSignatureForgerySuccessProb : ℝ)
+variable (signatureForgerySuccessProbPinned :
+  signatureForgerySuccessProb = productionSignatureForgerySuccessProb)
+variable (signatureForgerySuccessMatchesAcceptedSpendGame :
+  signatureForgerySuccessProb =
+    (selectedRustAcceptedSpendSoundnessCertificate_of_remaining_break_bounds_and_current_hard_pricing_facts
+      traceDist observe acceptedSpendBound remainingBreakBound
+      hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing
+      productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+      acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+      hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+      lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+      noExportClosedProof).pricedNumericCertificate.successProb)
+variable (keygenDistributionModeled : Prop)
+variable (keygenDistributionModeledProof : keygenDistributionModeled)
+variable (signingOracleModeled : Prop)
+variable (signingOracleModeledProof : signingOracleModeled)
+variable (completenessModeled : Prop)
+variable (completenessModeledProof : completenessModeled)
+variable (verifierRelationMatchesImplementation : Prop)
+variable (verifierRelationMatchesImplementationProof :
+  verifierRelationMatchesImplementation)
+variable (fullForgeryImpliesAcceptedSpendForgery : Prop)
+variable (fullForgeryImpliesAcceptedSpendForgeryProof :
+  fullForgeryImpliesAcceptedSpendForgery)
+variable (checkedCoreFrameDomainSeparatedProof :
+  hashBoundary.checkedCoreFrameDomainSeparated)
+variable (hiddenSourceFrameDomainSeparatedProof :
+  hashBoundary.hiddenSourceFrameDomainSeparated)
+variable (queryBudgetPricedProof :
+  hashBoundary.queryBudgetPriced)
+variable (multiTargetLossPricedProof :
+  hashBoundary.multiTargetLossPriced)
+variable (productionSignatureProbabilityPinnedProof :
+  Path2NativeAccountDesign.selectedRustFullSignatureReductionEvidenceReport.productionSignatureProbabilityPinned =
+    true)
+variable (signatureSuccessMatchesAcceptedSpendGameProof :
+  Path2NativeAccountDesign.selectedRustFullSignatureReductionEvidenceReport.signatureSuccessMatchesAcceptedSpendGame =
+    true)
+variable (acceptedSpendProbabilityLinkedProof :
+  Path2NativeAccountDesign.selectedRustFullSignatureReductionEvidenceReport.acceptedSpendProbabilityLinked =
+    true)
+variable (allActiveQuerySymbolsPricedProof :
+  Path2NativeAccountDesign.selectedRustFullSignatureReductionEvidenceReport.allActiveQuerySymbolsPriced =
+    true)
+variable (verifierGameMatchesProductionExecutionProof :
+  Path2NativeAccountDesign.selectedRustFullSignatureReductionEvidenceReport.verifierGameMatchesProductionExecution =
+    true)
+
+/--
+The hard-pricing trace-model route reaches the fixed active 128-bit target for
+signature forgery success after native boundary erasure.
+-/
+theorem selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts :
+    let B :=
+      selectedRustNativeFullSignatureSecurityBoundary_of_remaining_break_bounds_and_current_hard_pricing_facts
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing
+        productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+        acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+        hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+        lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+        checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+        noExportClosedProof hashBoundary signatureForgerySuccessProb
+        productionSignatureForgerySuccessProb signatureForgerySuccessProbPinned
+        signatureForgerySuccessMatchesAcceptedSpendGame keygenDistributionModeled
+        keygenDistributionModeledProof signingOracleModeled signingOracleModeledProof
+        completenessModeled completenessModeledProof verifierRelationMatchesImplementation
+        verifierRelationMatchesImplementationProof fullForgeryImpliesAcceptedSpendForgery
+        fullForgeryImpliesAcceptedSpendForgeryProof checkedCoreFrameDomainSeparatedProof
+        hiddenSourceFrameDomainSeparatedProof queryBudgetPricedProof
+        multiTargetLossPricedProof productionSignatureProbabilityPinnedProof
+        signatureSuccessMatchesAcceptedSpendGameProof acceptedSpendProbabilityLinkedProof
+        allActiveQuerySymbolsPricedProof verifierGameMatchesProductionExecutionProof
+    B.signatureForgerySuccessProb ≤ ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  Path2NativeAccountDesign.SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget
+    (selectedRustFullSignatureReductionCertificate_of_remaining_break_bounds_and_current_hard_pricing_facts
+      traceDist observe acceptedSpendBound remainingBreakBound
+      hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing
+      productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+      acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+      hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+      lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+      noExportClosedProof hashBoundary signatureForgerySuccessProb
+      productionSignatureForgerySuccessProb signatureForgerySuccessProbPinned
+      signatureForgerySuccessMatchesAcceptedSpendGame keygenDistributionModeled
+      keygenDistributionModeledProof signingOracleModeled signingOracleModeledProof
+      completenessModeled completenessModeledProof verifierRelationMatchesImplementation
+      verifierRelationMatchesImplementationProof fullForgeryImpliesAcceptedSpendForgery
+      fullForgeryImpliesAcceptedSpendForgeryProof checkedCoreFrameDomainSeparatedProof
+      hiddenSourceFrameDomainSeparatedProof queryBudgetPricedProof
+      multiTargetLossPricedProof productionSignatureProbabilityPinnedProof
+      signatureSuccessMatchesAcceptedSpendGameProof acceptedSpendProbabilityLinkedProof
+      allActiveQuerySymbolsPricedProof verifierGameMatchesProductionExecutionProof)
+
+/--
+The hard-pricing trace-model route keeps its active Path 2 bound handoff at the
+fixed active 128-bit target after native boundary erasure.
+-/
+theorem selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts :
+    let B :=
+      selectedRustNativeFullSignatureSecurityBoundary_of_remaining_break_bounds_and_current_hard_pricing_facts
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing
+        productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+        acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+        hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+        lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+        checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+        noExportClosedProof hashBoundary signatureForgerySuccessProb
+        productionSignatureForgerySuccessProb signatureForgerySuccessProbPinned
+        signatureForgerySuccessMatchesAcceptedSpendGame keygenDistributionModeled
+        keygenDistributionModeledProof signingOracleModeled signingOracleModeledProof
+        completenessModeled completenessModeledProof verifierRelationMatchesImplementation
+        verifierRelationMatchesImplementationProof fullForgeryImpliesAcceptedSpendForgery
+        fullForgeryImpliesAcceptedSpendForgeryProof checkedCoreFrameDomainSeparatedProof
+        hiddenSourceFrameDomainSeparatedProof queryBudgetPricedProof
+        multiTargetLossPricedProof productionSignatureProbabilityPinnedProof
+        signatureSuccessMatchesAcceptedSpendGameProof acceptedSpendProbabilityLinkedProof
+        allActiveQuerySymbolsPricedProof verifierGameMatchesProductionExecutionProof
+    B.activePathForgeryBound <= ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  Path2NativeAccountDesign.SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget
+    (selectedRustFullSignatureReductionCertificate_of_remaining_break_bounds_and_current_hard_pricing_facts
+      traceDist observe acceptedSpendBound remainingBreakBound
+      hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing
+      productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+      acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+      hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+      lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+      noExportClosedProof hashBoundary signatureForgerySuccessProb
+      productionSignatureForgerySuccessProb signatureForgerySuccessProbPinned
+      signatureForgerySuccessMatchesAcceptedSpendGame keygenDistributionModeled
+      keygenDistributionModeledProof signingOracleModeled signingOracleModeledProof
+      completenessModeled completenessModeledProof verifierRelationMatchesImplementation
+      verifierRelationMatchesImplementationProof fullForgeryImpliesAcceptedSpendForgery
+      fullForgeryImpliesAcceptedSpendForgeryProof checkedCoreFrameDomainSeparatedProof
+      hiddenSourceFrameDomainSeparatedProof queryBudgetPricedProof
+      multiTargetLossPricedProof productionSignatureProbabilityPinnedProof
+      signatureSuccessMatchesAcceptedSpendGameProof acceptedSpendProbabilityLinkedProof
+      allActiveQuerySymbolsPricedProof verifierGameMatchesProductionExecutionProof)
+
+/--
+The hard-pricing trace-model route reaches the fixed active 128-bit target for
+the composed full-signature success probability.
+-/
+theorem selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts :
+    let B :=
+      selectedRustNativeFullSignatureSecurityBoundary_of_remaining_break_bounds_and_current_hard_pricing_facts
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing
+        productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+        acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+        hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+        lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+        checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+        noExportClosedProof hashBoundary signatureForgerySuccessProb
+        productionSignatureForgerySuccessProb signatureForgerySuccessProbPinned
+        signatureForgerySuccessMatchesAcceptedSpendGame keygenDistributionModeled
+        keygenDistributionModeledProof signingOracleModeled signingOracleModeledProof
+        completenessModeled completenessModeledProof verifierRelationMatchesImplementation
+        verifierRelationMatchesImplementationProof fullForgeryImpliesAcceptedSpendForgery
+        fullForgeryImpliesAcceptedSpendForgeryProof checkedCoreFrameDomainSeparatedProof
+        hiddenSourceFrameDomainSeparatedProof queryBudgetPricedProof
+        multiTargetLossPricedProof productionSignatureProbabilityPinnedProof
+        signatureSuccessMatchesAcceptedSpendGameProof acceptedSpendProbabilityLinkedProof
+        allActiveQuerySymbolsPricedProof verifierGameMatchesProductionExecutionProof
+    B.fullSignatureSuccessProb <= ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  Path2NativeAccountDesign.SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget
+    (selectedRustFullSignatureReductionCertificate_of_remaining_break_bounds_and_current_hard_pricing_facts
+      traceDist observe acceptedSpendBound remainingBreakBound
+      hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing
+      productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+      acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+      hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+      lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+      noExportClosedProof hashBoundary signatureForgerySuccessProb
+      productionSignatureForgerySuccessProb signatureForgerySuccessProbPinned
+      signatureForgerySuccessMatchesAcceptedSpendGame keygenDistributionModeled
+      keygenDistributionModeledProof signingOracleModeled signingOracleModeledProof
+      completenessModeled completenessModeledProof verifierRelationMatchesImplementation
+      verifierRelationMatchesImplementationProof fullForgeryImpliesAcceptedSpendForgery
+      fullForgeryImpliesAcceptedSpendForgeryProof checkedCoreFrameDomainSeparatedProof
+      hiddenSourceFrameDomainSeparatedProof queryBudgetPricedProof
+      multiTargetLossPricedProof productionSignatureProbabilityPinnedProof
+      signatureSuccessMatchesAcceptedSpendGameProof acceptedSpendProbabilityLinkedProof
+      allActiveQuerySymbolsPricedProof verifierGameMatchesProductionExecutionProof)
+
+end HardPricingFullSignatureProjection
+
 end
 
 end Path2TraceModel

@@ -52547,6 +52547,9 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustFullSignatureReductionProductionWitness_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustFullSignatureReductionCertificate_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustNativeFullSignatureSecurityBoundary_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "reductionEvidenceDigestsVerified",
         "productionSignatureProbabilityDigest",
         "signatureAcceptedSpendLinkDigest",
@@ -52619,6 +52622,9 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget",
         "selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_remaining_break_bounds",
         "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds",
+        "selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitness",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionCertificate",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary",
@@ -52746,6 +52752,9 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget",
         "selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_remaining_break_bounds",
         "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds",
+        "selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndCurrentHardProductionFacts",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitness",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithCurrentHardProductionFacts",
@@ -89618,11 +89627,17 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
       selectedRustFullSignatureReductionCertificate
   let _fullReductionTraceActivePathTarget :=
     selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_remaining_break_bounds
+  let _fullReductionHardPricingTraceSignatureActiveTarget :=
+    selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts
+  let _fullReductionHardPricingTraceActivePathTarget :=
+    selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _fullReductionErasedBoundaryFullSignatureActiveTarget :=
     SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget
       selectedRustFullSignatureReductionCertificate
   let _fullReductionTraceFullSignatureActiveTarget :=
     selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds
+  let _fullReductionHardPricingTraceFullSignatureActiveTarget :=
+    selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _fullReductionHardFactCertificateConstructor :=
     SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndCurrentHardProductionFacts
   let _fullReductionRemainingBreakPackageProductionWitness :=
@@ -89804,6 +89819,26 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_hard_pricing_trace_boundary
+            )
+        );
+        let suffixed_full_signature_hard_pricing_active_path_target =
+            full_signature_reduction_instantiation_shape.replace(
+                "selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
+                "hardPricingTraceActivePathTargetRemoved",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_hard_pricing_active_path_target
+            )
+        );
+        let suffixed_full_signature_hard_pricing_composed_target =
+            full_signature_reduction_instantiation_shape.replace(
+                "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
+                "hardPricingTraceFullSignatureTargetRemoved",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_hard_pricing_composed_target
             )
         );
         let suffixed_full_signature_missing_fact_card =
