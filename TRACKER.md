@@ -279,6 +279,23 @@ Lean now mirrors the direct-mode query-symbol taxonomy with
 those names so future `all_active_query_symbols_priced` evidence remains tied
 to the explicit 15-active/1-inactive direct query surface instead of only the
 older `qBatchActive` boolean.
+Lean now also enumerates the full-reduction production half as
+`FullSignatureReductionProductionFact`, `fullSignatureReductionProductionFacts`,
+`currentMissingFullSignatureReductionProductionFacts`, and
+`currentCompletedFullSignatureReductionProductionFacts`, with
+`fullSignatureReductionProductionFacts_card`,
+`currentMissingFullSignatureReductionProductionFacts_card`,
+`currentCompletedFullSignatureReductionProductionFacts_card`,
+`mem_currentMissingFullSignatureReductionProductionFacts_iff`,
+`mem_currentCompletedFullSignatureReductionProductionFacts_iff`, and
+`no_currentFullSignatureReductionProductionFact_missing_and_completed`
+pinning the exact 5/4/1 accounting: production probability, signature-success
+linkage, accepted-spend probability linkage, and all-active-query-symbol
+pricing remain false, while verifier-game/production-execution binding is the
+single completed production fact. The full-reduction source-shape gate requires
+those names and rejects a spoofed missing-fact cardinality, so future
+instantiation evidence cannot satisfy the production half by silently changing
+the report-fact surface.
 The trace-model route now also erases that
 witness through
 `selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds`,

@@ -52086,6 +52086,19 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         "\ntheorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget",
         "\ntheorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg",
         "\ndef SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary",
+        "\ninductive FullSignatureReductionProductionFact",
+        "\ndef fullSignatureReductionProductionFacts",
+        "\ndef currentMissingFullSignatureReductionProductionFacts",
+        "\ndef currentCompletedFullSignatureReductionProductionFacts",
+        "\ndef FullSignatureReductionProductionFact.currentSelectedReportBit",
+        "\ndef IsCurrentMissingFullSignatureReductionProductionFact",
+        "\ndef IsCurrentCompletedFullSignatureReductionProductionFact",
+        "\ntheorem fullSignatureReductionProductionFacts_card",
+        "\ntheorem mem_currentMissingFullSignatureReductionProductionFacts_iff",
+        "\ntheorem currentMissingFullSignatureReductionProductionFacts_card",
+        "\ntheorem mem_currentCompletedFullSignatureReductionProductionFacts_iff",
+        "\ntheorem currentCompletedFullSignatureReductionProductionFacts_card",
+        "\ntheorem no_currentFullSignatureReductionProductionFact_missing_and_completed",
         "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_productionFactsComplete",
         "\ntheorem keygenDistributionModeled_holds",
         "\ntheorem signingOracleModeled_holds",
@@ -52456,6 +52469,19 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustFullSignatureReductionEvidenceReport_currentStructuralFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentProductionFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_productionFactsComplete",
+        "FullSignatureReductionProductionFact",
+        "fullSignatureReductionProductionFacts",
+        "currentMissingFullSignatureReductionProductionFacts",
+        "currentCompletedFullSignatureReductionProductionFacts",
+        "FullSignatureReductionProductionFact.currentSelectedReportBit",
+        "IsCurrentMissingFullSignatureReductionProductionFact",
+        "IsCurrentCompletedFullSignatureReductionProductionFact",
+        "fullSignatureReductionProductionFacts_card",
+        "mem_currentMissingFullSignatureReductionProductionFacts_iff",
+        "currentMissingFullSignatureReductionProductionFacts_card",
+        "mem_currentCompletedFullSignatureReductionProductionFacts_iff",
+        "currentCompletedFullSignatureReductionProductionFacts_card",
+        "no_currentFullSignatureReductionProductionFact_missing_and_completed",
         "SelectedRustFullSignatureReductionProductionObligationGap",
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionObligationGap",
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksProductionFactsComplete",
@@ -52605,6 +52631,19 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustFullSignatureReductionEvidenceReport_currentStructuralFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentProductionFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_productionFactsComplete",
+        "FullSignatureReductionProductionFact",
+        "fullSignatureReductionProductionFacts",
+        "currentMissingFullSignatureReductionProductionFacts",
+        "currentCompletedFullSignatureReductionProductionFacts",
+        "FullSignatureReductionProductionFact.currentSelectedReportBit",
+        "IsCurrentMissingFullSignatureReductionProductionFact",
+        "IsCurrentCompletedFullSignatureReductionProductionFact",
+        "fullSignatureReductionProductionFacts_card",
+        "mem_currentMissingFullSignatureReductionProductionFacts_iff",
+        "currentMissingFullSignatureReductionProductionFacts_card",
+        "mem_currentCompletedFullSignatureReductionProductionFacts_iff",
+        "currentCompletedFullSignatureReductionProductionFacts_card",
+        "no_currentFullSignatureReductionProductionFact_missing_and_completed",
         "SelectedRustFullSignatureReductionProductionObligationGap",
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionObligationGap",
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksProductionFactsComplete",
@@ -89279,6 +89318,32 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentProductionFactsComplete
   let _fullReductionCurrentFactsIffProductionHalf :=
     selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_productionFactsComplete
+  let _fullReductionProductionFactSurface :=
+    FullSignatureReductionProductionFact
+  let _fullReductionAllProductionFacts :=
+    fullSignatureReductionProductionFacts
+  let _fullReductionMissingProductionFacts :=
+    currentMissingFullSignatureReductionProductionFacts
+  let _fullReductionCompletedProductionFacts :=
+    currentCompletedFullSignatureReductionProductionFacts
+  let _fullReductionProductionFactBit :=
+    FullSignatureReductionProductionFact.currentSelectedReportBit
+  let _fullReductionMissingProductionFactPredicate :=
+    IsCurrentMissingFullSignatureReductionProductionFact
+  let _fullReductionCompletedProductionFactPredicate :=
+    IsCurrentCompletedFullSignatureReductionProductionFact
+  let _fullReductionAllProductionFactsCard :=
+    fullSignatureReductionProductionFacts_card
+  let _fullReductionMissingProductionFactsIff :=
+    mem_currentMissingFullSignatureReductionProductionFacts_iff
+  let _fullReductionMissingProductionFactsCard :=
+    currentMissingFullSignatureReductionProductionFacts_card
+  let _fullReductionCompletedProductionFactsIff :=
+    mem_currentCompletedFullSignatureReductionProductionFacts_iff
+  let _fullReductionCompletedProductionFactsCard :=
+    currentCompletedFullSignatureReductionProductionFacts_card
+  let _fullReductionProductionFactsDisjoint :=
+    no_currentFullSignatureReductionProductionFact_missing_and_completed
   let _fullReductionCurrentProductionGap :=
     SelectedRustFullSignatureReductionProductionObligationGap
   let _fullReductionCurrentProductionGapSelected :=
@@ -89550,6 +89615,16 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_current_facts_equivalence
+            )
+        );
+        let suffixed_full_signature_missing_fact_card =
+            full_signature_reduction_instantiation_shape.replace(
+                "currentMissingFullSignatureReductionProductionFacts_card",
+                "currentMissingFullSignatureReductionProductionFacts_cardSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_missing_fact_card
             )
         );
         let global_vacuous_full_signature_reduction_proofs = format!(

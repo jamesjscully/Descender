@@ -1,3 +1,4 @@
+import Mathlib.Data.Fintype.Basic
 import Mathlib.Data.Real.Basic
 import Descender.Path2AcceptedSpendProbability
 
@@ -3580,6 +3581,111 @@ selected production execution source.
 theorem selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatchesProductionExecution_true :
     selectedRustFullSignatureReductionEvidenceReport.verifierGameMatchesProductionExecution = true := by
   native_decide
+
+/--
+Finite taxonomy for the selected full-reduction report's production half.
+
+The report has five production facts: four are still false in the current
+selected evidence, and the verifier-game/production-execution binding is
+already true.
+-/
+inductive FullSignatureReductionProductionFact
+  | productionSignatureProbabilityPinned
+  | signatureSuccessMatchesAcceptedSpendGame
+  | acceptedSpendProbabilityLinked
+  | allActiveQuerySymbolsPriced
+  | verifierGameMatchesProductionExecution
+  deriving DecidableEq, Fintype
+
+/-- All selected full-reduction production facts. -/
+def fullSignatureReductionProductionFacts :
+    Finset FullSignatureReductionProductionFact :=
+  { FullSignatureReductionProductionFact.productionSignatureProbabilityPinned,
+    FullSignatureReductionProductionFact.signatureSuccessMatchesAcceptedSpendGame,
+    FullSignatureReductionProductionFact.acceptedSpendProbabilityLinked,
+    FullSignatureReductionProductionFact.allActiveQuerySymbolsPriced,
+    FullSignatureReductionProductionFact.verifierGameMatchesProductionExecution }
+
+/-- Full-reduction production facts still missing in the current selected report. -/
+def currentMissingFullSignatureReductionProductionFacts :
+    Finset FullSignatureReductionProductionFact :=
+  { FullSignatureReductionProductionFact.productionSignatureProbabilityPinned,
+    FullSignatureReductionProductionFact.signatureSuccessMatchesAcceptedSpendGame,
+    FullSignatureReductionProductionFact.acceptedSpendProbabilityLinked,
+    FullSignatureReductionProductionFact.allActiveQuerySymbolsPriced }
+
+/-- Full-reduction production facts already completed in the current selected report. -/
+def currentCompletedFullSignatureReductionProductionFacts :
+    Finset FullSignatureReductionProductionFact :=
+  { FullSignatureReductionProductionFact.verifierGameMatchesProductionExecution }
+
+/-- The current selected report bit for one full-reduction production fact. -/
+def FullSignatureReductionProductionFact.currentSelectedReportBit :
+    FullSignatureReductionProductionFact → Bool
+  | FullSignatureReductionProductionFact.productionSignatureProbabilityPinned =>
+      selectedRustFullSignatureReductionEvidenceReport.productionSignatureProbabilityPinned
+  | FullSignatureReductionProductionFact.signatureSuccessMatchesAcceptedSpendGame =>
+      selectedRustFullSignatureReductionEvidenceReport.signatureSuccessMatchesAcceptedSpendGame
+  | FullSignatureReductionProductionFact.acceptedSpendProbabilityLinked =>
+      selectedRustFullSignatureReductionEvidenceReport.acceptedSpendProbabilityLinked
+  | FullSignatureReductionProductionFact.allActiveQuerySymbolsPriced =>
+      selectedRustFullSignatureReductionEvidenceReport.allActiveQuerySymbolsPriced
+  | FullSignatureReductionProductionFact.verifierGameMatchesProductionExecution =>
+      selectedRustFullSignatureReductionEvidenceReport.verifierGameMatchesProductionExecution
+
+/-- Predicate for currently missing full-reduction production facts. -/
+def IsCurrentMissingFullSignatureReductionProductionFact
+    (fact : FullSignatureReductionProductionFact) : Prop :=
+  fact.currentSelectedReportBit = false
+
+/-- Predicate for currently completed full-reduction production facts. -/
+def IsCurrentCompletedFullSignatureReductionProductionFact
+    (fact : FullSignatureReductionProductionFact) : Prop :=
+  fact.currentSelectedReportBit = true
+
+/-- The all-production-facts surface has exactly five report facts. -/
+theorem fullSignatureReductionProductionFacts_card :
+    fullSignatureReductionProductionFacts.card = 5 := by
+  native_decide
+
+/-- The explicit missing-production set matches the current false report bits. -/
+theorem mem_currentMissingFullSignatureReductionProductionFacts_iff
+    (fact : FullSignatureReductionProductionFact) :
+    fact ∈ currentMissingFullSignatureReductionProductionFacts ↔
+      IsCurrentMissingFullSignatureReductionProductionFact fact := by
+  cases fact <;>
+    simp [currentMissingFullSignatureReductionProductionFacts,
+      IsCurrentMissingFullSignatureReductionProductionFact,
+      FullSignatureReductionProductionFact.currentSelectedReportBit,
+      selectedRustFullSignatureReductionEvidenceReport]
+
+/-- The current selected full-reduction report is missing exactly four production facts. -/
+theorem currentMissingFullSignatureReductionProductionFacts_card :
+    currentMissingFullSignatureReductionProductionFacts.card = 4 := by
+  native_decide
+
+/-- The explicit completed-production set matches the current true report bits. -/
+theorem mem_currentCompletedFullSignatureReductionProductionFacts_iff
+    (fact : FullSignatureReductionProductionFact) :
+    fact ∈ currentCompletedFullSignatureReductionProductionFacts ↔
+      IsCurrentCompletedFullSignatureReductionProductionFact fact := by
+  cases fact <;>
+    simp [currentCompletedFullSignatureReductionProductionFacts,
+      IsCurrentCompletedFullSignatureReductionProductionFact,
+      FullSignatureReductionProductionFact.currentSelectedReportBit,
+      selectedRustFullSignatureReductionEvidenceReport]
+
+/-- The current selected full-reduction report has exactly one completed production fact. -/
+theorem currentCompletedFullSignatureReductionProductionFacts_card :
+    currentCompletedFullSignatureReductionProductionFacts.card = 1 := by
+  native_decide
+
+/-- No current full-reduction production fact is both missing and complete. -/
+theorem no_currentFullSignatureReductionProductionFact_missing_and_completed
+    (fact : FullSignatureReductionProductionFact) :
+    ¬ (fact ∈ currentMissingFullSignatureReductionProductionFacts ∧
+        fact ∈ currentCompletedFullSignatureReductionProductionFacts) := by
+  cases fact <;> native_decide
 
 /--
 Lean mirror of the current full-reduction production diagnostic.
