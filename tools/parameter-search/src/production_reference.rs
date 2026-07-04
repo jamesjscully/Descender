@@ -51909,8 +51909,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_v1() -> bool {
     let accepted_spend_probability_source =
         include_str!("../../../Descender/Path2AcceptedSpendProbability.lean");
     let no_export_concrete_source = include_str!("../../../Descender/Path2NoExportConcrete.lean");
+    let trace_model_source = include_str!("../../../Descender/Path2TraceModel.lean");
     let accepted_spend_sources = format!(
-        "{account_design_source}\n{hidden_source_boundary_source}\n{checked_core_bridge_source}\n{full_spend_concrete_source}\n{accepted_spend_probability_source}\n{no_export_concrete_source}"
+        "{account_design_source}\n{hidden_source_boundary_source}\n{checked_core_bridge_source}\n{full_spend_concrete_source}\n{accepted_spend_probability_source}\n{no_export_concrete_source}\n{trace_model_source}"
     );
     path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(&accepted_spend_sources)
 }
@@ -53188,6 +53189,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_2pow_neg128_of_proportional_bounds",
         "SelectedRustConcreteAcceptedSpendPricingWitness.componentBudget_le_active128BitTarget_of_proportional_bounds",
         "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_active128BitTarget_of_proportional_bounds",
+        "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendBound_le_2pow_neg129_of_remaining_break_bounds",
+        "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakBound_le_2pow_neg133_of_remaining_break_bounds",
+        "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_acceptedSpendBound_of_remaining_break_bounds",
+        "selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_remaining_break_bounds",
         "SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedReport_impossible",
         "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundPriced_false",
         "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundPriced_false",
@@ -53471,6 +53476,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_2pow_neg128_of_proportional_bounds",
         "SelectedRustConcreteAcceptedSpendPricingWitness.componentBudget_le_active128BitTarget_of_proportional_bounds",
         "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_active128BitTarget_of_proportional_bounds",
+        "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendBound_le_2pow_neg129_of_remaining_break_bounds",
+        "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakBound_le_2pow_neg133_of_remaining_break_bounds",
+        "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_acceptedSpendBound_of_remaining_break_bounds",
+        "selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_remaining_break_bounds",
         "SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedReport_impossible",
         "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundPriced_false",
         "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundPriced_false",
@@ -91321,6 +91330,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
   let selectedRustAcceptedSpendNumericSource :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedAcceptedSpendNumericSource
       selectedRustConcreteAcceptedSpendNumericSourceCertificate
+  let _acceptedSpendTracePricingWitnessAcceptedComponentEndpoint :=
+    selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendBound_le_2pow_neg129_of_remaining_break_bounds
+  let _acceptedSpendTracePricingWitnessBreakComponentEndpoint :=
+    selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakBound_le_2pow_neg133_of_remaining_break_bounds
+  let _acceptedSpendTracePricingWitnessAcceptedProbEndpoint :=
+    selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_acceptedSpendBound_of_remaining_break_bounds
+  let _acceptedSpendTracePricingWitnessComponentBudgetEndpoint :=
+    selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_remaining_break_bounds
   let _acceptedSpendConcreteSourceAcceptedBoundNonnegative :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendBound_nonneg
   let _acceptedSpendConcreteSourceBreakBoundNonnegative :=
@@ -91519,6 +91536,17 @@ end Path2NativeAccountDesign
         assert!(
             path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 accepted_spend_instantiation_shape
+            )
+        );
+        let missing_trace_endpoint_component_budget =
+            accepted_spend_instantiation_shape.replacen(
+                "selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_remaining_break_bounds",
+                "selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_remaining_break_boundsSpoof",
+                1,
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &missing_trace_endpoint_component_budget
             )
         );
         let report_only_concrete_source_numeric_fact = accepted_spend_instantiation_shape.replace(

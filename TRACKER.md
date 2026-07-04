@@ -205,7 +205,15 @@ leaving the selected pricing facts and real-valued priced-bound security
 inequality as explicit production inputs; the named endpoint
 `selectedRustConcreteAcceptedSpendPricingWitness_successProb_le_active128BitTarget_of_remaining_break_bounds`
 then projects the selected witness's accepted-spend numeric success probability
-to the fixed active 128-bit target. The trace-model route now also erases that
+to the fixed active 128-bit target. The same trace-model pricing endpoint also
+exposes
+`selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendBound_le_2pow_neg129_of_remaining_break_bounds`,
+`selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakBound_le_2pow_neg133_of_remaining_break_bounds`,
+`selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_acceptedSpendBound_of_remaining_break_bounds`,
+and
+`selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_remaining_break_bounds`;
+the Rust accepted-spend source-shape gate now requires these endpoint names in
+future AP2-N003 instantiation candidates. The trace-model route now also erases that
 witness through
 `selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds`,
 `selectedRustAcceptedSpendSoundnessCertificate_of_remaining_break_bounds`, and
