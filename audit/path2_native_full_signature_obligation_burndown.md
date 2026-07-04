@@ -1729,6 +1729,10 @@ pricing obligations remain open. `Path2TraceModel` now consumes that subcase in
 has to supply cryptographic break-probability bounds for the non-structural
 named breaks while the QROM/domain-separation and live-slot/keygen slots are
 handled internally by zero-probability plus nonnegative component budgets.
+`RemainingCryptographicBreak` and
+`concreteNumericClosure_of_remaining_break_bounds` now remove even those
+structural budget arguments from the caller-facing endpoint by extending a
+seven-break bound map with zero budgets internally.
 The accepted-spend numeric and full-signature reduction certificates now bind
 their evidence reports and digests by equality to concrete selected Rust
 report/digest constants, rather than by arbitrary `Prop` slots. The selected

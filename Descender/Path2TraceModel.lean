@@ -312,6 +312,106 @@ theorem concreteNumericClosure_of_remaining_cryptographic_bounds
       exact hLiveSlotBreakBound_nonneg
     · exact hBreak b hQrom hLive
 
+/-- Break events that remain cryptographically priced by the caller. -/
+def IsRemainingCryptographicBreak
+    (breakEvent : Path2FullSpendGame.BreakEvent) : Prop :=
+  breakEvent ≠
+      Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak ∧
+    breakEvent ≠
+      Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak
+
+/--
+Subtype of named breaks whose probability still needs an external
+cryptographic bound after the trace model discharges the two impossible
+structural events.
+-/
+abbrev RemainingCryptographicBreak : Type :=
+  { breakEvent : Path2FullSpendGame.BreakEvent //
+    IsRemainingCryptographicBreak breakEvent }
+
+/--
+Extend caller-supplied remaining-break bounds to the full active break family
+by assigning zero budget to the structurally impossible events.
+-/
+def remainingCryptographicBreakBound
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ) :
+    Path2FullSpendGame.BreakEvent → ℝ :=
+  fun breakEvent =>
+    if hQrom :
+        breakEvent =
+          Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak then
+      0
+    else if hLiveSlot :
+        breakEvent =
+          Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak then
+      0
+    else
+      remainingBreakBound
+        ⟨breakEvent, ⟨hQrom, hLiveSlot⟩⟩
+
+/--
+Concrete 128-bit closure where the caller supplies bounds only for the seven
+remaining cryptographic named breaks.
+
+The full nine-event budget is synthesized here: the QROM/domain-separation and
+live-slot/keygen slots receive zero budget, matching the already-proven
+zero-probability facts, while every other break consumes the caller's
+cryptographic bound.
+-/
+theorem concreteNumericClosure_of_remaining_break_bounds
+    {Trace : Type*} [Fintype Trace]
+    (C : ConcreteGameConfig)
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame C traceDist observe).acceptedSpendProb ≤
+        acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame C traceDist observe).breakProb
+            breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
+    (concreteNumericGame C traceDist observe).successProb ≤ (1 : ℝ) / 2 ^ 128 := by
+  refine
+    concreteNumericClosure_of_cryptographic_bounds
+      C traceDist observe acceptedSpendBound
+      (remainingCryptographicBreakBound remainingBreakBound)
+      hAccept ?_ hAcceptBudget ?_
+  · intro breakEvent
+    by_cases hQrom :
+        breakEvent =
+          Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak
+    · subst breakEvent
+      rw [qromBreakProb_eq_zero]
+      simp [remainingCryptographicBreakBound]
+    · by_cases hLiveSlot :
+          breakEvent =
+            Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak
+      · subst breakEvent
+        rw [liveSlotLeakageBreakProb_eq_zero]
+        simp [remainingCryptographicBreakBound, hQrom]
+      · simpa [remainingCryptographicBreakBound, hQrom, hLiveSlot] using
+          hBreak ⟨breakEvent, ⟨hQrom, hLiveSlot⟩⟩
+  · intro breakEvent
+    by_cases hQrom :
+        breakEvent =
+          Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak
+    · subst breakEvent
+      simp [remainingCryptographicBreakBound]
+    · by_cases hLiveSlot :
+          breakEvent =
+            Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak
+      · subst breakEvent
+        simp [remainingCryptographicBreakBound, hQrom]
+      · simpa [remainingCryptographicBreakBound, hQrom, hLiveSlot] using
+          hBreakBudget ⟨breakEvent, ⟨hQrom, hLiveSlot⟩⟩
+
 end
 
 end Path2TraceModel
