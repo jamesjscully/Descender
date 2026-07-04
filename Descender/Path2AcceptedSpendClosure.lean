@@ -207,5 +207,110 @@ theorem successProb_le_2pow_neg128_of_proportional_bounds
 
 end
 
+namespace PricedAcceptedSpendNumericCertificate
+
+/--
+Packaged component-budget closure for the active selected break family.
+
+This is the certificate-level form of the 128-bit arithmetic check: once the
+priced certificate is pinned to the active nine-event break family, an
+accepted-spend component at `2^-129` and every named break at `2^-133` compose
+to a total component budget below the deployed `2^-128` target.
+-/
+theorem componentBudget_le_2pow_neg128_of_proportional_bounds
+    (C : PricedAcceptedSpendNumericCertificate)
+    (hAcceptBudget :
+      C.acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : C.Break,
+        C.breakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
+    C.acceptedSpendBound +
+        (@Finset.univ C.Break C.breakFintype).sum C.breakBound ≤
+      (1 : ℝ) / 2 ^ 128 := by
+  cases C with
+  | mk Trace Outcome Break traceFintype breakFintype breakDecidableEq
+      activeBreakFamilyPinned game breakPricing pricedBound pricedBound_eq_breakPricing =>
+    dsimp [acceptedSpendBound, breakBound] at hAcceptBudget hBreakBudget ⊢
+    cases activeBreakFamilyPinned
+    letI : Fintype Trace := traceFintype
+    letI : Fintype Path2FullSpendGame.BreakEvent := breakFintype
+    have hUniv :
+        (@Finset.univ Path2FullSpendGame.BreakEvent breakFintype) =
+          (@Finset.univ Path2FullSpendGame.BreakEvent
+            Path2FullSpendGame.instFintypeBreakEvent) := by
+      ext breakEvent
+      simp
+    rw [hUniv]
+    refine activeBudget_closes ((1 : ℝ) / 2 ^ 128) (by positivity)
+      breakPricing.acceptedSpendBound breakPricing.breakBound ?_ ?_
+    · have : (1 : ℝ) / 2 ^ 128 / 2 = 1 / 2 ^ 129 := by norm_num
+      rw [this]
+      exact hAcceptBudget
+    · intro breakEvent
+      have : (1 : ℝ) / 2 ^ 128 / 32 = 1 / 2 ^ 133 := by norm_num
+      rw [this]
+      exact hBreakBudget breakEvent
+
+/--
+Packaged 128-bit closure for a priced accepted-spend numeric certificate.
+
+This exposes the proved arithmetic to downstream selected/concrete evidence:
+the certificate's component probabilities plus active break-family pin imply
+the deployed success bound without assuming a monolithic priced inequality.
+-/
+theorem successProb_le_2pow_neg128_of_proportional_bounds
+    (C : PricedAcceptedSpendNumericCertificate)
+    (hAcceptBudget :
+      C.acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : C.Break,
+        C.breakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
+    C.successProb ≤ (1 : ℝ) / 2 ^ 128 :=
+  le_trans C.successProb_le_componentBudget
+    (C.componentBudget_le_2pow_neg128_of_proportional_bounds
+      hAcceptBudget hBreakBudget)
+
+end PricedAcceptedSpendNumericCertificate
+
+namespace SelectedAcceptedSpendNumericSource
+
+/--
+Selected-source component-budget closure for the active Path 2 break family.
+
+The concrete route can consume this theorem after it supplies the per-event
+cryptographic bounds; the theorem itself only composes the already-packaged
+certificate facts and the active nine-event arithmetic.
+-/
+theorem componentBudget_le_2pow_neg128_of_proportional_bounds
+    (Source : SelectedAcceptedSpendNumericSource)
+    (hAcceptBudget :
+      Source.pricedCertificate.acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : Source.pricedCertificate.Break,
+        Source.pricedCertificate.breakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
+    Source.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ Source.pricedCertificate.Break
+          Source.pricedCertificate.breakFintype).sum
+          Source.pricedCertificate.breakBound ≤
+      (1 : ℝ) / 2 ^ 128 :=
+  Source.pricedCertificate.componentBudget_le_2pow_neg128_of_proportional_bounds
+    hAcceptBudget hBreakBudget
+
+/--
+Selected-source 128-bit success closure from proportional component bounds.
+-/
+theorem successProb_le_2pow_neg128_of_proportional_bounds
+    (Source : SelectedAcceptedSpendNumericSource)
+    (hAcceptBudget :
+      Source.pricedCertificate.acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : Source.pricedCertificate.Break,
+        Source.pricedCertificate.breakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
+    Source.pricedCertificate.successProb ≤ (1 : ℝ) / 2 ^ 128 :=
+  Source.pricedCertificate.successProb_le_2pow_neg128_of_proportional_bounds
+    hAcceptBudget hBreakBudget
+
+end SelectedAcceptedSpendNumericSource
+
 end Path2AcceptedSpendProbability
 end Descender

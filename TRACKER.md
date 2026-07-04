@@ -161,8 +161,12 @@ future accepted-spend pricing can consume it. Lean also mirrors the current
 accepted-spend pricing and full-reduction production missing-obligation
 diagnostics as explicit gap records that block `PricingFactsComplete` and
 `ProductionFactsComplete`, and the Rust future-theorem scanners require those
-gap names in the AP2-N003 route; pricing and per-event cryptographic bounds
-remain open. The
+gap names in the AP2-N003 route. Lean now also lifts the active 9-event
+arithmetic check through `PricedAcceptedSpendNumericCertificate`,
+`SelectedAcceptedSpendNumericSource`, and the selected concrete/source numeric
+certificates: component bounds at 2^-129 for accepted-spend and 2^-133 for each
+named break mechanically yield the deployed 2^-128 component and success
+budgets. Pricing and per-event cryptographic bounds remain open. The
 Lean concrete full-spend carrier now makes account creation acceptance consume
 an explicit `AccountCreationProofBoundaryEvidenceAccepted` predicate, binding
 the proof-boundary report digest, accepted proof-boundary evidence digest,

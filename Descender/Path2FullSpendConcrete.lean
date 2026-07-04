@@ -1,4 +1,5 @@
 import Descender.Path2FullSpendGame
+import Descender.Path2AcceptedSpendClosure
 import Descender.Path2NativeAccountDesign
 import Mathlib.Data.Nat.Pairing
 
@@ -4442,6 +4443,41 @@ theorem SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_price
       Cert.pricedCertificate.pricedBound :=
   Cert.pricedCertificate.successProb_le_pricedBound
 
+/--
+The selected concrete numeric certificate composes proportional component
+bounds into the deployed 128-bit component budget.
+-/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.componentBudget_le_2pow_neg128_of_proportional_bounds
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate)
+    (hAcceptBudget :
+      Cert.pricedCertificate.acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : Cert.pricedCertificate.Break,
+        Cert.pricedCertificate.breakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
+    Cert.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ Cert.pricedCertificate.Break
+          Cert.pricedCertificate.breakFintype).sum
+          Cert.pricedCertificate.breakBound ≤
+      (1 : ℝ) / 2 ^ 128 :=
+  Cert.pricedCertificate.componentBudget_le_2pow_neg128_of_proportional_bounds
+    hAcceptBudget hBreakBudget
+
+/--
+The selected concrete numeric certificate's full-forgery success probability is
+below `2^-128` once the accepted-spend and active break components are priced at
+`2^-129` and `2^-133`.
+-/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_2pow_neg128_of_proportional_bounds
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate)
+    (hAcceptBudget :
+      Cert.pricedCertificate.acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : Cert.pricedCertificate.Break,
+        Cert.pricedCertificate.breakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
+    Cert.pricedCertificate.successProb ≤ (1 : ℝ) / 2 ^ 128 :=
+  Cert.pricedCertificate.successProb_le_2pow_neg128_of_proportional_bounds
+    hAcceptBudget hBreakBudget
+
 /-- The selected concrete numeric certificate exposes nonnegative success probability. -/
 theorem SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_nonneg
     (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
@@ -4710,6 +4746,45 @@ theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.successProb_le
     Source.concreteCertificate.pricedCertificate.successProb <=
       Source.concreteCertificate.pricedCertificate.pricedBound :=
   Source.concreteCertificate.successProb_le_pricedBound
+
+/--
+The source-bound concrete certificate exposes the 128-bit component-budget
+closure from proportional component bounds.
+-/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.componentBudget_le_2pow_neg128_of_proportional_bounds
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate)
+    (hAcceptBudget :
+      Source.concreteCertificate.pricedCertificate.acceptedSpendBound ≤
+        (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : Source.concreteCertificate.pricedCertificate.Break,
+        Source.concreteCertificate.pricedCertificate.breakBound breakEvent ≤
+          (1 : ℝ) / 2 ^ 133) :
+    Source.concreteCertificate.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ Source.concreteCertificate.pricedCertificate.Break
+          Source.concreteCertificate.pricedCertificate.breakFintype).sum
+          Source.concreteCertificate.pricedCertificate.breakBound ≤
+      (1 : ℝ) / 2 ^ 128 :=
+  Source.concreteCertificate.componentBudget_le_2pow_neg128_of_proportional_bounds
+    hAcceptBudget hBreakBudget
+
+/--
+The source-bound concrete certificate exposes the 128-bit success closure from
+proportional component bounds.
+-/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.successProb_le_2pow_neg128_of_proportional_bounds
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate)
+    (hAcceptBudget :
+      Source.concreteCertificate.pricedCertificate.acceptedSpendBound ≤
+        (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : Source.concreteCertificate.pricedCertificate.Break,
+        Source.concreteCertificate.pricedCertificate.breakBound breakEvent ≤
+          (1 : ℝ) / 2 ^ 133) :
+    Source.concreteCertificate.pricedCertificate.successProb ≤
+      (1 : ℝ) / 2 ^ 128 :=
+  Source.concreteCertificate.successProb_le_2pow_neg128_of_proportional_bounds
+    hAcceptBudget hBreakBudget
 
 /-- The source-bound report says the accepted-spend numeric bound is priced. -/
 theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_numericBoundPriced

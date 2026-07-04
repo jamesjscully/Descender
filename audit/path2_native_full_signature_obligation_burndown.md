@@ -2254,6 +2254,19 @@ AP2-N003 component-budget note: `PricedAcceptedSpendNumericCertificate`,
 accepted-spend source gate requires those projections, so the final pricing
 proof must explicitly pass through component-wise accepted-spend and named-break
 bounds before using the final priced-bound budget.
+AP2-N003 proportional 128-bit closure note:
+`Path2AcceptedSpendClosure.lean` now lifts the active 9-event arithmetic theorem
+through `PricedAcceptedSpendNumericCertificate` and
+`SelectedAcceptedSpendNumericSource` as
+`componentBudget_le_2pow_neg128_of_proportional_bounds` and
+`successProb_le_2pow_neg128_of_proportional_bounds`. The concrete Rust route in
+`Path2FullSpendConcrete.lean` exposes the same theorem names on
+`SelectedRustConcreteAcceptedSpendNumericCertificate` and
+`SelectedRustConcreteAcceptedSpendNumericSourceCertificate`. The Rust
+accepted-spend source gate exact-checks these identifiers, so the remaining
+proof work is the cryptographic pricing evidence for accepted-spend at 2^-129
+and each active named break at 2^-133, not the final 2^-128 arithmetic
+composition.
 AP2-N003 witness fail-closed note: Lean now proves the current selected
 accepted-spend report cannot produce
 `SelectedRustConcreteAcceptedSpendPricingWitness`, and the current selected
