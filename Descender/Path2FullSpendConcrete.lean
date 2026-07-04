@@ -2337,6 +2337,95 @@ theorem padSeed_globally_injective_of_registry
   rw [hSamePad] at e1
   exact hId (Option.some.inj (e1.symm.trans e2))
 
+/--
+D2 finalized-head lifecycle support needed for the F2 pad-seed invariant to be
+reorg-safe, not merely admission-time unique.  The concrete lifecycle boundary
+instantiates these facts with the selected target-chain finality profile:
+reorgs below the finalized head are rejected, the pending reorg window frees
+unfinalized admissions, and finalized admissions remain permanent.
+-/
+def D2FinalizedHeadPadSeedReorgSupport
+    (TargetChainFinalityProfileInstantiated
+      LifecycleTransitionProfileVerified
+      ReorgBelowFinalizedRejected
+      PendingWindowReorgFreesAdmissions
+      FinalizedAdmissionsPreserved : Prop) : Prop :=
+  TargetChainFinalityProfileInstantiated ∧
+    LifecycleTransitionProfileVerified ∧
+      ReorgBelowFinalizedRejected ∧
+        PendingWindowReorgFreesAdmissions ∧
+          FinalizedAdmissionsPreserved
+
+/--
+The F2 closure surface for `DeployableProofFamilyAssumptions`: global registry
+injectivity gives cross-account pad-seed uniqueness for admitted leaves, while
+the D2 finalized-head support makes that uniqueness stable across the allowed
+reorg window.
+-/
+def PadSeedGloballyReorgSafeUniqueWith
+    (padSeedOf : ConcretePrevalidatedSlotLeaf → Nat)
+    (admitted : ConcretePrevalidatedSlotLeaf → Prop)
+    (TargetChainFinalityProfileInstantiated
+      LifecycleTransitionProfileVerified
+      ReorgBelowFinalizedRejected
+      PendingWindowReorgFreesAdmissions
+      FinalizedAdmissionsPreserved : Prop) : Prop :=
+  D2FinalizedHeadPadSeedReorgSupport
+    TargetChainFinalityProfileInstantiated
+    LifecycleTransitionProfileVerified
+    ReorgBelowFinalizedRejected
+    PendingWindowReorgFreesAdmissions
+    FinalizedAdmissionsPreserved ∧
+    ∀ {L L' : ConcretePrevalidatedSlotLeaf},
+      admitted L →
+        admitted L' →
+          padSeedOf L = padSeedOf L' →
+            L = L'
+
+/--
+Selected-Rust F2 reduction hook.  A global pad-seed registry plus the D2
+finalized-head lifecycle facts supplies the `padSeedGloballyReorgSafeUnique`
+shape consumed by the deployable proof-family closure assumptions.  This does
+not assert deployment readiness; it only names the exact registry/finality
+inputs that must be bound by the lifecycle boundary.
+-/
+theorem selectedRustPadSeedGloballyReorgSafeUniqueReduction_v1
+    (reg : GlobalPadSeedRegistry)
+    (padSeedOf leafIdOf : ConcretePrevalidatedSlotLeaf → Nat)
+    (admitted : ConcretePrevalidatedSlotLeaf → Prop)
+    (TargetChainFinalityProfileInstantiated
+      LifecycleTransitionProfileVerified
+      ReorgBelowFinalizedRejected
+      PendingWindowReorgFreesAdmissions
+      FinalizedAdmissionsPreserved : Prop)
+    (hReg :
+      ∀ L,
+        admitted L →
+          reg.admittedFor (padSeedOf L) = some (leafIdOf L))
+    (hId : Function.Injective leafIdOf)
+    (hFinalityProfile : TargetChainFinalityProfileInstantiated)
+    (hLifecycleProfile : LifecycleTransitionProfileVerified)
+    (hReorgBelowFinalizedRejected : ReorgBelowFinalizedRejected)
+    (hPendingWindowFrees : PendingWindowReorgFreesAdmissions)
+    (hFinalizedPreserved : FinalizedAdmissionsPreserved) :
+    PadSeedGloballyReorgSafeUniqueWith
+      padSeedOf
+      admitted
+      TargetChainFinalityProfileInstantiated
+      LifecycleTransitionProfileVerified
+      ReorgBelowFinalizedRejected
+      PendingWindowReorgFreesAdmissions
+      FinalizedAdmissionsPreserved := by
+  constructor
+  · exact ⟨hFinalityProfile,
+      hLifecycleProfile,
+      hReorgBelowFinalizedRejected,
+      hPendingWindowFrees,
+      hFinalizedPreserved⟩
+  · intro L L' hL hL' hSamePad
+    exact padSeed_globally_injective_of_registry
+      reg padSeedOf leafIdOf admitted hReg hId hL hL' hSamePad
+
 /-- The leaf fields agree with the native public projections of its boundary. -/
 def NativeProjectionCarrierBinding
     (C : ConcreteGameConfig)

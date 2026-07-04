@@ -63,6 +63,12 @@ Executable evidence:
 - `spent_slot_ledger_blocks_stale_wallet_replay`;
 - `chain_state_file_stores_verify_record_and_persist_together`.
 
+The lifecycle boundary also pins
+`selectedRustPadSeedGloballyReorgSafeUniqueReduction_v1`, which reduces a global
+cross-account pad-seed registry plus the selected D2 finalized-head lifecycle
+facts into the F2 pad-seed reorg-safe uniqueness support shape. This is support
+for the proof-family closure assumptions, not a deployment-readiness claim.
+
 ## Break Boundary
 
 Two accepted spends for the same `auth` imply at least one of:

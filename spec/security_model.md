@@ -534,6 +534,10 @@ nonempty closure-witness availability when those five residual theorem
 instances are supplied together with an explicit post-quantum target, global
 pad-seed uniqueness invariant, and cleared `proofFamilyObligationsStillOpen`
 flag, so the current boundary remains fail-closed.
+`selectedRustPadSeedGloballyReorgSafeUniqueReduction_v1` now names the F2
+pad-seed seam reduction from a global admission registry plus the ADR-0010 D2
+finalized-head lifecycle facts into that pad-seed uniqueness shape; it is
+lifecycle/proof-boundary accounting, not deployment readiness.
 `formal/kat/path2_account_creation_proof_boundary_v1.json` is regenerated from
 that report, the selected `Path2AccountStarkResidualMatrixReportV1`, the current
 `Path2AccountStarkPayloadKatBoundaryReportV1`, the current sampler/timing

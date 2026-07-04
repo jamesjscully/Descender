@@ -121,6 +121,13 @@ fn main() -> Result<(), String> {
     let report = path2_direct_lifecycle_boundary_report_v1();
     let direct_report = path2_direct_theorem_boundary_report_v1();
     validate_path2_direct_lifecycle_boundary_report_v1(&report)?;
+    if report.pad_seed_reorg_safe_uniqueness_reduction_lean_theorem
+        != "selectedRustPadSeedGloballyReorgSafeUniqueReduction_v1"
+    {
+        return Err(
+            "direct lifecycle boundary lost the selected pad-seed Lean reduction".to_string(),
+        );
+    }
     let report_digest = hex_encode(&report.digest);
     let recomputed_digest = hex_encode(&path2_direct_lifecycle_boundary_report_v1_digest(&report));
     let transition_vector_corpus_evidence =
@@ -249,6 +256,10 @@ fn main() -> Result<(), String> {
             "/manifest/authority_snapshot/target_chain_lifecycle_profile_verification_artifact",
             report.target_chain_lifecycle_profile_verification_artifact,
         ),
+        (
+            "/manifest/authority_snapshot/pad_seed_reorg_safe_uniqueness_reduction_lean_theorem",
+            report.pad_seed_reorg_safe_uniqueness_reduction_lean_theorem,
+        ),
     ] {
         if str_at(&manifest, pointer)? != expected {
             return Err(format!("direct lifecycle manifest drifted at {pointer}"));
@@ -272,6 +283,7 @@ fn main() -> Result<(), String> {
         "/manifest/local_successor_state_boundary/coverage/target_chain_finality_profile_selected",
         "/manifest/local_successor_state_boundary/coverage/target_chain_finality_profile_instantiated",
         "/manifest/local_successor_state_boundary/coverage/lifecycle_transition_profile_verified",
+        "/manifest/local_successor_state_boundary/coverage/pad_seed_reorg_safe_uniqueness_reduction_bound",
         "/manifest/selected_finality_profile/target_chain_finality_profile_selected",
         "/manifest/selected_finality_profile/target_chain_finality_profile_instantiated",
         "/manifest/selected_finality_profile/target_chain_lifecycle_profile_verification_pinned",
@@ -482,6 +494,15 @@ fn main() -> Result<(), String> {
     )? {
         return Err("direct lifecycle manifest lost verified lifecycle profile flag".to_string());
     }
+    if str_at(
+        &manifest,
+        "/manifest/local_successor_state_boundary/coverage/pad_seed_reorg_safe_uniqueness_reduction_lean_theorem",
+    )? != report.pad_seed_reorg_safe_uniqueness_reduction_lean_theorem
+    {
+        return Err(
+            "direct lifecycle manifest lost pad-seed reorg-safe Lean reduction".to_string(),
+        );
+    }
 
     for (needle, label) in [
         ("slot_replay_or_rollback_break", "lifecycle break class"),
@@ -595,6 +616,7 @@ fn main() -> Result<(), String> {
         "Path2D2FinalityProfileState",
         "D2 finality profile rejects reorg below finalized head",
         "path2_d2_finality_profile_reorg_frees_window_but_preserves_finalized",
+        report.pad_seed_reorg_safe_uniqueness_reduction_lean_theorem,
     ] {
         require_contains(&source, needle, "lifecycle regression evidence")?;
     }

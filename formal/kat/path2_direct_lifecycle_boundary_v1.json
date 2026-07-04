@@ -11,6 +11,7 @@
       "lifecycle_manager_endpoint": "ProductionAccountLifecycleManager::verify_and_consume",
       "lifecycle_report_domain": "Descender.Path2.DirectLifecycleBoundaryReport.v1",
       "named_break": "slot_replay_or_rollback_break",
+      "pad_seed_reorg_safe_uniqueness_reduction_lean_theorem": "selectedRustPadSeedGloballyReorgSafeUniqueReduction_v1",
       "spent_slot_ledger_type": "ProductionSpentSlotLedger",
       "state_namespace_validator": "validate_path2_direct_slot_authorization_state_namespace",
       "support_file": "research/path2_one_use_successor_state_theorem.md",
@@ -27,11 +28,11 @@
     "corpus_id": "Descender.Path2.DirectLifecycleBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "direct_lifecycle_boundary_report_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
-      "direct_lifecycle_boundary_report_recomputed_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
-      "direct_theorem_boundary_report_digest": "a251a5b6396b3a24562766a9595843e367962a758a90a8775a01fa870d671a3b",
-      "direct_theorem_boundary_report_recomputed_digest": "a251a5b6396b3a24562766a9595843e367962a758a90a8775a01fa870d671a3b",
-      "direct_theorem_report_lifecycle_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f"
+      "direct_lifecycle_boundary_report_digest": "1a513152bf41a771f71972efb0cc781c606bbda55b13d8f36fecc472e79818d9",
+      "direct_lifecycle_boundary_report_recomputed_digest": "1a513152bf41a771f71972efb0cc781c606bbda55b13d8f36fecc472e79818d9",
+      "direct_theorem_boundary_report_digest": "e41dca951ae27430b0d19574c8dd346b235aa4c292731e78a6b08bfae906176c",
+      "direct_theorem_boundary_report_recomputed_digest": "e41dca951ae27430b0d19574c8dd346b235aa4c292731e78a6b08bfae906176c",
+      "direct_theorem_report_lifecycle_digest": "1a513152bf41a771f71972efb0cc781c606bbda55b13d8f36fecc472e79818d9"
     },
     "frozen_status": "draft_lifecycle_boundary_manifest",
     "generator": {
@@ -47,6 +48,8 @@
         "file_store_recovery_support_present": true,
         "lifecycle_transition_profile_verified": true,
         "local_successor_state_model_pinned": true,
+        "pad_seed_reorg_safe_uniqueness_reduction_bound": true,
+        "pad_seed_reorg_safe_uniqueness_reduction_lean_theorem": "selectedRustPadSeedGloballyReorgSafeUniqueReduction_v1",
         "recovery_burn_support_present": true,
         "reorg_burn_support_present": true,
         "replay_rejected_by_consume_set": true,
@@ -87,8 +90,8 @@
           "target_chain_finality_profile_instantiated": true,
           "target_chain_lifecycle_profile_review_pinned": true
         },
-        "direct_lifecycle_boundary_report_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
-        "direct_lifecycle_boundary_report_recomputed_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
+        "direct_lifecycle_boundary_report_digest": "1a513152bf41a771f71972efb0cc781c606bbda55b13d8f36fecc472e79818d9",
+        "direct_lifecycle_boundary_report_recomputed_digest": "1a513152bf41a771f71972efb0cc781c606bbda55b13d8f36fecc472e79818d9",
         "requirement_count": 7,
         "requirement_ids": [
           "profile_finality_source",
@@ -99,10 +102,10 @@
           "profile_restore_anchor_policy",
           "profile_persist_before_release_policy"
         ],
-        "review_digest": "7cecaef9f3c0f942869c33869b84b79241d02d243e48cfaf4745906493f8a67f",
+        "review_digest": "496cf9ce5b1036bae64ee0b89e87408593d01cfced84b1c277ee392936b30dfe",
         "review_id": "Path2.DirectLifecycleProfileReview.D2.safe-default.v1",
         "review_path": "formal/kat/path2_direct_lifecycle_profile_review_v1.json",
-        "review_recomputed_digest": "7cecaef9f3c0f942869c33869b84b79241d02d243e48cfaf4745906493f8a67f",
+        "review_recomputed_digest": "496cf9ce5b1036bae64ee0b89e87408593d01cfced84b1c277ee392936b30dfe",
         "review_schema": "Descender.Path2.DirectLifecycleProfileReview.v1",
         "review_status": "digest_pinned_target_chain_lifecycle_profile_review_not_deployment_ready",
         "schema": "Descender.Path2.DirectLifecycleProfileReviewEvidence.v1",
@@ -125,8 +128,8 @@
           "target_chain_lifecycle_profile_review_pinned": true,
           "target_chain_lifecycle_profile_verification_pinned": true
         },
-        "direct_lifecycle_boundary_report_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
-        "direct_lifecycle_boundary_report_recomputed_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
+        "direct_lifecycle_boundary_report_digest": "1a513152bf41a771f71972efb0cc781c606bbda55b13d8f36fecc472e79818d9",
+        "direct_lifecycle_boundary_report_recomputed_digest": "1a513152bf41a771f71972efb0cc781c606bbda55b13d8f36fecc472e79818d9",
         "requirement_count": 7,
         "requirement_ids": [
           "profile_finality_source",
@@ -140,10 +143,10 @@
         "schema": "Descender.Path2.DirectLifecycleProfileVerificationEvidence.v1",
         "status": "digest_pinned_direct_lifecycle_profile_verification_evidence",
         "target_chain_finality_profile_id": "ADR-0010.D2.finalized-head-reorg-window.v1",
-        "verification_digest": "8425d74af529c67ab732b6c106f8c93769e537baf803294268d35a03bbc2e163",
+        "verification_digest": "0de2bd02f2a4e4147f531c171974b3c40d93b5f7f6400c5428c680ee586e8b69",
         "verification_id": "Path2.DirectLifecycleProfileVerification.D2.production-reference.v1",
         "verification_path": "formal/kat/path2_direct_lifecycle_profile_verification_v1.json",
-        "verification_recomputed_digest": "8425d74af529c67ab732b6c106f8c93769e537baf803294268d35a03bbc2e163",
+        "verification_recomputed_digest": "0de2bd02f2a4e4147f531c171974b3c40d93b5f7f6400c5428c680ee586e8b69",
         "verification_schema": "Descender.Path2.DirectLifecycleProfileVerification.v1",
         "verification_status": "digest_pinned_target_chain_lifecycle_profile_verified_not_deployment_ready"
       },
@@ -179,13 +182,13 @@
           "lifecycle_transition_file_store_recovery",
           "lifecycle_transition_d2_finality_window"
         ],
-        "corpus_digest": "6ab3533156615158bdd3293b3c892217b166c43b822fd6368d7d3428b96f3476",
+        "corpus_digest": "87fa129edef9ea955ce0fcd644a9df323f632c63e0f3647e68ce9d3c18d7e725",
         "corpus_path": "formal/kat/path2_direct_lifecycle_transition_vectors_v1.json",
-        "corpus_recomputed_digest": "6ab3533156615158bdd3293b3c892217b166c43b822fd6368d7d3428b96f3476",
+        "corpus_recomputed_digest": "87fa129edef9ea955ce0fcd644a9df323f632c63e0f3647e68ce9d3c18d7e725",
         "corpus_schema": "Descender.Path2.DirectLifecycleTransitionVectors.v1",
         "corpus_status": "digest_pinned_direct_lifecycle_transition_vectors",
-        "direct_lifecycle_boundary_report_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
-        "direct_lifecycle_boundary_report_recomputed_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
+        "direct_lifecycle_boundary_report_digest": "1a513152bf41a771f71972efb0cc781c606bbda55b13d8f36fecc472e79818d9",
+        "direct_lifecycle_boundary_report_recomputed_digest": "1a513152bf41a771f71972efb0cc781c606bbda55b13d8f36fecc472e79818d9",
         "schema": "Descender.Path2.DirectLifecycleTransitionVectorCorpusEvidence.v1",
         "status": "digest_pinned_verified_direct_lifecycle_transition_vector_corpus_evidence"
       }
@@ -230,5 +233,5 @@
       ]
     }
   },
-  "manifest_digest": "8b5c56f632169623110609e5bc7c9ad9328b36b0997f1a7d11dfa0f7616e180a"
+  "manifest_digest": "1e969154939fc668cd3ecb2510391b68a14bdad28d221b2374d83701fa2f4452"
 }

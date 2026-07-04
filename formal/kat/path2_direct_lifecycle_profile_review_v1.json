@@ -124,8 +124,8 @@
       "artifact_path": "formal/kat/path2_direct_lifecycle_profile_review_v1.json",
       "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
       "deployment_ready": false,
-      "lifecycle_boundary_report_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
-      "lifecycle_boundary_report_recomputed_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
+      "lifecycle_boundary_report_digest": "1a513152bf41a771f71972efb0cc781c606bbda55b13d8f36fecc472e79818d9",
+      "lifecycle_boundary_report_recomputed_digest": "1a513152bf41a771f71972efb0cc781c606bbda55b13d8f36fecc472e79818d9",
       "lifecycle_transition_profile_verified": true,
       "normative_sources": [
         "spec/lifecycle_model.md",
@@ -147,5 +147,5 @@
     "schema": "Descender.Path2.DirectLifecycleProfileReview.v1",
     "status": "digest_pinned_target_chain_lifecycle_profile_review_not_deployment_ready"
   },
-  "review_digest": "7cecaef9f3c0f942869c33869b84b79241d02d243e48cfaf4745906493f8a67f"
+  "review_digest": "496cf9ce5b1036bae64ee0b89e87408593d01cfced84b1c277ee392936b30dfe"
 }

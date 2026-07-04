@@ -62,6 +62,7 @@ DIRECT_THEOREM_PREFLIGHT_MARKERS = [
     "PATH2_DIRECT_QROM_ACTION_SUPPORT_FILE",
     "PATH2_DIRECT_LIFECYCLE_SUPPORT_FILE",
     "PATH2_DIRECT_LIFECYCLE_THEOREM_TARGET",
+    "PATH2_DIRECT_LIFECYCLE_PAD_SEED_REORG_SAFE_UNIQUENESS_REDUCTION_LEAN_THEOREM",
     "PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS",
     "PATH2_DIRECT_THEOREM_TARGET",
     "PATH2_DIRECT_THEOREM_CONCLUSION",
@@ -75,6 +76,7 @@ DIRECT_THEOREM_PREFLIGHT_MARKERS = [
     "validate_path2_direct_qrom_action_boundary_report_v1",
     "path2_direct_lifecycle_boundary_report_v1",
     "validate_path2_direct_lifecycle_boundary_report_v1",
+    "selectedRustPadSeedGloballyReorgSafeUniqueReduction_v1",
     "path2_direct_theorem_boundary_report_v1",
     "validate_path2_direct_theorem_boundary_report_v1",
     "production_deployment_direct_theorem_blockers",
@@ -1115,6 +1117,8 @@ DIRECT_LIFECYCLE_BOUNDARY_MARKERS = {
         "direct_lifecycle_boundary_report_digest",
         "direct_theorem_report_lifecycle_digest",
         "local_successor_state_boundary",
+        "pad_seed_reorg_safe_uniqueness_reduction_lean_theorem",
+        "pad_seed_reorg_safe_uniqueness_reduction_bound",
         "open_obligations",
     ],
     "tools/parameter-search/src/bin/path2_direct_lifecycle_boundary_consistency.rs": [
@@ -1126,6 +1130,7 @@ DIRECT_LIFECYCLE_BOUNDARY_MARKERS = {
         "verify_path2_direct_single_slot_spend_authorization",
         "ProductionSpentSlotLedger",
         "ProductionChainStateFileStores",
+        "selectedRustPadSeedGloballyReorgSafeUniqueReduction_v1",
         "Path 2 direct lifecycle boundary consistency check passed.",
     ],
     "formal/kat/path2_direct_lifecycle_boundary_v1.json": [
@@ -1142,6 +1147,8 @@ DIRECT_LIFECYCLE_BOUNDARY_MARKERS = {
         '"local_successor_state_model_pinned": true',
         '"target_chain_finality_profile_instantiated": true',
         '"lifecycle_transition_profile_verified": true',
+        '"pad_seed_reorg_safe_uniqueness_reduction_bound": true',
+        "selectedRustPadSeedGloballyReorgSafeUniqueReduction_v1",
         '"deployment_ready": false',
     ],
     "scripts/check_build.sh": [

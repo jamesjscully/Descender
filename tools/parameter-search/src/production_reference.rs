@@ -10138,6 +10138,8 @@ pub struct Path2DirectLifecycleBoundaryReportV1 {
     pub target_chain_finality_profile_rule: &'static str,
     pub target_chain_finality_profile_instantiated: bool,
     pub lifecycle_transition_profile_verified: bool,
+    pub pad_seed_reorg_safe_uniqueness_reduction_lean_theorem: &'static str,
+    pub pad_seed_reorg_safe_uniqueness_reduction_bound: bool,
     pub deployment_ready: bool,
     pub blocker: &'static str,
 }
@@ -11523,6 +11525,8 @@ pub const PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_ID: &str =
 pub const PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_AUTHORITY: &str =
     "decisions/ADR-0010-registry-lifecycle-consensus-wiring-and-finality.md";
 pub const PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_RULE: &str = "permanence boundary equals chain FINALIZED head; admissions and consumptions in [finalized, head] are reorg-freeable by reorg_to(new_head)";
+pub const PATH2_DIRECT_LIFECYCLE_PAD_SEED_REORG_SAFE_UNIQUENESS_REDUCTION_LEAN_THEOREM: &str =
+    "selectedRustPadSeedGloballyReorgSafeUniqueReduction_v1";
 pub const PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS: [&str; 12] = [
     "path2_prevalidated_slot_consume_once_rejects_reauthorization",
     "path2_direct_single_slot_spend_composes_admission_signature_and_consume_once",
@@ -14223,6 +14227,9 @@ pub fn path2_direct_lifecycle_boundary_report_v1() -> Path2DirectLifecycleBounda
         target_chain_finality_profile_rule: PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_RULE,
         target_chain_finality_profile_instantiated: true,
         lifecycle_transition_profile_verified: true,
+        pad_seed_reorg_safe_uniqueness_reduction_lean_theorem:
+            PATH2_DIRECT_LIFECYCLE_PAD_SEED_REORG_SAFE_UNIQUENESS_REDUCTION_LEAN_THEOREM,
+        pad_seed_reorg_safe_uniqueness_reduction_bound: true,
         deployment_ready: false,
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
     };
@@ -14278,6 +14285,9 @@ pub fn validate_path2_direct_lifecycle_boundary_report_v1(
         || report.target_chain_finality_profile_rule != PATH2_DIRECT_LIFECYCLE_FINALITY_PROFILE_RULE
         || !report.target_chain_finality_profile_instantiated
         || !report.lifecycle_transition_profile_verified
+        || report.pad_seed_reorg_safe_uniqueness_reduction_lean_theorem
+            != PATH2_DIRECT_LIFECYCLE_PAD_SEED_REORG_SAFE_UNIQUENESS_REDUCTION_LEAN_THEOREM
+        || !report.pad_seed_reorg_safe_uniqueness_reduction_bound
         || report.deployment_ready
     {
         return Err(
@@ -72230,6 +72240,18 @@ fn path2_direct_lifecycle_boundary_report_v1_frame(
         b"lifecycle_transition_profile_verified",
         u64::from(report.lifecycle_transition_profile_verified),
     );
+    append_frame(
+        &mut frame,
+        b"pad_seed_reorg_safe_uniqueness_reduction_lean_theorem",
+        report
+            .pad_seed_reorg_safe_uniqueness_reduction_lean_theorem
+            .as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"pad_seed_reorg_safe_uniqueness_reduction_bound",
+        u64::from(report.pad_seed_reorg_safe_uniqueness_reduction_bound),
+    );
     append_u64(
         &mut frame,
         b"deployment_ready",
@@ -115920,6 +115942,11 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         );
         assert!(report.target_chain_finality_profile_instantiated);
         assert!(report.lifecycle_transition_profile_verified);
+        assert_eq!(
+            report.pad_seed_reorg_safe_uniqueness_reduction_lean_theorem,
+            PATH2_DIRECT_LIFECYCLE_PAD_SEED_REORG_SAFE_UNIQUENESS_REDUCTION_LEAN_THEOREM
+        );
+        assert!(report.pad_seed_reorg_safe_uniqueness_reduction_bound);
         assert!(!report.deployment_ready);
         assert_eq!(
             report.blocker,

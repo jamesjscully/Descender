@@ -185,6 +185,24 @@ theorem Descender.Path2FullSpendConcrete.selectedRustAcceptedBoundarySimulatorNo
           Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend →
         Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundarySimulatorNoExportWith SimulatorNoExportSound spend
 
+theorem Descender.Path2FullSpendConcrete.selectedRustPadSeedGloballyReorgSafeUniqueReduction_v1 :
+∀ (reg : Descender.Path2FullSpendConcrete.GlobalPadSeedRegistry)
+  (padSeedOf leafIdOf : Descender.Path2FullSpendConcrete.ConcretePrevalidatedSlotLeaf → Nat)
+  (admitted : Descender.Path2FullSpendConcrete.ConcretePrevalidatedSlotLeaf → Prop)
+  (TargetChainFinalityProfileInstantiated LifecycleTransitionProfileVerified ReorgBelowFinalizedRejected
+    PendingWindowReorgFreesAdmissions FinalizedAdmissionsPreserved : Prop),
+  (∀ (L : Descender.Path2FullSpendConcrete.ConcretePrevalidatedSlotLeaf),
+      admitted L → Eq (reg.admittedFor (padSeedOf L)) (Option.some (leafIdOf L))) →
+    Function.Injective leafIdOf →
+      TargetChainFinalityProfileInstantiated →
+        LifecycleTransitionProfileVerified →
+          ReorgBelowFinalizedRejected →
+            PendingWindowReorgFreesAdmissions →
+              FinalizedAdmissionsPreserved →
+                Descender.Path2FullSpendConcrete.PadSeedGloballyReorgSafeUniqueWith padSeedOf admitted
+                  TargetChainFinalityProfileInstantiated LifecycleTransitionProfileVerified ReorgBelowFinalizedRejected
+                  PendingWindowReorgFreesAdmissions FinalizedAdmissionsPreserved
+
 theorem Descender.Path2HashDomainAndMultiTarget.checkedCoreFrameByteDomainSeparated_of_instantiation :
 ∀ {R : Descender.Path2HashDomainAndMultiTarget.ActiveHashDomainRegistry}
   (I : Descender.Path2HashDomainAndMultiTarget.ActiveHashByteDomainInstantiation R),

@@ -154,8 +154,8 @@
       "artifact_path": "formal/kat/path2_direct_lifecycle_profile_verification_v1.json",
       "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
       "deployment_ready": false,
-      "lifecycle_boundary_report_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
-      "lifecycle_boundary_report_recomputed_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
+      "lifecycle_boundary_report_digest": "1a513152bf41a771f71972efb0cc781c606bbda55b13d8f36fecc472e79818d9",
+      "lifecycle_boundary_report_recomputed_digest": "1a513152bf41a771f71972efb0cc781c606bbda55b13d8f36fecc472e79818d9",
       "lifecycle_transition_profile_verified": true,
       "normative_sources": [
         "spec/lifecycle_model.md",
@@ -177,8 +177,8 @@
           "target_chain_finality_profile_instantiated": true,
           "target_chain_lifecycle_profile_review_pinned": true
         },
-        "direct_lifecycle_boundary_report_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
-        "direct_lifecycle_boundary_report_recomputed_digest": "cddcd426361c762e8b683cefb5552a5dcf30749915619f4f72726f5830bb9b1f",
+        "direct_lifecycle_boundary_report_digest": "1a513152bf41a771f71972efb0cc781c606bbda55b13d8f36fecc472e79818d9",
+        "direct_lifecycle_boundary_report_recomputed_digest": "1a513152bf41a771f71972efb0cc781c606bbda55b13d8f36fecc472e79818d9",
         "requirement_count": 7,
         "requirement_ids": [
           "profile_finality_source",
@@ -189,10 +189,10 @@
           "profile_restore_anchor_policy",
           "profile_persist_before_release_policy"
         ],
-        "review_digest": "7cecaef9f3c0f942869c33869b84b79241d02d243e48cfaf4745906493f8a67f",
+        "review_digest": "496cf9ce5b1036bae64ee0b89e87408593d01cfced84b1c277ee392936b30dfe",
         "review_id": "Path2.DirectLifecycleProfileReview.D2.safe-default.v1",
         "review_path": "formal/kat/path2_direct_lifecycle_profile_review_v1.json",
-        "review_recomputed_digest": "7cecaef9f3c0f942869c33869b84b79241d02d243e48cfaf4745906493f8a67f",
+        "review_recomputed_digest": "496cf9ce5b1036bae64ee0b89e87408593d01cfced84b1c277ee392936b30dfe",
         "review_schema": "Descender.Path2.DirectLifecycleProfileReview.v1",
         "review_status": "digest_pinned_target_chain_lifecycle_profile_review_not_deployment_ready",
         "schema": "Descender.Path2.DirectLifecycleProfileReviewEvidence.v1",
@@ -213,5 +213,5 @@
       "verification_scope": "Mode A direct lifecycle transition profile verification for ADR-0010 D2 finalized-head safe default"
     }
   },
-  "verification_digest": "8425d74af529c67ab732b6c106f8c93769e537baf803294268d35a03bbc2e163"
+  "verification_digest": "0de2bd02f2a4e4147f531c171974b3c40d93b5f7f6400c5428c680ee586e8b69"
 }

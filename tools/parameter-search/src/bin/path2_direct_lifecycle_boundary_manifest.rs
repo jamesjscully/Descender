@@ -88,6 +88,8 @@ fn manifest_body() -> Result<Value, String> {
                 lifecycle_report.target_chain_lifecycle_profile_verification_id,
             "target_chain_lifecycle_profile_verification_artifact":
                 lifecycle_report.target_chain_lifecycle_profile_verification_artifact,
+            "pad_seed_reorg_safe_uniqueness_reduction_lean_theorem":
+                lifecycle_report.pad_seed_reorg_safe_uniqueness_reduction_lean_theorem,
             "direct_theorem_blocker": lifecycle_report.blocker
         },
         "digests": {
@@ -135,6 +137,10 @@ fn manifest_body() -> Result<Value, String> {
                     lifecycle_report.target_chain_finality_profile_instantiated,
                 "lifecycle_transition_profile_verified":
                     lifecycle_report.lifecycle_transition_profile_verified,
+                "pad_seed_reorg_safe_uniqueness_reduction_lean_theorem":
+                    lifecycle_report.pad_seed_reorg_safe_uniqueness_reduction_lean_theorem,
+                "pad_seed_reorg_safe_uniqueness_reduction_bound":
+                    lifecycle_report.pad_seed_reorg_safe_uniqueness_reduction_bound,
                 "deployment_ready": lifecycle_report.deployment_ready,
                 "blocker": lifecycle_report.blocker
             },
