@@ -2471,9 +2471,14 @@ instantiation theorem.
 `selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_acceptedSpendForgeryProb_of_remaining_break_bounds`
 now mirrors the direct accepted-spend reduction at the trace-model
 remaining-break-bounds endpoint.
+`selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg_of_remaining_break_bounds`
+and
+`selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one_of_remaining_break_bounds`
+now mirror the erased boundary's probability-shape facts at the same endpoint.
 `selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound_of_remaining_break_bounds`
 now mirrors the active Path 2 bound handoff there, so the faithful AP2-N003 route
-names both native-boundary erasure consequences.
+names the native-boundary erasure consequences without dropping probability
+shape.
 AP2-N003 priced-bound transcript-cap guard note:
 The accepted-spend fail-closed regression now forges an otherwise pricing-ready
 report whose priced-bound security bits consume the whole QROM-discounted

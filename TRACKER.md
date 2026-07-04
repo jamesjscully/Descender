@@ -227,8 +227,9 @@ explicit. The trace-model route also exposes
 `selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_acceptedSpendForgeryProb_of_remaining_break_bounds`
 and
 `selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound_of_remaining_break_bounds`,
-so the final boundary's accepted-spend reduction and active Path 2 handoff
-remain named after erasure.
+plus nonnegative and at-most-one signature-success endpoints, so the final
+boundary's accepted-spend reduction, probability shape, and active Path 2
+handoff remain named after erasure.
 Generic certificate and production-witness projections now also keep
 the erased full-signature boundary's accepted-spend reduction, active Path 2
 bound handoff, nonnegative success probability, and at-most-one success
