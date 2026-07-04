@@ -262,7 +262,10 @@ union-pricing, and priced-bound digest slots before any future pricing witness
 can route through the accepted-spend source certificate. This hardens the
 structural handoff only; it does not supply the concrete trace distribution,
 per-event cryptographic bounds, or priced accepted-spend theorem required for
-deployment.
+deployment. `SelectedRustAcceptedSpendPricingObligationGap` and
+`SelectedRustFullSignatureReductionProductionObligationGap` mirror the current
+fail-closed diagnostics in Lean and prove that those missing hard halves block
+the selected pricing and production-completeness facts.
 
 ## Named Break Classes
 

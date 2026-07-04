@@ -157,8 +157,12 @@ evidence report now routes its structural digest verification through
 proof must carry the aggregate numeric-evidence verification bit and every
 finite-trace, outcome-carrier, accepted-event, break-family, named-break,
 union-pricing, and priced-bound digest slot as a nonzero proof object before
-future accepted-spend pricing can consume it; pricing and per-event
-cryptographic bounds remain open. The
+future accepted-spend pricing can consume it. Lean also mirrors the current
+accepted-spend pricing and full-reduction production missing-obligation
+diagnostics as explicit gap records that block `PricingFactsComplete` and
+`ProductionFactsComplete`, and the Rust future-theorem scanners require those
+gap names in the AP2-N003 route; pricing and per-event cryptographic bounds
+remain open. The
 Lean concrete full-spend carrier now makes account creation acceptance consume
 an explicit `AccountCreationProofBoundaryEvidenceAccepted` predicate, binding
 the proof-boundary report digest, accepted proof-boundary evidence digest,

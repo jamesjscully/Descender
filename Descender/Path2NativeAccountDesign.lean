@@ -2297,12 +2297,65 @@ theorem selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_
     selectedRustAcceptedSpendEvidenceReport.acceptedSpendNumericBudgetMeetsTarget = false :=
   selectedRustAcceptedSpendEvidenceReport_currentMissingPricingFactsFalse.2.2.2.2
 
+/--
+Lean mirror of the current accepted-spend pricing diagnostic.
+
+This is deliberately fail-closed: it records the hard pricing facts that the
+selected report is still missing before a pricing witness can exist.
+-/
+structure SelectedRustAcceptedSpendPricingObligationGap where
+  acceptedSpendNumericBoundPricedMissing :
+    selectedRustAcceptedSpendEvidenceReport.acceptedSpendNumericBoundPriced = false
+  acceptedSpendEventBoundPricedMissing :
+    selectedRustAcceptedSpendEvidenceReport.acceptedSpendEventBoundPriced = false
+  namedBreakEventBoundsPricedMissing :
+    selectedRustAcceptedSpendEvidenceReport.namedBreakEventBoundsPriced = false
+  breakPricingBudgetMeetsPricedBoundMissing :
+    selectedRustAcceptedSpendEvidenceReport.breakPricingBudgetMeetsPricedBound = false
+  acceptedSpendNumericBudgetMeetsTargetMissing :
+    selectedRustAcceptedSpendEvidenceReport.acceptedSpendNumericBudgetMeetsTarget = false
+  acceptedSpendPricedBoundSecurityBitsZero :
+    selectedRustAcceptedSpendEvidenceReport.acceptedSpendPricedBoundSecurityBits = 0
+  acceptedSpendPricedBoundSecurityBelowTarget :
+    selectedRustAcceptedSpendEvidenceReport.acceptedSpendPricedBoundSecurityBits <
+      selectedRustAcceptedSpendEvidenceReport.targetSecurityBits
+
+/-- Current selected accepted-spend pricing obligations still missing in Lean. -/
+def selectedRustAcceptedSpendEvidenceReport_currentPricingObligationGap :
+    SelectedRustAcceptedSpendPricingObligationGap where
+  acceptedSpendNumericBoundPricedMissing :=
+    selectedRustAcceptedSpendEvidenceReport_currentNumericBoundPriced_false
+  acceptedSpendEventBoundPricedMissing :=
+    selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundPriced_false
+  namedBreakEventBoundsPricedMissing :=
+    selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsPriced_false
+  breakPricingBudgetMeetsPricedBoundMissing :=
+    selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetMeetsPricedBound_false
+  acceptedSpendNumericBudgetMeetsTargetMissing :=
+    selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_false
+  acceptedSpendPricedBoundSecurityBitsZero :=
+    selectedRustAcceptedSpendEvidenceReport_currentPricedBoundBitsZero
+  acceptedSpendPricedBoundSecurityBelowTarget :=
+    selectedRustAcceptedSpendEvidenceReport_currentPricedBoundBelowTarget
+
+/-- The current accepted-spend pricing gap blocks the selected pricing half. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete
+    (Gap : SelectedRustAcceptedSpendPricingObligationGap) :
+    ¬ selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete := by
+  intro hPricing
+  have hNumericBoundPriced :
+      selectedRustAcceptedSpendEvidenceReport.acceptedSpendNumericBoundPriced = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_numericBoundPriced
+      selectedRustAcceptedSpendEvidenceReport hPricing
+  rw [Gap.acceptedSpendNumericBoundPricedMissing] at hNumericBoundPriced
+  cases hNumericBoundPriced
+
 /-- The current selected accepted-spend report cannot complete the pricing half. -/
 theorem selectedRustAcceptedSpendEvidenceReport_currentPricingFactsComplete_impossible :
     ¬ selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete := by
-  intro hPricing
-  simp [SelectedRustAcceptedSpendSoundnessEvidenceReport.PricingFactsComplete,
-    selectedRustAcceptedSpendEvidenceReport] at hPricing
+  exact
+    selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete
+      selectedRustAcceptedSpendEvidenceReport_currentPricingObligationGap
 
 /--
 For the active accepted-spend report, the only remaining report-completeness
@@ -3512,12 +3565,56 @@ theorem selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatc
     selectedRustFullSignatureReductionEvidenceReport.verifierGameMatchesProductionExecution = false :=
   selectedRustFullSignatureReductionEvidenceReport_currentMissingReductionFactsFalse.2.2.2.2
 
+/--
+Lean mirror of the current full-reduction production diagnostic.
+
+This records the hard production facts that remain false before the selected
+full-signature reduction certificate can be instantiated.
+-/
+structure SelectedRustFullSignatureReductionProductionObligationGap where
+  productionSignatureProbabilityPinnedMissing :
+    selectedRustFullSignatureReductionEvidenceReport.productionSignatureProbabilityPinned = false
+  signatureSuccessMatchesAcceptedSpendGameMissing :
+    selectedRustFullSignatureReductionEvidenceReport.signatureSuccessMatchesAcceptedSpendGame = false
+  acceptedSpendProbabilityLinkedMissing :
+    selectedRustFullSignatureReductionEvidenceReport.acceptedSpendProbabilityLinked = false
+  allActiveQuerySymbolsPricedMissing :
+    selectedRustFullSignatureReductionEvidenceReport.allActiveQuerySymbolsPriced = false
+  verifierGameMatchesProductionExecutionMissing :
+    selectedRustFullSignatureReductionEvidenceReport.verifierGameMatchesProductionExecution = false
+
+/-- Current selected full-reduction production obligations still missing in Lean. -/
+def selectedRustFullSignatureReductionEvidenceReport_currentProductionObligationGap :
+    SelectedRustFullSignatureReductionProductionObligationGap where
+  productionSignatureProbabilityPinnedMissing :=
+    selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityPinned_false
+  signatureSuccessMatchesAcceptedSpendGameMissing :=
+    selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessMatchesAcceptedSpendGame_false
+  acceptedSpendProbabilityLinkedMissing :=
+    selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityLinked_false
+  allActiveQuerySymbolsPricedMissing :=
+    selectedRustFullSignatureReductionEvidenceReport_currentAllActiveQuerySymbolsPriced_false
+  verifierGameMatchesProductionExecutionMissing :=
+    selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatchesProductionExecution_false
+
+/-- The current full-reduction production gap blocks the selected production half. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksProductionFactsComplete
+    (Gap : SelectedRustFullSignatureReductionProductionObligationGap) :
+    ¬ selectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete := by
+  intro hProduction
+  have hProductionPinned :
+      selectedRustFullSignatureReductionEvidenceReport.productionSignatureProbabilityPinned = true :=
+    SelectedRustFullSignatureReductionEvidenceReport.productionFactsComplete_productionSignatureProbabilityPinned
+      selectedRustFullSignatureReductionEvidenceReport hProduction
+  rw [Gap.productionSignatureProbabilityPinnedMissing] at hProductionPinned
+  cases hProductionPinned
+
 /-- The current selected full-reduction report cannot complete the production half. -/
 theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionFactsComplete_impossible :
     ¬ selectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete := by
-  intro hProduction
-  simp [SelectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete,
-    selectedRustFullSignatureReductionEvidenceReport] at hProduction
+  exact
+    selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksProductionFactsComplete
+      selectedRustFullSignatureReductionEvidenceReport_currentProductionObligationGap
 
 /--
 For the active full-signature reduction report, the only remaining

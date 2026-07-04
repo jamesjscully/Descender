@@ -2384,3 +2384,13 @@ pricing, and success-to-priced-bound pricing. The accepted-spend source gate
 requires these source-level projection names, so the final theorem must keep
 the report/digest-bound concrete source on the proof path instead of citing
 only raw `SelectedRustConcreteAcceptedSpendNumericCertificate` projections.
+AP2-N003 hard-half gap mirror note:
+Lean now records the current accepted-spend pricing diagnostic as
+`SelectedRustAcceptedSpendPricingObligationGap` and the current full-reduction
+production diagnostic as
+`SelectedRustFullSignatureReductionProductionObligationGap`. The selected gap
+values prove that the current report values block `PricingFactsComplete` and
+`ProductionFactsComplete`, and the Rust future-theorem scanners require those
+gap mirrors in the accepted-spend and full-reduction instantiation shapes. This
+keeps the fail-closed AP2-N003 hard halves visible without flipping any pricing
+or production-readiness bit.
