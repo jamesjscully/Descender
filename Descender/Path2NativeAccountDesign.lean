@@ -4618,6 +4618,22 @@ theorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecur
     Cert.toNativeFullSignatureSecurityBoundary.signatureForgerySuccessProb <= 1 :=
   Cert.signatureForgerySuccessProb_le_one
 
+/-- The erased full-signature boundary preserves the accepted-spend reduction. -/
+theorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_acceptedSpendForgeryProb
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.toNativeFullSignatureSecurityBoundary.signatureForgerySuccessProb <=
+      Cert.toNativeFullSignatureSecurityBoundary.acceptedSpendSoundness.acceptedSpendForgeryProb :=
+  NativeFullSignatureSecurityBoundary.signatureForgerySuccessProb_le_acceptedSpendForgeryProb
+    Cert.toNativeFullSignatureSecurityBoundary
+
+/-- The erased full-signature boundary exposes the active Path 2 bound handoff. -/
+theorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.toNativeFullSignatureSecurityBoundary.fullSignatureSuccessProb <=
+      Cert.toNativeFullSignatureSecurityBoundary.activePathForgeryBound :=
+  NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound
+    Cert.toNativeFullSignatureSecurityBoundary
+
 namespace SelectedRustFullSignatureReductionProductionWitness
 
 /-- The production witness reaches the exported accepted-spend probability. -/
@@ -4652,6 +4668,32 @@ theorem toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_act
     (toNativeFullSignatureSecurityBoundary W).signatureForgerySuccessProb <=
       ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
   (toFullSignatureReductionCertificate W).toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget
+
+/-- The erased boundary from the production witness keeps signature success nonnegative. -/
+theorem toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    0 <= (toNativeFullSignatureSecurityBoundary W).signatureForgerySuccessProb :=
+  (toFullSignatureReductionCertificate W).toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg
+
+/-- The erased boundary from the production witness keeps signature success at most one. -/
+theorem toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    (toNativeFullSignatureSecurityBoundary W).signatureForgerySuccessProb <= 1 :=
+  (toFullSignatureReductionCertificate W).toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one
+
+/-- The erased boundary from the production witness preserves the accepted-spend reduction. -/
+theorem toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_acceptedSpendForgeryProb
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    (toNativeFullSignatureSecurityBoundary W).signatureForgerySuccessProb <=
+      (toNativeFullSignatureSecurityBoundary W).acceptedSpendSoundness.acceptedSpendForgeryProb :=
+  (toFullSignatureReductionCertificate W).toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_acceptedSpendForgeryProb
+
+/-- The erased boundary from the production witness exposes the active Path 2 bound handoff. -/
+theorem toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    (toNativeFullSignatureSecurityBoundary W).fullSignatureSuccessProb <=
+      (toNativeFullSignatureSecurityBoundary W).activePathForgeryBound :=
+  (toFullSignatureReductionCertificate W).toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound
 
 end SelectedRustFullSignatureReductionProductionWitness
 

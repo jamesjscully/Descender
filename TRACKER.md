@@ -223,7 +223,13 @@ full-signature layer through
 projects the erased native full-signature boundary to the fixed active target
 while keeping selected `ProductionFactsComplete` bits, hash-budget facts,
 production signature probability pinning, and verifier/model obligations
-explicit.
+explicit. Generic certificate and production-witness projections now also keep
+the erased full-signature boundary's accepted-spend reduction, active Path 2
+bound handoff, nonnegative success probability, and at-most-one success
+probability facts named after erasure through
+`SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_*`
+and
+`SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_*`.
 Pricing and per-event cryptographic bounds remain open. The
 Lean concrete full-spend carrier now makes account creation acceptance consume
 an explicit `AccountCreationProofBoundaryEvidenceAccepted` predicate, binding

@@ -2456,6 +2456,14 @@ production bits behind only `ProductionFactsComplete`.
 `SelectedRustFullSignatureReductionProductionWitness.ofAcceptedSpendAndReportBits`
 now provides the named witness constructor for that route while still requiring
 the five production report-bit proofs independently.
+AP2-N003 erased-boundary certificate/witness projection note:
+`SelectedRustFullSignatureReductionCertificate` now exposes direct erased-boundary
+projections for signature-success-to-accepted-spend probability and active
+Path 2 bound handoff, in addition to nonnegative, at-most-one, and active-target
+success bounds. `SelectedRustFullSignatureReductionProductionWitness` mirrors
+those erased-boundary projections after witness-to-certificate conversion. This
+keeps the final AP2-N003 theorem's post-erasure boundary facts named without
+turning the current fail-closed production report into a completed certificate.
 AP2-N003 priced-bound transcript-cap guard note:
 The accepted-spend fail-closed regression now forges an otherwise pricing-ready
 report whose priced-bound security bits consume the whole QROM-discounted
