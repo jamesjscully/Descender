@@ -52445,6 +52445,10 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_componentBudget",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_active128BitTarget",
+        "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_nonneg",
+        "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_one",
+        "SelectedRustFullSignatureReductionProductionWitness.productionSignatureForgerySuccessProb_nonneg",
+        "SelectedRustFullSignatureReductionProductionWitness.productionSignatureForgerySuccessProb_le_one",
         "SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary",
         "SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget",
         "SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg",
@@ -52573,6 +52577,10 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_componentBudget",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_active128BitTarget",
+        "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_nonneg",
+        "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_one",
+        "SelectedRustFullSignatureReductionProductionWitness.productionSignatureForgerySuccessProb_nonneg",
+        "SelectedRustFullSignatureReductionProductionWitness.productionSignatureForgerySuccessProb_le_one",
         "SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary",
         "SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget",
         "SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg",
@@ -89160,6 +89168,14 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_componentBudget
   let _fullReductionProductionWitnessActiveTarget :=
     SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_active128BitTarget
+  let _fullReductionProductionWitnessNonnegative :=
+    SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_nonneg
+  let _fullReductionProductionWitnessLeOne :=
+    SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_one
+  let _fullReductionProductionWitnessProductionNonnegative :=
+    SelectedRustFullSignatureReductionProductionWitness.productionSignatureForgerySuccessProb_nonneg
+  let _fullReductionProductionWitnessProductionLeOne :=
+    SelectedRustFullSignatureReductionProductionWitness.productionSignatureForgerySuccessProb_le_one
   let _fullReductionProductionWitnessBoundary :=
     SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary
   let _fullReductionProductionWitnessBoundaryActiveTarget :=

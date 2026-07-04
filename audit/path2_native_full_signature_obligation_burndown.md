@@ -2232,7 +2232,8 @@ projects the concrete accepted-spend component bound, named-break component
 bounds, component-budget bound, and full-success-to-priced-bound inequality.
 The full-reduction production witness now projects the production probability
 pin, accepted-spend-game equality, accepted-spend certificate probability
-bound, query-budget pricing, and multi-target pricing. The Rust source gates
+bound, selected/production probability shape, query-budget pricing, and
+multi-target pricing. The Rust source gates
 require these projection names, so future theorem text cannot merely mention a
 witness type while ignoring the real inequalities it carries.
 AP2-N003 pricing-witness route note: `SelectedRustConcreteAcceptedSpendPricingWitness`
@@ -2444,7 +2445,8 @@ single witness object rather than only passing around a tuple-shaped
 AP2-N003 production-witness route note:
 `SelectedRustFullSignatureReductionProductionWitness` now projects selected
 signature success through the accepted-spend probability, the active 128-bit
-target, and the erased native full-signature boundary. It also exposes named
+target, selected/production nonnegative and at-most-one probability shape, and
+the erased native full-signature boundary. It also exposes named
 hard-bit projections for the five full-reduction production-half report facts:
 production probability pinning, signature-success/accepted-spend-game linkage,
 accepted-spend probability linkage, all-active-query-symbol pricing, and

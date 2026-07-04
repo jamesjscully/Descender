@@ -237,8 +237,10 @@ probability facts named after erasure through
 `SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_*`
 and
 `SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_*`;
-the Rust full-reduction source-shape gate now requires those erased-boundary
-projection names, plus
+the production witness also exposes selected and production signature
+probability nonnegative/at-most-one facts before boundary erasure. The Rust
+full-reduction source-shape gate now requires those witness probability-shape
+names and erased-boundary projection names, plus
 `NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound`,
 before it accepts the future final instantiation theorem.
 Pricing and per-event cryptographic bounds remain open. The

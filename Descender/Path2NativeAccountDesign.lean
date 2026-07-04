@@ -4656,6 +4656,30 @@ theorem signatureForgerySuccessProb_le_active128BitTarget
     W.signatureForgerySuccessProb <= ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
   (toFullSignatureReductionCertificate W).signatureForgerySuccessProb_le_active128BitTarget
 
+/-- The production witness keeps selected signature success nonnegative. -/
+theorem signatureForgerySuccessProb_nonneg
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    0 <= W.signatureForgerySuccessProb :=
+  (toFullSignatureReductionCertificate W).signatureForgerySuccessProb_nonneg
+
+/-- The production witness keeps selected signature success at most one. -/
+theorem signatureForgerySuccessProb_le_one
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    W.signatureForgerySuccessProb <= 1 :=
+  (toFullSignatureReductionCertificate W).signatureForgerySuccessProb_le_one
+
+/-- The production witness keeps production signature success nonnegative. -/
+theorem productionSignatureForgerySuccessProb_nonneg
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    0 <= W.productionSignatureForgerySuccessProb :=
+  (toFullSignatureReductionCertificate W).productionSignatureForgerySuccessProb_nonneg
+
+/-- The production witness keeps production signature success at most one. -/
+theorem productionSignatureForgerySuccessProb_le_one
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    W.productionSignatureForgerySuccessProb <= 1 :=
+  (toFullSignatureReductionCertificate W).productionSignatureForgerySuccessProb_le_one
+
 /-- Erase the selected production witness directly into the native full-signature boundary. -/
 def toNativeFullSignatureSecurityBoundary
     (W : SelectedRustFullSignatureReductionProductionWitness) :
