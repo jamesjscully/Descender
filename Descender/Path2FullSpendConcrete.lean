@@ -3956,6 +3956,43 @@ theorem breakProb_le_breakBound
       W.concreteCertificate.pricedCertificate.breakBound breakEvent :=
   W.concreteCertificate.pricedCertificate.breakProb_le_breakBound breakEvent
 
+/-- A selected pricing witness exposes zero probability for any unreachable named break. -/
+theorem breakProb_eq_zero_of_never
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness)
+    (breakEvent : W.concreteCertificate.pricedCertificate.Break)
+    (hNever :
+      ∀ trace : W.concreteCertificate.pricedCertificate.Trace,
+        W.concreteCertificate.pricedCertificate.namedBreakEvent trace breakEvent =
+          false) :
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        W.concreteCertificate.pricedCertificate.Trace
+        W.concreteCertificate.pricedCertificate.Outcome
+        W.concreteCertificate.pricedCertificate.Break
+        W.concreteCertificate.pricedCertificate.traceFintype
+        W.concreteCertificate.pricedCertificate.breakFintype
+        W.concreteCertificate.pricedCertificate.game breakEvent = 0 :=
+  W.concreteCertificate.pricedCertificate.breakProb_eq_zero_of_never
+    breakEvent hNever
+
+/-- A selected pricing witness prices any unreachable named break below `2^-133`. -/
+theorem breakProb_le_2pow_neg133_of_never
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness)
+    (breakEvent : W.concreteCertificate.pricedCertificate.Break)
+    (hNever :
+      ∀ trace : W.concreteCertificate.pricedCertificate.Trace,
+        W.concreteCertificate.pricedCertificate.namedBreakEvent trace breakEvent =
+          false) :
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        W.concreteCertificate.pricedCertificate.Trace
+        W.concreteCertificate.pricedCertificate.Outcome
+        W.concreteCertificate.pricedCertificate.Break
+        W.concreteCertificate.pricedCertificate.traceFintype
+        W.concreteCertificate.pricedCertificate.breakFintype
+        W.concreteCertificate.pricedCertificate.game breakEvent <=
+      (1 : ℝ) / 2 ^ 133 :=
+  W.concreteCertificate.pricedCertificate.breakProb_le_2pow_neg133_of_never
+    breakEvent hNever
+
 /-- The selected pricing witness exposes accepted-spend component budget inclusion. -/
 theorem acceptedSpendBound_le_componentBudget
     (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
@@ -4483,6 +4520,39 @@ theorem SelectedRustConcreteAcceptedSpendNumericCertificate.breakProb_le_one
         Cert.pricedCertificate.game breakEvent <= 1 :=
   Cert.pricedCertificate.breakProb_le_one breakEvent
 
+/-- The selected concrete numeric certificate exposes zero probability for any unreachable named break. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.breakProb_eq_zero_of_never
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate)
+    (breakEvent : Cert.pricedCertificate.Break)
+    (hNever :
+      ∀ trace : Cert.pricedCertificate.Trace,
+        Cert.pricedCertificate.namedBreakEvent trace breakEvent = false) :
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        Cert.pricedCertificate.Trace
+        Cert.pricedCertificate.Outcome
+        Cert.pricedCertificate.Break
+        Cert.pricedCertificate.traceFintype
+        Cert.pricedCertificate.breakFintype
+        Cert.pricedCertificate.game breakEvent = 0 :=
+  Cert.pricedCertificate.breakProb_eq_zero_of_never breakEvent hNever
+
+/-- The selected concrete numeric certificate prices any unreachable named break below `2^-133`. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.breakProb_le_2pow_neg133_of_never
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate)
+    (breakEvent : Cert.pricedCertificate.Break)
+    (hNever :
+      ∀ trace : Cert.pricedCertificate.Trace,
+        Cert.pricedCertificate.namedBreakEvent trace breakEvent = false) :
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        Cert.pricedCertificate.Trace
+        Cert.pricedCertificate.Outcome
+        Cert.pricedCertificate.Break
+        Cert.pricedCertificate.traceFintype
+        Cert.pricedCertificate.breakFintype
+        Cert.pricedCertificate.game breakEvent <=
+      (1 : ℝ) / 2 ^ 133 :=
+  Cert.pricedCertificate.breakProb_le_2pow_neg133_of_never breakEvent hNever
+
 /-- The selected concrete numeric certificate exposes the finite component budget. -/
 theorem SelectedRustConcreteAcceptedSpendNumericCertificate.breakBudget_le_pricedBound
     (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
@@ -4683,6 +4753,41 @@ theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.breakProb_le_o
         Source.concreteCertificate.pricedCertificate.breakFintype
         Source.concreteCertificate.pricedCertificate.game breakEvent <= 1 :=
   Source.concreteCertificate.breakProb_le_one breakEvent
+
+/-- The source-bound concrete certificate exposes zero probability for any unreachable named break. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.breakProb_eq_zero_of_never
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate)
+    (breakEvent : Source.concreteCertificate.pricedCertificate.Break)
+    (hNever :
+      ∀ trace : Source.concreteCertificate.pricedCertificate.Trace,
+        Source.concreteCertificate.pricedCertificate.namedBreakEvent trace
+          breakEvent = false) :
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        Source.concreteCertificate.pricedCertificate.Trace
+        Source.concreteCertificate.pricedCertificate.Outcome
+        Source.concreteCertificate.pricedCertificate.Break
+        Source.concreteCertificate.pricedCertificate.traceFintype
+        Source.concreteCertificate.pricedCertificate.breakFintype
+        Source.concreteCertificate.pricedCertificate.game breakEvent = 0 :=
+  Source.concreteCertificate.breakProb_eq_zero_of_never breakEvent hNever
+
+/-- The source-bound concrete certificate prices any unreachable named break below `2^-133`. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.breakProb_le_2pow_neg133_of_never
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate)
+    (breakEvent : Source.concreteCertificate.pricedCertificate.Break)
+    (hNever :
+      ∀ trace : Source.concreteCertificate.pricedCertificate.Trace,
+        Source.concreteCertificate.pricedCertificate.namedBreakEvent trace
+          breakEvent = false) :
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        Source.concreteCertificate.pricedCertificate.Trace
+        Source.concreteCertificate.pricedCertificate.Outcome
+        Source.concreteCertificate.pricedCertificate.Break
+        Source.concreteCertificate.pricedCertificate.traceFintype
+        Source.concreteCertificate.pricedCertificate.breakFintype
+        Source.concreteCertificate.pricedCertificate.game breakEvent <=
+      (1 : ℝ) / 2 ^ 133 :=
+  Source.concreteCertificate.breakProb_le_2pow_neg133_of_never breakEvent hNever
 
 /-- The source-bound concrete certificate exposes accepted-spend component pricing. -/
 theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendProb_le_acceptedSpendBound

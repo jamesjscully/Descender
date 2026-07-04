@@ -210,6 +210,46 @@ end
 namespace PricedAcceptedSpendNumericCertificate
 
 /--
+A packaged named break that never fires under the priced certificate's trace
+model contributes zero probability.
+
+This is the certificate-level form of the structural state-machine closure:
+once a concrete trace model proves a named break is unreachable on every trace,
+the event consumes no accepted-spend pricing budget.
+-/
+theorem breakProb_eq_zero_of_never
+    (C : PricedAcceptedSpendNumericCertificate)
+    (breakEvent : C.Break)
+    (hNever :
+      ∀ trace : C.Trace, C.namedBreakEvent trace breakEvent = false) :
+    @AcceptedSpendNumericGame.breakProb
+        C.Trace C.Outcome C.Break C.traceFintype C.breakFintype
+        C.game breakEvent = 0 := by
+  exact
+    @AcceptedSpendNumericGame.breakProb_eq_zero_of_never
+      C.Trace C.Outcome C.Break C.traceFintype C.breakFintype
+      C.game breakEvent
+      (by
+        intro trace
+        simpa [PricedAcceptedSpendNumericCertificate.namedBreakEvent,
+          PricedAcceptedSpendNumericCertificate.observe] using hNever trace)
+
+/--
+A structurally impossible named break satisfies the active `2^-133`
+per-break component probability target.
+-/
+theorem breakProb_le_2pow_neg133_of_never
+    (C : PricedAcceptedSpendNumericCertificate)
+    (breakEvent : C.Break)
+    (hNever :
+      ∀ trace : C.Trace, C.namedBreakEvent trace breakEvent = false) :
+    @AcceptedSpendNumericGame.breakProb
+        C.Trace C.Outcome C.Break C.traceFintype C.breakFintype
+        C.game breakEvent ≤ (1 : ℝ) / 2 ^ 133 := by
+  rw [C.breakProb_eq_zero_of_never breakEvent hNever]
+  positivity
+
+/--
 Packaged component-budget closure for the active selected break family.
 
 This is the certificate-level form of the 128-bit arithmetic check: once the
@@ -273,6 +313,43 @@ theorem successProb_le_2pow_neg128_of_proportional_bounds
 end PricedAcceptedSpendNumericCertificate
 
 namespace SelectedAcceptedSpendNumericSource
+
+/--
+Selected-source zero-probability closure for a named break that never fires.
+-/
+theorem breakProb_eq_zero_of_never
+    (Source : SelectedAcceptedSpendNumericSource)
+    (breakEvent : Source.pricedCertificate.Break)
+    (hNever :
+      ∀ trace : Source.pricedCertificate.Trace,
+        Source.pricedCertificate.namedBreakEvent trace breakEvent = false) :
+    @AcceptedSpendNumericGame.breakProb
+        Source.pricedCertificate.Trace
+        Source.pricedCertificate.Outcome
+        Source.pricedCertificate.Break
+        Source.pricedCertificate.traceFintype
+        Source.pricedCertificate.breakFintype
+        Source.pricedCertificate.game breakEvent = 0 :=
+  Source.pricedCertificate.breakProb_eq_zero_of_never breakEvent hNever
+
+/--
+Selected-source active per-break probability target for a structurally
+impossible named break.
+-/
+theorem breakProb_le_2pow_neg133_of_never
+    (Source : SelectedAcceptedSpendNumericSource)
+    (breakEvent : Source.pricedCertificate.Break)
+    (hNever :
+      ∀ trace : Source.pricedCertificate.Trace,
+        Source.pricedCertificate.namedBreakEvent trace breakEvent = false) :
+    @AcceptedSpendNumericGame.breakProb
+        Source.pricedCertificate.Trace
+        Source.pricedCertificate.Outcome
+        Source.pricedCertificate.Break
+        Source.pricedCertificate.traceFintype
+        Source.pricedCertificate.breakFintype
+        Source.pricedCertificate.game breakEvent ≤ (1 : ℝ) / 2 ^ 133 :=
+  Source.pricedCertificate.breakProb_le_2pow_neg133_of_never breakEvent hNever
 
 /--
 Selected-source component-budget closure for the active Path 2 break family.

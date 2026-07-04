@@ -53096,6 +53096,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "PricedAcceptedSpendNumericCertificate.successProb_le_componentBudget",
         "PricedAcceptedSpendNumericCertificate.componentBudget_le_2pow_neg128_of_proportional_bounds",
         "PricedAcceptedSpendNumericCertificate.successProb_le_2pow_neg128_of_proportional_bounds",
+        "PricedAcceptedSpendNumericCertificate.breakProb_eq_zero_of_never",
+        "PricedAcceptedSpendNumericCertificate.breakProb_le_2pow_neg133_of_never",
         "PricedAcceptedSpendNumericCertificate.acceptedSpendProb_le_acceptedSpendBound",
         "PricedAcceptedSpendNumericCertificate.acceptedSpendBound_le_componentBudget",
         "PricedAcceptedSpendNumericCertificate.acceptedSpendProb_le_componentBudget",
@@ -53116,6 +53118,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedAcceptedSpendNumericSource.successProb_le_componentBudget",
         "SelectedAcceptedSpendNumericSource.componentBudget_le_2pow_neg128_of_proportional_bounds",
         "SelectedAcceptedSpendNumericSource.successProb_le_2pow_neg128_of_proportional_bounds",
+        "SelectedAcceptedSpendNumericSource.breakProb_eq_zero_of_never",
+        "SelectedAcceptedSpendNumericSource.breakProb_le_2pow_neg133_of_never",
         "SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_acceptedSpendBound",
         "SelectedAcceptedSpendNumericSource.acceptedSpendBound_le_componentBudget",
         "SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_componentBudget",
@@ -53140,6 +53144,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendPricingWitness.breakBound_le_2pow_neg133",
         "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_acceptedSpendBound",
         "SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_breakBound",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_eq_zero_of_never",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_2pow_neg133_of_never",
         "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendBound_le_componentBudget",
         "SelectedRustConcreteAcceptedSpendPricingWitness.breakBound_le_componentBudget",
         "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_componentBudget",
@@ -53364,6 +53370,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedAcceptedSpendNumericSource.successProb_le_componentBudget",
         "SelectedAcceptedSpendNumericSource.componentBudget_le_2pow_neg128_of_proportional_bounds",
         "SelectedAcceptedSpendNumericSource.successProb_le_2pow_neg128_of_proportional_bounds",
+        "SelectedAcceptedSpendNumericSource.breakProb_eq_zero_of_never",
+        "SelectedAcceptedSpendNumericSource.breakProb_le_2pow_neg133_of_never",
         "SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_acceptedSpendBound",
         "SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_one",
         "SelectedAcceptedSpendNumericSource.breakProb_le_breakBound",
@@ -53390,6 +53398,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "PricedAcceptedSpendNumericCertificate.successProb_le_componentBudget",
         "PricedAcceptedSpendNumericCertificate.componentBudget_le_2pow_neg128_of_proportional_bounds",
         "PricedAcceptedSpendNumericCertificate.successProb_le_2pow_neg128_of_proportional_bounds",
+        "PricedAcceptedSpendNumericCertificate.breakProb_eq_zero_of_never",
+        "PricedAcceptedSpendNumericCertificate.breakProb_le_2pow_neg133_of_never",
         "PricedAcceptedSpendNumericCertificate.acceptedSpendProb_le_acceptedSpendBound",
         "PricedAcceptedSpendNumericCertificate.acceptedSpendProb_le_one",
         "PricedAcceptedSpendNumericCertificate.breakProb_le_breakBound",
@@ -53417,6 +53427,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendPricingWitness.breakBound_le_2pow_neg133",
         "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_acceptedSpendBound",
         "SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_breakBound",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_eq_zero_of_never",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_2pow_neg133_of_never",
         "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendBound_le_componentBudget",
         "SelectedRustConcreteAcceptedSpendPricingWitness.breakBound_le_componentBudget",
         "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_componentBudget",
@@ -53474,6 +53486,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendProb_le_pricedBound",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendProb_le_acceptedSpendBound",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.breakProb_le_breakBound",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.breakProb_eq_zero_of_never",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.breakProb_le_2pow_neg133_of_never",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.breakBudget_le_pricedBound",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.successProb_le_unionBound",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.successProb_le_pricedBound",
@@ -53499,6 +53513,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendProb_le_pricedBound",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendProb_le_acceptedSpendBound",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.breakProb_le_breakBound",
+        "SelectedRustConcreteAcceptedSpendNumericCertificate.breakProb_eq_zero_of_never",
+        "SelectedRustConcreteAcceptedSpendNumericCertificate.breakProb_le_2pow_neg133_of_never",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.breakBudget_le_pricedBound",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_unionBound",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_pricedBound",
@@ -90227,6 +90243,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_acceptedSpendBound
   let _acceptedSpendConcretePricingWitnessBreakBound :=
     SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_breakBound
+  let _acceptedSpendConcretePricingWitnessBreakZeroNever :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_eq_zero_of_never
+  let _acceptedSpendConcretePricingWitnessBreakTargetNever :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_2pow_neg133_of_never
   let _acceptedSpendConcretePricingWitnessAcceptedBoundComponentBudget :=
     SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendBound_le_componentBudget
   let _acceptedSpendConcretePricingWitnessBreakBoundComponentBudget :=
@@ -90453,6 +90473,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_acceptedSpendBound
   let _acceptedSpendConcretePricingWitnessBreakBound :=
     SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_breakBound
+  let _acceptedSpendConcretePricingWitnessBreakZeroNever :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_eq_zero_of_never
+  let _acceptedSpendConcretePricingWitnessBreakTargetNever :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_2pow_neg133_of_never
   let _acceptedSpendConcretePricingWitnessAcceptedBoundComponentBudget :=
     SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendBound_le_componentBudget
   let _acceptedSpendConcretePricingWitnessBreakBoundComponentBudget :=
@@ -91133,6 +91157,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_acceptedSpendBound
   let _acceptedSpendConcretePricingWitnessBreakBound :=
     SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_breakBound
+  let _acceptedSpendConcretePricingWitnessBreakZeroNever :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_eq_zero_of_never
+  let _acceptedSpendConcretePricingWitnessBreakTargetNever :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_2pow_neg133_of_never
   let _acceptedSpendConcretePricingWitnessAcceptedBoundComponentBudget :=
     SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendBound_le_componentBudget
   let _acceptedSpendConcretePricingWitnessBreakBoundComponentBudget :=

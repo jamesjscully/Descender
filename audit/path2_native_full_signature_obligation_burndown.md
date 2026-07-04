@@ -1713,9 +1713,18 @@ to `NativeAcceptedSpendSoundnessBoundary`. The accepted-spend and full-reduction
 source gates exact-check those theorem names, so the future pricing package
 must expose nonnegative probabilities and budgets rather than only upper-bound
 inequalities, and it must preserve actual probability-range facts through the
-concrete source and full-boundary handoffs. This is not a `≤ 1` theorem for
-every derived union/priced budget; it is a range guarantee for real event
-probabilities.
+active accepted-spend and full-signature erasure chain, concrete source and
+full-boundary handoffs. This is not a `≤ 1` theorem for every derived
+union/priced budget; it is a range guarantee for real event probabilities.
+
+The generic accepted-spend closure now also packages the structural impossible-break
+subcase: if a named break never fires on any trace, the priced certificate and
+selected source prove its `breakProb` is `0` and hence below the active
+`2^-133` per-break probability target. The concrete selected numeric
+certificate, source certificate, and pricing witness project the same facts,
+and the AP2-N003 source gate exact-checks the theorem names. This closes a
+state-machine zero-probability subcase only; the cryptographic per-event
+pricing obligations remain open.
 The accepted-spend numeric and full-signature reduction certificates now bind
 their evidence reports and digests by equality to concrete selected Rust
 report/digest constants, rather than by arbitrary `Prop` slots. The selected

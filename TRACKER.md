@@ -170,7 +170,14 @@ budgets. `SelectedRustConcreteAcceptedSpendPricingWitness` now carries those
 proportional component facts directly and projects the derived 2^-128 component
 and success bounds, so the remaining accepted-spend hard half must supply the
 per-event cryptographic pricing evidence rather than only an opaque aggregate
-priced bound. Pricing and per-event cryptographic bounds remain open. The
+priced bound. Lean now also packages the structural impossible-break subcase:
+`breakProb_eq_zero_of_never` and `breakProb_le_2pow_neg133_of_never` project
+through `PricedAcceptedSpendNumericCertificate`,
+`SelectedAcceptedSpendNumericSource`,
+`SelectedRustConcreteAcceptedSpendPricingWitness`, and the selected
+concrete/source numeric certificates, and the Rust source-shape gate requires
+those names before accepting the AP2-N003 route.
+Pricing and per-event cryptographic bounds remain open. The
 Lean concrete full-spend carrier now makes account creation acceptance consume
 an explicit `AccountCreationProofBoundaryEvidenceAccepted` predicate, binding
 the proof-boundary report digest, accepted proof-boundary evidence digest,
