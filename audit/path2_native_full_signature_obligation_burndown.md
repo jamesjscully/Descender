@@ -1432,9 +1432,10 @@ length-delimited frame, digest, report-verification helper, all-facts helper,
 verifier, production-facade exports, and registry membership. The canonical
 report is intentionally fail-closed: schema/report/digest verification passes
 and the seven public digest slots are filled from active Lean source windows,
-but production signature probability pinning, signature-to-accepted-spend
-linkage, full-execution-source consumption, active hash-boundary consumption,
-query-symbol pricing, multi-target pricing, and verifier-game binding remain
+while full-execution-source consumption, active hash-boundary consumption,
+multi-target pricing, and verifier-game binding are now selected true facts.
+Production signature probability pinning, signature-to-accepted-spend linkage,
+accepted-spend probability linkage, and active query-symbol pricing remain
 false. The final full-reduction instantiation gate now requires this Rust
 evidence source before scanning for
 `selectedRustFullSignatureReductionBoundary_instantiation_v1`.
@@ -1773,7 +1774,7 @@ impossible, and full-reduction `StructuralFactsComplete` holds while
 missing pricing/production proof content, not report parsing, digest presence,
 QROM capacity, or structural source consumption.
 Lean now also exposes individual theorem names for every currently false
-accepted-spend pricing bit and remaining full-reduction production bit. The Rust
+accepted-spend pricing bit and remaining full-reduction production bits. The Rust
 source gates require those names, so the fail-closed state is tracked at the
 specific missing-obligation level: aggregate numeric pricing, accepted-spend
 event pricing, named-break pricing, component-budget pricing, numeric target
@@ -2481,17 +2482,20 @@ AP2-N003 production-witness route note:
 signature success through the accepted-spend probability, the active 128-bit
 target, selected/production nonnegative and at-most-one probability shape, and
 the erased native full-signature boundary. It also exposes named
-hard-bit projections for the five full-reduction production-half report facts:
+hard-bit projections for the four currently missing full-reduction
+production-half report facts:
 production probability pinning, signature-success/accepted-spend-game linkage,
-accepted-spend probability linkage, all-active-query-symbol pricing, and
-verifier-game/production-execution binding. The full-reduction source gate
+accepted-spend probability linkage, and all-active-query-symbol pricing, plus
+the now-true verifier-game/production-execution binding projection. The
+full-reduction source gate
 requires these witness-level projections along with the selected full-reduction
 certificate constructor, so the final AP2-N003 theorem must keep the production
 witness on the proof path through boundary erasure instead of hiding the hard
 production bits behind only `ProductionFactsComplete`.
 `SelectedRustFullSignatureReductionProductionWitness.ofAcceptedSpendAndReportBits`
 now provides the named witness constructor for that route while still requiring
-the five production report-bit proofs independently.
+the four missing production report-bit proofs and the verifier-game binding
+proof independently.
 AP2-N003 erased-boundary certificate/witness projection note:
 `SelectedRustFullSignatureReductionCertificate` now exposes direct erased-boundary
 projections for signature-success-to-accepted-spend probability and active
