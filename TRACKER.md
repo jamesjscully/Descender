@@ -442,6 +442,20 @@ the five accepted-boundary residual reduction rows and reducing closure-witness
 availability to those residual theorem instances plus the explicit PQ-target,
 global pad-seed uniqueness, and cleared-open-obligation hypotheses; the current
 fail-closed package still cannot instantiate that witness.
+Lean now also enumerates that closure-input surface with
+`DeployableProofFamilyClosureInput`, `deployableProofFamilyClosureInputs`,
+`deployableProofFamilyExternalAssumptionInputs`, and
+`deployableProofFamilyGateInputs`, with
+`deployableProofFamilyClosureInputs_card`,
+`deployableProofFamilyExternalAssumptionInputs_card`,
+`deployableProofFamilyGateInputs_card`,
+`mem_deployableProofFamilyExternalAssumptionInputs_iff`,
+`mem_deployableProofFamilyGateInputs_iff`, and
+`no_deployableProofFamilyClosureInput_external_and_gate` pinning the exact 8/7/1
+accounting: seven external cryptographic/data/review assumptions plus the single
+open-obligation clearance gate. The preflight source-shape gate requires those
+names and rejects a spoofed closure-input cardinality before accepting the
+selected proof-family closure route.
 
 | ID | Status | Item | Evidence / next action |
 |---|---|---|---|

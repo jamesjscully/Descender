@@ -1,6 +1,7 @@
 import Descender.Path2FullSpendGame
 import Descender.Path2AcceptedSpendClosure
 import Descender.Path2NativeAccountDesign
+import Mathlib.Data.Fintype.Basic
 import Mathlib.Data.Nat.Pairing
 
 namespace Descender
@@ -2113,6 +2114,106 @@ theorem accountCreationProofFamilyClosureWitness_currentBoundaryAccepted_impossi
   accountCreationProofFamilyClosureWitness_incompatible_with_residualsTracked
     (accountCreationProofFamilyResidualsTracked_of_boundaryAccepted hAccepted)
     hClosed
+
+/--
+Finite taxonomy for the selected account-creation proof-family closure inputs.
+
+Seven entries are named external assumptions; the eighth is the fail-closed
+open-obligation gate that must be cleared before a deployable closure witness
+can exist.
+-/
+inductive DeployableProofFamilyClosureInput
+  | friAokExtractorSound
+  | friQromTranscriptSound
+  | simulatorNoExportHolds
+  | frozenPayloadKatsComplete
+  | productionGateReviewAccepted
+  | postQuantumSoundnessTargetMet
+  | padSeedGloballyReorgSafeUnique
+  | obligationsCleared
+  deriving DecidableEq, Fintype
+
+/-- All selected proof-family closure inputs. -/
+def deployableProofFamilyClosureInputs :
+    Finset DeployableProofFamilyClosureInput :=
+  { DeployableProofFamilyClosureInput.friAokExtractorSound,
+    DeployableProofFamilyClosureInput.friQromTranscriptSound,
+    DeployableProofFamilyClosureInput.simulatorNoExportHolds,
+    DeployableProofFamilyClosureInput.frozenPayloadKatsComplete,
+    DeployableProofFamilyClosureInput.productionGateReviewAccepted,
+    DeployableProofFamilyClosureInput.postQuantumSoundnessTargetMet,
+    DeployableProofFamilyClosureInput.padSeedGloballyReorgSafeUnique,
+    DeployableProofFamilyClosureInput.obligationsCleared }
+
+/-- The seven externally supplied cryptographic/data/review assumptions. -/
+def deployableProofFamilyExternalAssumptionInputs :
+    Finset DeployableProofFamilyClosureInput :=
+  { DeployableProofFamilyClosureInput.friAokExtractorSound,
+    DeployableProofFamilyClosureInput.friQromTranscriptSound,
+    DeployableProofFamilyClosureInput.simulatorNoExportHolds,
+    DeployableProofFamilyClosureInput.frozenPayloadKatsComplete,
+    DeployableProofFamilyClosureInput.productionGateReviewAccepted,
+    DeployableProofFamilyClosureInput.postQuantumSoundnessTargetMet,
+    DeployableProofFamilyClosureInput.padSeedGloballyReorgSafeUnique }
+
+/-- The fail-closed gate that turns the current open package into a closed one. -/
+def deployableProofFamilyGateInputs :
+    Finset DeployableProofFamilyClosureInput :=
+  { DeployableProofFamilyClosureInput.obligationsCleared }
+
+/-- Predicate for external proof-family closure assumptions. -/
+def IsDeployableProofFamilyExternalAssumptionInput
+    (input : DeployableProofFamilyClosureInput) : Prop :=
+  input ≠ DeployableProofFamilyClosureInput.obligationsCleared
+
+/-- Predicate for proof-family closure gate inputs. -/
+def IsDeployableProofFamilyGateInput
+    (input : DeployableProofFamilyClosureInput) : Prop :=
+  input = DeployableProofFamilyClosureInput.obligationsCleared
+
+/-- The selected proof-family closure has exactly eight inputs. -/
+theorem deployableProofFamilyClosureInputs_card :
+    deployableProofFamilyClosureInputs.card = 8 := by
+  native_decide
+
+/-- The external-assumption set is exactly the non-gate closure input set. -/
+theorem mem_deployableProofFamilyExternalAssumptionInputs_iff
+    (input : DeployableProofFamilyClosureInput) :
+    input ∈ deployableProofFamilyExternalAssumptionInputs ↔
+      IsDeployableProofFamilyExternalAssumptionInput input := by
+  cases input <;>
+    simp [deployableProofFamilyExternalAssumptionInputs,
+      IsDeployableProofFamilyExternalAssumptionInput]
+
+/-- The selected proof-family closure has exactly seven external assumptions. -/
+theorem deployableProofFamilyExternalAssumptionInputs_card :
+    deployableProofFamilyExternalAssumptionInputs.card = 7 := by
+  native_decide
+
+/-- The closure gate set is exactly the open-obligation-clearance input. -/
+theorem mem_deployableProofFamilyGateInputs_iff
+    (input : DeployableProofFamilyClosureInput) :
+    input ∈ deployableProofFamilyGateInputs ↔
+      IsDeployableProofFamilyGateInput input := by
+  cases input <;>
+    simp [deployableProofFamilyGateInputs, IsDeployableProofFamilyGateInput]
+
+/-- The selected proof-family closure has exactly one gate input. -/
+theorem deployableProofFamilyGateInputs_card :
+    deployableProofFamilyGateInputs.card = 1 := by
+  native_decide
+
+/-- No proof-family closure input is both an external assumption and the gate. -/
+theorem no_deployableProofFamilyClosureInput_external_and_gate
+    (input : DeployableProofFamilyClosureInput) :
+    ¬ (input ∈ deployableProofFamilyExternalAssumptionInputs ∧
+        input ∈ deployableProofFamilyGateInputs) := by
+  intro h
+  have hExternal :=
+    (mem_deployableProofFamilyExternalAssumptionInputs_iff input).1 h.1
+  have hGate :=
+    (mem_deployableProofFamilyGateInputs_iff input).1 h.2
+  exact hExternal hGate
 
 /--
 Baby step 2 toward closing the proof family: the genuinely-external named

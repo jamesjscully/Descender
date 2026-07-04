@@ -51484,6 +51484,22 @@ fn path2_full_signature_execution_source_boundary_present_in_source_v1(
         "accountCreationProofFamilyResidualBreakClassesCovered_of_boundaryAccepted",
         "accountCreationProofFamilyClosureWitness_incompatible_with_residualsTracked",
         "accountCreationProofFamilyClosureWitness_currentBoundaryAccepted_impossible",
+        "DeployableProofFamilyClosureInput",
+        "deployableProofFamilyClosureInputs",
+        "deployableProofFamilyExternalAssumptionInputs",
+        "deployableProofFamilyGateInputs",
+        "IsDeployableProofFamilyExternalAssumptionInput",
+        "IsDeployableProofFamilyGateInput",
+        "deployableProofFamilyClosureInputs_card",
+        "mem_deployableProofFamilyExternalAssumptionInputs_iff",
+        "deployableProofFamilyExternalAssumptionInputs_card",
+        "mem_deployableProofFamilyGateInputs_iff",
+        "deployableProofFamilyGateInputs_card",
+        "no_deployableProofFamilyClosureInput_external_and_gate",
+        "DeployableProofFamilyAssumptions",
+        "accountCreationProofFamilyClosureWitness_of_deployableAssumptions",
+        "selectedRustAcceptedBoundaryProofFamilyClosureReductions_v1",
+        "selectedRustAcceptedBoundaryProofFamilyClosureWitnessReduction_v1",
         "accountCreationProofFamilyResiduals_missing_exports_creationBreak",
         "accountCreationProofFamilyResidualBreakClasses_missing_exports_creationBreak",
         "AccountCreationAuthorizationClassObligationTracked",
@@ -51585,10 +51601,27 @@ fn path2_full_signature_execution_source_boundary_present_in_source_v1(
         "SelectedRustAcceptedBoundaryProductionGateReviewWith",
         "selectedRustAcceptedBoundaryProductionGateReviewReduction_v1",
     ];
+    let proof_family_closure_exact_declarations = [
+        "\ninductive DeployableProofFamilyClosureInput",
+        "\ndef deployableProofFamilyClosureInputs",
+        "\ndef deployableProofFamilyExternalAssumptionInputs",
+        "\ndef deployableProofFamilyGateInputs",
+        "\ndef IsDeployableProofFamilyExternalAssumptionInput",
+        "\ndef IsDeployableProofFamilyGateInput",
+        "\ntheorem deployableProofFamilyClosureInputs_card",
+        "\ntheorem mem_deployableProofFamilyExternalAssumptionInputs_iff",
+        "\ntheorem deployableProofFamilyExternalAssumptionInputs_card",
+        "\ntheorem mem_deployableProofFamilyGateInputs_iff",
+        "\ntheorem deployableProofFamilyGateInputs_card",
+        "\ntheorem no_deployableProofFamilyClosureInput_external_and_gate",
+    ];
 
     account_creation_checks
         .iter()
         .all(|marker| account_creation_window.contains(marker))
+        && proof_family_closure_exact_declarations
+            .iter()
+            .all(|marker| lean_source_has_exact_declaration_marker_v1(full_spend_source, marker))
         && source_checks
             .iter()
             .all(|marker| source_window.contains(marker))
@@ -88724,6 +88757,17 @@ def selectedRustProductionCheckedCoreAcceptorAccepts := fun _ _ _ _ => False
         assert!(
             !path2_full_signature_execution_source_boundary_present_in_source_v1(
                 &suffixed_full_execution_boundary_source
+            )
+        );
+        let suffixed_proof_family_closure_input_card =
+            full_spend_concrete_source.replacen(
+                "theorem deployableProofFamilyClosureInputs_card",
+                "theorem deployableProofFamilyClosureInputs_cardSpoof",
+                1,
+            );
+        assert!(
+            !path2_full_signature_execution_source_boundary_present_in_source_v1(
+                &suffixed_proof_family_closure_input_card
             )
         );
         let suffixed_then_exact_full_execution_boundary_source = format!(
