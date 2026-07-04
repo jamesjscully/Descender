@@ -699,6 +699,48 @@ def selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
     acceptedSpendUnionBoundPricingDigestBoundProof := rfl
     acceptedSpendPricedBoundDigestBoundProof := rfl }
 
+/--
+Active-target consequence for the selected trace-model pricing witness.
+
+This theorem gives the future AP2-N003 instantiation a single named endpoint
+from the faithful trace model, selected pricing facts, and remaining-break
+cryptographic prices to the selected accepted-spend numeric success bound.
+-/
+theorem selectedRustConcreteAcceptedSpendPricingWitness_successProb_le_active128BitTarget_of_remaining_break_bounds
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete) :
+    let W :=
+      selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing
+    W.concreteCertificate.pricedCertificate.successProb ≤
+      ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_active128BitTarget_of_proportional_bounds
+    (selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
+      traceDist observe acceptedSpendBound remainingBreakBound
+      hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing)
+
 end
 
 end Path2TraceModel

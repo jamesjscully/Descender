@@ -197,7 +197,10 @@ break-family pins proved by reduction. The same endpoint now exposes
 `selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds`,
 which builds the selected pricing witness from that faithful trace model while
 leaving the selected pricing facts and real-valued priced-bound security
-inequality as explicit production inputs.
+inequality as explicit production inputs; the named endpoint
+`selectedRustConcreteAcceptedSpendPricingWitness_successProb_le_active128BitTarget_of_remaining_break_bounds`
+then projects the selected witness's accepted-spend numeric success probability
+to the fixed active 128-bit target.
 Pricing and per-event cryptographic bounds remain open. The
 Lean concrete full-spend carrier now makes account creation acceptance consume
 an explicit `AccountCreationProofBoundaryEvidenceAccepted` predicate, binding

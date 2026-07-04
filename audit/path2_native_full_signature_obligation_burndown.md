@@ -2305,6 +2305,9 @@ the selected report digest slots are used directly, the proportional component
 bounds come from the accepted-spend and seven remaining-break inputs, and the
 selected pricing facts plus real-valued priced-bound security inequality remain
 explicit production inputs.
+`selectedRustConcreteAcceptedSpendPricingWitness_successProb_le_active128BitTarget_of_remaining_break_bounds`
+packages the active-target consequence of that witness as a single named
+accepted-spend numeric endpoint for later AP2-N003 wiring.
 AP2-N003 pricing-witness proportional-obligation note:
 `SelectedRustConcreteAcceptedSpendPricingWitness` now carries the proportional
 component facts as fields and projects
