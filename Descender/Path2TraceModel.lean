@@ -602,6 +602,103 @@ def selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bound
         PricedAcceptedSpendNumericCertificate.observe] using hBreakEvent
     simpa [concreteNamedBreak] using of_decide_eq_true hEvent
 
+/--
+Selected pricing witness built from the faithful trace model and the seven
+remaining cryptographic break bounds.
+
+This is the AP2-N003 pricing-witness handoff.  It still requires the real
+cryptographic inputs: accepted-spend pricing, remaining-break pricing, the
+selected report pricing facts, and the real-valued priced-bound security
+inequality.  What it removes is the ability to satisfy the witness through an
+arbitrary full-family certificate detached from the concrete trace model.
+-/
+def selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete) :
+    SelectedRustConcreteAcceptedSpendPricingWitness :=
+  let concreteCertificate :=
+    selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds
+      traceDist observe acceptedSpendBound remainingBreakBound
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).finiteTraceSupportDigest
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).activeOutcomeCarrierDigest
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendEventSemanticsDigest
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).activeBreakFamilyDigest
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).namedBreakEventsDigest
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendUnionBoundPricingDigest
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundDigest
+      hAccept hBreak hAcceptBudget hBreakBudget
+  { concreteCertificate := concreteCertificate
+    acceptedSpendPricedBoundSecurityPriced := by
+      simpa [concreteCertificate,
+        selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+        concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+        one_div] using hPriced
+    acceptedSpendComponentBoundMeetsProportionalTarget := by
+      simpa [concreteCertificate,
+        selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+        concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+        concreteBreakPricingCertificate_of_remaining_break_bounds,
+        PricedAcceptedSpendNumericCertificate.acceptedSpendBound] using
+        hAcceptBudget
+    namedBreakComponentBoundsMeetProportionalTarget := by
+      intro breakEvent
+      simpa [concreteCertificate,
+        selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+        concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+        concreteBreakPricingCertificate_of_remaining_break_bounds,
+        PricedAcceptedSpendNumericCertificate.breakBound] using
+        remainingCryptographicBreakBound_le_2pow_neg133
+          remainingBreakBound hBreakBudget breakEvent
+    acceptedSpendNumericBoundPricedProof :=
+      Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_numericBoundPriced
+        Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport hPricing
+    acceptedSpendEventBoundPricedProof :=
+      Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_acceptedSpendEventBoundPriced
+        Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport hPricing
+    namedBreakEventBoundsPricedProof :=
+      Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_namedBreakEventBoundsPriced
+        Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport hPricing
+    breakPricingBudgetMeetsPricedBoundProof :=
+      Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_breakPricingBudgetMeetsPricedBound
+        Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport hPricing
+    acceptedSpendNumericBudgetMeetsTargetProof :=
+      Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_numericBudgetMeetsTarget
+        Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport hPricing
+    acceptedSpendPricedBoundSecurityMeetsTargetProof :=
+      Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_pricedBoundSecurityMeetsTarget
+        Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport hPricing
+    acceptedSpendPricedBoundSecurityWithinTranscriptProof :=
+      Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_pricedBoundSecurityWithinTranscript
+        Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport hPricing
+    finiteTraceSupportDigestBoundProof := rfl
+    activeOutcomeCarrierDigestBoundProof := rfl
+    acceptedSpendEventSemanticsDigestBoundProof := rfl
+    activeBreakFamilyDigestBoundProof := rfl
+    namedBreakEventsDigestBoundProof := rfl
+    acceptedSpendUnionBoundPricingDigestBoundProof := rfl
+    acceptedSpendPricedBoundDigestBoundProof := rfl }
+
 end
 
 end Path2TraceModel

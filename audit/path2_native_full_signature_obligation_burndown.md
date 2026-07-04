@@ -2299,6 +2299,12 @@ now wraps that same faithful trace-model package into the selected AP2-N003
 concrete numeric certificate, with the selected full-forgery outcome carrier,
 accepted-spend event semantics, active break family, and named-break event pins
 proved from the concrete trace model rather than assumed by a separate wrapper.
+`selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds` now
+continues that handoff into `SelectedRustConcreteAcceptedSpendPricingWitness`:
+the selected report digest slots are used directly, the proportional component
+bounds come from the accepted-spend and seven remaining-break inputs, and the
+selected pricing facts plus real-valued priced-bound security inequality remain
+explicit production inputs.
 AP2-N003 pricing-witness proportional-obligation note:
 `SelectedRustConcreteAcceptedSpendPricingWitness` now carries the proportional
 component facts as fields and projects

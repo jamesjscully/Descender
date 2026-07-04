@@ -193,7 +193,11 @@ from the accepted-spend component bound plus the seven remaining break bounds;
 `selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds`
 then wraps that faithful trace-model certificate into the selected AP2-N003
 concrete numeric certificate with active outcome, accepted-event, and
-break-family pins proved by reduction.
+break-family pins proved by reduction. The same endpoint now exposes
+`selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds`,
+which builds the selected pricing witness from that faithful trace model while
+leaving the selected pricing facts and real-valued priced-bound security
+inequality as explicit production inputs.
 Pricing and per-event cryptographic bounds remain open. The
 Lean concrete full-spend carrier now makes account creation acceptance consume
 an explicit `AccountCreationProofBoundaryEvidenceAccepted` predicate, binding
