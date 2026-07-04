@@ -2496,6 +2496,14 @@ now also expose the erased accepted-spend bound and erased full-signature active
 Path 2 bound at the fixed active 128-bit target. The Rust accepted-spend and
 full-reduction source-shape gates require those names and reject suffixed
 variants in future final instantiation candidates.
+`SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget`,
+`SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget`,
+and
+`selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds`
+now compose the active Path 2 handoff with that fixed bound, giving the future
+final instantiation theorem one named endpoint for the erased full-signature
+success target. The full-reduction source-shape gate requires those names and
+rejects a suffixed certificate projection.
 AP2-N003 priced-bound transcript-cap guard note:
 The accepted-spend fail-closed regression now forges an otherwise pricing-ready
 report whose priced-bound security bits consume the whole QROM-discounted

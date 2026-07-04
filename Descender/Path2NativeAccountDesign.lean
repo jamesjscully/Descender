@@ -4653,6 +4653,18 @@ theorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecur
     SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget
       Cert.acceptedSpendCertificate
 
+/--
+The erased full-signature boundary reaches the fixed active target through the
+active Path 2 bound handoff.
+-/
+theorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.toNativeFullSignatureSecurityBoundary.fullSignatureSuccessProb <=
+      ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  le_trans
+    (Cert.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound)
+    (Cert.toNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget)
+
 namespace SelectedRustFullSignatureReductionProductionWitness
 
 /-- The production witness reaches the exported accepted-spend probability. -/
@@ -4744,6 +4756,13 @@ theorem toNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active12
     (toNativeFullSignatureSecurityBoundary W).activePathForgeryBound <=
       ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
   (toFullSignatureReductionCertificate W).toNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget
+
+/-- The erased boundary from the production witness reaches the fixed active target. -/
+theorem toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    (toNativeFullSignatureSecurityBoundary W).fullSignatureSuccessProb <=
+      ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  (toFullSignatureReductionCertificate W).toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget
 
 end SelectedRustFullSignatureReductionProductionWitness
 

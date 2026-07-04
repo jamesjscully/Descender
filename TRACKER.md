@@ -240,13 +240,17 @@ and
 `selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound_of_remaining_break_bounds`,
 plus
 `selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_remaining_break_bounds`
-and nonnegative and at-most-one signature-success endpoints, so the final
+and
+`selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds`,
+plus nonnegative and at-most-one signature-success endpoints, so the final
 boundary's accepted-spend reduction, probability shape, active Path 2 handoff,
-and fixed active-target bound remain named after erasure.
+fixed active-target bound, and composed full-signature target bound remain named
+after erasure.
 Generic certificate and production-witness projections now also keep
 the erased full-signature boundary's accepted-spend reduction, active Path 2
-bound handoff, nonnegative success probability, and at-most-one success
-probability facts named after erasure through
+bound handoff, active Path 2 fixed-target handoff, composed full-signature target
+bound, nonnegative success probability, and at-most-one success probability
+facts named after erasure through
 `SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_*`
 and
 `SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_*`;
