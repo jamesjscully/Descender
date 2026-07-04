@@ -4,6 +4,7 @@
       "payload_byte_model_report_domain": "Descender.Path2.AccountStarkPayloadByteModelReport.v1",
       "payload_digest_function": "path2_account_stark_creation_payload_v1_digest",
       "payload_frame_function": "path2_account_stark_creation_payload_v1_frame",
+      "payload_kat_corpus_reduction_lean_theorem": "selectedRustAcceptedBoundaryPayloadKatCorpusReduction_v1",
       "payload_report_domain": "Descender.Path2.AccountStarkPayloadKatBoundaryReport.v1",
       "production_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
       "residual_matrix_report_domain": "Descender.Path2.AccountStarkResidualMatrixReport.v1",
@@ -111,6 +112,7 @@
       "deployment_ready": false,
       "every_row_has_public_rejection_class": true,
       "frozen_corpus_complete": true,
+      "payload_kat_corpus_reduction_bound": true,
       "public_payload_field_mutation_count": 11,
       "roundtrip_regression_present": true,
       "row_count": 13
@@ -119,9 +121,9 @@
       "payload_byte_model_report_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
       "payload_byte_model_report_recomputed_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
       "payload_kat_boundary_report_byte_model_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
-      "payload_kat_boundary_report_digest": "ab14d77b9401e7c219a85204c19c767b958220517bd64f4a5868189bb8fbbafe",
-      "payload_kat_boundary_report_recomputed_digest": "ab14d77b9401e7c219a85204c19c767b958220517bd64f4a5868189bb8fbbafe",
-      "residual_matrix_report_digest": "f357b85b1a299591397195783d873ed50e7d85a2b37431c8f237c097dc30d5ab"
+      "payload_kat_boundary_report_digest": "f04603708bf738b85704207309e71450d40c5b32f3f2b316cdaea38b35f9a474",
+      "payload_kat_boundary_report_recomputed_digest": "f04603708bf738b85704207309e71450d40c5b32f3f2b316cdaea38b35f9a474",
+      "residual_matrix_report_digest": "c8a5ed3838bada980d7455e5a3aac8b2795ccc606736dada01ea938694529533"
     },
     "frozen_status": "frozen_boundary_manifest",
     "generator": {
@@ -237,5 +239,5 @@
     ],
     "schema": "Descender.Path2.AccountStarkPayloadKatBoundaryManifest.v1"
   },
-  "manifest_digest": "4af4c03025a9ce2864e0546055f3bc9afd284cb897949124ffd169ab34d9c0be"
+  "manifest_digest": "b90e34f6dbde4810dc444d8fba60f703b76587afd406741e0e660c15ce3066a9"
 }

@@ -29,7 +29,7 @@
       "account_stark_fri_aok_boundary_report_digest": "756378c0cc4b4d38e51c3da502730d2551bd339a36c8b2919f5ce7fa6fe7ea44",
       "account_stark_fri_aok_boundary_report_recomputed_digest": "756378c0cc4b4d38e51c3da502730d2551bd339a36c8b2919f5ce7fa6fe7ea44",
       "account_stark_fri_qrom_residual_report_digest": "9bc78a2b1b97bf8506f439e74547395a46e70a514c89aa537880dd7ac4e23505",
-      "account_stark_residual_matrix_report_digest": "f357b85b1a299591397195783d873ed50e7d85a2b37431c8f237c097dc30d5ab",
+      "account_stark_residual_matrix_report_digest": "c8a5ed3838bada980d7455e5a3aac8b2795ccc606736dada01ea938694529533",
       "fri_aok_boundary_report_fri_qrom_digest": "9bc78a2b1b97bf8506f439e74547395a46e70a514c89aa537880dd7ac4e23505",
       "residual_matrix_report_fri_aok_digest": "756378c0cc4b4d38e51c3da502730d2551bd339a36c8b2919f5ce7fa6fe7ea44"
     },
@@ -56,5 +56,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.AccountStarkFriAokBoundaryManifest.v1"
   },
-  "manifest_digest": "90eb0124639c6c586ad52873dc16985a77a02b469a54e061321f2526a9bd9a6f"
+  "manifest_digest": "2be9cad40a59abdc7812077f8192582f4cf1e41237638800cce9db5d6f2fd7ef"
 }

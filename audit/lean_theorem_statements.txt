@@ -99,6 +99,17 @@ theorem Descender.Path2FullSpendConcrete.selectedRustAcceptedBoundaryFriQromTran
           Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend →
         Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryFriQromTranscriptWith FriQromTranscriptSound spend
 
+theorem Descender.Path2FullSpendConcrete.selectedRustAcceptedBoundaryPayloadKatCorpusReduction_v1 :
+∀ (FrozenPayloadKatsComplete : Descender.Path2FullSpendConcrete.ConcreteSpendTuple → Prop),
+  (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+      Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryPayloadKatSupport spend →
+        FrozenPayloadKatsComplete spend) →
+    ∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+      Descender.Path2FullSpendConcrete.AccountCreationProofBoundaryEvidenceAccepted
+          Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend →
+        Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryPayloadKatCorpusWith FrozenPayloadKatsComplete
+          spend
+
 theorem Descender.Path2HashDomainAndMultiTarget.checkedCoreFrameByteDomainSeparated_of_instantiation :
 ∀ {R : Descender.Path2HashDomainAndMultiTarget.ActiveHashDomainRegistry}
   (I : Descender.Path2HashDomainAndMultiTarget.ActiveHashByteDomainInstantiation R),

@@ -986,6 +986,20 @@ fn main() -> Result<(), String> {
                 .to_string(),
         );
     }
+    if str_at(
+        proof_boundary,
+        "/requirement_vector_corpus_evidence/payload_kat_vector_evidence/payload_kat_corpus_reduction_lean_theorem",
+    )? != "selectedRustAcceptedBoundaryPayloadKatCorpusReduction_v1"
+        || !bool_at(
+            proof_boundary,
+            "/requirement_vector_corpus_evidence/payload_kat_vector_evidence/payload_kat_corpus_reduction_bound",
+        )?
+    {
+        return Err(
+            "production preflight proof-boundary manifest lost payload KAT reduction evidence"
+                .to_string(),
+        );
+    }
     for pointer in [
         "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/composition_theorem_instantiated",
         "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/account_creation_proof_boundary_verified",

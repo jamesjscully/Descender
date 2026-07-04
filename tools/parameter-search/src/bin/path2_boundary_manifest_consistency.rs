@@ -1004,6 +1004,15 @@ fn check_consistency() -> Result<(), String> {
         &[
             "payload_kat_boundary_snapshot",
             "coverage",
+            "payload_kat_corpus_reduction_bound",
+        ],
+        true,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "payload_kat_boundary_snapshot",
+            "coverage",
             "deployment_ready",
         ],
         false,

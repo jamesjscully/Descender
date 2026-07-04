@@ -1758,6 +1758,99 @@ theorem selectedRustAcceptedBoundaryFriQromTranscriptReduction_v1
   exact ⟨hSupport, hTranscript spend hSupport⟩
 
 /--
+Accepted selected-Rust boundary evidence carries the current frozen payload-KAT
+support slice: the selected payload-KAT boundary digest is pinned and nonzero,
+the payload-KAT boundary row is explicitly tracked, it maps to the direct
+theorem's proof-family break class, and the remaining proof-family obligations
+stay fail-closed. This is not deployment readiness.
+-/
+def SelectedRustAcceptedBoundaryPayloadKatSupport
+    (spend : ConcreteSpendTuple) : Prop :=
+  spend.creationEvidence.payloadKatBoundaryReportDigest =
+      selectedRustConcreteGameConfig.accountCreationPayloadKatBoundaryReportDigest ∧
+    spend.creationEvidence.payloadKatBoundaryReportDigest ≠ 0 ∧
+      spend.creationEvidence.payloadKatBoundaryTracked ∧
+        AccountCreationProofBoundaryBreakClass.trackedBy
+          AccountCreationProofBoundaryBreakClass.frozenPayloadKats spend ∧
+          AccountCreationProofBoundaryBreakClass.toDirectNamedBreakClass
+            AccountCreationProofBoundaryBreakClass.frozenPayloadKats =
+              DirectNamedBreakClass.selectedAccountCreationPayloadProofFamilyBreak ∧
+            spend.creationEvidence.proofFamilyObligationsStillOpen
+
+/--
+Accepted selected-Rust proof-boundary evidence imports the current frozen
+payload-KAT support slice from the carried proof-family residual package while
+preserving the still-open proof-family flag.
+-/
+theorem selectedRustAcceptedBoundaryPayloadKatSupport_of_boundaryAccepted
+    {spend : ConcreteSpendTuple}
+    (hAccepted :
+      AccountCreationProofBoundaryEvidenceAccepted
+        selectedRustConcreteGameConfig spend) :
+    SelectedRustAcceptedBoundaryPayloadKatSupport spend := by
+  have hResiduals :
+      AccountCreationProofFamilyResidualsTracked
+        selectedRustConcreteGameConfig spend :=
+    accountCreationProofFamilyResidualsTracked_of_boundaryAccepted hAccepted
+  have hDigest :=
+    accountCreationProofFamilyDigestChainPinned_of_residualsTracked hResiduals
+  have hOpen :=
+    accountCreationProofFamilyOpenObligationsTracked_of_residualsTracked
+      hResiduals
+  rcases hDigest with
+    ⟨_hNoExportDigest, _hMatrixDigest, _hQromDigest, _hAokDigest,
+      hPayloadKatDigest, _hNoExportNonzero, _hMatrixNonzero, _hQromNonzero,
+      _hAokNonzero, hPayloadKatNonzero⟩
+  rcases hOpen with
+    ⟨_hNoExportTracked, _hSimulatorTracked, _hQromTracked, _hAokTracked,
+      hPayloadKatTracked, hProofFamilyOpen⟩
+  exact ⟨hPayloadKatDigest,
+    hPayloadKatNonzero,
+    hPayloadKatTracked,
+    hPayloadKatTracked,
+    rfl,
+    hProofFamilyOpen⟩
+
+/--
+Accepted-boundary payload-KAT closure reduced to a supplied frozen-corpus
+relation.
+
+`FrozenPayloadKatsComplete` is the payload byte/rejection corpus completeness
+surface. This predicate keeps the current accepted-boundary payload-KAT support
+explicit so the reduction cannot consume an unpinned KAT boundary, an unnamed
+break surface, or deployment readiness.
+-/
+def SelectedRustAcceptedBoundaryPayloadKatCorpusWith
+    (FrozenPayloadKatsComplete : ConcreteSpendTuple -> Prop)
+    (spend : ConcreteSpendTuple) : Prop :=
+  SelectedRustAcceptedBoundaryPayloadKatSupport spend ∧
+    FrozenPayloadKatsComplete spend
+
+/--
+Selected Rust accepted-boundary payload-KAT corpus reduction hook.
+
+If the payload corpus evidence proves frozen-corpus completeness for every
+accepted boundary carrying the current payload-KAT support slice, then every
+selected accepted boundary has that corpus support. This deliberately keeps the
+corpus-completeness relation explicit and does not assert production readiness.
+-/
+theorem selectedRustAcceptedBoundaryPayloadKatCorpusReduction_v1
+    (FrozenPayloadKatsComplete : ConcreteSpendTuple -> Prop)
+    (hCorpus :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustAcceptedBoundaryPayloadKatSupport spend ->
+          FrozenPayloadKatsComplete spend) :
+    forall spend : ConcreteSpendTuple,
+      AccountCreationProofBoundaryEvidenceAccepted
+        selectedRustConcreteGameConfig spend ->
+        SelectedRustAcceptedBoundaryPayloadKatCorpusWith
+          FrozenPayloadKatsComplete spend := by
+  intro spend hAccepted
+  have hSupport :=
+    selectedRustAcceptedBoundaryPayloadKatSupport_of_boundaryAccepted hAccepted
+  exact ⟨hSupport, hCorpus spend hSupport⟩
+
+/--
 Accepted selected-Rust boundary evidence carries the production-gate support
 slice: the selected proof-boundary report and accepted-evidence digests are
 pinned, the public boundary accepted, and the production gate remains

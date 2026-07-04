@@ -103,6 +103,19 @@ fn main() -> Result<(), String> {
     if !bool_at(&boundary, "/manifest/coverage/frozen_corpus_complete")? {
         return Err("payload KAT boundary manifest is not frozen".to_string());
     }
+    if str_at(
+        &boundary,
+        "/manifest/authority_snapshot/payload_kat_corpus_reduction_lean_theorem",
+    )? != "selectedRustAcceptedBoundaryPayloadKatCorpusReduction_v1"
+    {
+        return Err("payload KAT boundary manifest lost Lean reduction theorem".to_string());
+    }
+    if !bool_at(
+        &boundary,
+        "/manifest/coverage/payload_kat_corpus_reduction_bound",
+    )? {
+        return Err("payload KAT boundary manifest lost Lean reduction bound".to_string());
+    }
     if bool_at(&boundary, "/manifest/coverage/deployment_ready")? {
         return Err(
             "payload KAT boundary manifest unexpectedly claims deployment readiness".to_string(),

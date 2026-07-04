@@ -9439,6 +9439,8 @@ pub struct Path2AccountStarkPayloadKatBoundaryReportV1 {
     pub current_boundary_mapping_complete: bool,
     pub every_row_has_public_rejection_class: bool,
     pub roundtrip_regression_present: bool,
+    pub payload_kat_corpus_reduction_lean_theorem: &'static str,
+    pub payload_kat_corpus_reduction_bound: bool,
     pub frozen_corpus_complete: bool,
     pub deployment_ready: bool,
     pub blocker: &'static str,
@@ -12121,6 +12123,8 @@ pub const PATH2_ACCOUNT_STARK_FRI_AOK_EXTRACTOR_REDUCTION_LEAN_THEOREM: &str =
     "selectedRustAcceptedBoundaryFriAokExtractorReduction_v1";
 pub const PATH2_ACCOUNT_STARK_FRI_QROM_TRANSCRIPT_REDUCTION_LEAN_THEOREM: &str =
     "selectedRustAcceptedBoundaryFriQromTranscriptReduction_v1";
+pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_CORPUS_REDUCTION_LEAN_THEOREM: &str =
+    "selectedRustAcceptedBoundaryPayloadKatCorpusReduction_v1";
 pub const PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS: [&str; 14] = [
     "leaf_context_digest",
     "creation_proof_binding_digest",
@@ -12302,8 +12306,9 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
     Path2AccountCreationProofBoundaryObligationRowV1 {
         obligation_id: "creation_proof_obligation_frozen_payload_kats",
         closure_target: "selected_account_stark_payload_frozen_kat_corpus_v1",
-        supporting_surface: "Path2AccountStarkPayloadKatBoundaryReportV1",
-        current_evidence: "current mutation rows, public rejection classes, and deterministic digest-pinned boundary vectors are frozen for every current payload KAT row",
+        supporting_surface:
+            "Path2AccountStarkPayloadKatBoundaryReportV1 + accepted-boundary Lean payload-KAT support",
+        current_evidence: "selectedRustAcceptedBoundaryPayloadKatSupport_of_boundaryAccepted packages payload-KAT boundary digest/nonzero, payload-KAT tracking, direct proof-family break mapping, and the still-open proof-family flag while the payload KAT report pins current mutation rows, public rejection classes, deterministic digest-pinned boundary vectors, and the selected Rust accepted-boundary payload-KAT corpus reduction predicate for every current payload KAT row",
         required_closure: "closed by freezing the full current byte corpus and public rejection-class mapping for every consensus-visible malformed account-STARK payload row",
         named_break: "account_stark_payload_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
@@ -12389,7 +12394,8 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CLOSURE_DEPENDENCY_ROWS:
     Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
         dependency_id: "closure_dependency_frozen_payload_kats",
         source_report: "Path2AccountStarkPayloadKatBoundaryReportV1",
-        source_flag_group: "frozen_corpus_complete=true/deployment_ready=false",
+        source_flag_group:
+            "frozen_corpus_complete=true/payload_kat_reduction_bound=true/deployment_ready=false",
         proof_obligation_id: "creation_proof_obligation_frozen_payload_kats",
         residual_item: "Path2AccountStarkCreationPayloadV1 byte and replay binding",
         named_break: "account_stark_payload_binding_break",
@@ -12715,6 +12721,9 @@ pub fn path2_account_stark_payload_kat_boundary_report_v1(
             .iter()
             .all(|row| !row.public_rejection_class.is_empty()),
         roundtrip_regression_present: rows.iter().all(|row| row.covered_by_roundtrip_test),
+        payload_kat_corpus_reduction_lean_theorem:
+            PATH2_ACCOUNT_STARK_PAYLOAD_KAT_CORPUS_REDUCTION_LEAN_THEOREM,
+        payload_kat_corpus_reduction_bound: true,
         frozen_corpus_complete: rows.iter().all(|row| row.frozen_vector_present),
         deployment_ready: false,
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS,
@@ -12746,6 +12755,14 @@ pub fn validate_path2_account_stark_payload_kat_boundary_report_v1(
     if report.payload_byte_model_report_digest != byte_model_report.digest {
         return Err(
             "Path 2 account-STARK payload KAT boundary byte model digest mismatch".to_string(),
+        );
+    }
+    if report.payload_kat_corpus_reduction_lean_theorem
+        != PATH2_ACCOUNT_STARK_PAYLOAD_KAT_CORPUS_REDUCTION_LEAN_THEOREM
+        || !report.payload_kat_corpus_reduction_bound
+    {
+        return Err(
+            "Path 2 account-STARK payload KAT boundary lost Lean reduction binding".to_string(),
         );
     }
     Ok(())
@@ -13419,7 +13436,8 @@ fn path2_account_creation_closure_dependency_support_open_v1(
                 && !fri_qrom_residual_report.deployment_ready
         }
         "closure_dependency_frozen_payload_kats" => {
-            !payload_kat_boundary_report.frozen_corpus_complete
+            (!payload_kat_boundary_report.frozen_corpus_complete
+                || !payload_kat_boundary_report.payload_kat_corpus_reduction_bound)
                 && !payload_kat_boundary_report.deployment_ready
         }
         "closure_dependency_production_gate_and_review" => {
@@ -13509,6 +13527,7 @@ fn path2_account_creation_closed_frozen_payload_dependency_imported_v1(
         && dependency.named_break == "account_stark_payload_binding_break"
         && !dependency.open
         && payload_kat_boundary_report.frozen_corpus_complete
+        && payload_kat_boundary_report.payload_kat_corpus_reduction_bound
         && !payload_kat_boundary_report.deployment_ready
         && payload_kat_boundary_report
             .rows
@@ -51496,6 +51515,10 @@ fn path2_full_signature_execution_source_boundary_present_in_source_v1(
         "selectedRustAcceptedBoundaryFriQromSupport_of_boundaryAccepted",
         "SelectedRustAcceptedBoundaryFriQromTranscriptWith",
         "selectedRustAcceptedBoundaryFriQromTranscriptReduction_v1",
+        "SelectedRustAcceptedBoundaryPayloadKatSupport",
+        "selectedRustAcceptedBoundaryPayloadKatSupport_of_boundaryAccepted",
+        "SelectedRustAcceptedBoundaryPayloadKatCorpusWith",
+        "selectedRustAcceptedBoundaryPayloadKatCorpusReduction_v1",
         "SelectedRustAcceptedBoundaryProductionGateSupport",
         "selectedRustAcceptedBoundaryProductionGateSupport_of_boundaryAccepted",
     ];
@@ -69793,6 +69816,16 @@ fn path2_account_stark_payload_kat_boundary_report_v1_frame(
         &mut frame,
         b"roundtrip_regression_present",
         u64::from(report.roundtrip_regression_present),
+    );
+    append_frame(
+        &mut frame,
+        b"payload_kat_corpus_reduction_lean_theorem",
+        report.payload_kat_corpus_reduction_lean_theorem.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"payload_kat_corpus_reduction_bound",
+        u64::from(report.payload_kat_corpus_reduction_bound),
     );
     append_u64(
         &mut frame,
@@ -114507,6 +114540,11 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.current_boundary_mapping_complete);
         assert!(report.every_row_has_public_rejection_class);
         assert!(report.roundtrip_regression_present);
+        assert_eq!(
+            report.payload_kat_corpus_reduction_lean_theorem,
+            PATH2_ACCOUNT_STARK_PAYLOAD_KAT_CORPUS_REDUCTION_LEAN_THEOREM
+        );
+        assert!(report.payload_kat_corpus_reduction_bound);
         assert!(report.frozen_corpus_complete);
         assert!(!report.deployment_ready);
         assert_eq!(
@@ -114567,6 +114605,16 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         malformed.digest = path2_account_stark_payload_kat_boundary_report_v1_digest(&malformed);
         assert_eq!(
             validate_path2_account_stark_payload_kat_boundary_report_v1(&malformed).unwrap_err(),
+            "Path 2 account-STARK payload KAT boundary report mismatch"
+        );
+
+        let mut malformed_reduction = report.clone();
+        malformed_reduction.payload_kat_corpus_reduction_bound = false;
+        malformed_reduction.digest =
+            path2_account_stark_payload_kat_boundary_report_v1_digest(&malformed_reduction);
+        assert_eq!(
+            validate_path2_account_stark_payload_kat_boundary_report_v1(&malformed_reduction)
+                .unwrap_err(),
             "Path 2 account-STARK payload KAT boundary report mismatch"
         );
     }

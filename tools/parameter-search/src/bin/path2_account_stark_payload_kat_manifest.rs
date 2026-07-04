@@ -61,7 +61,9 @@ fn manifest_body() -> Result<Value, String> {
             "payload_digest_function": payload_kat_report.payload_digest_function,
             "payload_frame_function": byte_model_report.payload_frame_function,
             "verifier_boundary_endpoint": payload_kat_report.verifier_boundary_endpoint,
-            "production_boundary_endpoint": payload_kat_report.production_boundary_endpoint
+            "production_boundary_endpoint": payload_kat_report.production_boundary_endpoint,
+            "payload_kat_corpus_reduction_lean_theorem":
+                payload_kat_report.payload_kat_corpus_reduction_lean_theorem
         },
         "digests": {
             "payload_byte_model_report_digest": hex_encode(&byte_model_report.digest),
@@ -106,6 +108,8 @@ fn manifest_body() -> Result<Value, String> {
             "every_row_has_public_rejection_class":
                 payload_kat_report.every_row_has_public_rejection_class,
             "roundtrip_regression_present": payload_kat_report.roundtrip_regression_present,
+            "payload_kat_corpus_reduction_bound":
+                payload_kat_report.payload_kat_corpus_reduction_bound,
             "frozen_corpus_complete": payload_kat_report.frozen_corpus_complete,
             "deployment_ready": payload_kat_report.deployment_ready,
             "blocker": payload_kat_report.blocker

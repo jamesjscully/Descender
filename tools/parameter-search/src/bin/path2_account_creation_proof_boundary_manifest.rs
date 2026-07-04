@@ -670,6 +670,8 @@ fn manifest_body() -> Result<Value, String> {
                     payload_kat_boundary_report.every_row_has_public_rejection_class,
                 "roundtrip_regression_present":
                     payload_kat_boundary_report.roundtrip_regression_present,
+                "payload_kat_corpus_reduction_bound":
+                    payload_kat_boundary_report.payload_kat_corpus_reduction_bound,
                 "frozen_corpus_complete":
                     payload_kat_boundary_report.frozen_corpus_complete,
                 "deployment_ready": payload_kat_boundary_report.deployment_ready,

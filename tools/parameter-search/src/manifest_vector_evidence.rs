@@ -2255,6 +2255,10 @@ pub fn path2_account_creation_requirement_vector_corpus_evidence_v1() -> Result<
             "case_count": u64_at(payload_vectors, "/case_count")?,
             "rejection_case_count": u64_at(payload_vectors, "/rejection_case_count")?,
             "honest_payload_digest": str_at(payload_vectors, "/honest_payload/payload_digest")?,
+            "payload_kat_corpus_reduction_lean_theorem":
+                payload_report.payload_kat_corpus_reduction_lean_theorem,
+            "payload_kat_corpus_reduction_bound":
+                payload_report.payload_kat_corpus_reduction_bound,
             "frozen_corpus_complete": payload_report.frozen_corpus_complete,
             "deployment_ready": payload_report.deployment_ready,
             "blocker": payload_report.blocker

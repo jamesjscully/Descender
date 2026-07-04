@@ -840,6 +840,16 @@ fn main() -> Result<(), String> {
         "/audit_summary/current_payload_kat_vectors_cover_every_boundary_row",
         true,
     )?;
+    require_str(
+        corpus,
+        "/payload_kat_vector_evidence/payload_kat_corpus_reduction_lean_theorem",
+        payload_kat_report.payload_kat_corpus_reduction_lean_theorem,
+    )?;
+    require_bool(
+        corpus,
+        "/payload_kat_vector_evidence/payload_kat_corpus_reduction_bound",
+        true,
+    )?;
     require_bool(
         corpus,
         "/payload_kat_vector_evidence/frozen_corpus_complete",

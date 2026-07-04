@@ -243,6 +243,12 @@ fn manifest_body() -> Result<Value, String> {
             "payload KAT boundary must be frozen while deployment remains closed".to_string(),
         );
     }
+    if payload_kat_report.payload_kat_corpus_reduction_lean_theorem
+        != "selectedRustAcceptedBoundaryPayloadKatCorpusReduction_v1"
+        || !payload_kat_report.payload_kat_corpus_reduction_bound
+    {
+        return Err("payload KAT boundary lost Lean reduction binding".to_string());
+    }
     let payload_vectors_file =
         load_json("formal/kat/path2_account_stark_payload_kat_vectors_v1.json")?;
     let payload_vectors = at(&payload_vectors_file, "/corpus")?;
@@ -468,6 +474,10 @@ fn manifest_body() -> Result<Value, String> {
             "case_count": u64_at(payload_vectors, "/case_count")?,
             "rejection_case_count": u64_at(payload_vectors, "/rejection_case_count")?,
             "honest_payload_digest": str_at(payload_vectors, "/honest_payload/payload_digest")?,
+            "payload_kat_corpus_reduction_lean_theorem":
+                payload_kat_report.payload_kat_corpus_reduction_lean_theorem,
+            "payload_kat_corpus_reduction_bound":
+                payload_kat_report.payload_kat_corpus_reduction_bound,
             "frozen_corpus_complete": payload_kat_report.frozen_corpus_complete,
             "deployment_ready": payload_kat_report.deployment_ready,
             "blocker": payload_kat_report.blocker
