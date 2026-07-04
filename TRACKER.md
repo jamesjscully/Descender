@@ -229,7 +229,11 @@ bound handoff, nonnegative success probability, and at-most-one success
 probability facts named after erasure through
 `SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_*`
 and
-`SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_*`.
+`SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_*`;
+the Rust full-reduction source-shape gate now requires those erased-boundary
+projection names, plus
+`NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound`,
+before it accepts the future final instantiation theorem.
 Pricing and per-event cryptographic bounds remain open. The
 Lean concrete full-spend carrier now makes account creation acceptance consume
 an explicit `AccountCreationProofBoundaryEvidenceAccepted` predicate, binding

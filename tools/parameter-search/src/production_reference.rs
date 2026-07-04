@@ -21457,7 +21457,8 @@ fn path2_reviewed_fq12_no_partial_export_negative_controls_source_present_v1() -
         "production_reviewed_fq12_accepting_certificate_single_export_wrapper",
         "verify_reviewed_fq12_state_assisted_masked_projection_soundness_certificate(",
         "certificate.packed_witness_opening.account_projection",
-        "certificate\n                .account_witness_projection_opening_frame",
+        ".account_witness_projection_opening_frame",
+        ".is_empty()",
         "wrong_pad_seed[0] ^= 1",
         "PRODUCTION_SELECTED_PROJECTION_INVALID_OPENING_REASON",
         "assert_no_selected_projection_material(&format!(\"{err:?}\"))",
@@ -52446,6 +52447,10 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_active128BitTarget",
         "SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary",
         "SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget",
+        "SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg",
+        "SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one",
+        "SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
+        "SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound",
         "reductionEvidenceDigestsVerified",
         "productionSignatureProbabilityDigest",
         "signatureAcceptedSpendLinkDigest",
@@ -52512,6 +52517,8 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg",
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one",
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget",
+        "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
+        "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound",
         "selectedRustFullSignatureKeygenModeled",
         "selectedRustFullSignatureKeygenModeledProof",
         "selectedRustFullSignatureSigningOracleModeled",
@@ -52568,6 +52575,10 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_active128BitTarget",
         "SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary",
         "SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget",
+        "SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg",
+        "SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one",
+        "SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
+        "SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound",
         "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary",
         "SelectedRustFullSignatureReductionCertificate.keygenDistributionModeled_holds",
         "SelectedRustFullSignatureReductionCertificate.signingOracleModeled_holds",
@@ -52593,6 +52604,8 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg",
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one",
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget",
+        "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
+        "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound",
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary",
         "NativeFullSignatureSecurityBoundary.keygenDistributionModeled_holds",
         "NativeFullSignatureSecurityBoundary.signingOracleModeled_holds",
@@ -52608,6 +52621,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "NativeFullSignatureSecurityBoundary.queryBudgetPriced_holds",
         "NativeFullSignatureSecurityBoundary.multiTargetLossPriced_holds",
         "NativeFullSignatureSecurityBoundary.signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
+        "NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound",
         "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_schemaMatches",
         "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_reportDigestVerified",
         "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_reductionEvidenceDigestsVerified",
@@ -54832,7 +54846,7 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
     let honest_scope_window = &source[honest_scope_start..honest_scope_end];
 
     let keygen_scope_start = source
-        .find("\npub fn path2_native_signer_keygen_productization_scope_v1()")
+        .find("\npub fn path2_native_signer_keygen_productization_scope_v1(")
         .expect("Path 2 native signer keygen scope source start marker missing");
     let keygen_scope_end = source[keygen_scope_start..]
         .find("\npub fn path2_native_signer_keygen_productization_scope_v1_digest(")
@@ -55119,7 +55133,7 @@ fn path2_native_storage_lifecycle_source_present_v1() -> bool {
     let source = include_str!("production_reference.rs");
 
     let scope_start = source
-        .find("\npub fn path2_native_storage_lifecycle_hardening_scope_v1()")
+        .find("\npub fn path2_native_storage_lifecycle_hardening_scope_v1(")
         .expect("Path 2 native storage hardening scope source start marker missing");
     let scope_end = source[scope_start..]
         .find("\npub fn path2_native_storage_lifecycle_hardening_scope_v1_digest(")
@@ -89150,6 +89164,14 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary
   let _fullReductionProductionWitnessBoundaryActiveTarget :=
     SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget
+  let _fullReductionProductionWitnessBoundaryNonnegative :=
+    SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg
+  let _fullReductionProductionWitnessBoundaryLeOne :=
+    SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one
+  let _fullReductionProductionWitnessBoundaryAcceptedSpendReduction :=
+    SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_acceptedSpendForgeryProb
+  let _fullReductionProductionWitnessBoundaryActivePathBound :=
+    SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound
   let _fullReductionAcceptedSpendHiddenSourceProof :=
     selectedRustAcceptedSpendCertificate.hiddenSourceProofSemanticsClosedProof
   let _fullReductionAcceptedSpendCheckedCoreProof :=
@@ -89234,6 +89256,12 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
   let _fullReductionErasedBoundarySuccessProbLeOne :=
     SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one
       selectedRustFullSignatureReductionCertificate
+  let _fullReductionErasedBoundaryAcceptedSpendReduction :=
+    SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_acceptedSpendForgeryProb
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionErasedBoundaryActivePathBound :=
+    SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound
+      selectedRustFullSignatureReductionCertificate
   let _fullReductionCertificateKeygen :=
     SelectedRustFullSignatureReductionCertificate.keygenDistributionModeled_holds
   let _fullReductionCertificateSigning :=
@@ -89280,6 +89308,8 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     NativeFullSignatureSecurityBoundary.multiTargetLossPriced_holds
   let _nativeBoundaryAcceptedSpendReduction :=
     NativeFullSignatureSecurityBoundary.signatureForgerySuccessProb_le_acceptedSpendForgeryProb
+  let _nativeBoundaryActivePathBound :=
+    NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound
   exact
     SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary
       selectedRustFullSignatureReductionCertificate
@@ -90979,6 +91009,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedAcceptedSpendNumericSource.breakProb_le_one
   let _acceptedSpendSelectedSourceBreakBudget :=
     SelectedAcceptedSpendNumericSource.breakBudget_le_pricedBound
+  let _acceptedSpendSelectedSourceComponentProportionalBudget :=
+    SelectedAcceptedSpendNumericSource.componentBudget_le_2pow_neg128_of_proportional_bounds
+  let _acceptedSpendSelectedSourceSuccessProportionalBudget :=
+    SelectedAcceptedSpendNumericSource.successProb_le_2pow_neg128_of_proportional_bounds
+  let _acceptedSpendSelectedSourceBreakZeroNever :=
+    SelectedAcceptedSpendNumericSource.breakProb_eq_zero_of_never
+  let _acceptedSpendSelectedSourceBreakTargetNever :=
+    SelectedAcceptedSpendNumericSource.breakProb_le_2pow_neg133_of_never
   let _acceptedSpendSelectedSourceAcceptedBoundNonnegative :=
     SelectedAcceptedSpendNumericSource.acceptedSpendBound_nonneg
   let _acceptedSpendSelectedSourceBreakBoundNonnegative :=
@@ -91051,6 +91089,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.successProb_le_unionBound
   let _acceptedSpendConcreteNumericSourceSuccessProbPriced :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.successProb_le_pricedBound
+  let _acceptedSpendConcreteNumericSourceBreakZeroNever :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.breakProb_eq_zero_of_never
+  let _acceptedSpendConcreteNumericSourceBreakTargetNever :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.breakProb_le_2pow_neg133_of_never
+  let _acceptedSpendConcreteNumericSourceComponentProportionalBudget :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.componentBudget_le_2pow_neg128_of_proportional_bounds
+  let _acceptedSpendConcreteNumericSourceSuccessProportionalBudget :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.successProb_le_2pow_neg128_of_proportional_bounds
   let _acceptedSpendConcreteNumericSourceNumericBoundPriced :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_numericBoundPriced
   let _acceptedSpendConcreteNumericSourceFiniteTracePriced :=
@@ -91115,6 +91161,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendNumericCertificate.unionBound_le_componentBudget
   let _acceptedSpendConcreteSuccessComponentBudget :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_componentBudget
+  let _acceptedSpendConcreteBreakZeroNever :=
+    SelectedRustConcreteAcceptedSpendNumericCertificate.breakProb_eq_zero_of_never
+  let _acceptedSpendConcreteBreakTargetNever :=
+    SelectedRustConcreteAcceptedSpendNumericCertificate.breakProb_le_2pow_neg133_of_never
+  let _acceptedSpendConcreteComponentProportionalBudget :=
+    SelectedRustConcreteAcceptedSpendNumericCertificate.componentBudget_le_2pow_neg128_of_proportional_bounds
+  let _acceptedSpendConcreteSuccessProportionalBudget :=
+    SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_2pow_neg128_of_proportional_bounds
   let _acceptedSpendConcreteAcceptedBoundComponentBudget :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendBound_le_componentBudget
   let _acceptedSpendConcreteBreakBoundComponentBudget :=
@@ -91299,6 +91353,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     PricedAcceptedSpendNumericCertificate.unionBound_le_componentBudget
   let _acceptedSpendPricedSuccessComponentBudget :=
     PricedAcceptedSpendNumericCertificate.successProb_le_componentBudget
+  let _acceptedSpendPricedComponentProportionalBudget :=
+    PricedAcceptedSpendNumericCertificate.componentBudget_le_2pow_neg128_of_proportional_bounds
+  let _acceptedSpendPricedSuccessProportionalBudget :=
+    PricedAcceptedSpendNumericCertificate.successProb_le_2pow_neg128_of_proportional_bounds
+  let _acceptedSpendPricedBreakZeroNever :=
+    PricedAcceptedSpendNumericCertificate.breakProb_eq_zero_of_never
+  let _acceptedSpendPricedBreakTargetNever :=
+    PricedAcceptedSpendNumericCertificate.breakProb_le_2pow_neg133_of_never
   let _acceptedSpendPricedAcceptedBoundComponentBudget :=
     PricedAcceptedSpendNumericCertificate.acceptedSpendBound_le_componentBudget
   let _acceptedSpendPricedBreakBoundComponentBudget :=

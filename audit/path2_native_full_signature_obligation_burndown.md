@@ -2464,6 +2464,10 @@ success bounds. `SelectedRustFullSignatureReductionProductionWitness` mirrors
 those erased-boundary projections after witness-to-certificate conversion. This
 keeps the final AP2-N003 theorem's post-erasure boundary facts named without
 turning the current fail-closed production report into a completed certificate.
+The Rust full-reduction source-shape gate now requires those erased-boundary
+projection names and the native
+`fullSignatureSuccessProb_le_activePathForgeryBound` handoff in the future final
+instantiation theorem.
 AP2-N003 priced-bound transcript-cap guard note:
 The accepted-spend fail-closed regression now forges an otherwise pricing-ready
 report whose priced-bound security bits consume the whole QROM-discounted
