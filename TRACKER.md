@@ -200,7 +200,16 @@ leaving the selected pricing facts and real-valued priced-bound security
 inequality as explicit production inputs; the named endpoint
 `selectedRustConcreteAcceptedSpendPricingWitness_successProb_le_active128BitTarget_of_remaining_break_bounds`
 then projects the selected witness's accepted-spend numeric success probability
-to the fixed active 128-bit target.
+to the fixed active 128-bit target. The trace-model route now also erases that
+witness through
+`selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds`,
+`selectedRustAcceptedSpendSoundnessCertificate_of_remaining_break_bounds`, and
+`selectedRustAcceptedSpendSoundnessBoundary_of_remaining_break_bounds`, while
+leaving the production probability pins and four full-boundary closure
+propositions explicit; the boundary projection
+`selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget_of_remaining_break_bounds`
+then carries that erased boundary to the fixed active 128-bit accepted-spend
+probability target.
 Pricing and per-event cryptographic bounds remain open. The
 Lean concrete full-spend carrier now makes account creation acceptance consume
 an explicit `AccountCreationProofBoundaryEvidenceAccepted` predicate, binding

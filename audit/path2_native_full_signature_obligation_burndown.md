@@ -2308,6 +2308,16 @@ explicit production inputs.
 `selectedRustConcreteAcceptedSpendPricingWitness_successProb_le_active128BitTarget_of_remaining_break_bounds`
 packages the active-target consequence of that witness as a single named
 accepted-spend numeric endpoint for later AP2-N003 wiring.
+`selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds`,
+`selectedRustAcceptedSpendSoundnessCertificate_of_remaining_break_bounds`, and
+`selectedRustAcceptedSpendSoundnessBoundary_of_remaining_break_bounds` now erase
+the same trace-model witness into the selected accepted-spend source,
+certificate, and boundary. The production probability pins and hidden-source,
+checked-core, lifecycle, and no-export closure propositions remain explicit
+inputs to that erasure.
+`selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget_of_remaining_break_bounds`
+then projects the erased boundary's accepted-spend forgery probability to the
+active 128-bit target.
 AP2-N003 pricing-witness proportional-obligation note:
 `SelectedRustConcreteAcceptedSpendPricingWitness` now carries the proportional
 component facts as fields and projects
