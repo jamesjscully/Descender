@@ -165,7 +165,16 @@ gap names in the AP2-N003 route. The full-reduction production witness now has
 the named constructor
 `SelectedRustFullSignatureReductionProductionWitness.ofAcceptedSpendAndReportBits`,
 which keeps the five hard production report bits as separate inputs rather than
-collapsing them behind only `ProductionFactsComplete`. Lean now also lifts the
+collapsing them behind only `ProductionFactsComplete`. Lean now also proves
+that the active accepted-spend report's current `FactsAllTrue` closure is
+equivalent to the remaining pricing half via
+`selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete`,
+and that the active full-reduction report's current `FactsAllTrue` closure is
+equivalent to the remaining production half via
+`selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_productionFactsComplete`;
+the Rust future-theorem scanners require those names too, so the selected
+report blocker cannot be satisfied by re-proving already-closed structural
+facts. Lean now also lifts the
 active 9-event
 arithmetic check through `PricedAcceptedSpendNumericCertificate`,
 `SelectedAcceptedSpendNumericSource`, and the selected concrete/source numeric

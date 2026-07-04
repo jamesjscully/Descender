@@ -52078,6 +52078,7 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         "\ntheorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget",
         "\ntheorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg",
         "\ndef SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary",
+        "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_productionFactsComplete",
         "\ntheorem keygenDistributionModeled_holds",
         "\ntheorem signingOracleModeled_holds",
         "\ntheorem completenessModeled_holds",
@@ -52444,6 +52445,9 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityLinked_false",
         "selectedRustFullSignatureReductionEvidenceReport_currentAllActiveQuerySymbolsPriced_false",
         "selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatchesProductionExecution_false",
+        "selectedRustFullSignatureReductionEvidenceReport_currentStructuralFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_productionFactsComplete",
         "SelectedRustFullSignatureReductionProductionObligationGap",
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionObligationGap",
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksProductionFactsComplete",
@@ -52582,6 +52586,9 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityLinked_false",
         "selectedRustFullSignatureReductionEvidenceReport_currentAllActiveQuerySymbolsPriced_false",
         "selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatchesProductionExecution_false",
+        "selectedRustFullSignatureReductionEvidenceReport_currentStructuralFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_productionFactsComplete",
         "SelectedRustFullSignatureReductionProductionObligationGap",
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionObligationGap",
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksProductionFactsComplete",
@@ -53215,6 +53222,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsPriced_false",
         "selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetMeetsPricedBound_false",
         "selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_false",
+        "selectedRustAcceptedSpendEvidenceReport_currentStructuralFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete",
         "SelectedRustAcceptedSpendPricingObligationGap",
         "selectedRustAcceptedSpendEvidenceReport_currentPricingObligationGap",
         "selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete",
@@ -53343,6 +53353,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_checkedCoreClosureReady",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_lifecycleReplayClosureReady",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_noExportClosureReady",
+        "selectedRustAcceptedSpendEvidenceReport_currentStructuralFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_schemaMatches",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_reportDigestVerified",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_numericEvidenceDigestsVerified",
@@ -53504,6 +53517,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsPriced_false",
         "selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetMeetsPricedBound_false",
         "selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_false",
+        "selectedRustAcceptedSpendEvidenceReport_currentStructuralFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete",
         "SelectedRustAcceptedSpendPricingObligationGap",
         "selectedRustAcceptedSpendEvidenceReport_currentPricingObligationGap",
         "selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete",
@@ -89185,6 +89201,12 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     selectedRustFullSignatureReductionEvidenceReport_currentAllActiveQuerySymbolsPriced_false
   let _fullReductionCurrentVerifierGameMissing :=
     selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatchesProductionExecution_false
+  let _fullReductionCurrentStructuralHalf :=
+    selectedRustFullSignatureReductionEvidenceReport_currentStructuralFactsComplete
+  let _fullReductionCurrentFactsFromProductionHalf :=
+    selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentProductionFactsComplete
+  let _fullReductionCurrentFactsIffProductionHalf :=
+    selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_productionFactsComplete
   let _fullReductionCurrentProductionGap :=
     SelectedRustFullSignatureReductionProductionObligationGap
   let _fullReductionCurrentProductionGapSelected :=
@@ -89410,6 +89432,16 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_composed_target
+            )
+        );
+        let suffixed_full_signature_current_facts_equivalence =
+            full_signature_reduction_instantiation_shape.replace(
+                "selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_productionFactsComplete",
+                "selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_productionFactsCompleteSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_current_facts_equivalence
             )
         );
         let global_vacuous_full_signature_reduction_proofs = format!(
@@ -90410,6 +90442,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetMeetsPricedBound_false
   let _acceptedSpendCurrentBudgetTargetMissing :=
     selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_false
+  let _acceptedSpendCurrentStructuralHalf :=
+    selectedRustAcceptedSpendEvidenceReport_currentStructuralFactsComplete
+  let _acceptedSpendCurrentFactsFromPricingHalf :=
+    selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete
+  let _acceptedSpendCurrentFactsIffPricingHalf :=
+    selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete
   let _acceptedSpendCurrentPricingGap :=
     SelectedRustAcceptedSpendPricingObligationGap
   let _acceptedSpendCurrentPricingGapSelected :=
@@ -90640,6 +90678,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetMeetsPricedBound_false
   let _acceptedSpendCurrentBudgetTargetMissing :=
     selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_false
+  let _acceptedSpendCurrentStructuralHalf :=
+    selectedRustAcceptedSpendEvidenceReport_currentStructuralFactsComplete
+  let _acceptedSpendCurrentFactsFromPricingHalf :=
+    selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete
+  let _acceptedSpendCurrentFactsIffPricingHalf :=
+    selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete
   let _acceptedSpendCurrentPricingGap :=
     SelectedRustAcceptedSpendPricingObligationGap
   let _acceptedSpendCurrentPricingGapSelected :=
@@ -90816,6 +90860,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_active128BitTarget
   let _acceptedSpendCertificateSuccessActiveTarget :=
     SelectedRustAcceptedSpendSoundnessCertificate.successProb_le_active128BitTarget
+  let _acceptedSpendCurrentStructuralHalf :=
+    selectedRustAcceptedSpendEvidenceReport_currentStructuralFactsComplete
+  let _acceptedSpendCurrentFactsFromPricingHalf :=
+    selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete
+  let _acceptedSpendCurrentFactsIffPricingHalf :=
+    selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete
   let _acceptedSpendCertificateErasedBoundaryActiveTarget :=
     SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget
   let selectedRustAcceptedSpendSoundnessCertificate :
@@ -91348,6 +91398,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetMeetsPricedBound_false
   let _acceptedSpendCurrentBudgetTargetMissing :=
     selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_false
+  let _acceptedSpendCurrentStructuralHalf :=
+    selectedRustAcceptedSpendEvidenceReport_currentStructuralFactsComplete
+  let _acceptedSpendCurrentFactsFromPricingHalf :=
+    selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete
+  let _acceptedSpendCurrentFactsIffPricingHalf :=
+    selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete
   let _acceptedSpendCurrentPricingGap :=
     SelectedRustAcceptedSpendPricingObligationGap
   let _acceptedSpendCurrentPricingGapSelected :=
@@ -91657,6 +91713,16 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_accepted_spend_erased_bound_projection
+            )
+        );
+        let suffixed_accepted_spend_current_facts_equivalence =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete",
+                "selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsCompleteSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_accepted_spend_current_facts_equivalence
             )
         );
         let global_vacuous_accepted_spend_report_proofs = format!(

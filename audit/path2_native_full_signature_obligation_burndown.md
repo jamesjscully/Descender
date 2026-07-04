@@ -2178,6 +2178,11 @@ combines the already-proved current structural facts with a future
 `PricingFactsComplete` proof, and
 `selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentProductionFactsComplete`
 does the same for the full-reduction `ProductionFactsComplete` proof. The
+same split is now exposed as iff theorems:
+`selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete`
+and
+`selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_productionFactsComplete`.
+The
 remaining AP2-N003 proof-completeness work is therefore directly framed as
 supplying those two hard halves from production probability/pricing evidence,
 not rebuilding or re-proving the structural report fields.

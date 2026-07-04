@@ -2372,6 +2372,20 @@ theorem selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFac
     hPricing
 
 /--
+For the active accepted-spend report, completing `FactsAllTrue` is exactly the
+remaining production pricing half; the structural half is already selected.
+-/
+theorem selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete :
+    selectedRustAcceptedSpendEvidenceReport.FactsAllTrue ↔
+      selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete := by
+  constructor
+  · intro hFacts
+    exact
+      (SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_iff_structural_and_pricing
+        selectedRustAcceptedSpendEvidenceReport).1 hFacts |>.2
+  · exact selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete
+
+/--
 Selected Rust/model certificate for the accepted-spend numeric soundness layer.
 
 The active full-signature theorem is only cryptographically meaningful after
@@ -3636,6 +3650,21 @@ theorem selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentP
     selectedRustFullSignatureReductionEvidenceReport
     selectedRustFullSignatureReductionEvidenceReport_currentStructuralFactsComplete
     hProduction
+
+/--
+For the active full-reduction report, completing `FactsAllTrue` is exactly the
+remaining production reduction half; the structural source-consumption half is
+already selected.
+-/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_productionFactsComplete :
+    selectedRustFullSignatureReductionEvidenceReport.FactsAllTrue ↔
+      selectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete := by
+  constructor
+  · intro hFacts
+    exact
+      (SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_iff_structural_and_production
+        selectedRustFullSignatureReductionEvidenceReport).1 hFacts |>.2
+  · exact selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentProductionFactsComplete
 
 /--
 Selected Rust/model certificate for the full-signature reduction layer.
