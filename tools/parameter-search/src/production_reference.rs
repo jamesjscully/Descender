@@ -52702,6 +52702,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource_fullSignatureSuccessProb_le_activePathForgeryBound",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource_activePathForgeryBound_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource_fullSignatureSuccessProb_le_active128BitTarget",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource_fullSignatureSecurityClaimComplete",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionCertificateWithConcreteExecutionSourceAndCurrentHardProductionFacts",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
@@ -52711,6 +52712,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_fullSignatureSuccessProb_le_activePathForgeryBound",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_activePathForgeryBound_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_fullSignatureSuccessProb_le_active128BitTarget",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_fullSignatureSecurityClaimComplete",
         "selectedRustFullSignatureKeygenModeled",
         "selectedRustFullSignatureKeygenModeledProof",
         "selectedRustFullSignatureSigningOracleModeled",
@@ -52883,6 +52885,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource_fullSignatureSuccessProb_le_activePathForgeryBound",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource_activePathForgeryBound_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource_fullSignatureSuccessProb_le_active128BitTarget",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource_fullSignatureSecurityClaimComplete",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionCertificateWithConcreteExecutionSourceAndCurrentHardProductionFacts",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
@@ -52892,6 +52895,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_fullSignatureSuccessProb_le_activePathForgeryBound",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_activePathForgeryBound_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_fullSignatureSuccessProb_le_active128BitTarget",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_fullSignatureSecurityClaimComplete",
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary",
         "NativeFullSignatureSecurityBoundary.keygenDistributionModeled_holds",
         "NativeFullSignatureSecurityBoundary.signingOracleModeled_holds",
@@ -89961,6 +89965,8 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_activePathForgeryBound_le_active128BitTarget
   let _fullReductionRemainingBreakPackageConcreteSourceHardFactsFullSignatureTarget :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_fullSignatureSuccessProb_le_active128BitTarget
+  let _fullReductionRemainingBreakPackageConcreteSourceHardFactsClaimComplete :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_fullSignatureSecurityClaimComplete
   let _fullReductionRemainingBreakPackageConcreteSourceCertificate :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionCertificateWithConcreteExecutionSource
   let _fullReductionRemainingBreakPackageConcreteSourceBoundary :=
@@ -89979,6 +89985,8 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource_activePathForgeryBound_le_active128BitTarget
   let _fullReductionRemainingBreakPackageConcreteSourceFullSignatureTarget :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource_fullSignatureSuccessProb_le_active128BitTarget
+  let _fullReductionRemainingBreakPackageConcreteSourceClaimComplete :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource_fullSignatureSecurityClaimComplete
   let _fullReductionCertificateKeygen :=
     SelectedRustFullSignatureReductionCertificate.keygenDistributionModeled_holds
   let _fullReductionCertificateSigning :=
@@ -90170,6 +90178,16 @@ namespace NativeFullSignatureSecurityBoundary
                 &suffixed_full_signature_concrete_source_package_target
             )
         );
+        let suffixed_full_signature_concrete_source_package_claim_complete =
+            full_signature_reduction_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource_fullSignatureSecurityClaimComplete",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource_fullSignatureSecurityClaimCompleteSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_concrete_source_package_claim_complete
+            )
+        );
         let suffixed_full_signature_current_facts_equivalence =
             full_signature_reduction_instantiation_shape.replace(
                 "selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_productionFactsComplete",
@@ -90318,6 +90336,16 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_concrete_source_hard_fact_full_signature_target
+            )
+        );
+        let suffixed_full_signature_concrete_source_hard_fact_claim_complete =
+            full_signature_reduction_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_fullSignatureSecurityClaimComplete",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_fullSignatureSecurityClaimCompleteSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_concrete_source_hard_fact_claim_complete
             )
         );
         let suffixed_full_signature_production_witness_current_hard_impossible =

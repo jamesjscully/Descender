@@ -526,7 +526,11 @@ and
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource_signatureForgerySuccessProb_le_active128BitTarget`,
 so the concrete execution-source route exposes the erased native boundary's
 accepted-spend reduction, probability-shape facts, and fixed active
-signature-forgery target before the final full-signature projections. The
+signature-forgery target before the final full-signature projections. It also
+names
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource_fullSignatureSecurityClaimComplete`,
+so the concrete execution-source route exposes the native boundary's
+model/reduction/hash completion conjunction after erasure. The
 hard-production package/concrete-source route now also erases
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts`
 through
@@ -546,7 +550,10 @@ and
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_activePathForgeryBound_le_active128BitTarget`
 naming the active Path 2 handoff and fixed-target handoff, and
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_fullSignatureSuccessProb_le_active128BitTarget`
-naming the composed active-target projection. The Rust
+naming the composed active-target projection, plus
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_fullSignatureSecurityClaimComplete`
+naming the erased native boundary's model/reduction/hash completion conjunction
+on the current-hard-production route. The Rust
 full-reduction source-shape gate now requires those witness probability-shape
 names and erased-boundary projection names, plus
 `NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound`,
