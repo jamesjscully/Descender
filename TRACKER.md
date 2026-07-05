@@ -316,13 +316,16 @@ It now also continues through the selected full-signature reduction production
 witness, full-reduction certificate, native full-signature boundary, and final
 full-signature active-target projection while keeping hash-budget facts,
 production signature probability pinning, verifier/model obligations, and the
-full-forgery reduction proof explicit. The same package now also exposes
+full-forgery reduction proof explicit; the Rust full-reduction gate now also
+requires the package-level active-path handoff and active-path target
+projections before accepting the final target route. The same package now also exposes
 `WithConcreteExecutionSource` production-witness, certificate, native-boundary,
-and active-target adapters, which install `ConcreteFullExecutionAcceptedSpendLift`
-from a `ConcreteFullSignatureExecutionSource` instead of accepting the
-full-forgery reduction as a free proposition; the Rust full-reduction
-source-shape gate requires these concrete-source adapter names in future
-AP2-N003 instantiation candidates. The active full-reduction report now marks
+active-path, and active-target adapters, which install
+`ConcreteFullExecutionAcceptedSpendLift` from a
+`ConcreteFullSignatureExecutionSource` instead of accepting the full-forgery
+reduction as a free proposition; the Rust full-reduction source-shape gate
+requires these concrete-source adapter names in future AP2-N003 instantiation
+candidates. The active full-reduction report now marks
 `verifierGameMatchesProductionExecution` true from that selected concrete
 execution-source route, so the full-reduction production diagnostic is narrowed
 to four remaining missing facts: production signature probability pinning,
