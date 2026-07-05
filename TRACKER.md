@@ -160,8 +160,14 @@ union-pricing, and priced-bound digest slot as a nonzero proof object before
 future accepted-spend pricing can consume it. Lean also mirrors the current
 accepted-spend pricing and full-reduction production missing-obligation
 diagnostics as explicit gap records that block `PricingFactsComplete` and
-`ProductionFactsComplete`, and the Rust future-theorem scanners require those
-gap names in the AP2-N003 route. The full-reduction production witness now has
+`ProductionFactsComplete`; the same gap records now also block
+`HardPricingFactsComplete` and `HardProductionFactsComplete` via
+`selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPricingFactsComplete`
+and
+`selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksHardProductionFactsComplete`,
+with direct impossible corollaries for both hard-fact surfaces. The Rust
+future-theorem scanners require those gap names in the AP2-N003 route. The
+full-reduction production witness now has
 the named constructor
 `SelectedRustFullSignatureReductionProductionWitness.ofAcceptedSpendAndReportBits`,
 which keeps the five hard production report bits as separate inputs rather than
@@ -267,7 +273,12 @@ and
 `selectedRustAcceptedSpendEvidenceReport_currentPricingFactsComplete_iff_hardPricingFactsComplete`:
 for the current selected report, the four hard cryptographic pricing bits are
 equivalent to the full accepted-spend pricing half because the numeric-budget
-target, priced-bound target, and transcript-cap facts are already proved. The
+target, priced-bound target, and transcript-cap facts are already proved; the
+current pricing gap also blocks that four-bit hard-pricing surface through
+`selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPricingFactsComplete`
+and
+`selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible`.
+The
 trace-model witness endpoint and remaining-break package now have hard-pricing
 constructors/projections, and the Rust source-shape gate requires and spoofs
 those names before accepting future AP2-N003 instantiation candidates.
@@ -332,7 +343,11 @@ pricing remain false, while verifier-game/production-execution binding is the
 single completed production fact. The full-reduction source-shape gate requires
 those names and rejects a spoofed missing-fact cardinality, so future
 instantiation evidence cannot satisfy the production half by silently changing
-the report-fact surface.
+the report-fact surface. The same current production gap blocks the four-bit
+hard production surface through
+`selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksHardProductionFactsComplete`
+and
+`selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_impossible`.
 The trace-model route now also erases that
 witness through
 `selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds`,

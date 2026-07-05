@@ -2515,11 +2515,29 @@ theorem selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingF
   rw [Gap.acceptedSpendNumericBoundPricedMissing] at hNumericBoundPriced
   cases hNumericBoundPriced
 
+/-- The current accepted-spend pricing gap blocks the four hard pricing facts. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPricingFactsComplete
+    (Gap : SelectedRustAcceptedSpendPricingObligationGap) :
+    ¬ selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete := by
+  intro hHardPricing
+  have hNumericBoundPriced :
+      selectedRustAcceptedSpendEvidenceReport.acceptedSpendNumericBoundPriced = true :=
+    hHardPricing.1
+  rw [Gap.acceptedSpendNumericBoundPricedMissing] at hNumericBoundPriced
+  cases hNumericBoundPriced
+
 /-- The current selected accepted-spend report cannot complete the pricing half. -/
 theorem selectedRustAcceptedSpendEvidenceReport_currentPricingFactsComplete_impossible :
     ¬ selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete := by
   exact
     selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete
+      selectedRustAcceptedSpendEvidenceReport_currentPricingObligationGap
+
+/-- The current selected accepted-spend report cannot complete the four hard pricing facts. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible :
+    ¬ selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete := by
+  exact
+    selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPricingFactsComplete
       selectedRustAcceptedSpendEvidenceReport_currentPricingObligationGap
 
 /--
@@ -4007,11 +4025,29 @@ theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_bl
   rw [Gap.productionSignatureProbabilityPinnedMissing] at hProductionPinned
   cases hProductionPinned
 
+/-- The current full-reduction production gap blocks the four hard production facts. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksHardProductionFactsComplete
+    (Gap : SelectedRustFullSignatureReductionProductionObligationGap) :
+    ¬ selectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete := by
+  intro hHardProduction
+  have hProductionPinned :
+      selectedRustFullSignatureReductionEvidenceReport.productionSignatureProbabilityPinned = true :=
+    hHardProduction.1
+  rw [Gap.productionSignatureProbabilityPinnedMissing] at hProductionPinned
+  cases hProductionPinned
+
 /-- The current selected full-reduction report cannot complete the production half. -/
 theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionFactsComplete_impossible :
     ¬ selectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete := by
   exact
     selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksProductionFactsComplete
+      selectedRustFullSignatureReductionEvidenceReport_currentProductionObligationGap
+
+/-- The current selected full-reduction report cannot complete the four hard production facts. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_impossible :
+    ¬ selectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete := by
+  exact
+    selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksHardProductionFactsComplete
       selectedRustFullSignatureReductionEvidenceReport_currentProductionObligationGap
 
 /--

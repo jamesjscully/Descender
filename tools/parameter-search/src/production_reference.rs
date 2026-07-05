@@ -52529,6 +52529,8 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionProductionObligationGap",
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionObligationGap",
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksHardProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_impossible",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_componentBudget",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_active128BitTarget",
@@ -52714,6 +52716,8 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionProductionObligationGap",
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionObligationGap",
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksHardProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_impossible",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_componentBudget",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_active128BitTarget",
@@ -53413,6 +53417,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendPricingObligationGap",
         "selectedRustAcceptedSpendEvidenceReport_currentPricingObligationGap",
         "selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificateHardPricingFacts",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessCertificate",
@@ -53761,6 +53767,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendPricingObligationGap",
         "selectedRustAcceptedSpendEvidenceReport_currentPricingObligationGap",
         "selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificateHardPricingFacts",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessCertificate",
@@ -89504,6 +89512,10 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     selectedRustFullSignatureReductionEvidenceReport_currentProductionObligationGap
   let _fullReductionCurrentProductionGapBlocksHardHalf :=
     selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksProductionFactsComplete
+  let _fullReductionCurrentProductionGapBlocksHardProductionFacts :=
+    selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksHardProductionFactsComplete
+  let _fullReductionCurrentHardProductionFactsImpossible :=
+    selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_impossible
   let _fullReductionProductionWitnessAcceptedSpendReduction :=
     SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_acceptedSpendForgeryProb
   let _fullReductionProductionWitnessComponentBudget :=
@@ -90963,6 +90975,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReport_currentPricingObligationGap
   let _acceptedSpendCurrentPricingGapBlocksHardHalf :=
     selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete
+  let _acceptedSpendCurrentPricingGapBlocksHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPricingFactsComplete
+  let _acceptedSpendCurrentHardPricingFactsImpossible :=
+    selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible
   let _acceptedSpendConcretePricingWitnessSource :=
     SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate
   let _acceptedSpendConcretePricingWitnessCertificate :=
@@ -91231,6 +91247,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReport_currentPricingObligationGap
   let _acceptedSpendCurrentPricingGapBlocksHardHalf :=
     selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete
+  let _acceptedSpendCurrentPricingGapBlocksHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPricingFactsComplete
+  let _acceptedSpendCurrentHardPricingFactsImpossible :=
+    selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible
   let _acceptedSpendConcretePricingWitnessSource :=
     SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate
   let _acceptedSpendConcretePricingWitnessHardPricingSource :=
@@ -91991,6 +92011,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReport_currentPricingObligationGap
   let _acceptedSpendCurrentPricingGapBlocksHardHalf :=
     selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete
+  let _acceptedSpendCurrentPricingGapBlocksHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPricingFactsComplete
+  let _acceptedSpendCurrentHardPricingFactsImpossible :=
+    selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible
   let _acceptedSpendConcretePricingWitnessSource :=
     SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate
   let _acceptedSpendConcretePricingWitnessCertificate :=
