@@ -1328,6 +1328,54 @@ theorem remainingBreakProb_le_active128BitTarget
   SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_active128BitTarget
     (toPricingWitness P) breakEvent.1
 
+/-- The package exposes the union-to-component-budget route. -/
+theorem unionBound_le_componentBudget
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
+    (toPricingWitness P).concreteCertificate.pricedCertificate.unionBound ≤
+      (toPricingWitness P).concreteCertificate.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ
+          (toPricingWitness P).concreteCertificate.pricedCertificate.Break
+          (toPricingWitness P).concreteCertificate.pricedCertificate.breakFintype).sum
+            (toPricingWitness P).concreteCertificate.pricedCertificate.breakBound :=
+  SelectedRustConcreteAcceptedSpendPricingWitness.unionBound_le_componentBudget
+    (toPricingWitness P)
+
+/-- The package exposes the success-to-component-budget route. -/
+theorem successProb_le_componentBudget
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
+    (toPricingWitness P).concreteCertificate.pricedCertificate.successProb ≤
+      (toPricingWitness P).concreteCertificate.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ
+          (toPricingWitness P).concreteCertificate.pricedCertificate.Break
+          (toPricingWitness P).concreteCertificate.pricedCertificate.breakFintype).sum
+            (toPricingWitness P).concreteCertificate.pricedCertificate.breakBound :=
+  SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_componentBudget
+    (toPricingWitness P)
+
+/-- The package exposes the component-budget-to-priced-bound route. -/
+theorem componentBudget_le_pricedBound
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
+    (toPricingWitness P).concreteCertificate.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ
+          (toPricingWitness P).concreteCertificate.pricedCertificate.Break
+          (toPricingWitness P).concreteCertificate.pricedCertificate.breakFintype).sum
+            (toPricingWitness P).concreteCertificate.pricedCertificate.breakBound ≤
+      (toPricingWitness P).concreteCertificate.pricedCertificate.pricedBound :=
+  SelectedRustConcreteAcceptedSpendPricingWitness.breakBudget_le_pricedBound
+    (toPricingWitness P)
+
+/-- The package keeps the component budget on the fixed active target. -/
+theorem componentBudget_le_active128BitTarget
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
+    (toPricingWitness P).concreteCertificate.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ
+          (toPricingWitness P).concreteCertificate.pricedCertificate.Break
+          (toPricingWitness P).concreteCertificate.pricedCertificate.breakFintype).sum
+            (toPricingWitness P).concreteCertificate.pricedCertificate.breakBound ≤
+      ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  SelectedRustConcreteAcceptedSpendPricingWitness.componentBudget_le_active128BitTarget
+    (toPricingWitness P)
+
 /-- The package keeps the accepted-spend union expression on the active target. -/
 theorem unionBound_le_active128BitTarget
     (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :

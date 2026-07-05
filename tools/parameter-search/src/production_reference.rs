@@ -53403,6 +53403,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_2pow_neg133",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_active128BitTarget",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.unionBound_le_componentBudget",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.successProb_le_componentBudget",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.componentBudget_le_pricedBound",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.componentBudget_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.unionBound_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.successProb_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toSelectedAcceptedSpendNumericSource",
@@ -53758,6 +53762,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_2pow_neg133",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_active128BitTarget",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.unionBound_le_componentBudget",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.successProb_le_componentBudget",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.componentBudget_le_pricedBound",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.componentBudget_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.unionBound_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.successProb_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toSelectedAcceptedSpendNumericSource",
@@ -92217,6 +92225,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_2pow_neg133
   let _acceptedSpendRemainingBreakPackageBreakProbActiveTarget :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_active128BitTarget
+  let _acceptedSpendRemainingBreakPackageUnionComponent :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.unionBound_le_componentBudget
+  let _acceptedSpendRemainingBreakPackageSuccessComponent :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.successProb_le_componentBudget
+  let _acceptedSpendRemainingBreakPackageComponentPricedBound :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.componentBudget_le_pricedBound
+  let _acceptedSpendRemainingBreakPackageComponentActiveTarget :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.componentBudget_le_active128BitTarget
   let _acceptedSpendRemainingBreakPackageUnionActiveTarget :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.unionBound_le_active128BitTarget
   let _acceptedSpendRemainingBreakPackageSuccessActiveTarget :=
@@ -92556,6 +92572,16 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_remaining_break_package_impossible
+            )
+        );
+        let suffixed_remaining_break_package_component_priced_bound =
+            accepted_spend_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.componentBudget_le_pricedBound",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.componentBudget_le_pricedBoundSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_remaining_break_package_component_priced_bound
             )
         );
         let suffixed_remaining_break_package_boundary =
