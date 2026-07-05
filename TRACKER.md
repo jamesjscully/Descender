@@ -279,7 +279,11 @@ and
 `selectedRustAcceptedSpendEvidenceReport_currentPricingFactsComplete_iff_hardPricingFactsComplete`:
 for the current selected report, the four hard cryptographic pricing bits are
 equivalent to the full accepted-spend pricing half because the numeric-budget
-target, priced-bound target, and transcript-cap facts are already proved; the
+target, priced-bound target, and transcript-cap facts are already proved. It
+also pins
+`selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_iff_fourBits`
+so the hard surface is explicitly the four remaining cryptographic pricing
+report bits rather than caller-resupplied numeric/transcript facts; the
 current pricing gap also blocks that four-bit hard-pricing surface through
 `selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPricingFactsComplete`
 and

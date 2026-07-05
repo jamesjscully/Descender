@@ -53440,6 +53440,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_hardPricingFactsComplete",
         "selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete",
         "selectedRustAcceptedSpendEvidenceReport_currentPricingFactsComplete_iff_hardPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_iff_fourBits",
         "AcceptedSpendPricingFact",
         "acceptedSpendPricingFacts",
         "currentMissingAcceptedSpendPricingFacts",
@@ -53799,6 +53800,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_hardPricingFactsComplete",
         "selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete",
         "selectedRustAcceptedSpendEvidenceReport_currentPricingFactsComplete_iff_hardPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_iff_fourBits",
         "AcceptedSpendPricingFact",
         "acceptedSpendPricingFacts",
         "currentMissingAcceptedSpendPricingFacts",
@@ -91100,6 +91102,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
   let _acceptedSpendCurrentPricingFactsIffHardPricingFacts :=
     selectedRustAcceptedSpendEvidenceReport_currentPricingFactsComplete_iff_hardPricingFactsComplete
+  let _acceptedSpendCurrentHardPricingFactsIffFourBits :=
+    selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_iff_fourBits
   let _acceptedSpendPricingFactSurface :=
     AcceptedSpendPricingFact
   let _acceptedSpendAllPricingFacts :=
@@ -92260,6 +92264,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
   let _acceptedSpendCurrentPricingFactsIffHardPricingFacts :=
     selectedRustAcceptedSpendEvidenceReport_currentPricingFactsComplete_iff_hardPricingFactsComplete
+  let _acceptedSpendCurrentHardPricingFactsIffFourBits :=
+    selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_iff_fourBits
   let _acceptedSpendConcretePricingWitnessHardPricingFacts :=
     SelectedRustConcreteAcceptedSpendPricingWitness.hardPricingFactsComplete
   let _acceptedSpendConcretePricingWitnessHardPricingSource :=
@@ -92733,6 +92739,16 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_accepted_spend_hard_pricing_equivalence
+            )
+        );
+        let suffixed_accepted_spend_four_bit_hard_pricing =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_iff_fourBits",
+                "selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_iff_fourBitsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_accepted_spend_four_bit_hard_pricing
             )
         );
         let suffixed_accepted_spend_missing_pricing_card =

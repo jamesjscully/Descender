@@ -2356,6 +2356,19 @@ theorem selectedRustAcceptedSpendEvidenceReport_currentPricingFactsComplete_iff_
       selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
 
 /--
+The current hard accepted-spend pricing surface is exactly the four remaining
+cryptographic report bits; numeric-budget target and transcript-cap facts are
+supplied internally by the selected report.
+-/
+theorem selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_iff_fourBits :
+    selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete ↔
+      selectedRustAcceptedSpendEvidenceReport.acceptedSpendNumericBoundPriced = true ∧
+      selectedRustAcceptedSpendEvidenceReport.acceptedSpendEventBoundPriced = true ∧
+      selectedRustAcceptedSpendEvidenceReport.namedBreakEventBoundsPriced = true ∧
+      selectedRustAcceptedSpendEvidenceReport.breakPricingBudgetMeetsPricedBound = true := by
+  rfl
+
+/--
 Finite taxonomy for the selected accepted-spend report's pricing half.
 
 The pricing half has seven facts: four cryptographic pricing facts are still
