@@ -52706,6 +52706,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionProductionWitness.ofAcceptedSpendAndCurrentHardProductionFacts",
         "SelectedRustFullSignatureReductionProductionWitness.hardProductionFactsComplete",
         "SelectedRustFullSignatureReductionProductionWitness.currentSelectedReport_impossible",
+        "activeNativeHashBudgetBoundary_activeDirectQuerySymbolsPriced",
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityPinned_false",
         "selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessMatchesAcceptedSpendGame_false",
         "selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityLinked_false",
@@ -89888,6 +89889,16 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_remaining_break_package_current_impossible
+            )
+        );
+        let suffixed_full_signature_active_query_symbols_priced =
+            full_signature_reduction_instantiation_shape.replace(
+                "activeNativeHashBudgetBoundary_activeDirectQuerySymbolsPriced",
+                "activeNativeHashBudgetBoundary_activeDirectQuerySymbolsPricedSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_active_query_symbols_priced
             )
         );
         let suffixed_full_signature_hard_pricing_trace_witness =

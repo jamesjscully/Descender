@@ -562,9 +562,9 @@ Rust source-shape gate requires those names, plus
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible`,
 and the active hash-boundary
 `activeNativeHashBudgetBoundary_activeDirectQuerySymbolsPriced` route. It
-rejects spoofed hard-fact equivalence, accepted-spend package blocker, or
-concrete-source hard-fact adapter names before accepting a future full-reduction
-instantiation candidate.
+rejects spoofed hard-fact equivalence, accepted-spend package blocker, active
+query-symbol pricing, or concrete-source hard-fact adapter names before
+accepting a future full-reduction instantiation candidate.
 
 | ID | Status | Item | Evidence / next action |
 |---|---|---|---|
