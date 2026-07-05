@@ -516,7 +516,12 @@ facts named after erasure through
 `SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_*`
 and
 `SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_*`;
-the production witness also exposes selected and production signature
+those generic erased-boundary routes now also name
+`SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_fullSignatureSecurityClaimComplete`
+and
+`SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_fullSignatureSecurityClaimComplete`,
+so the model/reduction/hash completion conjunction is explicitly consumable
+after erasure. The production witness also exposes selected and production signature
 probability nonnegative/at-most-one facts before boundary erasure. The
 package/concrete-source route now also names
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource_signatureForgerySuccessProb_le_acceptedSpendForgeryProb`,

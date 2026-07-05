@@ -5583,6 +5583,28 @@ theorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecur
     0 <= Cert.toNativeFullSignatureSecurityBoundary.signatureForgerySuccessProb :=
   Cert.signatureForgerySuccessProb_nonneg
 
+/--
+The erased full-signature boundary from the selected certificate exposes the
+full model/reduction/hash completion conjunction.
+-/
+theorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_fullSignatureSecurityClaimComplete
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    let B := Cert.toNativeFullSignatureSecurityBoundary
+    B.keygenDistributionModeled ∧
+      B.signingOracleModeled ∧
+      B.completenessModeled ∧
+      B.verifierRelationMatchesImplementation ∧
+      B.fullForgeryImpliesAcceptedSpendForgery ∧
+      B.acceptedSpendSoundness.hiddenSourceProofSemanticsClosed ∧
+      B.acceptedSpendSoundness.checkedCoreCompositionClosed ∧
+      B.acceptedSpendSoundness.lifecycleReplayClosed ∧
+      B.acceptedSpendSoundness.noExportClosed ∧
+      B.hashBoundary.checkedCoreFrameDomainSeparated ∧
+      B.hashBoundary.hiddenSourceFrameDomainSeparated ∧
+      B.hashBoundary.queryBudgetPriced ∧
+      B.hashBoundary.multiTargetLossPriced :=
+  Cert.toNativeFullSignatureSecurityBoundary.fullSignatureSecurityClaimComplete
+
 namespace NativeFullSignatureSecurityBoundary
 
 def fullSignatureSuccessProb
@@ -5851,6 +5873,28 @@ theorem toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active
     (toNativeFullSignatureSecurityBoundary W).fullSignatureSuccessProb <=
       ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
   (toFullSignatureReductionCertificate W).toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget
+
+/--
+The erased boundary from the production witness exposes the full
+model/reduction/hash completion conjunction.
+-/
+theorem toNativeFullSignatureSecurityBoundary_fullSignatureSecurityClaimComplete
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    let B := toNativeFullSignatureSecurityBoundary W
+    B.keygenDistributionModeled ∧
+      B.signingOracleModeled ∧
+      B.completenessModeled ∧
+      B.verifierRelationMatchesImplementation ∧
+      B.fullForgeryImpliesAcceptedSpendForgery ∧
+      B.acceptedSpendSoundness.hiddenSourceProofSemanticsClosed ∧
+      B.acceptedSpendSoundness.checkedCoreCompositionClosed ∧
+      B.acceptedSpendSoundness.lifecycleReplayClosed ∧
+      B.acceptedSpendSoundness.noExportClosed ∧
+      B.hashBoundary.checkedCoreFrameDomainSeparated ∧
+      B.hashBoundary.hiddenSourceFrameDomainSeparated ∧
+      B.hashBoundary.queryBudgetPriced ∧
+      B.hashBoundary.multiTargetLossPriced :=
+  (toNativeFullSignatureSecurityBoundary W).fullSignatureSecurityClaimComplete
 
 end SelectedRustFullSignatureReductionProductionWitness
 
