@@ -178,9 +178,13 @@ equivalent to the remaining pricing half via
 and that the active full-reduction report's current `FactsAllTrue` closure is
 equivalent to the remaining production half via
 `selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_productionFactsComplete`;
-the Rust future-theorem scanners require those names too, so the selected
-report blocker cannot be satisfied by re-proving already-closed structural
-facts. Lean now also lifts the
+Lean now also composes those current closures through the hard surfaces with
+`selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPricingFactsComplete`
+and
+`selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_hardProductionFactsComplete`.
+The Rust future-theorem scanners require and spoof those names too, so the
+selected report blocker cannot be satisfied by re-proving already-closed
+structural or budget facts. Lean now also lifts the
 active 9-event
 arithmetic check through `PricedAcceptedSpendNumericCertificate`,
 `SelectedAcceptedSpendNumericSource`, and the selected concrete/source numeric
@@ -287,6 +291,9 @@ also pins
 `selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_iff_fourBits`
 so the hard surface is explicitly the four remaining cryptographic pricing
 report bits rather than caller-resupplied numeric/transcript facts; the
+current report-level completion surface is also pinned to that hard surface by
+`selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPricingFactsComplete`;
+the
 current pricing gap also blocks that four-bit hard-pricing surface through
 `selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPricingFactsComplete`
 and
@@ -574,7 +581,9 @@ still-missing production bits because active-query-symbol pricing and
 already supply the other production bits. It also pins
 `selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_iff_threeBits`
 so the hard surface is explicitly the three remaining report bits rather than a
-caller-resupplied active-query-symbol fact. The certificate and production-witness
+caller-resupplied active-query-symbol fact, and
+`selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_hardProductionFactsComplete`
+pins current report-level completion to that exact hard surface. The certificate and production-witness
 constructors now have current-hard-fact variants, and
 `Descender/Path2TraceModel.lean` exposes remaining-break package adapters for
 the same three-bit handoff, including the concrete execution-source route. The

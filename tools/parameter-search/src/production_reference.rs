@@ -52147,6 +52147,8 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         "\ntheorem currentCompletedFullSignatureReductionProductionFacts_card",
         "\ntheorem no_currentFullSignatureReductionProductionFact_missing_and_completed",
         "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_productionFactsComplete",
+        "\ntheorem selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentHardProductionFactsComplete",
+        "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_hardProductionFactsComplete",
         "\ntheorem selectedRustFullSignatureReductionEvidenceReport_productionFactsComplete_of_hardProductionFactsComplete",
         "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentProductionFactsComplete_iff_hardProductionFactsComplete",
         "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_iff_threeBits",
@@ -52528,6 +52530,8 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustFullSignatureReductionEvidenceReport_currentStructuralFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentProductionFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_productionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentHardProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_hardProductionFactsComplete",
         "SelectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete",
         "SelectedRustFullSignatureReductionEvidenceReport.productionFactsComplete_hardProductionFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReport_productionFactsComplete_of_hardProductionFactsComplete",
@@ -52732,6 +52736,8 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustFullSignatureReductionEvidenceReport_currentStructuralFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentProductionFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_productionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentHardProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_hardProductionFactsComplete",
         "SelectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete",
         "SelectedRustFullSignatureReductionEvidenceReport.productionFactsComplete_hardProductionFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReport_productionFactsComplete_of_hardProductionFactsComplete",
@@ -53454,6 +53460,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendEvidenceReport_currentStructuralFactsComplete",
         "selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete",
         "selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentHardPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPricingFactsComplete",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.HardPricingFactsComplete",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_hardPricingFactsComplete",
         "selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete",
@@ -53625,6 +53633,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendEvidenceReport_currentStructuralFactsComplete",
         "selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete",
         "selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentHardPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPricingFactsComplete",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_schemaMatches",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_reportDigestVerified",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_numericEvidenceDigestsVerified",
@@ -53822,6 +53832,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendEvidenceReport_currentStructuralFactsComplete",
         "selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete",
         "selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentHardPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPricingFactsComplete",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.HardPricingFactsComplete",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_hardPricingFactsComplete",
         "selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete",
@@ -89565,6 +89577,10 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentProductionFactsComplete
   let _fullReductionCurrentFactsIffProductionHalf :=
     selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_productionFactsComplete
+  let _fullReductionCurrentFactsFromHardProductionFacts :=
+    selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentHardProductionFactsComplete
+  let _fullReductionCurrentFactsIffHardProductionFacts :=
+    selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_hardProductionFactsComplete
   let _fullReductionHardProductionFactSurface :=
     SelectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete
   let _fullReductionProductionFactsToHardFacts :=
@@ -89976,6 +89992,26 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_current_facts_equivalence
+            )
+        );
+        let suffixed_full_signature_current_hard_facts_derivation =
+            full_signature_reduction_instantiation_shape.replace(
+                "selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentHardProductionFactsComplete",
+                "selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentHardProductionFactsCompleteSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_current_hard_facts_derivation
+            )
+        );
+        let suffixed_full_signature_current_hard_facts_equivalence =
+            full_signature_reduction_instantiation_shape.replace(
+                "selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_hardProductionFactsComplete",
+                "selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_hardProductionFactsCompleteSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_current_hard_facts_equivalence
             )
         );
         let suffixed_full_signature_hard_facts_equivalence =
@@ -91174,6 +91210,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete
   let _acceptedSpendCurrentFactsIffPricingHalf :=
     selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete
+  let _acceptedSpendCurrentFactsFromHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentHardPricingFactsComplete
+  let _acceptedSpendCurrentFactsIffHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPricingFactsComplete
   let _acceptedSpendHardPricingFactSurface :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.HardPricingFactsComplete
   let _acceptedSpendPricingFactsToHardPricingFacts :=
@@ -91480,6 +91520,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete
   let _acceptedSpendCurrentFactsIffPricingHalf :=
     selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete
+  let _acceptedSpendCurrentFactsFromHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentHardPricingFactsComplete
+  let _acceptedSpendCurrentFactsIffHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPricingFactsComplete
   let _acceptedSpendPricingFactSurface :=
     AcceptedSpendPricingFact
   let _acceptedSpendAllPricingFacts :=
@@ -91724,6 +91768,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete
   let _acceptedSpendCurrentFactsIffPricingHalf :=
     selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete
+  let _acceptedSpendCurrentFactsFromHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentHardPricingFactsComplete
+  let _acceptedSpendCurrentFactsIffHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPricingFactsComplete
   let _acceptedSpendCertificateErasedBoundaryActiveTarget :=
     SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget
   let selectedRustAcceptedSpendSoundnessCertificate :
@@ -92268,6 +92316,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete
   let _acceptedSpendCurrentFactsIffPricingHalf :=
     selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete
+  let _acceptedSpendCurrentFactsFromHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentHardPricingFactsComplete
+  let _acceptedSpendCurrentFactsIffHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPricingFactsComplete
   let _acceptedSpendPricingFactSurface :=
     AcceptedSpendPricingFact
   let _acceptedSpendAllPricingFacts :=
@@ -92857,6 +92909,26 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_accepted_spend_current_facts_equivalence
+            )
+        );
+        let suffixed_accepted_spend_current_hard_pricing_derivation =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentHardPricingFactsComplete",
+                "selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentHardPricingFactsCompleteSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_accepted_spend_current_hard_pricing_derivation
+            )
+        );
+        let suffixed_accepted_spend_current_hard_pricing_equivalence =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPricingFactsComplete",
+                "selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPricingFactsCompleteSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_accepted_spend_current_hard_pricing_equivalence
             )
         );
         let suffixed_accepted_spend_hard_pricing_equivalence =

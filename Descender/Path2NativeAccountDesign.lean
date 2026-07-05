@@ -2723,6 +2723,37 @@ theorem selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingF
   · exact selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete
 
 /--
+For the active accepted-spend report, completing `FactsAllTrue` is exactly the
+four hard cryptographic pricing facts; the structural, numeric-budget, target,
+and transcript-cap facts are already selected.
+-/
+theorem selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentHardPricingFactsComplete
+    (hHardPricing :
+      selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete) :
+    selectedRustAcceptedSpendEvidenceReport.FactsAllTrue :=
+  selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete
+    (selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
+      hHardPricing)
+
+/--
+For the active accepted-spend report, report completeness is equivalent to the
+exact four-bit hard pricing surface.
+-/
+theorem selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPricingFactsComplete :
+    selectedRustAcceptedSpendEvidenceReport.FactsAllTrue ↔
+      selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete := by
+  constructor
+  · intro hFacts
+    have hPricing :
+        selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete :=
+      selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_pricingFactsComplete.1
+        hFacts
+    exact
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_hardPricingFactsComplete
+        selectedRustAcceptedSpendEvidenceReport hPricing
+  · exact selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentHardPricingFactsComplete
+
+/--
 Selected Rust/model certificate for the accepted-spend numeric soundness layer.
 
 The active full-signature theorem is only cryptographically meaningful after
@@ -4361,6 +4392,38 @@ theorem selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff
       (SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_iff_structural_and_production
         selectedRustFullSignatureReductionEvidenceReport).1 hFacts |>.2
   · exact selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentProductionFactsComplete
+
+/--
+For the active full-reduction report, completing `FactsAllTrue` is exactly the
+three hard production facts; structural source-consumption, active-query-symbol
+pricing, and verifier-game binding are already selected.
+-/
+theorem selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentHardProductionFactsComplete
+    (hHardProduction :
+      selectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete) :
+    selectedRustFullSignatureReductionEvidenceReport.FactsAllTrue :=
+  selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentProductionFactsComplete
+    (selectedRustFullSignatureReductionEvidenceReport_productionFactsComplete_of_hardProductionFactsComplete
+      hHardProduction)
+
+/--
+For the active full-reduction report, report completeness is equivalent to the
+exact three-bit hard production surface.
+-/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_hardProductionFactsComplete :
+    selectedRustFullSignatureReductionEvidenceReport.FactsAllTrue ↔
+      selectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete := by
+  constructor
+  · intro hFacts
+    have hProduction :
+        selectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete :=
+      selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_productionFactsComplete.1
+        hFacts
+    exact
+      SelectedRustFullSignatureReductionEvidenceReport.productionFactsComplete_hardProductionFactsComplete
+        selectedRustFullSignatureReductionEvidenceReport hProduction
+  · exact
+      selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentHardProductionFactsComplete
 
 /--
 Selected Rust/model certificate for the full-signature reduction layer.
