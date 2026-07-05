@@ -488,10 +488,13 @@ that hard-pricing route now also names
 `selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts`,
 and
 `selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts`,
+plus
+`selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSecurityClaimComplete_of_remaining_break_bounds_and_current_hard_pricing_facts`,
 so the erased-boundary accepted-spend reduction, probability-shape endpoints,
-active-path handoff, active-target projection, and composed-target projection no
-longer need the broader accepted-spend pricing half, and the full-reduction
-source-shape gate rejects spoofed hard-pricing projection variants;
+active-path handoff, active-target projection, composed-target projection, and
+model/reduction/hash completion conjunction no longer need the broader
+accepted-spend pricing half, and the full-reduction source-shape gate rejects
+spoofed hard-pricing projection variants;
 `selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget_of_remaining_break_bounds`
 projects the erased native full-signature boundary to the fixed active target
 while keeping selected `ProductionFactsComplete` bits, hash-budget facts,
@@ -504,10 +507,12 @@ plus
 `selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_remaining_break_bounds`
 and
 `selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds`,
+and
+`selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSecurityClaimComplete_of_remaining_break_bounds`,
 plus nonnegative and at-most-one signature-success endpoints, so the final
 boundary's accepted-spend reduction, probability shape, active Path 2 handoff,
-fixed active-target bound, and composed full-signature target bound remain named
-after erasure.
+fixed active-target bound, composed full-signature target bound, and
+model/reduction/hash completion conjunction remain named after erasure.
 Generic certificate and production-witness projections now also keep
 the erased full-signature boundary's accepted-spend reduction, active Path 2
 bound handoff, active Path 2 fixed-target handoff, composed full-signature target
