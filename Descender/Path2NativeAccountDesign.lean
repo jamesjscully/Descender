@@ -3957,6 +3957,63 @@ theorem mem_currentMissingFullSignatureReductionProductionFacts_iff
       FullSignatureReductionProductionFact.currentSelectedReportBit,
       selectedRustFullSignatureReductionEvidenceReport]
 
+/-- A complete production half sets the selected report bit for any production fact. -/
+theorem FullSignatureReductionProductionFact.currentSelectedReportBit_true_of_productionFactsComplete
+    (fact : FullSignatureReductionProductionFact)
+    (hProduction :
+      selectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete) :
+    fact.currentSelectedReportBit = true := by
+  cases fact
+  · simpa [FullSignatureReductionProductionFact.currentSelectedReportBit] using
+      hProduction.1
+  · simpa [FullSignatureReductionProductionFact.currentSelectedReportBit] using
+      hProduction.2.1
+  · simpa [FullSignatureReductionProductionFact.currentSelectedReportBit] using
+      hProduction.2.2.1
+  · simpa [FullSignatureReductionProductionFact.currentSelectedReportBit] using
+      hProduction.2.2.2.1
+  · simpa [FullSignatureReductionProductionFact.currentSelectedReportBit] using
+      hProduction.2.2.2.2
+
+/-- Any fact in the current missing set has a false selected report bit. -/
+theorem FullSignatureReductionProductionFact.currentSelectedReportBit_false_of_currentMissing
+    (fact : FullSignatureReductionProductionFact)
+    (hMissing :
+      fact ∈ currentMissingFullSignatureReductionProductionFacts) :
+    fact.currentSelectedReportBit = false :=
+  (mem_currentMissingFullSignatureReductionProductionFacts_iff fact).1 hMissing
+
+/-- Any currently missing full-reduction production fact blocks the production half. -/
+theorem currentMissingFullSignatureReductionProductionFact_blocksProductionFactsComplete
+    (fact : FullSignatureReductionProductionFact)
+    (hMissing :
+      fact ∈ currentMissingFullSignatureReductionProductionFacts) :
+    ¬ selectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete := by
+  intro hProduction
+  have hFalse :
+      fact.currentSelectedReportBit = false :=
+    FullSignatureReductionProductionFact.currentSelectedReportBit_false_of_currentMissing
+      fact hMissing
+  have hTrue :
+      fact.currentSelectedReportBit = true :=
+    FullSignatureReductionProductionFact.currentSelectedReportBit_true_of_productionFactsComplete
+      fact hProduction
+  rw [hFalse] at hTrue
+  cases hTrue
+
+/-- Any currently missing full-reduction production fact blocks the hard four-bit surface. -/
+theorem currentMissingFullSignatureReductionProductionFact_blocksHardProductionFactsComplete
+    (fact : FullSignatureReductionProductionFact)
+    (hMissing :
+      fact ∈ currentMissingFullSignatureReductionProductionFacts) :
+    ¬ selectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete := by
+  intro hHardProduction
+  exact
+    currentMissingFullSignatureReductionProductionFact_blocksProductionFactsComplete
+      fact hMissing
+      (selectedRustFullSignatureReductionEvidenceReport_productionFactsComplete_of_hardProductionFactsComplete
+        hHardProduction)
+
 /-- The current selected full-reduction report is missing exactly four production facts. -/
 theorem currentMissingFullSignatureReductionProductionFacts_card :
     currentMissingFullSignatureReductionProductionFacts.card = 4 := by

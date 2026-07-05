@@ -336,12 +336,20 @@ Lean now also enumerates the full-reduction production half as
 `currentCompletedFullSignatureReductionProductionFacts_card`,
 `mem_currentMissingFullSignatureReductionProductionFacts_iff`,
 `mem_currentCompletedFullSignatureReductionProductionFacts_iff`, and
-`no_currentFullSignatureReductionProductionFact_missing_and_completed`
-pinning the exact 5/4/1 accounting: production probability, signature-success
+`no_currentFullSignatureReductionProductionFact_missing_and_completed`,
+plus
+`FullSignatureReductionProductionFact.currentSelectedReportBit_true_of_productionFactsComplete`,
+`FullSignatureReductionProductionFact.currentSelectedReportBit_false_of_currentMissing`,
+`currentMissingFullSignatureReductionProductionFact_blocksProductionFactsComplete`,
+and
+`currentMissingFullSignatureReductionProductionFact_blocksHardProductionFactsComplete`
+pinning the exact 5/4/1 accounting and making each missing fact an independent
+blocker: production probability, signature-success
 linkage, accepted-spend probability linkage, and all-active-query-symbol
 pricing remain false, while verifier-game/production-execution binding is the
 single completed production fact. The full-reduction source-shape gate requires
-those names and rejects a spoofed missing-fact cardinality, so future
+those names and rejects spoofed missing-fact cardinality or missing-fact blocker
+names, so future
 instantiation evidence cannot satisfy the production half by silently changing
 the report-fact surface. The same current production gap blocks the four-bit
 hard production surface through

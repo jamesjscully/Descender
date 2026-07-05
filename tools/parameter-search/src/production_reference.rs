@@ -52131,6 +52131,10 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         "\ndef IsCurrentCompletedFullSignatureReductionProductionFact",
         "\ntheorem fullSignatureReductionProductionFacts_card",
         "\ntheorem mem_currentMissingFullSignatureReductionProductionFacts_iff",
+        "\ntheorem FullSignatureReductionProductionFact.currentSelectedReportBit_true_of_productionFactsComplete",
+        "\ntheorem FullSignatureReductionProductionFact.currentSelectedReportBit_false_of_currentMissing",
+        "\ntheorem currentMissingFullSignatureReductionProductionFact_blocksProductionFactsComplete",
+        "\ntheorem currentMissingFullSignatureReductionProductionFact_blocksHardProductionFactsComplete",
         "\ntheorem currentMissingFullSignatureReductionProductionFacts_card",
         "\ntheorem mem_currentCompletedFullSignatureReductionProductionFacts_iff",
         "\ntheorem currentCompletedFullSignatureReductionProductionFacts_card",
@@ -52522,6 +52526,10 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "IsCurrentCompletedFullSignatureReductionProductionFact",
         "fullSignatureReductionProductionFacts_card",
         "mem_currentMissingFullSignatureReductionProductionFacts_iff",
+        "FullSignatureReductionProductionFact.currentSelectedReportBit_true_of_productionFactsComplete",
+        "FullSignatureReductionProductionFact.currentSelectedReportBit_false_of_currentMissing",
+        "currentMissingFullSignatureReductionProductionFact_blocksProductionFactsComplete",
+        "currentMissingFullSignatureReductionProductionFact_blocksHardProductionFactsComplete",
         "currentMissingFullSignatureReductionProductionFacts_card",
         "mem_currentCompletedFullSignatureReductionProductionFacts_iff",
         "currentCompletedFullSignatureReductionProductionFacts_card",
@@ -52709,6 +52717,10 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "IsCurrentCompletedFullSignatureReductionProductionFact",
         "fullSignatureReductionProductionFacts_card",
         "mem_currentMissingFullSignatureReductionProductionFacts_iff",
+        "FullSignatureReductionProductionFact.currentSelectedReportBit_true_of_productionFactsComplete",
+        "FullSignatureReductionProductionFact.currentSelectedReportBit_false_of_currentMissing",
+        "currentMissingFullSignatureReductionProductionFact_blocksProductionFactsComplete",
+        "currentMissingFullSignatureReductionProductionFact_blocksHardProductionFactsComplete",
         "currentMissingFullSignatureReductionProductionFacts_card",
         "mem_currentCompletedFullSignatureReductionProductionFacts_iff",
         "currentCompletedFullSignatureReductionProductionFacts_card",
@@ -89498,6 +89510,14 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     fullSignatureReductionProductionFacts_card
   let _fullReductionMissingProductionFactsIff :=
     mem_currentMissingFullSignatureReductionProductionFacts_iff
+  let _fullReductionProductionFactsRequireTrueReportBit :=
+    FullSignatureReductionProductionFact.currentSelectedReportBit_true_of_productionFactsComplete
+  let _fullReductionMissingProductionFactsHaveFalseReportBit :=
+    FullSignatureReductionProductionFact.currentSelectedReportBit_false_of_currentMissing
+  let _fullReductionMissingProductionFactBlocksProductionHalf :=
+    currentMissingFullSignatureReductionProductionFact_blocksProductionFactsComplete
+  let _fullReductionMissingProductionFactBlocksHardProductionFacts :=
+    currentMissingFullSignatureReductionProductionFact_blocksHardProductionFactsComplete
   let _fullReductionMissingProductionFactsCard :=
     currentMissingFullSignatureReductionProductionFacts_card
   let _fullReductionCompletedProductionFactsIff :=
@@ -89921,6 +89941,16 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_missing_fact_card
+            )
+        );
+        let suffixed_full_signature_missing_fact_blocker =
+            full_signature_reduction_instantiation_shape.replace(
+                "currentMissingFullSignatureReductionProductionFact_blocksProductionFactsComplete",
+                "currentMissingFullSignatureReductionProductionFact_blocksProductionFactsCompleteSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_missing_fact_blocker
             )
         );
         let global_vacuous_full_signature_reduction_proofs = format!(
