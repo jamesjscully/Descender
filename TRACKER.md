@@ -528,6 +528,10 @@ and
 so the model/reduction/hash completion conjunction is explicitly consumable
 after erasure. The production witness also exposes selected and production signature
 probability nonnegative/at-most-one facts before boundary erasure. The
+package route now also names
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary_fullSignatureSecurityClaimComplete`,
+so the package-level erased native boundary exposes the same
+model/reduction/hash completion conjunction after erasure. The
 package/concrete-source route now also names
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource_signatureForgerySuccessProb_le_acceptedSpendForgeryProb`,
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource_signatureForgerySuccessProb_nonneg`,
