@@ -277,7 +277,13 @@ and
 `selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts`,
 so the same component and target projections can be consumed directly from the
 exact four hard accepted-spend pricing facts rather than the broader pricing
-half;
+half; the remaining-break package API now carries those structural-zero slots
+through
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_eq_zero`,
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_le_2pow_neg133`,
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_eq_zero`,
+and
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_le_2pow_neg133`;
 the Rust accepted-spend source-shape gate now requires these endpoint names in
 future AP2-N003 instantiation candidates. Lean now also names the exact
 remaining-break finite set with `remainingCryptographicBreakEvents`,

@@ -1867,6 +1867,104 @@ theorem remainingBreakProb_le_active128BitTarget
   SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_active128BitTarget
     (toPricingWitness P) breakEvent.1
 
+/--
+The package exposes that the structural QROM/domain-separation break slot is
+zero probability in the selected trace-model witness.
+-/
+theorem qromBreakProb_eq_zero
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        (toPricingWitness P).concreteCertificate.pricedCertificate.Trace
+        (toPricingWitness P).concreteCertificate.pricedCertificate.Outcome
+        (toPricingWitness P).concreteCertificate.pricedCertificate.Break
+        (toPricingWitness P).concreteCertificate.pricedCertificate.traceFintype
+        (toPricingWitness P).concreteCertificate.pricedCertificate.breakFintype
+        (toPricingWitness P).concreteCertificate.pricedCertificate.game
+        Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak = 0 := by
+  letI := P.traceFintype
+  simpa [toPricingWitness] using
+    selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds
+      P.traceDist P.observe P.acceptedSpendBound P.remainingBreakBound
+      P.acceptedSpendProb_le_bound P.remainingBreakProb_le_bound
+      P.acceptedSpendBound_le_2pow_neg129
+      P.remainingBreakBound_le_2pow_neg133
+      P.activePricedBound_le_reportedSecurity
+      P.pricingFactsComplete
+
+/--
+The package exposes that the structural QROM/domain-separation break slot
+meets the active per-break component target because it is zero probability.
+-/
+theorem qromBreakProb_le_2pow_neg133
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        (toPricingWitness P).concreteCertificate.pricedCertificate.Trace
+        (toPricingWitness P).concreteCertificate.pricedCertificate.Outcome
+        (toPricingWitness P).concreteCertificate.pricedCertificate.Break
+        (toPricingWitness P).concreteCertificate.pricedCertificate.traceFintype
+        (toPricingWitness P).concreteCertificate.pricedCertificate.breakFintype
+        (toPricingWitness P).concreteCertificate.pricedCertificate.game
+        Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak ≤
+      (1 : ℝ) / 2 ^ 133 := by
+  letI := P.traceFintype
+  simpa [toPricingWitness] using
+    selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds
+      P.traceDist P.observe P.acceptedSpendBound P.remainingBreakBound
+      P.acceptedSpendProb_le_bound P.remainingBreakProb_le_bound
+      P.acceptedSpendBound_le_2pow_neg129
+      P.remainingBreakBound_le_2pow_neg133
+      P.activePricedBound_le_reportedSecurity
+      P.pricingFactsComplete
+
+/--
+The package exposes that the structural live-slot/keygen break slot is zero
+probability in the selected trace-model witness.
+-/
+theorem liveSlotLeakageBreakProb_eq_zero
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        (toPricingWitness P).concreteCertificate.pricedCertificate.Trace
+        (toPricingWitness P).concreteCertificate.pricedCertificate.Outcome
+        (toPricingWitness P).concreteCertificate.pricedCertificate.Break
+        (toPricingWitness P).concreteCertificate.pricedCertificate.traceFintype
+        (toPricingWitness P).concreteCertificate.pricedCertificate.breakFintype
+        (toPricingWitness P).concreteCertificate.pricedCertificate.game
+        Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak = 0 := by
+  letI := P.traceFintype
+  simpa [toPricingWitness] using
+    selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds
+      P.traceDist P.observe P.acceptedSpendBound P.remainingBreakBound
+      P.acceptedSpendProb_le_bound P.remainingBreakProb_le_bound
+      P.acceptedSpendBound_le_2pow_neg129
+      P.remainingBreakBound_le_2pow_neg133
+      P.activePricedBound_le_reportedSecurity
+      P.pricingFactsComplete
+
+/--
+The package exposes that the structural live-slot/keygen break slot meets the
+active per-break component target because it is zero probability.
+-/
+theorem liveSlotLeakageBreakProb_le_2pow_neg133
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        (toPricingWitness P).concreteCertificate.pricedCertificate.Trace
+        (toPricingWitness P).concreteCertificate.pricedCertificate.Outcome
+        (toPricingWitness P).concreteCertificate.pricedCertificate.Break
+        (toPricingWitness P).concreteCertificate.pricedCertificate.traceFintype
+        (toPricingWitness P).concreteCertificate.pricedCertificate.breakFintype
+        (toPricingWitness P).concreteCertificate.pricedCertificate.game
+        Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak ≤
+      (1 : ℝ) / 2 ^ 133 := by
+  letI := P.traceFintype
+  simpa [toPricingWitness] using
+    selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds
+      P.traceDist P.observe P.acceptedSpendBound P.remainingBreakBound
+      P.acceptedSpendProb_le_bound P.remainingBreakProb_le_bound
+      P.acceptedSpendBound_le_2pow_neg129
+      P.remainingBreakBound_le_2pow_neg133
+      P.activePricedBound_le_reportedSecurity
+      P.pricingFactsComplete
+
 /-- The package exposes the union-to-component-budget route. -/
 theorem unionBound_le_componentBudget
     (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
