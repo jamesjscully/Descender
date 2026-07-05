@@ -373,8 +373,10 @@ blocker: production probability, signature-success linkage, and accepted-spend
 probability linkage remain false, while active-query-symbol pricing and
 verifier-game/production-execution binding are the completed production facts.
 The full-reduction source-shape gate requires
-those names and rejects spoofed missing-fact cardinality or missing-fact blocker
-names, so future
+those names and rejects spoofed missing-fact cardinality, generic missing-fact
+blocker names, and the three individual current-gap blockers for production
+probability, signature-success/accepted-spend linkage, and accepted-spend
+probability on both the production half and hard production surface, so future
 instantiation evidence cannot satisfy the production half by silently changing
 the report-fact surface. The same current production gap blocks the three-bit
 hard production surface through

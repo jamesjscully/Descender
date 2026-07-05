@@ -3671,9 +3671,10 @@ def SelectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete
 /--
 The hard production facts still supplied by the full-signature reduction model.
 
-For the current selected report, the verifier-game/production-execution binding
-is already proved true, so these four bits are the exact remaining production
-surface that must be supplied before `ProductionFactsComplete` can hold.
+For the current selected report, active query-symbol pricing and the
+verifier-game/production-execution binding are already proved true, so these
+three bits are the exact remaining production surface that must be supplied
+before `ProductionFactsComplete` can hold.
 -/
 def SelectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete
     (E : SelectedRustFullSignatureReductionEvidenceReport) : Prop :=
@@ -4160,6 +4161,38 @@ theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_bl
   rw [Gap.productionSignatureProbabilityPinnedMissing] at hProductionPinned
   cases hProductionPinned
 
+/-- Missing production-probability pinning independently blocks the production half. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksProductionFactsComplete
+    (Gap : SelectedRustFullSignatureReductionProductionObligationGap) :
+    ¬ selectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete := by
+  exact
+    selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksProductionFactsComplete
+      Gap
+
+/-- Missing signature-success/accepted-spend linkage independently blocks the production half. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksProductionFactsComplete
+    (Gap : SelectedRustFullSignatureReductionProductionObligationGap) :
+    ¬ selectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete := by
+  intro hProduction
+  have hAcceptedSpendGame :
+      selectedRustFullSignatureReductionEvidenceReport.signatureSuccessMatchesAcceptedSpendGame = true :=
+    SelectedRustFullSignatureReductionEvidenceReport.productionFactsComplete_signatureSuccessMatchesAcceptedSpendGame
+      selectedRustFullSignatureReductionEvidenceReport hProduction
+  rw [Gap.signatureSuccessMatchesAcceptedSpendGameMissing] at hAcceptedSpendGame
+  cases hAcceptedSpendGame
+
+/-- Missing accepted-spend probability linkage independently blocks the production half. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksProductionFactsComplete
+    (Gap : SelectedRustFullSignatureReductionProductionObligationGap) :
+    ¬ selectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete := by
+  intro hProduction
+  have hAcceptedSpendLinked :
+      selectedRustFullSignatureReductionEvidenceReport.acceptedSpendProbabilityLinked = true :=
+    SelectedRustFullSignatureReductionEvidenceReport.productionFactsComplete_acceptedSpendProbabilityLinked
+      selectedRustFullSignatureReductionEvidenceReport hProduction
+  rw [Gap.acceptedSpendProbabilityLinkedMissing] at hAcceptedSpendLinked
+  cases hAcceptedSpendLinked
+
 /-- The current full-reduction production gap blocks the three hard production facts. -/
 theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksHardProductionFactsComplete
     (Gap : SelectedRustFullSignatureReductionProductionObligationGap) :
@@ -4170,6 +4203,36 @@ theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_bl
     hHardProduction.1
   rw [Gap.productionSignatureProbabilityPinnedMissing] at hProductionPinned
   cases hProductionPinned
+
+/-- Missing production-probability pinning independently blocks the hard production surface. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksHardProductionFactsComplete
+    (Gap : SelectedRustFullSignatureReductionProductionObligationGap) :
+    ¬ selectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete := by
+  exact
+    selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksHardProductionFactsComplete
+      Gap
+
+/-- Missing signature-success/accepted-spend linkage independently blocks the hard production surface. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksHardProductionFactsComplete
+    (Gap : SelectedRustFullSignatureReductionProductionObligationGap) :
+    ¬ selectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete := by
+  intro hHardProduction
+  have hAcceptedSpendGame :
+      selectedRustFullSignatureReductionEvidenceReport.signatureSuccessMatchesAcceptedSpendGame = true :=
+    hHardProduction.2.1
+  rw [Gap.signatureSuccessMatchesAcceptedSpendGameMissing] at hAcceptedSpendGame
+  cases hAcceptedSpendGame
+
+/-- Missing accepted-spend probability linkage independently blocks the hard production surface. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksHardProductionFactsComplete
+    (Gap : SelectedRustFullSignatureReductionProductionObligationGap) :
+    ¬ selectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete := by
+  intro hHardProduction
+  have hAcceptedSpendLinked :
+      selectedRustFullSignatureReductionEvidenceReport.acceptedSpendProbabilityLinked = true :=
+    hHardProduction.2.2
+  rw [Gap.acceptedSpendProbabilityLinkedMissing] at hAcceptedSpendLinked
+  cases hAcceptedSpendLinked
 
 /-- The current selected full-reduction report cannot complete the production half. -/
 theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionFactsComplete_impossible :

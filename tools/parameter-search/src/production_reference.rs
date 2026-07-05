@@ -52150,6 +52150,12 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         "\ntheorem selectedRustFullSignatureReductionEvidenceReport_productionFactsComplete_of_hardProductionFactsComplete",
         "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentProductionFactsComplete_iff_hardProductionFactsComplete",
         "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_iff_threeBits",
+        "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksProductionFactsComplete",
+        "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksProductionFactsComplete",
+        "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksProductionFactsComplete",
+        "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksHardProductionFactsComplete",
+        "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksHardProductionFactsComplete",
+        "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksHardProductionFactsComplete",
         "\ndef SelectedRustFullSignatureReductionProductionWitness.ofAcceptedSpendAndCurrentHardProductionFacts",
         "\ntheorem hardProductionFactsComplete",
         "\ntheorem keygenDistributionModeled_holds",
@@ -52548,6 +52554,12 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionObligationGap",
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksProductionFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksHardProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksHardProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksHardProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksHardProductionFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_impossible",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_componentBudget",
@@ -52746,6 +52758,12 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionObligationGap",
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksProductionFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksHardProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksHardProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksHardProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksHardProductionFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_impossible",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_componentBudget",
@@ -89583,6 +89601,18 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksProductionFactsComplete
   let _fullReductionCurrentProductionGapBlocksHardProductionFacts :=
     selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksHardProductionFactsComplete
+  let _fullReductionProductionProbabilityGapBlocksProductionHalf :=
+    selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksProductionFactsComplete
+  let _fullReductionAcceptedSpendGameGapBlocksProductionHalf :=
+    selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksProductionFactsComplete
+  let _fullReductionAcceptedSpendProbabilityGapBlocksProductionHalf :=
+    selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksProductionFactsComplete
+  let _fullReductionProductionProbabilityGapBlocksHardFacts :=
+    selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksHardProductionFactsComplete
+  let _fullReductionAcceptedSpendGameGapBlocksHardFacts :=
+    selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksHardProductionFactsComplete
+  let _fullReductionAcceptedSpendProbabilityGapBlocksHardFacts :=
+    selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksHardProductionFactsComplete
   let _fullReductionCurrentHardProductionFactsImpossible :=
     selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_impossible
   let _fullReductionProductionWitnessAcceptedSpendReduction :=
@@ -90082,6 +90112,40 @@ namespace NativeFullSignatureSecurityBoundary
                 &suffixed_full_signature_missing_fact_blocker
             )
         );
+        for (marker, spoof) in [
+            (
+                "selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksProductionFactsComplete",
+                "selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksProductionFactsCompleteSpoof",
+            ),
+            (
+                "selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksProductionFactsComplete",
+                "selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksProductionFactsCompleteSpoof",
+            ),
+            (
+                "selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksProductionFactsComplete",
+                "selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksProductionFactsCompleteSpoof",
+            ),
+            (
+                "selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksHardProductionFactsComplete",
+                "selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksHardProductionFactsCompleteSpoof",
+            ),
+            (
+                "selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksHardProductionFactsComplete",
+                "selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksHardProductionFactsCompleteSpoof",
+            ),
+            (
+                "selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksHardProductionFactsComplete",
+                "selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksHardProductionFactsCompleteSpoof",
+            ),
+        ] {
+            let suffixed_full_signature_individual_gap_blocker =
+                full_signature_reduction_instantiation_shape.replace(marker, spoof);
+            assert!(
+                !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                    &suffixed_full_signature_individual_gap_blocker
+                )
+            );
+        }
         let global_vacuous_full_signature_reduction_proofs = format!(
             "{}\n{}",
             r#"
