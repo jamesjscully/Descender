@@ -3089,12 +3089,23 @@ def SelectedRustAcceptedSpendSoundnessCertificate.ofSelectedReportAndBoundHardPr
     lifecycleReplayClosedProof
     noExportClosedProof
 
+/--
+No selected accepted-spend certificate exists for the current hard-pricing
+fail-closed report.
+-/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedHardPricingReport_impossible
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) : False :=
+  have hFacts : selectedRustAcceptedSpendEvidenceReport.FactsAllTrue := by
+    rw [← Cert.evidenceReportBoundProof]
+    exact Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible
+    (selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPricingFactsComplete.1
+      hFacts)
+
 /-- No selected accepted-spend certificate exists for the current fail-closed report. -/
 theorem SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedReport_impossible
     (Cert : SelectedRustAcceptedSpendSoundnessCertificate) : False :=
-  selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_impossible (by
-    rw [← Cert.evidenceReportBoundProof]
-    exact Cert.selectedRustAcceptedSpendFactsAllTrueProof)
+  SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedHardPricingReport_impossible Cert
 
 /-- The selected accepted-spend certificate carries hidden-source closure. -/
 theorem SelectedRustAcceptedSpendSoundnessCertificate.hiddenSourceProofSemanticsClosed_holds
@@ -5212,12 +5223,20 @@ theorem currentSelectedReport_impossible
 
 end SelectedRustFullSignatureReductionProductionWitness
 
+/-- No selected full-signature certificate exists for the current hard-production fail-closed report. -/
+theorem SelectedRustFullSignatureReductionCertificate.currentSelectedHardProductionReport_impossible
+    (Cert : SelectedRustFullSignatureReductionCertificate) : False :=
+  have hFacts : selectedRustFullSignatureReductionEvidenceReport.FactsAllTrue := by
+    rw [← Cert.evidenceReportBoundProof]
+    exact Cert.selectedRustFullSignatureReductionFactsAllTrueProof
+  selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_impossible
+    (selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_hardProductionFactsComplete.1
+      hFacts)
+
 /-- No selected full-signature certificate exists for the current fail-closed report. -/
 theorem SelectedRustFullSignatureReductionCertificate.currentSelectedReport_impossible
     (Cert : SelectedRustFullSignatureReductionCertificate) : False :=
-  selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_impossible (by
-    rw [← Cert.evidenceReportBoundProof]
-    exact Cert.selectedRustFullSignatureReductionFactsAllTrueProof)
+  SelectedRustFullSignatureReductionCertificate.currentSelectedHardProductionReport_impossible Cert
 
 /-- The selected full-reduction certificate carries the key-generation model obligation. -/
 theorem SelectedRustFullSignatureReductionCertificate.keygenDistributionModeled_holds

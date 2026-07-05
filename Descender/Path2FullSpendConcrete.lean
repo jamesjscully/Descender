@@ -5330,13 +5330,25 @@ theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_n
 
 /--
 No concrete accepted-spend source certificate exists for the current selected
+hard-pricing fail-closed report.
+-/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedHardPricingReport_impossible
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) : False :=
+  have hFacts :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.FactsAllTrue := by
+    rw [← Source.evidenceReportBoundProof]
+    exact Source.evidenceFactsAllTrueProof
+  Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPricingFactsComplete.1
+      hFacts)
+
+/--
+No concrete accepted-spend source certificate exists for the current selected
 fail-closed report.
 -/
 theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedReport_impossible
     (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) : False :=
-  Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_impossible (by
-    rw [← Source.evidenceReportBoundProof]
-    exact Source.evidenceFactsAllTrueProof)
+  SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedHardPricingReport_impossible Source
 
 end Path2FullSpendConcrete
 end Descender

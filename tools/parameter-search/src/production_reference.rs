@@ -52507,6 +52507,8 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionCertificate",
         "SelectedRustFullSignatureReductionCertificate.ofReportAndReduction",
         "SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndReductionProductionFacts",
+        "SelectedRustFullSignatureReductionCertificate.currentSelectedHardProductionReport_impossible",
+        "SelectedRustFullSignatureReductionCertificate.currentSelectedReport_impossible",
         "SelectedRustFullSignatureReductionProductionWitness",
         "SelectedRustFullSignatureReductionProductionWitness.productionFactsComplete",
         "SelectedRustFullSignatureReductionProductionWitness.productionSignatureProbabilityPinned",
@@ -52719,6 +52721,8 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
     let exact_identifier_checks = [
         "SelectedRustFullSignatureReductionCertificate.ofReportAndReduction",
         "SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndReductionProductionFacts",
+        "SelectedRustFullSignatureReductionCertificate.currentSelectedHardProductionReport_impossible",
+        "SelectedRustFullSignatureReductionCertificate.currentSelectedReport_impossible",
         "SelectedRustFullSignatureReductionProductionWitness.productionFactsComplete",
         "SelectedRustFullSignatureReductionProductionWitness.productionSignatureProbabilityPinned",
         "SelectedRustFullSignatureReductionProductionWitness.signatureSuccessMatchesAcceptedSpendGame",
@@ -53473,6 +53477,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget",
         "SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedHardPricingReport_impossible",
         "SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedReport_impossible",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedHardPricingReport_impossible",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedReport_impossible",
         "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundPriced_false",
         "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundPriced_false",
@@ -53588,6 +53593,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound",
         "SelectedRustAcceptedSpendSoundnessCertificate.ofSelectedReportAndBoundPricingFacts",
         "SelectedRustAcceptedSpendSoundnessCertificate.ofSelectedReportAndBoundHardPricingFacts",
+        "SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedHardPricingReport_impossible",
+        "SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedReport_impossible",
         "SelectedRustAcceptedSpendSoundnessCertificate.hiddenSourceProofSemanticsClosed_holds",
         "SelectedRustAcceptedSpendSoundnessCertificate.checkedCoreCompositionClosed_holds",
         "SelectedRustAcceptedSpendSoundnessCertificate.lifecycleReplayClosed_holds",
@@ -53855,6 +53862,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget",
         "SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedHardPricingReport_impossible",
         "SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedReport_impossible",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedHardPricingReport_impossible",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedReport_impossible",
         "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundPriced_false",
         "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundPriced_false",
@@ -54015,6 +54023,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound",
         "SelectedRustAcceptedSpendSoundnessCertificate.ofSelectedReportAndBoundPricingFacts",
         "SelectedRustAcceptedSpendSoundnessCertificate.ofSelectedReportAndBoundHardPricingFacts",
+        "SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedHardPricingReport_impossible",
+        "SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedReport_impossible",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_unionBound",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_eq_pricedBound",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_production",
@@ -89859,6 +89869,10 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _fullReductionHardFactCertificateConstructor :=
     SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndCurrentHardProductionFacts
+  let _fullReductionCertificateCurrentHardImpossible :=
+    SelectedRustFullSignatureReductionCertificate.currentSelectedHardProductionReport_impossible
+  let _fullReductionCertificateCurrentImpossible :=
+    SelectedRustFullSignatureReductionCertificate.currentSelectedReport_impossible
   let _fullReductionRemainingBreakPackageProductionWitness :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitness
   let _fullReductionRemainingBreakPackageHardFactsProductionWitness :=
@@ -90110,6 +90124,26 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_production_witness_current_hard_impossible
+            )
+        );
+        let suffixed_full_signature_certificate_current_hard_impossible =
+            full_signature_reduction_instantiation_shape.replace(
+                "SelectedRustFullSignatureReductionCertificate.currentSelectedHardProductionReport_impossible",
+                "SelectedRustFullSignatureReductionCertificate.currentSelectedHardProductionReport_impossibleSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_certificate_current_hard_impossible
+            )
+        );
+        let suffixed_full_signature_certificate_current_impossible =
+            full_signature_reduction_instantiation_shape.replace(
+                "SelectedRustFullSignatureReductionCertificate.currentSelectedReport_impossible",
+                "SelectedRustFullSignatureReductionCertificate.currentSelectedReport_impossibleSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_certificate_current_impossible
             )
         );
         let suffixed_full_signature_remaining_break_package_current_hard_impossible =
@@ -91298,6 +91332,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedHardPricingReport_impossible
   let _acceptedSpendConcretePricingWitnessCurrentImpossible :=
     SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedReport_impossible
+  let _acceptedSpendConcreteNumericSourceCurrentHardImpossible :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedHardPricingReport_impossible
   let _acceptedSpendConcreteNumericSourceCurrentImpossible :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedReport_impossible
   let _acceptedSpendCurrentNumericBoundMissing :=
@@ -91626,6 +91662,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedHardPricingReport_impossible
   let _acceptedSpendConcretePricingWitnessCurrentImpossible :=
     SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedReport_impossible
+  let _acceptedSpendConcreteNumericSourceCurrentHardImpossible :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedHardPricingReport_impossible
   let _acceptedSpendConcreteNumericSourceCurrentImpossible :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedReport_impossible
   let _acceptedSpendCurrentNumericBoundMissing :=
@@ -92440,6 +92478,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedHardPricingReport_impossible
   let _acceptedSpendConcretePricingWitnessCurrentImpossible :=
     SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedReport_impossible
+  let _acceptedSpendConcreteNumericSourceCurrentHardImpossible :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedHardPricingReport_impossible
   let _acceptedSpendConcreteNumericSourceCurrentImpossible :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedReport_impossible
   let _acceptedSpendCurrentNumericBoundMissing :=
@@ -92814,6 +92854,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessCertificate.ofSelectedReportAndBoundPricingFacts
   let _acceptedSpendHardPricingCertificateConstructor :=
     SelectedRustAcceptedSpendSoundnessCertificate.ofSelectedReportAndBoundHardPricingFacts
+  let _acceptedSpendCertificateCurrentHardImpossible :=
+    SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedHardPricingReport_impossible
+  let _acceptedSpendCertificateCurrentImpossible :=
+    SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedReport_impossible
   let _acceptedSpendCertificateHiddenClosure :=
     SelectedRustAcceptedSpendSoundnessCertificate.hiddenSourceProofSemanticsClosed_holds
   let _acceptedSpendCertificateCheckedClosure :=
@@ -92985,6 +93029,16 @@ end Path2NativeAccountDesign
                 &suffixed_concrete_source_hard_pricing_constructor
             )
         );
+        let suffixed_concrete_source_current_hard_impossible =
+            accepted_spend_instantiation_shape.replace(
+                "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedHardPricingReport_impossible",
+                "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedHardPricingReport_impossibleSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_concrete_source_current_hard_impossible
+            )
+        );
         let suffixed_concrete_source_current_impossible =
             accepted_spend_instantiation_shape.replace(
                 "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedReport_impossible",
@@ -93023,6 +93077,26 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_remaining_break_package_impossible
+            )
+        );
+        let suffixed_accepted_spend_certificate_current_hard_impossible =
+            accepted_spend_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedHardPricingReport_impossible",
+                "SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedHardPricingReport_impossibleSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_accepted_spend_certificate_current_hard_impossible
+            )
+        );
+        let suffixed_accepted_spend_certificate_current_impossible =
+            accepted_spend_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedReport_impossible",
+                "SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedReport_impossibleSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_accepted_spend_certificate_current_impossible
             )
         );
         let suffixed_remaining_break_package_component_priced_bound =

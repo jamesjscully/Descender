@@ -324,7 +324,12 @@ constructors/projections, and the Rust source-shape gate requires and spoofs
 those names before accepting future AP2-N003 instantiation candidates; the
 concrete numeric-source certificate guard
 `SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedReport_impossible`
-now routes through the current report-completion impossible endpoint as well, and
+now routes through the hard-pricing impossible endpoint via
+`SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedHardPricingReport_impossible`,
+and `SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedHardPricingReport_impossible`
+pins the accepted-spend certificate guard to the same hard-pricing surface. The
+Rust source-shape gate requires and spoofs those certificate-level names as
+well. Separately,
 `SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedHardPricingReport_impossible`
 plus
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedHardPricingReport_impossible`
@@ -626,8 +631,10 @@ package-level guards
 `SelectedRustFullSignatureReductionProductionWitness.currentSelectedHardProductionReport_impossible`
 and
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedHardPricingReport_impossible`
-now route through the hard production/pricing surfaces. The Rust source-shape
-gate requires those names, plus
+now route through the hard production/pricing surfaces, and
+`SelectedRustFullSignatureReductionCertificate.currentSelectedHardProductionReport_impossible`
+pins the full-reduction certificate guard to the hard-production surface. The
+Rust source-shape gate requires and spoofs those names, plus
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible`,
 and the active hash-boundary
 `activeNativeHashBudgetBoundary_activeDirectQuerySymbolsPriced` route. It
