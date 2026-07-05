@@ -2442,6 +2442,62 @@ theorem mem_currentMissingAcceptedSpendPricingFacts_iff
       AcceptedSpendPricingFact.currentSelectedReportFactHolds,
       selectedRustAcceptedSpendEvidenceReport]
 
+/-- A complete pricing half proves the selected report predicate for any pricing fact. -/
+theorem AcceptedSpendPricingFact.currentSelectedReportFactHolds_of_pricingFactsComplete
+    (fact : AcceptedSpendPricingFact)
+    (hPricing :
+      selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete) :
+    fact.currentSelectedReportFactHolds := by
+  cases fact
+  · simpa [AcceptedSpendPricingFact.currentSelectedReportFactHolds] using
+      hPricing.1
+  · simpa [AcceptedSpendPricingFact.currentSelectedReportFactHolds] using
+      hPricing.2.1
+  · simpa [AcceptedSpendPricingFact.currentSelectedReportFactHolds] using
+      hPricing.2.2.1
+  · simpa [AcceptedSpendPricingFact.currentSelectedReportFactHolds] using
+      hPricing.2.2.2.1
+  · simpa [AcceptedSpendPricingFact.currentSelectedReportFactHolds] using
+      hPricing.2.2.2.2.1
+  · simpa [AcceptedSpendPricingFact.currentSelectedReportFactHolds] using
+      hPricing.2.2.2.2.2.1
+  · simpa [AcceptedSpendPricingFact.currentSelectedReportFactHolds] using
+      hPricing.2.2.2.2.2.2
+
+/-- Any fact in the current missing pricing set negates its selected report predicate. -/
+theorem AcceptedSpendPricingFact.not_currentSelectedReportFactHolds_of_currentMissing
+    (fact : AcceptedSpendPricingFact)
+    (hMissing :
+      fact ∈ currentMissingAcceptedSpendPricingFacts) :
+    ¬ fact.currentSelectedReportFactHolds :=
+  (mem_currentMissingAcceptedSpendPricingFacts_iff fact).1 hMissing
+
+/-- Any currently missing accepted-spend pricing fact blocks the pricing half. -/
+theorem currentMissingAcceptedSpendPricingFact_blocksPricingFactsComplete
+    (fact : AcceptedSpendPricingFact)
+    (hMissing :
+      fact ∈ currentMissingAcceptedSpendPricingFacts) :
+    ¬ selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete := by
+  intro hPricing
+  exact
+    AcceptedSpendPricingFact.not_currentSelectedReportFactHolds_of_currentMissing
+      fact hMissing
+      (AcceptedSpendPricingFact.currentSelectedReportFactHolds_of_pricingFactsComplete
+        fact hPricing)
+
+/-- Any currently missing accepted-spend pricing fact blocks the hard four-bit surface. -/
+theorem currentMissingAcceptedSpendPricingFact_blocksHardPricingFactsComplete
+    (fact : AcceptedSpendPricingFact)
+    (hMissing :
+      fact ∈ currentMissingAcceptedSpendPricingFacts) :
+    ¬ selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete := by
+  intro hHardPricing
+  exact
+    currentMissingAcceptedSpendPricingFact_blocksPricingFactsComplete
+      fact hMissing
+      (selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
+        hHardPricing)
+
 /-- The current selected accepted-spend report is missing exactly four pricing facts. -/
 theorem currentMissingAcceptedSpendPricingFacts_card :
     currentMissingAcceptedSpendPricingFacts.card = 4 := by
