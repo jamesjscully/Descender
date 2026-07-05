@@ -292,8 +292,9 @@ through
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_eq_zero`,
 and
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_le_2pow_neg133`;
-the Rust accepted-spend source-shape gate now requires these endpoint names in
-future AP2-N003 instantiation candidates. Lean now also names the exact
+the Rust accepted-spend source-shape gate and downstream full-reduction
+source-shape gate now require these endpoint names in future AP2-N003
+instantiation candidates. Lean now also names the exact
 remaining-break finite set with `remainingCryptographicBreakEvents`,
 `mem_remainingCryptographicBreakEvents_iff`,
 `remainingCryptographicBreakEvents_card`, and

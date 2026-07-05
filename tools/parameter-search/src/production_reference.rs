@@ -52693,6 +52693,10 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitness",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedHardPricingReport_impossible",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendComponentBound_le_2pow_neg129",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_acceptedSpendBound",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakComponentBound_le_2pow_neg133",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_breakBound",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionCertificate",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound",
@@ -52880,6 +52884,10 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithCurrentHardProductionFacts",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedHardPricingReport_impossible",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendComponentBound_le_2pow_neg129",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_acceptedSpendBound",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakComponentBound_le_2pow_neg133",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_breakBound",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionCertificate",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound",
@@ -89986,6 +89994,14 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedHardPricingReport_impossible
   let _fullReductionRemainingBreakPackageCurrentImpossible :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible
+  let _fullReductionRemainingBreakPackageAcceptedBoundComponent :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendComponentBound_le_2pow_neg129
+  let _fullReductionRemainingBreakPackageAcceptedProbComponent :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_acceptedSpendBound
+  let _fullReductionRemainingBreakPackageBreakBoundComponent :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakComponentBound_le_2pow_neg133
+  let _fullReductionRemainingBreakPackageBreakProbBound :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_breakBound
   let _fullReductionRemainingBreakPackageCertificate :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionCertificate
   let _fullReductionRemainingBreakPackageBoundary :=
@@ -90483,6 +90499,46 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_remaining_break_package_current_impossible
+            )
+        );
+        let suffixed_full_signature_remaining_break_package_accepted_bound_component =
+            full_signature_reduction_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendComponentBound_le_2pow_neg129",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendComponentBound_le_2pow_neg129Spoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_remaining_break_package_accepted_bound_component
+            )
+        );
+        let suffixed_full_signature_remaining_break_package_accepted_prob_component =
+            full_signature_reduction_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_acceptedSpendBound",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_acceptedSpendBoundSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_remaining_break_package_accepted_prob_component
+            )
+        );
+        let suffixed_full_signature_remaining_break_package_break_bound_component =
+            full_signature_reduction_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakComponentBound_le_2pow_neg133",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakComponentBound_le_2pow_neg133Spoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_remaining_break_package_break_bound_component
+            )
+        );
+        let suffixed_full_signature_remaining_break_package_break_prob_bound =
+            full_signature_reduction_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_breakBound",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_breakBoundSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_remaining_break_package_break_prob_bound
             )
         );
         let suffixed_full_signature_active_query_symbols_priced =
