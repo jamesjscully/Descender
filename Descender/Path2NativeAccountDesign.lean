@@ -5199,11 +5199,16 @@ def toFullSignatureReductionCertificate
     W.queryBudgetPricedProof
     W.multiTargetLossPricedProof
 
+/-- No selected production witness exists for the current hard-production fail-closed report. -/
+theorem currentSelectedHardProductionReport_impossible
+    (W : SelectedRustFullSignatureReductionProductionWitness) : False :=
+  selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_impossible
+    (hardProductionFactsComplete W)
+
 /-- No selected production witness exists for the current fail-closed full-reduction report. -/
 theorem currentSelectedReport_impossible
     (W : SelectedRustFullSignatureReductionProductionWitness) : False :=
-  selectedRustFullSignatureReductionEvidenceReport_currentProductionFactsComplete_impossible
-    (productionFactsComplete W)
+  currentSelectedHardProductionReport_impossible W
 
 end SelectedRustFullSignatureReductionProductionWitness
 

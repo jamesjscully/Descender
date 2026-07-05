@@ -4347,10 +4347,15 @@ theorem successProb_le_active128BitTarget_of_proportional_bounds
     successProb_le_2pow_neg128_of_proportional_bounds W
 
 /-- No selected pricing witness exists for the current fail-closed accepted-spend report. -/
+theorem currentSelectedHardPricingReport_impossible
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) : False :=
+  Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible
+    (hardPricingFactsComplete W)
+
+/-- No selected pricing witness exists for the current fail-closed accepted-spend report. -/
 theorem currentSelectedReport_impossible
     (W : SelectedRustConcreteAcceptedSpendPricingWitness) : False :=
-  Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_currentPricingFactsComplete_impossible
-    (pricingFactsComplete W)
+  currentSelectedHardPricingReport_impossible W
 
 /--
 Turn the selected pricing witness into the report-bound concrete numeric

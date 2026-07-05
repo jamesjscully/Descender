@@ -324,7 +324,11 @@ constructors/projections, and the Rust source-shape gate requires and spoofs
 those names before accepting future AP2-N003 instantiation candidates; the
 concrete numeric-source certificate guard
 `SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedReport_impossible`
-now routes through the current report-completion impossible endpoint as well.
+now routes through the current report-completion impossible endpoint as well, and
+`SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedHardPricingReport_impossible`
+plus
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedHardPricingReport_impossible`
+pin the package-level guards to the hard-pricing surface.
 The concrete full-spend pricing witness now exposes the same four-fact surface
 with `SelectedRustConcreteAcceptedSpendPricingWitness.hardPricingFactsComplete`,
 and erases through hard-pricing source, certificate, and boundary adapters:
@@ -617,8 +621,13 @@ impossible endpoint now includes
 The certificate and production-witness
 constructors now have current-hard-fact variants, and
 `Descender/Path2TraceModel.lean` exposes remaining-break package adapters for
-the same three-bit handoff, including the concrete execution-source route. The
-Rust source-shape gate requires those names, plus
+the same three-bit handoff, including the concrete execution-source route; the
+package-level guards
+`SelectedRustFullSignatureReductionProductionWitness.currentSelectedHardProductionReport_impossible`
+and
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedHardPricingReport_impossible`
+now route through the hard production/pricing surfaces. The Rust source-shape
+gate requires those names, plus
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible`,
 and the active hash-boundary
 `activeNativeHashBudgetBoundary_activeDirectQuerySymbolsPriced` route. It
