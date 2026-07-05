@@ -53453,7 +53453,11 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_active128BitTarget_of_proportional_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_successProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendBound_le_2pow_neg129_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakBound_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_acceptedSpendBound_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
@@ -53845,7 +53849,11 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_active128BitTarget_of_proportional_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_successProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendBound_le_2pow_neg129_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakBound_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_acceptedSpendBound_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
@@ -92746,8 +92754,16 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _acceptedSpendTracePricingWitnessHardPricingSuccessTarget :=
     selectedRustConcreteAcceptedSpendPricingWitness_successProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts
+  let _acceptedSpendTracePricingWitnessHardPricingAcceptedBoundComponent :=
+    selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendBound_le_2pow_neg129_of_remaining_break_bounds_and_current_hard_pricing_facts
+  let _acceptedSpendTracePricingWitnessHardPricingBreakBoundComponent :=
+    selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakBound_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts
+  let _acceptedSpendTracePricingWitnessHardPricingAcceptedProbComponent :=
+    selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_acceptedSpendBound_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _acceptedSpendTracePricingWitnessHardPricingAcceptedProbTarget :=
     selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts
+  let _acceptedSpendTracePricingWitnessHardPricingBreakProbComponent :=
+    selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _acceptedSpendTracePricingWitnessHardPricingBreakProbTarget :=
     selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _acceptedSpendTracePricingWitnessHardPricingComponentTarget :=
@@ -93065,6 +93081,46 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_trace_endpoint_hard_pricing_success_target
+            )
+        );
+        let suffixed_trace_endpoint_hard_pricing_accepted_bound_component =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendBound_le_2pow_neg129_of_remaining_break_bounds_and_current_hard_pricing_facts",
+                "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendBound_le_2pow_neg129_of_remaining_break_bounds_and_current_hard_pricing_factsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_trace_endpoint_hard_pricing_accepted_bound_component
+            )
+        );
+        let suffixed_trace_endpoint_hard_pricing_break_bound_component =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakBound_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts",
+                "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakBound_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_factsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_trace_endpoint_hard_pricing_break_bound_component
+            )
+        );
+        let suffixed_trace_endpoint_hard_pricing_accepted_prob_component =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_acceptedSpendBound_of_remaining_break_bounds_and_current_hard_pricing_facts",
+                "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_acceptedSpendBound_of_remaining_break_bounds_and_current_hard_pricing_factsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_trace_endpoint_hard_pricing_accepted_prob_component
+            )
+        );
+        let suffixed_trace_endpoint_hard_pricing_break_prob_component =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts",
+                "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_factsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_trace_endpoint_hard_pricing_break_prob_component
             )
         );
         let suffixed_trace_endpoint_hard_pricing_break_prob_target =

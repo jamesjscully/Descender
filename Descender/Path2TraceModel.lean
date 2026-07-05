@@ -1197,6 +1197,65 @@ theorem selectedRustConcreteAcceptedSpendPricingWitness_successProb_le_active128
           hHardPricing)
 
 /--
+The current-hard-pricing trace witness exposes the accepted-spend component
+budget at the remaining-break endpoint.
+-/
+theorem selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendBound_le_2pow_neg129_of_remaining_break_bounds_and_current_hard_pricing_facts :
+    let W :=
+      selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing
+    W.concreteCertificate.pricedCertificate.acceptedSpendBound ≤
+      (1 : ℝ) / 2 ^ 129 := by
+  simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts]
+    using
+      selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendBound_le_2pow_neg129_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
+          hHardPricing)
+
+/--
+The current-hard-pricing trace witness exposes every remaining cryptographic
+named-break component budget at the remaining-break endpoint.
+-/
+theorem selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakBound_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts
+    (breakEvent : RemainingCryptographicBreak) :
+    let W :=
+      selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing
+    W.concreteCertificate.pricedCertificate.breakBound breakEvent.1 ≤
+      (1 : ℝ) / 2 ^ 133 := by
+  simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts]
+    using
+      selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakBound_le_2pow_neg133_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
+          hHardPricing)
+        breakEvent
+
+/--
+The current-hard-pricing trace witness keeps the concrete accepted-spend
+probability under its accepted-spend component at the remaining-break endpoint.
+-/
+theorem selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_acceptedSpendBound_of_remaining_break_bounds_and_current_hard_pricing_facts :
+    let W :=
+      selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing
+    W.concreteCertificate.pricedCertificate.acceptedSpendProb ≤
+      W.concreteCertificate.pricedCertificate.acceptedSpendBound := by
+  simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts]
+    using
+      selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_acceptedSpendBound_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
+          hHardPricing)
+
+/--
 The current-hard-pricing trace witness keeps the concrete accepted-spend
 probability on the fixed active target.
 -/
@@ -1214,6 +1273,33 @@ theorem selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_act
         hAccept hBreak hAcceptBudget hBreakBudget hPriced
         (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
           hHardPricing)
+
+/--
+The current-hard-pricing trace witness carries every remaining cryptographic
+named-break probability to its proportional 2^-133 component target.
+-/
+theorem selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts
+    (breakEvent : RemainingCryptographicBreak) :
+    let W :=
+      selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        W.concreteCertificate.pricedCertificate.Trace
+        W.concreteCertificate.pricedCertificate.Outcome
+        W.concreteCertificate.pricedCertificate.Break
+        W.concreteCertificate.pricedCertificate.traceFintype
+        W.concreteCertificate.pricedCertificate.breakFintype
+        W.concreteCertificate.pricedCertificate.game breakEvent.1 ≤
+      (1 : ℝ) / 2 ^ 133 := by
+  simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts]
+    using
+      selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakProb_le_2pow_neg133_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
+          hHardPricing)
+        breakEvent
 
 /--
 The current-hard-pricing trace witness keeps every remaining cryptographic break
