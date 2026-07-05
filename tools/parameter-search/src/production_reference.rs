@@ -75,11 +75,10 @@ pub const PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_CURRENT_MISSING_PRICING_OBLIGATION
     "named_break_event_bounds_priced",
     "break_pricing_budget_meets_priced_bound",
 ];
-pub const PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_CURRENT_MISSING_PRODUCTION_OBLIGATIONS: [&str; 4] = [
+pub const PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_CURRENT_MISSING_PRODUCTION_OBLIGATIONS: [&str; 3] = [
     "production_signature_probability_pinned",
     "signature_success_matches_accepted_spend_game",
     "accepted_spend_probability_linked",
-    "all_active_query_symbols_priced",
 ];
 pub const PATH2_NATIVE_SIGNER_VERIFIER_PIPELINE_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.NativeSignerVerifierPipelineEvidence.v1";
@@ -4060,7 +4059,7 @@ pub fn path2_native_full_signature_reduction_evidence_v1(
         accepted_spend_probability_linked: false,
         full_execution_source_consumed: true,
         active_hash_boundary_consumed: true,
-        all_active_query_symbols_priced: false,
+        all_active_query_symbols_priced: true,
         multi_target_horizon_priced: true,
         verifier_game_matches_production_execution: true,
         cleanup_policy: "full-signature reduction evidence is public and remains fail-closed until production reduction facts are instantiated",
@@ -52517,7 +52516,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityPinned_false",
         "selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessMatchesAcceptedSpendGame_false",
         "selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityLinked_false",
-        "selectedRustFullSignatureReductionEvidenceReport_currentAllActiveQuerySymbolsPriced_false",
+        "selectedRustFullSignatureReductionEvidenceReport_currentAllActiveQuerySymbolsPriced_true",
         "selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatchesProductionExecution_true",
         "selectedRustFullSignatureReductionEvidenceReport_currentStructuralFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentProductionFactsComplete",
@@ -52714,7 +52713,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityPinned_false",
         "selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessMatchesAcceptedSpendGame_false",
         "selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityLinked_false",
-        "selectedRustFullSignatureReductionEvidenceReport_currentAllActiveQuerySymbolsPriced_false",
+        "selectedRustFullSignatureReductionEvidenceReport_currentAllActiveQuerySymbolsPriced_true",
         "selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatchesProductionExecution_true",
         "selectedRustFullSignatureReductionEvidenceReport_currentStructuralFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentProductionFactsComplete",
@@ -80520,7 +80519,7 @@ mod tests {
         assert!(!evidence.accepted_spend_probability_linked);
         assert!(evidence.full_execution_source_consumed);
         assert!(evidence.active_hash_boundary_consumed);
-        assert!(!evidence.all_active_query_symbols_priced);
+        assert!(evidence.all_active_query_symbols_priced);
         assert!(evidence.multi_target_horizon_priced);
         assert!(evidence.verifier_game_matches_production_execution);
         assert!(path2_native_full_signature_reduction_evidence_report_verified_v1(&evidence));
@@ -80588,6 +80587,7 @@ mod tests {
         assert!(!rendered.contains("\"production_signature_probability_pinned\":true"));
         assert!(rendered.contains("\"full_execution_source_consumed\":true"));
         assert!(rendered.contains("\"active_hash_boundary_consumed\":true"));
+        assert!(rendered.contains("\"all_active_query_symbols_priced\":true"));
         assert!(rendered.contains("\"multi_target_horizon_priced\":true"));
         assert!(rendered.contains("\"verifier_game_matches_production_execution\":true"));
         assert_no_active_native_private_material(&rendered);
@@ -89517,7 +89517,7 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
   let _fullReductionCurrentAcceptedSpendLinkedMissing :=
     selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityLinked_false
   let _fullReductionCurrentQuerySymbolsMissing :=
-    selectedRustFullSignatureReductionEvidenceReport_currentAllActiveQuerySymbolsPriced_false
+    selectedRustFullSignatureReductionEvidenceReport_currentAllActiveQuerySymbolsPriced_true
   let _fullReductionCurrentVerifierGameBound :=
     selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatchesProductionExecution_true
   let _fullReductionCurrentStructuralHalf :=

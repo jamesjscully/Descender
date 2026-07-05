@@ -327,10 +327,11 @@ reduction as a free proposition; the Rust full-reduction source-shape gate
 requires these concrete-source adapter names in future AP2-N003 instantiation
 candidates. The active full-reduction report now marks
 `verifierGameMatchesProductionExecution` true from that selected concrete
-execution-source route, so the full-reduction production diagnostic is narrowed
-to four remaining missing facts: production signature probability pinning,
-signature-success/accepted-spend-game linkage, accepted-spend probability
-linkage, and all-active-query-symbol pricing.
+execution-source route and `allActiveQuerySymbolsPriced` true from the explicit
+active direct-query budget route, so the full-reduction production diagnostic is
+narrowed to three remaining missing facts: production signature probability
+pinning, signature-success/accepted-spend-game linkage, and accepted-spend
+probability linkage.
 Lean now mirrors the direct-mode query-symbol taxonomy with
 `DirectQuerySymbol`, `activeDirectQuerySymbols`,
 `inactiveDirectQuerySymbols`, `mem_activeDirectQuerySymbols_iff`,
@@ -344,7 +345,9 @@ Lean now mirrors the direct-mode query-symbol taxonomy with
 source-shape gate requires those names so future
 `all_active_query_symbols_priced` evidence remains tied to the explicit
 15-active/1-inactive direct query surface and the selected direct-budget pricing
-route instead of only the older `qBatchActive` boolean.
+route instead of only the older `qBatchActive` boolean. The selected
+full-reduction report now consumes that route and sets the
+`all_active_query_symbols_priced` bit true.
 Lean now also enumerates the full-reduction production half as
 `FullSignatureReductionProductionFact`, `fullSignatureReductionProductionFacts`,
 `currentMissingFullSignatureReductionProductionFacts`, and
@@ -361,15 +364,15 @@ plus
 `currentMissingFullSignatureReductionProductionFact_blocksProductionFactsComplete`,
 and
 `currentMissingFullSignatureReductionProductionFact_blocksHardProductionFactsComplete`
-pinning the exact 5/4/1 accounting and making each missing fact an independent
-blocker: production probability, signature-success
-linkage, accepted-spend probability linkage, and all-active-query-symbol
-pricing remain false, while verifier-game/production-execution binding is the
-single completed production fact. The full-reduction source-shape gate requires
+pinning the exact 5/3/2 accounting and making each missing fact an independent
+blocker: production probability, signature-success linkage, and accepted-spend
+probability linkage remain false, while active-query-symbol pricing and
+verifier-game/production-execution binding are the completed production facts.
+The full-reduction source-shape gate requires
 those names and rejects spoofed missing-fact cardinality or missing-fact blocker
 names, so future
 instantiation evidence cannot satisfy the production half by silently changing
-the report-fact surface. The same current production gap blocks the four-bit
+the report-fact surface. The same current production gap blocks the three-bit
 hard production surface through
 `selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksHardProductionFactsComplete`
 and
@@ -552,17 +555,17 @@ selected proof-family closure route.
 
 Current full-reduction production slice:
 `Descender/Path2NativeAccountDesign.lean` now names the selected report's
-four-bit hard production surface as
+three-bit hard production surface as
 `SelectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete`
 and proves
 `selectedRustFullSignatureReductionEvidenceReport_currentProductionFactsComplete_iff_hardProductionFactsComplete`:
-for the current selected report, `ProductionFactsComplete` is exactly the four
-still-missing production bits because
+for the current selected report, `ProductionFactsComplete` is exactly the three
+still-missing production bits because active-query-symbol pricing and
 `selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatchesProductionExecution_true`
-already supplies the fifth bit. The certificate and production-witness
+already supply the other production bits. The certificate and production-witness
 constructors now have current-hard-fact variants, and
 `Descender/Path2TraceModel.lean` exposes remaining-break package adapters for
-the same four-bit handoff, including the concrete execution-source route. The
+the same three-bit handoff, including the concrete execution-source route. The
 Rust source-shape gate requires those names, plus
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible`,
 and the active hash-boundary

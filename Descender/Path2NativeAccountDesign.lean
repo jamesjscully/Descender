@@ -2180,9 +2180,9 @@ def selectedRustAcceptedSpendEvidenceReport :
       184, 94, 226, 157, 26, 55, 237, 33, 21, 223, 183, 249, 34, 163, 53,
       42, 43, 237, 74, 214]
   acceptedSpendEventSemanticsDigest :=
-    ByteArray.mk #[35, 65, 67, 124, 201, 208, 218, 210, 237, 210, 97, 133,
-      169, 250, 226, 203, 205, 32, 97, 64, 113, 250, 85, 134, 122, 143,
-      222, 95, 6, 221, 238, 15]
+    ByteArray.mk #[170, 129, 200, 170, 244, 95, 2, 31, 155, 186, 18, 4,
+      221, 143, 144, 75, 113, 44, 3, 78, 95, 182, 221, 199, 86, 211,
+      139, 251, 232, 250, 83, 107]
   activeBreakFamilyDigest :=
     ByteArray.mk #[111, 3, 153, 201, 118, 101, 3, 131, 125, 95, 74, 112,
       104, 81, 255, 126, 60, 29, 241, 180, 122, 212, 12, 39, 240, 46, 175,
@@ -2222,9 +2222,9 @@ def selectedRustAcceptedSpendEvidenceReport :
 
 /-- Digest pin for the selected Rust accepted-spend numeric evidence report. -/
 def selectedRustAcceptedSpendEvidenceDigest : ByteArray :=
-  ByteArray.mk #[58, 41, 97, 234, 177, 225, 24, 187, 29, 73, 144, 50,
-    225, 195, 151, 44, 234, 221, 153, 89, 136, 196, 214, 185, 75, 82,
-    138, 5, 39, 121, 187, 218]
+  ByteArray.mk #[236, 132, 27, 132, 46, 10, 102, 254, 131, 225, 145, 73,
+    177, 254, 131, 144, 18, 0, 66, 213, 180, 85, 56, 65, 19, 77, 105,
+    246, 6, 238, 185, 225]
 
 /-- Selected digest-slot certificate for the current accepted-spend numeric report. -/
 def selectedRustAcceptedSpendNumericDigestSlotsCertificate :
@@ -3666,8 +3666,7 @@ def SelectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete
     (E : SelectedRustFullSignatureReductionEvidenceReport) : Prop :=
   E.productionSignatureProbabilityPinned = true ∧
   E.signatureSuccessMatchesAcceptedSpendGame = true ∧
-  E.acceptedSpendProbabilityLinked = true ∧
-  E.allActiveQuerySymbolsPriced = true
+  E.acceptedSpendProbabilityLinked = true
 
 /-- Full-reduction completeness is exactly structural evidence plus production facts. -/
 theorem SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_iff_structural_and_production
@@ -3736,12 +3735,12 @@ theorem SelectedRustFullSignatureReductionEvidenceReport.productionFactsComplete
     E.verifierGameMatchesProductionExecution = true :=
   h.2.2.2.2
 
-/-- A complete production half includes the four hard production facts. -/
+/-- A complete production half includes the three hard production facts. -/
 theorem SelectedRustFullSignatureReductionEvidenceReport.productionFactsComplete_hardProductionFactsComplete
     (E : SelectedRustFullSignatureReductionEvidenceReport)
     (h : E.ProductionFactsComplete) :
     E.HardProductionFactsComplete :=
-  ⟨h.1, h.2.1, h.2.2.1, h.2.2.2.1⟩
+  ⟨h.1, h.2.1, h.2.2.1⟩
 
 /-- A complete full-reduction report pins the production signature probability. -/
 theorem SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_productionSignatureProbabilityPinned
@@ -3838,15 +3837,15 @@ def selectedRustFullSignatureReductionEvidenceReport :
   acceptedSpendProbabilityLinked := false
   fullExecutionSourceConsumed := true
   activeHashBoundaryConsumed := true
-  allActiveQuerySymbolsPriced := false
+  allActiveQuerySymbolsPriced := true
   multiTargetHorizonPriced := true
   verifierGameMatchesProductionExecution := true
 
 /-- Digest pin for the selected Rust full-signature reduction evidence report. -/
 def selectedRustFullSignatureReductionEvidenceDigest : ByteArray :=
-  ByteArray.mk #[65, 129, 52, 192, 126, 122, 172, 232, 192, 29, 252, 16,
-    28, 17, 209, 81, 101, 244, 26, 145, 214, 144, 191, 46, 180, 14, 170,
-    81, 16, 97, 161, 239]
+  ByteArray.mk #[229, 9, 245, 73, 162, 30, 199, 178, 27, 0, 29, 132, 209,
+    53, 172, 45, 39, 154, 22, 20, 214, 142, 124, 149, 24, 173, 186, 234,
+    183, 185, 44, 225]
 
 /-- The selected full-reduction report has verified public digest slots. -/
 theorem selectedRustFullSignatureReductionVerifiedProof :
@@ -3874,12 +3873,11 @@ theorem selectedRustFullSignatureReductionEvidenceReport_currentStructuralFactsC
   simp [SelectedRustFullSignatureReductionEvidenceReport.StructuralFactsComplete,
     selectedRustFullSignatureReductionEvidenceReport]
 
-/-- The current selected full-reduction report is still missing four production reduction facts. -/
+/-- The current selected full-reduction report is still missing three production reduction facts. -/
 theorem selectedRustFullSignatureReductionEvidenceReport_currentMissingReductionFactsFalse :
     selectedRustFullSignatureReductionEvidenceReport.productionSignatureProbabilityPinned = false ∧
     selectedRustFullSignatureReductionEvidenceReport.signatureSuccessMatchesAcceptedSpendGame = false ∧
-    selectedRustFullSignatureReductionEvidenceReport.acceptedSpendProbabilityLinked = false ∧
-    selectedRustFullSignatureReductionEvidenceReport.allActiveQuerySymbolsPriced = false := by
+    selectedRustFullSignatureReductionEvidenceReport.acceptedSpendProbabilityLinked = false := by
   native_decide
 
 /-- The current selected full-reduction report has not pinned production signature probability. -/
@@ -3895,12 +3893,12 @@ theorem selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccess
 /-- The current selected full-reduction report has not linked accepted-spend probability. -/
 theorem selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityLinked_false :
     selectedRustFullSignatureReductionEvidenceReport.acceptedSpendProbabilityLinked = false :=
-  selectedRustFullSignatureReductionEvidenceReport_currentMissingReductionFactsFalse.2.2.1
+  selectedRustFullSignatureReductionEvidenceReport_currentMissingReductionFactsFalse.2.2
 
-/-- The current selected full-reduction report has not priced every active final query symbol. -/
-theorem selectedRustFullSignatureReductionEvidenceReport_currentAllActiveQuerySymbolsPriced_false :
-    selectedRustFullSignatureReductionEvidenceReport.allActiveQuerySymbolsPriced = false :=
-  selectedRustFullSignatureReductionEvidenceReport_currentMissingReductionFactsFalse.2.2.2
+/-- The current selected full-reduction report prices every active final query symbol. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentAllActiveQuerySymbolsPriced_true :
+    selectedRustFullSignatureReductionEvidenceReport.allActiveQuerySymbolsPriced = true := by
+  native_decide
 
 /--
 The current selected full-reduction report now binds the verifier game to the
@@ -3911,20 +3909,23 @@ theorem selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatc
   native_decide
 
 /--
-For the current selected report, the four hard production facts complete the
+For the current selected report, the three hard production facts complete the
 full production half because verifier-game/production-execution binding is
-already selected and proved true.
+already selected and proved true, and active query-symbol pricing is now
+selected and proved true.
 -/
 theorem selectedRustFullSignatureReductionEvidenceReport_productionFactsComplete_of_hardProductionFactsComplete
     (hHard :
       selectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete) :
     selectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete :=
-  ⟨hHard.1, hHard.2.1, hHard.2.2.1, hHard.2.2.2,
+  ⟨hHard.1, hHard.2.1, hHard.2.2,
+    selectedRustFullSignatureReductionEvidenceReport_currentAllActiveQuerySymbolsPriced_true,
     selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatchesProductionExecution_true⟩
 
 /--
-For the current selected report, `ProductionFactsComplete` is exactly the four
-remaining hard production bits; the fifth production bit is already closed.
+For the current selected report, `ProductionFactsComplete` is exactly the three
+remaining hard production bits; the active query-symbol and verifier-game bits
+are already closed.
 -/
 theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionFactsComplete_iff_hardProductionFactsComplete :
     selectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete ↔
@@ -3939,9 +3940,9 @@ theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionFactsC
 /--
 Finite taxonomy for the selected full-reduction report's production half.
 
-The report has five production facts: four are still false in the current
-selected evidence, and the verifier-game/production-execution binding is
-already true.
+The report has five production facts: three are still false in the current
+selected evidence, while active query-symbol pricing and verifier-game /
+production-execution binding are already true.
 -/
 inductive FullSignatureReductionProductionFact
   | productionSignatureProbabilityPinned
@@ -3965,13 +3966,13 @@ def currentMissingFullSignatureReductionProductionFacts :
     Finset FullSignatureReductionProductionFact :=
   { FullSignatureReductionProductionFact.productionSignatureProbabilityPinned,
     FullSignatureReductionProductionFact.signatureSuccessMatchesAcceptedSpendGame,
-    FullSignatureReductionProductionFact.acceptedSpendProbabilityLinked,
-    FullSignatureReductionProductionFact.allActiveQuerySymbolsPriced }
+    FullSignatureReductionProductionFact.acceptedSpendProbabilityLinked }
 
 /-- Full-reduction production facts already completed in the current selected report. -/
 def currentCompletedFullSignatureReductionProductionFacts :
     Finset FullSignatureReductionProductionFact :=
-  { FullSignatureReductionProductionFact.verifierGameMatchesProductionExecution }
+  { FullSignatureReductionProductionFact.allActiveQuerySymbolsPriced,
+    FullSignatureReductionProductionFact.verifierGameMatchesProductionExecution }
 
 /-- The current selected report bit for one full-reduction production fact. -/
 def FullSignatureReductionProductionFact.currentSelectedReportBit :
@@ -4070,9 +4071,9 @@ theorem currentMissingFullSignatureReductionProductionFact_blocksHardProductionF
       (selectedRustFullSignatureReductionEvidenceReport_productionFactsComplete_of_hardProductionFactsComplete
         hHardProduction)
 
-/-- The current selected full-reduction report is missing exactly four production facts. -/
+/-- The current selected full-reduction report is missing exactly three production facts. -/
 theorem currentMissingFullSignatureReductionProductionFacts_card :
-    currentMissingFullSignatureReductionProductionFacts.card = 4 := by
+    currentMissingFullSignatureReductionProductionFacts.card = 3 := by
   native_decide
 
 /-- The explicit completed-production set matches the current true report bits. -/
@@ -4086,9 +4087,9 @@ theorem mem_currentCompletedFullSignatureReductionProductionFacts_iff
       FullSignatureReductionProductionFact.currentSelectedReportBit,
       selectedRustFullSignatureReductionEvidenceReport]
 
-/-- The current selected full-reduction report has exactly one completed production fact. -/
+/-- The current selected full-reduction report has exactly two completed production facts. -/
 theorem currentCompletedFullSignatureReductionProductionFacts_card :
-    currentCompletedFullSignatureReductionProductionFacts.card = 1 := by
+    currentCompletedFullSignatureReductionProductionFacts.card = 2 := by
   native_decide
 
 /-- No current full-reduction production fact is both missing and complete. -/
@@ -4111,8 +4112,6 @@ structure SelectedRustFullSignatureReductionProductionObligationGap where
     selectedRustFullSignatureReductionEvidenceReport.signatureSuccessMatchesAcceptedSpendGame = false
   acceptedSpendProbabilityLinkedMissing :
     selectedRustFullSignatureReductionEvidenceReport.acceptedSpendProbabilityLinked = false
-  allActiveQuerySymbolsPricedMissing :
-    selectedRustFullSignatureReductionEvidenceReport.allActiveQuerySymbolsPriced = false
 
 /-- Current selected full-reduction production obligations still missing in Lean. -/
 def selectedRustFullSignatureReductionEvidenceReport_currentProductionObligationGap :
@@ -4123,8 +4122,6 @@ def selectedRustFullSignatureReductionEvidenceReport_currentProductionObligation
     selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessMatchesAcceptedSpendGame_false
   acceptedSpendProbabilityLinkedMissing :=
     selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityLinked_false
-  allActiveQuerySymbolsPricedMissing :=
-    selectedRustFullSignatureReductionEvidenceReport_currentAllActiveQuerySymbolsPriced_false
 
 /-- The current full-reduction production gap blocks the selected production half. -/
 theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksProductionFactsComplete
@@ -4138,7 +4135,7 @@ theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_bl
   rw [Gap.productionSignatureProbabilityPinnedMissing] at hProductionPinned
   cases hProductionPinned
 
-/-- The current full-reduction production gap blocks the four hard production facts. -/
+/-- The current full-reduction production gap blocks the three hard production facts. -/
 theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksHardProductionFactsComplete
     (Gap : SelectedRustFullSignatureReductionProductionObligationGap) :
     ¬ selectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete := by
@@ -4156,7 +4153,7 @@ theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionFactsC
     selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksProductionFactsComplete
       selectedRustFullSignatureReductionEvidenceReport_currentProductionObligationGap
 
-/-- The current selected full-reduction report cannot complete the four hard production facts. -/
+/-- The current selected full-reduction report cannot complete the three hard production facts. -/
 theorem selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_impossible :
     ¬ selectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete := by
   exact
@@ -4417,9 +4414,9 @@ def SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndReductionPr
 
 /--
 Active AP2-N003 constructor for the selected full-signature reduction
-certificate from the four hard current production facts.  The selected report's
-verifier-game/production-execution bit is already proved true and is supplied
-internally.
+certificate from the three hard current production facts.  The selected
+report's active query-symbol pricing and verifier-game/production-execution
+bits are already proved true and supplied internally.
 -/
 def SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndCurrentHardProductionFacts
     (selectedRustFullSignatureReductionHardProductionFactsCompleteProof :
@@ -4611,9 +4608,9 @@ def SelectedRustFullSignatureReductionProductionWitness.ofAcceptedSpendAndReport
 
 /--
 Named constructor for the selected full-reduction production witness from the
-four hard current production facts.  The selected verifier-game/production-
-execution binding proof is imported from the current report instead of being
-resupplied by future AP2-N003 callers.
+three hard current production facts.  The selected active-query-symbol pricing
+and verifier-game/production-execution binding proofs are imported from the
+current report instead of being resupplied by future AP2-N003 callers.
 -/
 def SelectedRustFullSignatureReductionProductionWitness.ofAcceptedSpendAndCurrentHardProductionFacts
     (acceptedSpendCertificate : SelectedRustAcceptedSpendSoundnessCertificate)
@@ -4671,8 +4668,8 @@ def SelectedRustFullSignatureReductionProductionWitness.ofAcceptedSpendAndCurren
     multiTargetLossPricedProof
     hardProductionFactsComplete.1
     hardProductionFactsComplete.2.1
-    hardProductionFactsComplete.2.2.1
-    hardProductionFactsComplete.2.2.2
+    hardProductionFactsComplete.2.2
+    selectedRustFullSignatureReductionEvidenceReport_currentAllActiveQuerySymbolsPriced_true
     selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatchesProductionExecution_true
 
 namespace SelectedRustFullSignatureReductionProductionWitness
@@ -4688,7 +4685,7 @@ theorem productionFactsComplete
     W.allActiveQuerySymbolsPricedProof,
     W.verifierGameMatchesProductionExecutionProof⟩
 
-/-- The selected production witness supplies the four hard production facts. -/
+/-- The selected production witness supplies the three hard production facts. -/
 theorem hardProductionFactsComplete
     (W : SelectedRustFullSignatureReductionProductionWitness) :
     selectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete :=

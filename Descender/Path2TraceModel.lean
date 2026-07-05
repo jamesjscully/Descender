@@ -1686,9 +1686,9 @@ def toFullSignatureReductionProductionWitness
 
 /--
 Continue the package-level accepted-spend certificate into the selected
-full-signature production witness using only the four hard current production
-facts.  The already-selected verifier-game/production-execution binding bit is
-supplied by `Path2NativeAccountDesign`.
+full-signature production witness using only the three hard current production
+facts.  The already-selected active query-symbol pricing and verifier-game /
+production-execution bits are supplied by `Path2NativeAccountDesign`.
 -/
 def toFullSignatureReductionProductionWitnessWithCurrentHardProductionFacts
     (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage)
@@ -2405,8 +2405,9 @@ def toFullSignatureReductionProductionWitnessWithConcreteExecutionSource
 
 /--
 Build the package-level full-reduction production witness from a concrete
-execution source and the four hard current production facts.  The already
-selected verifier-game/production-execution bit is not a caller-supplied input.
+execution source and the three hard current production facts.  The already
+selected active query-symbol pricing and verifier-game/production-execution
+bits are not caller-supplied inputs.
 -/
 def toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts
     (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage)
