@@ -53467,6 +53467,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget",
         "SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedReport_impossible",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedReport_impossible",
         "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundPriced_false",
         "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundPriced_false",
         "selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsPriced_false",
@@ -53846,6 +53847,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget",
         "SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedReport_impossible",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedReport_impossible",
         "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundPriced_false",
         "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundPriced_false",
         "selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsPriced_false",
@@ -91262,6 +91264,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_active128BitTarget_of_proportional_bounds
   let _acceptedSpendConcretePricingWitnessCurrentImpossible :=
     SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedReport_impossible
+  let _acceptedSpendConcreteNumericSourceCurrentImpossible :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedReport_impossible
   let _acceptedSpendCurrentNumericBoundMissing :=
     selectedRustAcceptedSpendEvidenceReport_currentNumericBoundPriced_false
   let _acceptedSpendCurrentEventBoundMissing :=
@@ -91586,6 +91590,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_active128BitTarget_of_proportional_bounds
   let _acceptedSpendConcretePricingWitnessCurrentImpossible :=
     SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedReport_impossible
+  let _acceptedSpendConcreteNumericSourceCurrentImpossible :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedReport_impossible
   let _acceptedSpendCurrentNumericBoundMissing :=
     selectedRustAcceptedSpendEvidenceReport_currentNumericBoundPriced_false
   let _acceptedSpendCurrentEventBoundMissing :=
@@ -92396,6 +92402,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_active128BitTarget_of_proportional_bounds
   let _acceptedSpendConcretePricingWitnessCurrentImpossible :=
     SelectedRustConcreteAcceptedSpendPricingWitness.currentSelectedReport_impossible
+  let _acceptedSpendConcreteNumericSourceCurrentImpossible :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedReport_impossible
   let _acceptedSpendCurrentNumericBoundMissing :=
     selectedRustAcceptedSpendEvidenceReport_currentNumericBoundPriced_false
   let _acceptedSpendCurrentEventBoundMissing :=
@@ -92925,6 +92933,16 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_concrete_source_hard_pricing_constructor
+            )
+        );
+        let suffixed_concrete_source_current_impossible =
+            accepted_spend_instantiation_shape.replace(
+                "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedReport_impossible",
+                "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedReport_impossibleSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_concrete_source_current_impossible
             )
         );
         let suffixed_remaining_break_package_witness =

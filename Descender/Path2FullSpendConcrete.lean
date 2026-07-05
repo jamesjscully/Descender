@@ -5329,7 +5329,7 @@ fail-closed report.
 -/
 theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedReport_impossible
     (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) : False :=
-  Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReportFactsAllTrue_impossible (by
+  Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_impossible (by
     rw [← Source.evidenceReportBoundProof]
     exact Source.evidenceFactsAllTrueProof)
 

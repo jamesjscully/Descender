@@ -321,7 +321,10 @@ as the direct hard-surface impossible corollary and
 current report-completion impossible corollary. The
 trace-model witness endpoint and remaining-break package now have hard-pricing
 constructors/projections, and the Rust source-shape gate requires and spoofs
-those names before accepting future AP2-N003 instantiation candidates.
+those names before accepting future AP2-N003 instantiation candidates; the
+concrete numeric-source certificate guard
+`SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedReport_impossible`
+now routes through the current report-completion impossible endpoint as well.
 The concrete full-spend pricing witness now exposes the same four-fact surface
 with `SelectedRustConcreteAcceptedSpendPricingWitness.hardPricingFactsComplete`,
 and erases through hard-pricing source, certificate, and boundary adapters:
