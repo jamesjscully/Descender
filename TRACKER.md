@@ -554,9 +554,11 @@ already supplies the fifth bit. The certificate and production-witness
 constructors now have current-hard-fact variants, and
 `Descender/Path2TraceModel.lean` exposes remaining-break package adapters for
 the same four-bit handoff, including the concrete execution-source route. The
-Rust source-shape gate requires those names and rejects spoofed hard-fact
-equivalence or concrete-source hard-fact adapter names before accepting a future
-full-reduction instantiation candidate.
+Rust source-shape gate requires those names, plus
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible`,
+and rejects spoofed hard-fact equivalence, accepted-spend package blocker, or
+concrete-source hard-fact adapter names before accepting a future full-reduction
+instantiation candidate.
 
 | ID | Status | Item | Evidence / next action |
 |---|---|---|---|

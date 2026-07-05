@@ -52644,6 +52644,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitness",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionCertificate",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget",
@@ -52786,6 +52787,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndCurrentHardProductionFacts",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitness",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithCurrentHardProductionFacts",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionCertificate",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget",
@@ -89706,6 +89708,8 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitness
   let _fullReductionRemainingBreakPackageHardFactsProductionWitness :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithCurrentHardProductionFacts
+  let _fullReductionRemainingBreakPackageCurrentImpossible :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible
   let _fullReductionRemainingBreakPackageCertificate :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionCertificate
   let _fullReductionRemainingBreakPackageBoundary :=
@@ -89861,6 +89865,16 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_concrete_source_hard_fact_package
+            )
+        );
+        let suffixed_full_signature_remaining_break_package_current_impossible =
+            full_signature_reduction_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossibleSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_remaining_break_package_current_impossible
             )
         );
         let suffixed_full_signature_hard_pricing_trace_witness =
