@@ -1151,6 +1151,218 @@ theorem selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128B
       traceDist observe acceptedSpendBound remainingBreakBound
       hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing)
 
+/--
+The trace-model pricing witness exposes that the structural QROM/domain
+separation slot is discharged to zero probability at this layer.
+-/
+theorem selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete) :
+    let W :=
+      selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        W.concreteCertificate.pricedCertificate.Trace
+        W.concreteCertificate.pricedCertificate.Outcome
+        W.concreteCertificate.pricedCertificate.Break
+        W.concreteCertificate.pricedCertificate.traceFintype
+        W.concreteCertificate.pricedCertificate.breakFintype
+        W.concreteCertificate.pricedCertificate.game
+        Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak = 0 := by
+  simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds,
+    selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+    concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+    concreteBreakPricingCertificate_of_remaining_break_bounds] using
+    qromBreakProb_eq_zero selectedRustConcreteGameConfig traceDist observe
+
+/--
+The trace-model pricing witness prices the structural QROM/domain separation
+slot below its active proportional component target because it is zero.
+-/
+theorem selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete) :
+    let W :=
+      selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        W.concreteCertificate.pricedCertificate.Trace
+        W.concreteCertificate.pricedCertificate.Outcome
+        W.concreteCertificate.pricedCertificate.Break
+        W.concreteCertificate.pricedCertificate.traceFintype
+        W.concreteCertificate.pricedCertificate.breakFintype
+        W.concreteCertificate.pricedCertificate.game
+        Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak ≤
+      (1 : ℝ) / 2 ^ 133 := by
+  simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds,
+    selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+    concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+    concreteBreakPricingCertificate_of_remaining_break_bounds] using
+    SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_2pow_neg133_of_never
+      (selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing)
+      Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak
+      (by
+        intro trace
+        simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds,
+          selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+          concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+          concreteBreakPricingCertificate_of_remaining_break_bounds,
+          PricedAcceptedSpendNumericCertificate.namedBreakEvent,
+          PricedAcceptedSpendNumericCertificate.observe] using
+          qromBreak_never selectedRustConcreteGameConfig observe trace)
+
+/--
+The trace-model pricing witness exposes that the structural live-slot/keygen
+slot is discharged to zero probability at this layer.
+-/
+theorem selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete) :
+    let W :=
+      selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        W.concreteCertificate.pricedCertificate.Trace
+        W.concreteCertificate.pricedCertificate.Outcome
+        W.concreteCertificate.pricedCertificate.Break
+        W.concreteCertificate.pricedCertificate.traceFintype
+        W.concreteCertificate.pricedCertificate.breakFintype
+        W.concreteCertificate.pricedCertificate.game
+        Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak = 0 := by
+  simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds,
+    selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+    concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+    concreteBreakPricingCertificate_of_remaining_break_bounds] using
+    liveSlotLeakageBreakProb_eq_zero selectedRustConcreteGameConfig traceDist observe
+
+/--
+The trace-model pricing witness prices the structural live-slot/keygen slot
+below its active proportional component target because it is zero.
+-/
+theorem selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete) :
+    let W :=
+      selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        W.concreteCertificate.pricedCertificate.Trace
+        W.concreteCertificate.pricedCertificate.Outcome
+        W.concreteCertificate.pricedCertificate.Break
+        W.concreteCertificate.pricedCertificate.traceFintype
+        W.concreteCertificate.pricedCertificate.breakFintype
+        W.concreteCertificate.pricedCertificate.game
+        Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak ≤
+      (1 : ℝ) / 2 ^ 133 := by
+  simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds,
+    selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+    concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+    concreteBreakPricingCertificate_of_remaining_break_bounds] using
+    SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_2pow_neg133_of_never
+      (selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing)
+      Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak
+      (by
+        intro trace
+        simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds,
+          selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+          concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+          concreteBreakPricingCertificate_of_remaining_break_bounds,
+          PricedAcceptedSpendNumericCertificate.namedBreakEvent,
+          PricedAcceptedSpendNumericCertificate.observe] using
+          liveSlotLeakageBreak_never selectedRustConcreteGameConfig observe trace)
+
 section CurrentHardPricingTraceWitnessProjections
 
 variable {Trace : Type} [Fintype Trace]
@@ -1364,6 +1576,108 @@ theorem selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128B
   simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts]
     using
       selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
+          hHardPricing)
+
+/--
+The current-hard-pricing trace witness exposes the structural QROM/domain
+separation slot as zero probability.
+-/
+theorem selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_facts :
+    let W :=
+      selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        W.concreteCertificate.pricedCertificate.Trace
+        W.concreteCertificate.pricedCertificate.Outcome
+        W.concreteCertificate.pricedCertificate.Break
+        W.concreteCertificate.pricedCertificate.traceFintype
+        W.concreteCertificate.pricedCertificate.breakFintype
+        W.concreteCertificate.pricedCertificate.game
+        Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak = 0 := by
+  simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts]
+    using
+      selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
+          hHardPricing)
+
+/--
+The current-hard-pricing trace witness prices the structural QROM/domain
+separation slot below its active proportional component target.
+-/
+theorem selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts :
+    let W :=
+      selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        W.concreteCertificate.pricedCertificate.Trace
+        W.concreteCertificate.pricedCertificate.Outcome
+        W.concreteCertificate.pricedCertificate.Break
+        W.concreteCertificate.pricedCertificate.traceFintype
+        W.concreteCertificate.pricedCertificate.breakFintype
+        W.concreteCertificate.pricedCertificate.game
+        Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak ≤
+      (1 : ℝ) / 2 ^ 133 := by
+  simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts]
+    using
+      selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
+          hHardPricing)
+
+/--
+The current-hard-pricing trace witness exposes the structural live-slot/keygen
+slot as zero probability.
+-/
+theorem selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_facts :
+    let W :=
+      selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        W.concreteCertificate.pricedCertificate.Trace
+        W.concreteCertificate.pricedCertificate.Outcome
+        W.concreteCertificate.pricedCertificate.Break
+        W.concreteCertificate.pricedCertificate.traceFintype
+        W.concreteCertificate.pricedCertificate.breakFintype
+        W.concreteCertificate.pricedCertificate.game
+        Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak = 0 := by
+  simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts]
+    using
+      selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
+          hHardPricing)
+
+/--
+The current-hard-pricing trace witness prices the structural live-slot/keygen
+slot below its active proportional component target.
+-/
+theorem selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts :
+    let W :=
+      selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        W.concreteCertificate.pricedCertificate.Trace
+        W.concreteCertificate.pricedCertificate.Outcome
+        W.concreteCertificate.pricedCertificate.Break
+        W.concreteCertificate.pricedCertificate.traceFintype
+        W.concreteCertificate.pricedCertificate.breakFintype
+        W.concreteCertificate.pricedCertificate.game
+        Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak ≤
+      (1 : ℝ) / 2 ^ 133 := by
+  simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts]
+    using
+      selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds
         traceDist observe acceptedSpendBound remainingBreakBound
         hAccept hBreak hAcceptBudget hBreakBudget hPriced
         (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete

@@ -53493,6 +53493,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "remainingCryptographicBreakEvents",
         "mem_remainingCryptographicBreakEvents_iff",
         "remainingCryptographicBreakEvents_card",
@@ -53505,6 +53509,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakProb_le_active128BitTarget_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_remaining_break_bounds",
+        "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds",
+        "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds",
+        "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds",
+        "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofCurrentHardPricingFacts",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toPricingWitness",
@@ -53889,6 +53897,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "remainingCryptographicBreakEvents",
         "mem_remainingCryptographicBreakEvents_iff",
         "remainingCryptographicBreakEvents_card",
@@ -53901,6 +53913,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakProb_le_active128BitTarget_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_remaining_break_bounds",
+        "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds",
+        "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds",
+        "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds",
+        "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofCurrentHardPricingFacts",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toPricingWitness",
@@ -92935,6 +92951,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_remaining_break_bounds
   let _acceptedSpendTracePricingWitnessUnionActiveTargetEndpoint :=
     selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_remaining_break_bounds
+  let _acceptedSpendTracePricingWitnessQromBreakZero :=
+    selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds
+  let _acceptedSpendTracePricingWitnessQromBreakComponent :=
+    selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds
+  let _acceptedSpendTracePricingWitnessLiveSlotBreakZero :=
+    selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds
+  let _acceptedSpendTracePricingWitnessLiveSlotBreakComponent :=
+    selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds
   let _acceptedSpendHardPricingFactSurface :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.HardPricingFactsComplete
   let _acceptedSpendPricingFactsToHardPricingFacts :=
@@ -92975,6 +92999,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _acceptedSpendTracePricingWitnessHardPricingUnionTarget :=
     selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts
+  let _acceptedSpendTracePricingWitnessHardPricingQromBreakZero :=
+    selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_facts
+  let _acceptedSpendTracePricingWitnessHardPricingQromBreakComponent :=
+    selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts
+  let _acceptedSpendTracePricingWitnessHardPricingLiveSlotBreakZero :=
+    selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_facts
+  let _acceptedSpendTracePricingWitnessHardPricingLiveSlotBreakComponent :=
+    selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _acceptedSpendHardTraceNumericSourceEndpoint :=
     selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _acceptedSpendHardTraceCertificateEndpoint :=
@@ -93268,6 +93300,46 @@ end Path2NativeAccountDesign
                 &suffixed_trace_endpoint_remaining_break_prob_active_target
             )
         );
+        let suffixed_trace_endpoint_qrom_break_zero =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds",
+                "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_boundsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_trace_endpoint_qrom_break_zero
+            )
+        );
+        let suffixed_trace_endpoint_qrom_break_component =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds",
+                "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_boundsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_trace_endpoint_qrom_break_component
+            )
+        );
+        let suffixed_trace_endpoint_live_slot_break_zero =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds",
+                "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_boundsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_trace_endpoint_live_slot_break_zero
+            )
+        );
+        let suffixed_trace_endpoint_live_slot_break_component =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds",
+                "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_boundsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_trace_endpoint_live_slot_break_component
+            )
+        );
         let suffixed_trace_endpoint_hard_pricing_witness =
             accepted_spend_instantiation_shape.replace(
                 "selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts",
@@ -93346,6 +93418,46 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_trace_endpoint_hard_pricing_component_target
+            )
+        );
+        let suffixed_trace_endpoint_hard_pricing_qrom_break_zero =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_facts",
+                "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_factsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_trace_endpoint_hard_pricing_qrom_break_zero
+            )
+        );
+        let suffixed_trace_endpoint_hard_pricing_qrom_break_component =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts",
+                "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_factsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_trace_endpoint_hard_pricing_qrom_break_component
+            )
+        );
+        let suffixed_trace_endpoint_hard_pricing_live_slot_break_zero =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_facts",
+                "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_factsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_trace_endpoint_hard_pricing_live_slot_break_zero
+            )
+        );
+        let suffixed_trace_endpoint_hard_pricing_live_slot_break_component =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts",
+                "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_factsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_trace_endpoint_hard_pricing_live_slot_break_component
             )
         );
         let suffixed_hard_trace_numeric_source =
