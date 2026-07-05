@@ -52697,6 +52697,10 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_acceptedSpendBound",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakComponentBound_le_2pow_neg133",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_breakBound",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_eq_zero",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_le_2pow_neg133",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_eq_zero",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_le_2pow_neg133",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionCertificate",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound",
@@ -52888,6 +52892,10 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_acceptedSpendBound",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakComponentBound_le_2pow_neg133",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_breakBound",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_eq_zero",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_le_2pow_neg133",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_eq_zero",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_le_2pow_neg133",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionCertificate",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound",
@@ -90002,6 +90010,14 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakComponentBound_le_2pow_neg133
   let _fullReductionRemainingBreakPackageBreakProbBound :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_breakBound
+  let _fullReductionRemainingBreakPackageQromBreakZero :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_eq_zero
+  let _fullReductionRemainingBreakPackageQromBreakComponent :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_le_2pow_neg133
+  let _fullReductionRemainingBreakPackageLiveSlotBreakZero :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_eq_zero
+  let _fullReductionRemainingBreakPackageLiveSlotBreakComponent :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_le_2pow_neg133
   let _fullReductionRemainingBreakPackageCertificate :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionCertificate
   let _fullReductionRemainingBreakPackageBoundary :=
@@ -90539,6 +90555,46 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_remaining_break_package_break_prob_bound
+            )
+        );
+        let suffixed_full_signature_remaining_break_package_qrom_break_zero =
+            full_signature_reduction_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_eq_zero",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_eq_zeroSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_remaining_break_package_qrom_break_zero
+            )
+        );
+        let suffixed_full_signature_remaining_break_package_qrom_break_component =
+            full_signature_reduction_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_le_2pow_neg133",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_le_2pow_neg133Spoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_remaining_break_package_qrom_break_component
+            )
+        );
+        let suffixed_full_signature_remaining_break_package_live_slot_break_zero =
+            full_signature_reduction_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_eq_zero",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_eq_zeroSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_remaining_break_package_live_slot_break_zero
+            )
+        );
+        let suffixed_full_signature_remaining_break_package_live_slot_break_component =
+            full_signature_reduction_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_le_2pow_neg133",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_le_2pow_neg133Spoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_remaining_break_package_live_slot_break_component
             )
         );
         let suffixed_full_signature_active_query_symbols_priced =
