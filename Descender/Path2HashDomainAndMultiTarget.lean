@@ -457,6 +457,12 @@ theorem native_queryBudgetPriced
     C.toNativeHashBudgetBoundary.queryBudgetPriced :=
   C.directQueryBudgetPriced
 
+theorem activeDirectQuerySymbolsPriced
+    (C : ActiveHashDomainAndMultiTargetCertificate) :
+    ActiveDirectQuerySymbolsPriced C.directBudget := by
+  intro symbol hActive
+  exact ⟨hActive, C.directQueryBudgetPriced⟩
+
 theorem active_auxiliaryFq12ChallengeShapeComplete
     (C : ActiveHashDomainAndMultiTargetCertificate) :
     Path2HashBudget.AuxiliaryFq12ChallengeShapeComplete C.directBudget :=
@@ -537,6 +543,17 @@ theorem activeNativeHashBudgetBoundary_queryBudgetPriced :
     activeNativeHashBudgetBoundary.queryBudgetPriced :=
   activePath2HashDomainAndMultiTargetCertificate
     |>.native_queryBudgetPriced
+
+theorem activePath2HashDomainAndMultiTargetCertificate_activeDirectQuerySymbolsPriced :
+    ActiveDirectQuerySymbolsPriced
+      activePath2HashDomainAndMultiTargetCertificate.directBudget :=
+  activePath2HashDomainAndMultiTargetCertificate
+    |>.activeDirectQuerySymbolsPriced
+
+theorem activeNativeHashBudgetBoundary_activeDirectQuerySymbolsPriced :
+    ActiveDirectQuerySymbolsPriced path2DirectQueryBudgetV1 := by
+  simpa [activePath2HashDomainAndMultiTargetCertificate] using
+    activePath2HashDomainAndMultiTargetCertificate_activeDirectQuerySymbolsPriced
 
 theorem activeNativeHashBudgetBoundary_auxiliaryFq12ChallengeShapeComplete :
     Path2HashBudget.AuxiliaryFq12ChallengeShapeComplete

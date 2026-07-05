@@ -332,10 +332,14 @@ Lean now mirrors the direct-mode query-symbol taxonomy with
 `mem_inactiveDirectQuerySymbols_iff`, `activeDirectQuerySymbols_card`,
 `inactiveDirectQuerySymbols_card`, `q_batch_not_mem_activeDirectQuerySymbols`,
 `q_batch_mem_inactiveDirectQuerySymbols`, and
-`no_direct_query_symbol_active_and_inactive`; the source-shape gate requires
-those names so future `all_active_query_symbols_priced` evidence remains tied
-to the explicit 15-active/1-inactive direct query surface instead of only the
-older `qBatchActive` boolean.
+`no_direct_query_symbol_active_and_inactive`. It now also exposes
+`DirectQuerySymbolPricedByBudget`, `ActiveDirectQuerySymbolsPriced`,
+`path2_direct_query_budget_activeDirectQuerySymbolsPriced`, and
+`activeNativeHashBudgetBoundary_activeDirectQuerySymbolsPriced`; the
+source-shape gate requires those names so future
+`all_active_query_symbols_priced` evidence remains tied to the explicit
+15-active/1-inactive direct query surface and the selected direct-budget pricing
+route instead of only the older `qBatchActive` boolean.
 Lean now also enumerates the full-reduction production half as
 `FullSignatureReductionProductionFact`, `fullSignatureReductionProductionFacts`,
 `currentMissingFullSignatureReductionProductionFacts`, and
@@ -556,7 +560,9 @@ constructors now have current-hard-fact variants, and
 the same four-bit handoff, including the concrete execution-source route. The
 Rust source-shape gate requires those names, plus
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible`,
-and rejects spoofed hard-fact equivalence, accepted-spend package blocker, or
+and the active hash-boundary
+`activeNativeHashBudgetBoundary_activeDirectQuerySymbolsPriced` route. It
+rejects spoofed hard-fact equivalence, accepted-spend package blocker, or
 concrete-source hard-fact adapter names before accepting a future full-reduction
 instantiation candidate.
 

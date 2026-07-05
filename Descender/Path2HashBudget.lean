@@ -223,6 +223,32 @@ def DirectQueryBudgetPriced (B : Path2DirectQueryBudgetV1) : Prop :=
       B.targetSecurityBits + B.minimumDeploymentMarginBits
 
 /--
+An active direct query symbol is priced by a direct budget once the executable
+budget pricing proof has been supplied.
+-/
+def DirectQuerySymbolPricedByBudget
+    (B : Path2DirectQueryBudgetV1)
+    (symbol : DirectQuerySymbol) : Prop :=
+  symbol ∈ activeDirectQuerySymbols ∧
+    DirectQueryBudgetPriced B
+
+/-- Every active direct-mode query symbol is covered by one direct budget. -/
+def ActiveDirectQuerySymbolsPriced
+    (B : Path2DirectQueryBudgetV1) : Prop :=
+  ∀ symbol : DirectQuerySymbol,
+    symbol ∈ activeDirectQuerySymbols →
+      DirectQuerySymbolPricedByBudget B symbol
+
+/-- A symbol priced through the active direct set is not the inactive batch symbol. -/
+theorem DirectQuerySymbolPricedByBudget.not_inactive
+    {B : Path2DirectQueryBudgetV1}
+    {symbol : DirectQuerySymbol}
+    (h : DirectQuerySymbolPricedByBudget B symbol) :
+    symbol ∉ inactiveDirectQuerySymbols := by
+  intro hInactive
+  exact no_direct_query_symbol_active_and_inactive symbol h.1 hInactive
+
+/--
 The active auxiliary-Fq12 challenge shape used by the deployable Path 2 route.
 
 The compact block/sign decoder still consumes only the legacy 26-repetition
@@ -291,6 +317,12 @@ theorem path2_direct_query_budget_priced :
     DirectQueryBudgetPriced path2DirectQueryBudgetV1 :=
   ⟨path2_direct_query_budget_keeps_q_batch_inactive,
     path2_direct_query_budget_transcript_exceeds_target_plus_margin⟩
+
+/-- The selected direct budget prices every active direct query symbol. -/
+theorem path2_direct_query_budget_activeDirectQuerySymbolsPriced :
+    ActiveDirectQuerySymbolsPriced path2DirectQueryBudgetV1 := by
+  intro symbol hActive
+  exact ⟨hActive, path2_direct_query_budget_priced⟩
 
 /--
 Adapter from the executable direct-mode budget into the active native hash

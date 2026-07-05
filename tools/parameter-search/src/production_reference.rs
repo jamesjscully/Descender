@@ -51135,6 +51135,8 @@ fn path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
         "activeNativeHashBudgetBoundary_auxiliaryFq12ChallengeShapeComplete",
         "activeNativeHashBudgetBoundary_fq12ActionCollisionBudgetPriced",
         "activeNativeHashBudgetBoundary_multiTargetLossPriced",
+        "activePath2HashDomainAndMultiTargetCertificate_activeDirectQuerySymbolsPriced",
+        "activeNativeHashBudgetBoundary_activeDirectQuerySymbolsPriced",
         "activeNativeHashBudgetBoundary_hashBoundaryProps",
         "activeHashDomainAndMultiTargetCertificate_byteDomainProps",
         "NativeFullSignatureSecurityBoundary.withActiveHashBoundary",
@@ -51154,10 +51156,14 @@ fn path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
         "\ntheorem q_batch_not_mem_activeDirectQuerySymbols",
         "\ntheorem q_batch_mem_inactiveDirectQuerySymbols",
         "\ntheorem no_direct_query_symbol_active_and_inactive",
+        "\ndef DirectQuerySymbolPricedByBudget",
+        "\ndef ActiveDirectQuerySymbolsPriced",
+        "\ntheorem DirectQuerySymbolPricedByBudget.not_inactive",
         "\ndef path2DirectQueryBudgetV1",
         "\ndef AuxiliaryFq12ChallengeShapeComplete",
         "\ndef Fq12ActionCollisionBudgetPriced",
         "\ntheorem path2_direct_query_budget_keeps_q_batch_inactive",
+        "\ntheorem path2_direct_query_budget_activeDirectQuerySymbolsPriced",
         "\ntheorem path2_direct_query_budget_auxiliary_fq12_challenge_shape_complete",
         "\ntheorem path2_direct_query_budget_fq12_action_collision_budget_priced",
     ];
@@ -51171,6 +51177,8 @@ fn path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
         "\ntheorem fiftyFourBitAggregateTargetHorizon_not_priced",
         "\ndef activePath2HashDomainAndMultiTargetCertificate",
         "\ndef activeNativeHashBudgetBoundary",
+        "\ntheorem activePath2HashDomainAndMultiTargetCertificate_activeDirectQuerySymbolsPriced",
+        "\ntheorem activeNativeHashBudgetBoundary_activeDirectQuerySymbolsPriced",
         "\ntheorem activeNativeHashBudgetBoundary_auxiliaryFq12ChallengeShapeComplete",
         "\ntheorem activeNativeHashBudgetBoundary_fq12ActionCollisionBudgetPriced",
         "\ntheorem activeNativeHashBudgetBoundary_multiTargetLossPriced",
@@ -52480,6 +52488,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary",
         "activeNativeHashBudgetBoundary",
         "activeNativeHashBudgetBoundary_hashBoundaryProps",
+        "activeNativeHashBudgetBoundary_activeDirectQuerySymbolsPriced",
         "let selectedRustFullSignatureReductionCertificate :",
         "SelectedRustFullSignatureReductionCertificate",
         "SelectedRustFullSignatureReductionCertificate.ofReportAndReduction",
@@ -89306,6 +89315,8 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     activeNativeHashBudgetBoundary
   let _activeHashBoundaryProps :=
     activeNativeHashBudgetBoundary_hashBoundaryProps
+  let _activeHashBoundaryActiveQuerySymbolsPriced :=
+    activeNativeHashBudgetBoundary_activeDirectQuerySymbolsPriced
   let selectedRustSignatureForgerySuccessProb : ℝ := 0
   let selectedRustProductionSignatureForgerySuccessProb : ℝ := (0 : ℝ)
   let selectedRustSignatureForgerySuccessProbPinned := rfl
@@ -89384,6 +89395,8 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     activeNativeHashBudgetBoundary
   let _activeHashBoundaryProps :=
     activeNativeHashBudgetBoundary_hashBoundaryProps
+  let _activeHashBoundaryActiveQuerySymbolsPriced :=
+    activeNativeHashBudgetBoundary_activeDirectQuerySymbolsPriced
   let _fullReductionDigestSlotsVerified :=
     SelectedRustFullSignatureReductionEvidenceReport.reductionEvidenceDigestsVerified
   let _fullReductionSignatureProbabilityDigest :=
