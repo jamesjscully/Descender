@@ -2511,6 +2511,19 @@ theorem currentMissingAcceptedSpendPricingFact_blocksHardPricingFactsComplete
       (selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
         hHardPricing)
 
+/-- Any currently missing accepted-spend pricing fact blocks top-level report completion. -/
+theorem currentMissingAcceptedSpendPricingFact_blocksFactsAllTrue
+    (fact : AcceptedSpendPricingFact)
+    (hMissing :
+      fact ∈ currentMissingAcceptedSpendPricingFacts) :
+    ¬ selectedRustAcceptedSpendEvidenceReport.FactsAllTrue := by
+  intro hFacts
+  exact
+    currentMissingAcceptedSpendPricingFact_blocksPricingFactsComplete
+      fact hMissing
+      ((SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_iff_structural_and_pricing
+        selectedRustAcceptedSpendEvidenceReport).1 hFacts |>.2)
+
 /-- The current selected accepted-spend report is missing exactly four pricing facts. -/
 theorem currentMissingAcceptedSpendPricingFacts_card :
     currentMissingAcceptedSpendPricingFacts.card = 4 := by
@@ -4267,6 +4280,19 @@ theorem currentMissingFullSignatureReductionProductionFact_blocksHardProductionF
       fact hMissing
       (selectedRustFullSignatureReductionEvidenceReport_productionFactsComplete_of_hardProductionFactsComplete
         hHardProduction)
+
+/-- Any currently missing full-reduction production fact blocks top-level report completion. -/
+theorem currentMissingFullSignatureReductionProductionFact_blocksFactsAllTrue
+    (fact : FullSignatureReductionProductionFact)
+    (hMissing :
+      fact ∈ currentMissingFullSignatureReductionProductionFacts) :
+    ¬ selectedRustFullSignatureReductionEvidenceReport.FactsAllTrue := by
+  intro hFacts
+  exact
+    currentMissingFullSignatureReductionProductionFact_blocksProductionFactsComplete
+      fact hMissing
+      ((SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_iff_structural_and_production
+        selectedRustFullSignatureReductionEvidenceReport).1 hFacts |>.2)
 
 /-- The current selected full-reduction report is missing exactly three production facts. -/
 theorem currentMissingFullSignatureReductionProductionFacts_card :

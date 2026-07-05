@@ -52142,6 +52142,7 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         "\ntheorem FullSignatureReductionProductionFact.currentSelectedReportBit_false_of_currentMissing",
         "\ntheorem currentMissingFullSignatureReductionProductionFact_blocksProductionFactsComplete",
         "\ntheorem currentMissingFullSignatureReductionProductionFact_blocksHardProductionFactsComplete",
+        "\ntheorem currentMissingFullSignatureReductionProductionFact_blocksFactsAllTrue",
         "\ntheorem currentMissingFullSignatureReductionProductionFacts_card",
         "\ntheorem mem_currentCompletedFullSignatureReductionProductionFacts_iff",
         "\ntheorem currentCompletedFullSignatureReductionProductionFacts_card",
@@ -52554,6 +52555,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "FullSignatureReductionProductionFact.currentSelectedReportBit_false_of_currentMissing",
         "currentMissingFullSignatureReductionProductionFact_blocksProductionFactsComplete",
         "currentMissingFullSignatureReductionProductionFact_blocksHardProductionFactsComplete",
+        "currentMissingFullSignatureReductionProductionFact_blocksFactsAllTrue",
         "currentMissingFullSignatureReductionProductionFacts_card",
         "mem_currentCompletedFullSignatureReductionProductionFacts_iff",
         "currentCompletedFullSignatureReductionProductionFacts_card",
@@ -52764,6 +52766,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "FullSignatureReductionProductionFact.currentSelectedReportBit_false_of_currentMissing",
         "currentMissingFullSignatureReductionProductionFact_blocksProductionFactsComplete",
         "currentMissingFullSignatureReductionProductionFact_blocksHardProductionFactsComplete",
+        "currentMissingFullSignatureReductionProductionFact_blocksFactsAllTrue",
         "currentMissingFullSignatureReductionProductionFacts_card",
         "mem_currentCompletedFullSignatureReductionProductionFacts_iff",
         "currentCompletedFullSignatureReductionProductionFacts_card",
@@ -53492,6 +53495,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "AcceptedSpendPricingFact.not_currentSelectedReportFactHolds_of_currentMissing",
         "currentMissingAcceptedSpendPricingFact_blocksPricingFactsComplete",
         "currentMissingAcceptedSpendPricingFact_blocksHardPricingFactsComplete",
+        "currentMissingAcceptedSpendPricingFact_blocksFactsAllTrue",
         "currentMissingAcceptedSpendPricingFacts_card",
         "mem_currentCompletedAcceptedSpendPricingFacts_iff",
         "currentCompletedAcceptedSpendPricingFacts_card",
@@ -53869,6 +53873,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "AcceptedSpendPricingFact.not_currentSelectedReportFactHolds_of_currentMissing",
         "currentMissingAcceptedSpendPricingFact_blocksPricingFactsComplete",
         "currentMissingAcceptedSpendPricingFact_blocksHardPricingFactsComplete",
+        "currentMissingAcceptedSpendPricingFact_blocksFactsAllTrue",
         "currentMissingAcceptedSpendPricingFacts_card",
         "mem_currentCompletedAcceptedSpendPricingFacts_iff",
         "currentCompletedAcceptedSpendPricingFacts_card",
@@ -89639,6 +89644,8 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     currentMissingFullSignatureReductionProductionFact_blocksProductionFactsComplete
   let _fullReductionMissingProductionFactBlocksHardProductionFacts :=
     currentMissingFullSignatureReductionProductionFact_blocksHardProductionFactsComplete
+  let _fullReductionMissingProductionFactBlocksReportComplete :=
+    currentMissingFullSignatureReductionProductionFact_blocksFactsAllTrue
   let _fullReductionMissingProductionFactsCard :=
     currentMissingFullSignatureReductionProductionFacts_card
   let _fullReductionCompletedProductionFactsIff :=
@@ -90192,6 +90199,16 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_missing_fact_blocker
+            )
+        );
+        let suffixed_full_signature_missing_fact_report_blocker =
+            full_signature_reduction_instantiation_shape.replace(
+                "currentMissingFullSignatureReductionProductionFact_blocksFactsAllTrue",
+                "currentMissingFullSignatureReductionProductionFact_blocksFactsAllTrueSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_missing_fact_report_blocker
             )
         );
         for (marker, spoof) in [
@@ -91296,6 +91313,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     currentMissingAcceptedSpendPricingFact_blocksPricingFactsComplete
   let _acceptedSpendMissingPricingFactBlocksHardPricingFacts :=
     currentMissingAcceptedSpendPricingFact_blocksHardPricingFactsComplete
+  let _acceptedSpendMissingPricingFactBlocksReportComplete :=
+    currentMissingAcceptedSpendPricingFact_blocksFactsAllTrue
   let _acceptedSpendMissingPricingFactsCard :=
     currentMissingAcceptedSpendPricingFacts_card
   let _acceptedSpendCompletedPricingFactsIff :=
@@ -91606,6 +91625,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     currentMissingAcceptedSpendPricingFact_blocksPricingFactsComplete
   let _acceptedSpendMissingPricingFactBlocksHardPricingFacts :=
     currentMissingAcceptedSpendPricingFact_blocksHardPricingFactsComplete
+  let _acceptedSpendMissingPricingFactBlocksReportComplete :=
+    currentMissingAcceptedSpendPricingFact_blocksFactsAllTrue
   let _acceptedSpendMissingPricingFactsCard :=
     currentMissingAcceptedSpendPricingFacts_card
   let _acceptedSpendCompletedPricingFactsIff :=
@@ -92412,6 +92433,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     currentMissingAcceptedSpendPricingFact_blocksPricingFactsComplete
   let _acceptedSpendMissingPricingFactBlocksHardPricingFacts :=
     currentMissingAcceptedSpendPricingFact_blocksHardPricingFactsComplete
+  let _acceptedSpendMissingPricingFactBlocksReportComplete :=
+    currentMissingAcceptedSpendPricingFact_blocksFactsAllTrue
   let _acceptedSpendMissingPricingFactsCard :=
     currentMissingAcceptedSpendPricingFacts_card
   let _acceptedSpendCompletedPricingFactsIff :=
@@ -93045,6 +93068,16 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_accepted_spend_missing_pricing_blocker
+            )
+        );
+        let suffixed_accepted_spend_missing_pricing_report_blocker =
+            accepted_spend_instantiation_shape.replace(
+                "currentMissingAcceptedSpendPricingFact_blocksFactsAllTrue",
+                "currentMissingAcceptedSpendPricingFact_blocksFactsAllTrueSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_accepted_spend_missing_pricing_report_blocker
             )
         );
         for (marker, spoof) in [

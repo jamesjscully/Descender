@@ -189,7 +189,10 @@ top-level report completion directly through
 `selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksFactsAllTrue`
 and
 `selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksFactsAllTrue`,
-with individual missing-fact blockers required and spoofed by the Rust gate.
+with individual gap blockers and the finite-taxonomy blockers
+`currentMissingAcceptedSpendPricingFact_blocksFactsAllTrue` and
+`currentMissingFullSignatureReductionProductionFact_blocksFactsAllTrue`
+required and spoofed by the Rust gate.
 Lean now also lifts the
 active 9-event
 arithmetic check through `PricedAcceptedSpendNumericCertificate`,
@@ -304,7 +307,9 @@ top-level report completion through
 `selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPricingFactsComplete`
 and
 `selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksFactsAllTrue`,
-plus individual report-completion blockers for each remaining pricing bit,
+plus individual report-completion blockers for each remaining pricing bit and
+`currentMissingAcceptedSpendPricingFact_blocksFactsAllTrue` for the finite
+missing-pricing taxonomy,
 while keeping
 `selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible`
 as the direct hard-surface impossible corollary. The
@@ -596,7 +601,8 @@ pins current report-level completion to that exact hard surface; the current
 production gap also blocks top-level report completion through
 `selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksFactsAllTrue`,
 with individual report-completion blockers for the three remaining production
-bits. The certificate and production-witness
+bits and `currentMissingFullSignatureReductionProductionFact_blocksFactsAllTrue`
+for the finite missing-production taxonomy. The certificate and production-witness
 constructors now have current-hard-fact variants, and
 `Descender/Path2TraceModel.lean` exposes remaining-break package adapters for
 the same three-bit handoff, including the concrete execution-source route. The
