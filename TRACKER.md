@@ -192,7 +192,11 @@ and
 with individual gap blockers and the finite-taxonomy blockers
 `currentMissingAcceptedSpendPricingFact_blocksFactsAllTrue` and
 `currentMissingFullSignatureReductionProductionFact_blocksFactsAllTrue`
-required and spoofed by the Rust gate.
+required and spoofed by the Rust gate; the current report-completion impossible
+endpoints
+`selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_impossible` and
+`selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_impossible`
+now route selected-report failure through those current gap surfaces.
 Lean now also lifts the
 active 9-event
 arithmetic check through `PricedAcceptedSpendNumericCertificate`,
@@ -312,7 +316,9 @@ plus individual report-completion blockers for each remaining pricing bit and
 missing-pricing taxonomy,
 while keeping
 `selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible`
-as the direct hard-surface impossible corollary. The
+as the direct hard-surface impossible corollary and
+`selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_impossible` as the
+current report-completion impossible corollary. The
 trace-model witness endpoint and remaining-break package now have hard-pricing
 constructors/projections, and the Rust source-shape gate requires and spoofs
 those names before accepting future AP2-N003 instantiation candidates.
@@ -602,7 +608,10 @@ production gap also blocks top-level report completion through
 `selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksFactsAllTrue`,
 with individual report-completion blockers for the three remaining production
 bits and `currentMissingFullSignatureReductionProductionFact_blocksFactsAllTrue`
-for the finite missing-production taxonomy. The certificate and production-witness
+for the finite missing-production taxonomy. The current report-completion
+impossible endpoint now includes
+`selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_impossible`.
+The certificate and production-witness
 constructors now have current-hard-fact variants, and
 `Descender/Path2TraceModel.lean` exposes remaining-break package adapters for
 the same three-bit handoff, including the concrete execution-source route. The

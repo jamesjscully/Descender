@@ -2821,6 +2821,13 @@ theorem selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blo
       (selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPricingFactsComplete.1
         hFacts)
 
+/-- The current selected accepted-spend report cannot complete top-level report facts. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_impossible :
+    ¬ selectedRustAcceptedSpendEvidenceReport.FactsAllTrue := by
+  exact
+    selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksFactsAllTrue
+      selectedRustAcceptedSpendEvidenceReport_currentPricingObligationGap
+
 /--
 Selected Rust/model certificate for the accepted-spend numeric soundness layer.
 
@@ -3085,7 +3092,7 @@ def SelectedRustAcceptedSpendSoundnessCertificate.ofSelectedReportAndBoundHardPr
 /-- No selected accepted-spend certificate exists for the current fail-closed report. -/
 theorem SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedReport_impossible
     (Cert : SelectedRustAcceptedSpendSoundnessCertificate) : False :=
-  selectedRustAcceptedSpendEvidenceReportFactsAllTrue_impossible (by
+  selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_impossible (by
     rw [← Cert.evidenceReportBoundProof]
     exact Cert.selectedRustAcceptedSpendFactsAllTrueProof)
 
@@ -4550,6 +4557,13 @@ theorem selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendPro
       (selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_hardProductionFactsComplete.1
         hFacts)
 
+/-- The current selected full-reduction report cannot complete top-level report facts. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_impossible :
+    ¬ selectedRustFullSignatureReductionEvidenceReport.FactsAllTrue := by
+  exact
+    selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksFactsAllTrue
+      selectedRustFullSignatureReductionEvidenceReport_currentProductionObligationGap
+
 /--
 Selected Rust/model certificate for the full-signature reduction layer.
 
@@ -5196,7 +5210,7 @@ end SelectedRustFullSignatureReductionProductionWitness
 /-- No selected full-signature certificate exists for the current fail-closed report. -/
 theorem SelectedRustFullSignatureReductionCertificate.currentSelectedReport_impossible
     (Cert : SelectedRustFullSignatureReductionCertificate) : False :=
-  selectedRustFullSignatureReductionFactsAllTrue_impossible (by
+  selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_impossible (by
     rw [← Cert.evidenceReportBoundProof]
     exact Cert.selectedRustFullSignatureReductionFactsAllTrueProof)
 
