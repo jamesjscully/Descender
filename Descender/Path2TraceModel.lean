@@ -3389,9 +3389,223 @@ def toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHa
     keygenDistributionModeledProof signingOracleModeled signingOracleModeledProof
     completenessModeled completenessModeledProof verifierRelationMatchesImplementation
     verifierRelationMatchesImplementationProof C Source
-    checkedCoreFrameDomainSeparatedProof hiddenSourceFrameDomainSeparatedProof
-    queryBudgetPricedProof multiTargetLossPricedProof
-    hardProductionFactsComplete).toNativeFullSignatureSecurityBoundary
+      checkedCoreFrameDomainSeparatedProof hiddenSourceFrameDomainSeparatedProof
+      queryBudgetPricedProof multiTargetLossPricedProof
+      hardProductionFactsComplete).toNativeFullSignatureSecurityBoundary
+
+section ConcreteSourceHardProductionBoundarySignatureProjections
+
+variable (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage)
+variable (productionAcceptedSpendForgeryProb : ℝ)
+variable (productionAcceptedSpendForgeryBound : ℝ)
+variable (acceptedSpendForgeryProbPinned :
+  (toSelectedAcceptedSpendNumericSource P).pricedCertificate.unionBound =
+    productionAcceptedSpendForgeryProb)
+variable (acceptedSpendForgeryBoundPinned :
+  (toSelectedAcceptedSpendNumericSource P).pricedCertificate.pricedBound =
+    productionAcceptedSpendForgeryBound)
+variable (hiddenSourceProofSemanticsClosed : Prop)
+variable (checkedCoreCompositionClosed : Prop)
+variable (lifecycleReplayClosed : Prop)
+variable (noExportClosed : Prop)
+variable (hiddenSourceProofSemanticsClosedProof :
+  hiddenSourceProofSemanticsClosed)
+variable (checkedCoreCompositionClosedProof :
+  checkedCoreCompositionClosed)
+variable (lifecycleReplayClosedProof :
+  lifecycleReplayClosed)
+variable (noExportClosedProof :
+  noExportClosed)
+variable (hashBoundary : Path2NativeAccountDesign.NativeHashBudgetBoundary)
+variable (signatureForgerySuccessProb : ℝ)
+variable (productionSignatureForgerySuccessProb : ℝ)
+variable (signatureForgerySuccessProbPinned :
+  signatureForgerySuccessProb = productionSignatureForgerySuccessProb)
+variable (signatureForgerySuccessMatchesAcceptedSpendGame :
+  signatureForgerySuccessProb =
+    (toSelectedRustAcceptedSpendSoundnessCertificate
+      P productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+      acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+      hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+      lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+      noExportClosedProof).pricedNumericCertificate.successProb)
+variable (keygenDistributionModeled : Prop)
+variable (keygenDistributionModeledProof : keygenDistributionModeled)
+variable (signingOracleModeled : Prop)
+variable (signingOracleModeledProof : signingOracleModeled)
+variable (completenessModeled : Prop)
+variable (completenessModeledProof : completenessModeled)
+variable (verifierRelationMatchesImplementation : Prop)
+variable (verifierRelationMatchesImplementationProof :
+  verifierRelationMatchesImplementation)
+variable (C : ConcreteGameConfig)
+variable (Source : ConcreteFullSignatureExecutionSource C)
+variable (checkedCoreFrameDomainSeparatedProof :
+  hashBoundary.checkedCoreFrameDomainSeparated)
+variable (hiddenSourceFrameDomainSeparatedProof :
+  hashBoundary.hiddenSourceFrameDomainSeparated)
+variable (queryBudgetPricedProof :
+  hashBoundary.queryBudgetPriced)
+variable (multiTargetLossPricedProof :
+  hashBoundary.multiTargetLossPriced)
+variable (hardProductionFactsComplete :
+  Path2NativeAccountDesign.selectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete)
+
+/--
+The concrete-source hard-production package-level native boundary preserves the
+selected reduction from signature-forgery success to accepted-spend success.
+-/
+theorem toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_signatureForgerySuccessProb_le_acceptedSpendForgeryProb :
+    let B :=
+      toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts
+        P productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+        acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+        hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+        lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+        checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+        noExportClosedProof hashBoundary signatureForgerySuccessProb
+        productionSignatureForgerySuccessProb signatureForgerySuccessProbPinned
+        signatureForgerySuccessMatchesAcceptedSpendGame keygenDistributionModeled
+        keygenDistributionModeledProof signingOracleModeled signingOracleModeledProof
+        completenessModeled completenessModeledProof verifierRelationMatchesImplementation
+        verifierRelationMatchesImplementationProof C Source
+        checkedCoreFrameDomainSeparatedProof hiddenSourceFrameDomainSeparatedProof
+        queryBudgetPricedProof multiTargetLossPricedProof
+        hardProductionFactsComplete
+    B.signatureForgerySuccessProb ≤
+      B.acceptedSpendSoundness.acceptedSpendForgeryProb :=
+  Path2NativeAccountDesign.SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_acceptedSpendForgeryProb
+    (toFullSignatureReductionCertificateWithConcreteExecutionSourceAndCurrentHardProductionFacts
+      P productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+      acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+      hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+      lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+      noExportClosedProof hashBoundary signatureForgerySuccessProb
+      productionSignatureForgerySuccessProb signatureForgerySuccessProbPinned
+      signatureForgerySuccessMatchesAcceptedSpendGame keygenDistributionModeled
+      keygenDistributionModeledProof signingOracleModeled signingOracleModeledProof
+      completenessModeled completenessModeledProof verifierRelationMatchesImplementation
+      verifierRelationMatchesImplementationProof C Source
+      checkedCoreFrameDomainSeparatedProof hiddenSourceFrameDomainSeparatedProof
+      queryBudgetPricedProof multiTargetLossPricedProof hardProductionFactsComplete)
+
+/--
+The concrete-source hard-production package-level native boundary keeps
+signature-forgery success nonnegative after erasure.
+-/
+theorem toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_signatureForgerySuccessProb_nonneg :
+    let B :=
+      toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts
+        P productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+        acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+        hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+        lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+        checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+        noExportClosedProof hashBoundary signatureForgerySuccessProb
+        productionSignatureForgerySuccessProb signatureForgerySuccessProbPinned
+        signatureForgerySuccessMatchesAcceptedSpendGame keygenDistributionModeled
+        keygenDistributionModeledProof signingOracleModeled signingOracleModeledProof
+        completenessModeled completenessModeledProof verifierRelationMatchesImplementation
+        verifierRelationMatchesImplementationProof C Source
+        checkedCoreFrameDomainSeparatedProof hiddenSourceFrameDomainSeparatedProof
+        queryBudgetPricedProof multiTargetLossPricedProof
+        hardProductionFactsComplete
+    0 ≤ B.signatureForgerySuccessProb :=
+  Path2NativeAccountDesign.SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg
+    (toFullSignatureReductionCertificateWithConcreteExecutionSourceAndCurrentHardProductionFacts
+      P productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+      acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+      hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+      lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+      noExportClosedProof hashBoundary signatureForgerySuccessProb
+      productionSignatureForgerySuccessProb signatureForgerySuccessProbPinned
+      signatureForgerySuccessMatchesAcceptedSpendGame keygenDistributionModeled
+      keygenDistributionModeledProof signingOracleModeled signingOracleModeledProof
+      completenessModeled completenessModeledProof verifierRelationMatchesImplementation
+      verifierRelationMatchesImplementationProof C Source
+      checkedCoreFrameDomainSeparatedProof hiddenSourceFrameDomainSeparatedProof
+      queryBudgetPricedProof multiTargetLossPricedProof hardProductionFactsComplete)
+
+/--
+The concrete-source hard-production package-level native boundary keeps
+signature-forgery success at most one after erasure.
+-/
+theorem toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_signatureForgerySuccessProb_le_one :
+    let B :=
+      toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts
+        P productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+        acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+        hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+        lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+        checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+        noExportClosedProof hashBoundary signatureForgerySuccessProb
+        productionSignatureForgerySuccessProb signatureForgerySuccessProbPinned
+        signatureForgerySuccessMatchesAcceptedSpendGame keygenDistributionModeled
+        keygenDistributionModeledProof signingOracleModeled signingOracleModeledProof
+        completenessModeled completenessModeledProof verifierRelationMatchesImplementation
+        verifierRelationMatchesImplementationProof C Source
+        checkedCoreFrameDomainSeparatedProof hiddenSourceFrameDomainSeparatedProof
+        queryBudgetPricedProof multiTargetLossPricedProof
+        hardProductionFactsComplete
+    B.signatureForgerySuccessProb ≤ 1 :=
+  Path2NativeAccountDesign.SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one
+    (toFullSignatureReductionCertificateWithConcreteExecutionSourceAndCurrentHardProductionFacts
+      P productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+      acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+      hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+      lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+      noExportClosedProof hashBoundary signatureForgerySuccessProb
+      productionSignatureForgerySuccessProb signatureForgerySuccessProbPinned
+      signatureForgerySuccessMatchesAcceptedSpendGame keygenDistributionModeled
+      keygenDistributionModeledProof signingOracleModeled signingOracleModeledProof
+      completenessModeled completenessModeledProof verifierRelationMatchesImplementation
+      verifierRelationMatchesImplementationProof C Source
+      checkedCoreFrameDomainSeparatedProof hiddenSourceFrameDomainSeparatedProof
+      queryBudgetPricedProof multiTargetLossPricedProof hardProductionFactsComplete)
+
+/--
+The concrete-source hard-production package-level native boundary keeps
+signature-forgery success on the fixed active target.
+-/
+theorem toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_signatureForgerySuccessProb_le_active128BitTarget :
+    let B :=
+      toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts
+        P productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+        acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+        hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+        lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+        checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+        noExportClosedProof hashBoundary signatureForgerySuccessProb
+        productionSignatureForgerySuccessProb signatureForgerySuccessProbPinned
+        signatureForgerySuccessMatchesAcceptedSpendGame keygenDistributionModeled
+        keygenDistributionModeledProof signingOracleModeled signingOracleModeledProof
+        completenessModeled completenessModeledProof verifierRelationMatchesImplementation
+        verifierRelationMatchesImplementationProof C Source
+        checkedCoreFrameDomainSeparatedProof hiddenSourceFrameDomainSeparatedProof
+        queryBudgetPricedProof multiTargetLossPricedProof
+        hardProductionFactsComplete
+    B.signatureForgerySuccessProb ≤ ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  Path2NativeAccountDesign.SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget
+    (toFullSignatureReductionCertificateWithConcreteExecutionSourceAndCurrentHardProductionFacts
+      P productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+      acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+      hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+      lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+      noExportClosedProof hashBoundary signatureForgerySuccessProb
+      productionSignatureForgerySuccessProb signatureForgerySuccessProbPinned
+      signatureForgerySuccessMatchesAcceptedSpendGame keygenDistributionModeled
+      keygenDistributionModeledProof signingOracleModeled signingOracleModeledProof
+      completenessModeled completenessModeledProof verifierRelationMatchesImplementation
+      verifierRelationMatchesImplementationProof C Source
+      checkedCoreFrameDomainSeparatedProof hiddenSourceFrameDomainSeparatedProof
+      queryBudgetPricedProof multiTargetLossPricedProof hardProductionFactsComplete)
+
+end ConcreteSourceHardProductionBoundarySignatureProjections
 
 /--
 The concrete-source hard-production package-level native boundary exposes the
