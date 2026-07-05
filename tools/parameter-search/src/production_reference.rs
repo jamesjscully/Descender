@@ -53387,6 +53387,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toPricingWitness",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toPricingWitness_pricingFactsComplete",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toPricingWitness_hardPricingFactsComplete",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_2pow_neg133",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_active128BitTarget",
@@ -53741,6 +53742,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toPricingWitness",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toPricingWitness_pricingFactsComplete",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toPricingWitness_hardPricingFactsComplete",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_2pow_neg133",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_active128BitTarget",
@@ -92169,6 +92171,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.toPricingWitness_pricingFactsComplete
   let _acceptedSpendRemainingBreakPackageHardPricingFacts :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.toPricingWitness_hardPricingFactsComplete
+  let _acceptedSpendRemainingBreakPackageCurrentImpossible :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible
   let _acceptedSpendRemainingBreakPackageAcceptedProbActiveTarget :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_active128BitTarget
   let _acceptedSpendRemainingBreakPackageBreakProbComponent :=
@@ -92504,6 +92508,16 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_remaining_break_package_witness
+            )
+        );
+        let suffixed_remaining_break_package_impossible =
+            accepted_spend_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossibleSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_remaining_break_package_impossible
             )
         );
         let suffixed_remaining_break_package_boundary =

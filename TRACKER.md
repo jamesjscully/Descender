@@ -302,7 +302,10 @@ witness/source-constructor variants.
 accepted-spend bound, the seven remaining-break bounds, their proportional
 budgets, selected pricing facts, and the real-valued priced-bound inequality
 into one AP2-N003 hard-half object; the Rust source-shape gate requires its
-erasure and projection names before accepting future instantiation candidates.
+erasure and projection names before accepting future instantiation candidates,
+including `SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible`
+so the consolidated package cannot be presented as existing for the current
+fail-closed report before the selected report bits are actually updated.
 The same package now erases through the selected accepted-spend soundness
 certificate and native accepted-spend boundary while keeping production
 probability pins and the four closure propositions explicit; the source-shape

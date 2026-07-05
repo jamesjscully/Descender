@@ -1272,6 +1272,12 @@ theorem toPricingWitness_hardPricingFactsComplete
     Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport
     (toPricingWitness_pricingFactsComplete P)
 
+/-- No remaining-break pricing package exists for the current fail-closed report. -/
+theorem currentSelectedReport_impossible
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) : False :=
+  Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_currentPricingFactsComplete_impossible
+    (toPricingWitness_pricingFactsComplete P)
+
 /--
 The package keeps the concrete accepted-spend probability on the fixed
 active-target route.
