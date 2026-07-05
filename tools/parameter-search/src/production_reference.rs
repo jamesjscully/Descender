@@ -53480,6 +53480,14 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendEvidenceReport_currentPricingObligationGap",
         "selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete",
         "selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksHardPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksHardPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksHardPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksHardPricingFactsComplete",
         "selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificateHardPricingFacts",
@@ -53840,6 +53848,14 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendEvidenceReport_currentPricingObligationGap",
         "selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete",
         "selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksHardPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksHardPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksHardPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksHardPricingFactsComplete",
         "selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificateHardPricingFacts",
@@ -91210,6 +91226,22 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete
   let _acceptedSpendCurrentPricingGapBlocksHardPricingFacts :=
     selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPricingFactsComplete
+  let _acceptedSpendNumericBoundGapBlocksPricingHalf :=
+    selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksPricingFactsComplete
+  let _acceptedSpendEventBoundGapBlocksPricingHalf :=
+    selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksPricingFactsComplete
+  let _acceptedSpendNamedBreakBoundsGapBlocksPricingHalf :=
+    selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksPricingFactsComplete
+  let _acceptedSpendBreakPricingBudgetGapBlocksPricingHalf :=
+    selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksPricingFactsComplete
+  let _acceptedSpendNumericBoundGapBlocksHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksHardPricingFactsComplete
+  let _acceptedSpendEventBoundGapBlocksHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksHardPricingFactsComplete
+  let _acceptedSpendNamedBreakBoundsGapBlocksHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksHardPricingFactsComplete
+  let _acceptedSpendBreakPricingBudgetGapBlocksHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksHardPricingFactsComplete
   let _acceptedSpendCurrentHardPricingFactsImpossible :=
     selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible
   let _acceptedSpendConcretePricingWitnessSource :=
@@ -91490,6 +91522,22 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete
   let _acceptedSpendCurrentPricingGapBlocksHardPricingFacts :=
     selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPricingFactsComplete
+  let _acceptedSpendNumericBoundGapBlocksPricingHalf :=
+    selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksPricingFactsComplete
+  let _acceptedSpendEventBoundGapBlocksPricingHalf :=
+    selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksPricingFactsComplete
+  let _acceptedSpendNamedBreakBoundsGapBlocksPricingHalf :=
+    selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksPricingFactsComplete
+  let _acceptedSpendBreakPricingBudgetGapBlocksPricingHalf :=
+    selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksPricingFactsComplete
+  let _acceptedSpendNumericBoundGapBlocksHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksHardPricingFactsComplete
+  let _acceptedSpendEventBoundGapBlocksHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksHardPricingFactsComplete
+  let _acceptedSpendNamedBreakBoundsGapBlocksHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksHardPricingFactsComplete
+  let _acceptedSpendBreakPricingBudgetGapBlocksHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksHardPricingFactsComplete
   let _acceptedSpendCurrentHardPricingFactsImpossible :=
     selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible
   let _acceptedSpendConcretePricingWitnessSource :=
@@ -92262,6 +92310,22 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete
   let _acceptedSpendCurrentPricingGapBlocksHardPricingFacts :=
     selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPricingFactsComplete
+  let _acceptedSpendNumericBoundGapBlocksPricingHalf :=
+    selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksPricingFactsComplete
+  let _acceptedSpendEventBoundGapBlocksPricingHalf :=
+    selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksPricingFactsComplete
+  let _acceptedSpendNamedBreakBoundsGapBlocksPricingHalf :=
+    selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksPricingFactsComplete
+  let _acceptedSpendBreakPricingBudgetGapBlocksPricingHalf :=
+    selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksPricingFactsComplete
+  let _acceptedSpendNumericBoundGapBlocksHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksHardPricingFactsComplete
+  let _acceptedSpendEventBoundGapBlocksHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksHardPricingFactsComplete
+  let _acceptedSpendNamedBreakBoundsGapBlocksHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksHardPricingFactsComplete
+  let _acceptedSpendBreakPricingBudgetGapBlocksHardPricingFacts :=
+    selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksHardPricingFactsComplete
   let _acceptedSpendCurrentHardPricingFactsImpossible :=
     selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible
   let _acceptedSpendConcretePricingWitnessSource :=
@@ -92835,6 +92899,48 @@ end Path2NativeAccountDesign
                 &suffixed_accepted_spend_missing_pricing_blocker
             )
         );
+        for (marker, spoof) in [
+            (
+                "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksPricingFactsComplete",
+                "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksPricingFactsCompleteSpoof",
+            ),
+            (
+                "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksPricingFactsComplete",
+                "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksPricingFactsCompleteSpoof",
+            ),
+            (
+                "selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksPricingFactsComplete",
+                "selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksPricingFactsCompleteSpoof",
+            ),
+            (
+                "selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksPricingFactsComplete",
+                "selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksPricingFactsCompleteSpoof",
+            ),
+            (
+                "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksHardPricingFactsComplete",
+                "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksHardPricingFactsCompleteSpoof",
+            ),
+            (
+                "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksHardPricingFactsComplete",
+                "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksHardPricingFactsCompleteSpoof",
+            ),
+            (
+                "selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksHardPricingFactsComplete",
+                "selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksHardPricingFactsCompleteSpoof",
+            ),
+            (
+                "selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksHardPricingFactsComplete",
+                "selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksHardPricingFactsCompleteSpoof",
+            ),
+        ] {
+            let suffixed_accepted_spend_individual_gap_blocker =
+                accepted_spend_instantiation_shape.replace(marker, spoof);
+            assert!(
+                !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                    &suffixed_accepted_spend_individual_gap_blocker
+                )
+            );
+        }
         let global_vacuous_accepted_spend_report_proofs = format!(
             "{}\n{}",
             r#"

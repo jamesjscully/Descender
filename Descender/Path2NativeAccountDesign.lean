@@ -2584,6 +2584,50 @@ theorem selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingF
   rw [Gap.acceptedSpendNumericBoundPricedMissing] at hNumericBoundPriced
   cases hNumericBoundPriced
 
+/-- Missing aggregate numeric-bound pricing independently blocks the pricing half. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksPricingFactsComplete
+    (Gap : SelectedRustAcceptedSpendPricingObligationGap) :
+    ¬ selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete := by
+  exact
+    selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksPricingFactsComplete
+      Gap
+
+/-- Missing accepted-spend event-bound pricing independently blocks the pricing half. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksPricingFactsComplete
+    (Gap : SelectedRustAcceptedSpendPricingObligationGap) :
+    ¬ selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete := by
+  intro hPricing
+  have hAcceptedEventPriced :
+      selectedRustAcceptedSpendEvidenceReport.acceptedSpendEventBoundPriced = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_acceptedSpendEventBoundPriced
+      selectedRustAcceptedSpendEvidenceReport hPricing
+  rw [Gap.acceptedSpendEventBoundPricedMissing] at hAcceptedEventPriced
+  cases hAcceptedEventPriced
+
+/-- Missing named-break event-bound pricing independently blocks the pricing half. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksPricingFactsComplete
+    (Gap : SelectedRustAcceptedSpendPricingObligationGap) :
+    ¬ selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete := by
+  intro hPricing
+  have hNamedBreaksPriced :
+      selectedRustAcceptedSpendEvidenceReport.namedBreakEventBoundsPriced = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_namedBreakEventBoundsPriced
+      selectedRustAcceptedSpendEvidenceReport hPricing
+  rw [Gap.namedBreakEventBoundsPricedMissing] at hNamedBreaksPriced
+  cases hNamedBreaksPriced
+
+/-- Missing component-budget/priced-bound linkage independently blocks the pricing half. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksPricingFactsComplete
+    (Gap : SelectedRustAcceptedSpendPricingObligationGap) :
+    ¬ selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete := by
+  intro hPricing
+  have hBreakBudgetPriced :
+      selectedRustAcceptedSpendEvidenceReport.breakPricingBudgetMeetsPricedBound = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_breakPricingBudgetMeetsPricedBound
+      selectedRustAcceptedSpendEvidenceReport hPricing
+  rw [Gap.breakPricingBudgetMeetsPricedBoundMissing] at hBreakBudgetPriced
+  cases hBreakBudgetPriced
+
 /-- The current accepted-spend pricing gap blocks the four hard pricing facts. -/
 theorem selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPricingFactsComplete
     (Gap : SelectedRustAcceptedSpendPricingObligationGap) :
@@ -2594,6 +2638,47 @@ theorem selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPric
     hHardPricing.1
   rw [Gap.acceptedSpendNumericBoundPricedMissing] at hNumericBoundPriced
   cases hNumericBoundPriced
+
+/-- Missing aggregate numeric-bound pricing independently blocks the hard pricing surface. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksHardPricingFactsComplete
+    (Gap : SelectedRustAcceptedSpendPricingObligationGap) :
+    ¬ selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete := by
+  exact
+    selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPricingFactsComplete
+      Gap
+
+/-- Missing accepted-spend event-bound pricing independently blocks the hard pricing surface. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksHardPricingFactsComplete
+    (Gap : SelectedRustAcceptedSpendPricingObligationGap) :
+    ¬ selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete := by
+  intro hHardPricing
+  have hAcceptedEventPriced :
+      selectedRustAcceptedSpendEvidenceReport.acceptedSpendEventBoundPriced = true :=
+    hHardPricing.2.1
+  rw [Gap.acceptedSpendEventBoundPricedMissing] at hAcceptedEventPriced
+  cases hAcceptedEventPriced
+
+/-- Missing named-break event-bound pricing independently blocks the hard pricing surface. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksHardPricingFactsComplete
+    (Gap : SelectedRustAcceptedSpendPricingObligationGap) :
+    ¬ selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete := by
+  intro hHardPricing
+  have hNamedBreaksPriced :
+      selectedRustAcceptedSpendEvidenceReport.namedBreakEventBoundsPriced = true :=
+    hHardPricing.2.2.1
+  rw [Gap.namedBreakEventBoundsPricedMissing] at hNamedBreaksPriced
+  cases hNamedBreaksPriced
+
+/-- Missing component-budget/priced-bound linkage independently blocks the hard pricing surface. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksHardPricingFactsComplete
+    (Gap : SelectedRustAcceptedSpendPricingObligationGap) :
+    ¬ selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete := by
+  intro hHardPricing
+  have hBreakBudgetPriced :
+      selectedRustAcceptedSpendEvidenceReport.breakPricingBudgetMeetsPricedBound = true :=
+    hHardPricing.2.2.2
+  rw [Gap.breakPricingBudgetMeetsPricedBoundMissing] at hBreakBudgetPriced
+  cases hBreakBudgetPriced
 
 /-- The current selected accepted-spend report cannot complete the pricing half. -/
 theorem selectedRustAcceptedSpendEvidenceReport_currentPricingFactsComplete_impossible :

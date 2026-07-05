@@ -268,8 +268,11 @@ the exact 7/4/3 accounting and making each missing pricing fact an independent
 blocker: the four cryptographic pricing facts remain missing, while
 numeric-budget target, priced-bound target, and priced-bound transcript-cap
 facts are already complete. The accepted-spend source-shape gate requires those
-names and rejects spoofed missing-pricing cardinality or missing-pricing blocker
-names before accepting future
+names and rejects spoofed missing-pricing cardinality, generic missing-pricing
+blocker names, and the four individual current-gap blockers for aggregate
+numeric-bound pricing, accepted-spend event-bound pricing, named-break
+event-bound pricing, and component-budget/priced-bound linkage on both the
+pricing half and hard pricing surface before accepting future
 AP2-N003 instantiation candidates.
 Lean now names the exact hard-pricing handoff with
 `SelectedRustAcceptedSpendSoundnessEvidenceReport.HardPricingFactsComplete`,
