@@ -1829,6 +1829,60 @@ theorem acceptedSpendProb_le_active128BitTarget
     (toPricingWitness P)
 
 /--
+The package exposes the accepted-spend component bound used by the selected
+trace-model pricing witness.
+-/
+theorem acceptedSpendComponentBound_le_2pow_neg129
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
+    (toPricingWitness P).concreteCertificate.pricedCertificate.acceptedSpendBound ≤
+      (1 : ℝ) / 2 ^ 129 :=
+  SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendBound_le_2pow_neg129
+    (toPricingWitness P)
+
+/--
+The package keeps the concrete accepted-spend probability under its component
+budget before taking the active-target consequence.
+-/
+theorem acceptedSpendProb_le_acceptedSpendBound
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
+    (toPricingWitness P).concreteCertificate.pricedCertificate.acceptedSpendProb ≤
+      (toPricingWitness P).concreteCertificate.pricedCertificate.acceptedSpendBound :=
+  SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_acceptedSpendBound
+    (toPricingWitness P)
+
+/--
+The package exposes every remaining cryptographic break component bound used by
+the selected trace-model pricing witness.
+-/
+theorem remainingBreakComponentBound_le_2pow_neg133
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage)
+    (breakEvent : RemainingCryptographicBreak) :
+    (toPricingWitness P).concreteCertificate.pricedCertificate.breakBound
+        breakEvent.1 ≤
+      (1 : ℝ) / 2 ^ 133 :=
+  SelectedRustConcreteAcceptedSpendPricingWitness.breakBound_le_2pow_neg133
+    (toPricingWitness P) breakEvent.1
+
+/--
+The package keeps every remaining cryptographic break probability under its
+component budget before taking the active-target consequence.
+-/
+theorem remainingBreakProb_le_breakBound
+    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage)
+    (breakEvent : RemainingCryptographicBreak) :
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        (toPricingWitness P).concreteCertificate.pricedCertificate.Trace
+        (toPricingWitness P).concreteCertificate.pricedCertificate.Outcome
+        (toPricingWitness P).concreteCertificate.pricedCertificate.Break
+        (toPricingWitness P).concreteCertificate.pricedCertificate.traceFintype
+        (toPricingWitness P).concreteCertificate.pricedCertificate.breakFintype
+        (toPricingWitness P).concreteCertificate.pricedCertificate.game breakEvent.1 ≤
+      (toPricingWitness P).concreteCertificate.pricedCertificate.breakBound
+        breakEvent.1 :=
+  SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_breakBound
+    (toPricingWitness P) breakEvent.1
+
+/--
 The package keeps every remaining cryptographic break probability on its
 proportional component route.
 -/

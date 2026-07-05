@@ -53521,6 +53521,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedHardPricingReport_impossible",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_active128BitTarget",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendComponentBound_le_2pow_neg129",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_acceptedSpendBound",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakComponentBound_le_2pow_neg133",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_breakBound",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_2pow_neg133",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_eq_zero",
@@ -53929,6 +53933,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedHardPricingReport_impossible",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_active128BitTarget",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendComponentBound_le_2pow_neg129",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_acceptedSpendBound",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakComponentBound_le_2pow_neg133",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_breakBound",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_2pow_neg133",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_eq_zero",
@@ -93041,6 +93049,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible
   let _acceptedSpendRemainingBreakPackageAcceptedProbActiveTarget :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_active128BitTarget
+  let _acceptedSpendRemainingBreakPackageAcceptedBoundComponent :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendComponentBound_le_2pow_neg129
+  let _acceptedSpendRemainingBreakPackageAcceptedProbComponent :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_acceptedSpendBound
+  let _acceptedSpendRemainingBreakPackageBreakBoundComponent :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakComponentBound_le_2pow_neg133
+  let _acceptedSpendRemainingBreakPackageBreakProbBound :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_breakBound
   let _acceptedSpendRemainingBreakPackageBreakProbComponent :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_2pow_neg133
   let _acceptedSpendRemainingBreakPackageBreakProbActiveTarget :=
@@ -93614,6 +93630,46 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_remaining_break_package_impossible
+            )
+        );
+        let suffixed_remaining_break_package_accepted_bound_component =
+            accepted_spend_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendComponentBound_le_2pow_neg129",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendComponentBound_le_2pow_neg129Spoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_remaining_break_package_accepted_bound_component
+            )
+        );
+        let suffixed_remaining_break_package_accepted_prob_component =
+            accepted_spend_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_acceptedSpendBound",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_acceptedSpendBoundSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_remaining_break_package_accepted_prob_component
+            )
+        );
+        let suffixed_remaining_break_package_break_bound_component =
+            accepted_spend_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakComponentBound_le_2pow_neg133",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakComponentBound_le_2pow_neg133Spoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_remaining_break_package_break_bound_component
+            )
+        );
+        let suffixed_remaining_break_package_break_prob_bound =
+            accepted_spend_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_breakBound",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_breakBoundSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_remaining_break_package_break_prob_bound
             )
         );
         let suffixed_remaining_break_package_qrom_break_zero =

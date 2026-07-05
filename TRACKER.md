@@ -277,7 +277,15 @@ and
 `selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts`,
 so the same component and target projections can be consumed directly from the
 exact four hard accepted-spend pricing facts rather than the broader pricing
-half; the remaining-break package API now carries those structural-zero slots
+half; the remaining-break package API now names the accepted-spend component
+bound, accepted-spend probability/component link, remaining-break component
+bounds, and remaining-break probability/component links with
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendComponentBound_le_2pow_neg129`,
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_acceptedSpendBound`,
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakComponentBound_le_2pow_neg133`,
+and
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_breakBound`,
+then carries the structural-zero slots
 through
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_eq_zero`,
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_le_2pow_neg133`,
