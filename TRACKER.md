@@ -443,8 +443,14 @@ route now has hard-pricing counterparts
 and
 `selectedRustAcceptedSpendSoundnessBoundary_of_remaining_break_bounds_and_current_hard_pricing_facts`,
 so the accepted-spend trace erasure can consume the exact four-fact hard pricing
-surface rather than the broader pricing half; the Rust source-shape gate
-requires those names and rejects spoofed hard trace source/boundary variants.
+surface rather than the broader pricing half; the hard-pricing route now also
+names
+`selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts`
+and
+`selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts`
+for the erased accepted-spend probability/bound target projections. The Rust
+source-shape gate requires those names and rejects spoofed hard trace
+source/boundary/target variants.
 The same trace-model
 route now continues into the
 full-signature layer through
