@@ -52149,6 +52149,7 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_productionFactsComplete",
         "\ntheorem selectedRustFullSignatureReductionEvidenceReport_productionFactsComplete_of_hardProductionFactsComplete",
         "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentProductionFactsComplete_iff_hardProductionFactsComplete",
+        "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_iff_threeBits",
         "\ndef SelectedRustFullSignatureReductionProductionWitness.ofAcceptedSpendAndCurrentHardProductionFacts",
         "\ntheorem hardProductionFactsComplete",
         "\ntheorem keygenDistributionModeled_holds",
@@ -52525,6 +52526,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionEvidenceReport.productionFactsComplete_hardProductionFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReport_productionFactsComplete_of_hardProductionFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionFactsComplete_iff_hardProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_iff_threeBits",
         "FullSignatureReductionProductionFact",
         "fullSignatureReductionProductionFacts",
         "currentMissingFullSignatureReductionProductionFacts",
@@ -52722,6 +52724,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionEvidenceReport.productionFactsComplete_hardProductionFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReport_productionFactsComplete_of_hardProductionFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionFactsComplete_iff_hardProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_iff_threeBits",
         "FullSignatureReductionProductionFact",
         "fullSignatureReductionProductionFacts",
         "currentMissingFullSignatureReductionProductionFacts",
@@ -89534,6 +89537,8 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     selectedRustFullSignatureReductionEvidenceReport_productionFactsComplete_of_hardProductionFactsComplete
   let _fullReductionCurrentProductionFactsIffHardFacts :=
     selectedRustFullSignatureReductionEvidenceReport_currentProductionFactsComplete_iff_hardProductionFactsComplete
+  let _fullReductionCurrentHardFactsIffThreeBits :=
+    selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_iff_threeBits
   let _fullReductionProductionFactSurface :=
     FullSignatureReductionProductionFact
   let _fullReductionAllProductionFacts :=
@@ -89933,6 +89938,16 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_hard_facts_equivalence
+            )
+        );
+        let suffixed_full_signature_three_bit_hard_facts =
+            full_signature_reduction_instantiation_shape.replace(
+                "selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_iff_threeBits",
+                "selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_iff_threeBitsSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_three_bit_hard_facts
             )
         );
         let suffixed_full_signature_concrete_source_hard_fact_package =

@@ -3938,6 +3938,18 @@ theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionFactsC
       selectedRustFullSignatureReductionEvidenceReport_productionFactsComplete_of_hardProductionFactsComplete
 
 /--
+The current hard full-reduction production surface is exactly the three
+remaining report bits; active query-symbol pricing and verifier-game binding
+are supplied internally by the selected report.
+-/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_iff_threeBits :
+    selectedRustFullSignatureReductionEvidenceReport.HardProductionFactsComplete ↔
+      selectedRustFullSignatureReductionEvidenceReport.productionSignatureProbabilityPinned = true ∧
+      selectedRustFullSignatureReductionEvidenceReport.signatureSuccessMatchesAcceptedSpendGame = true ∧
+      selectedRustFullSignatureReductionEvidenceReport.acceptedSpendProbabilityLinked = true := by
+  rfl
+
+/--
 Finite taxonomy for the selected full-reduction report's production half.
 
 The report has five production facts: three are still false in the current
@@ -4058,7 +4070,7 @@ theorem currentMissingFullSignatureReductionProductionFact_blocksProductionFacts
   rw [hFalse] at hTrue
   cases hTrue
 
-/-- Any currently missing full-reduction production fact blocks the hard four-bit surface. -/
+/-- Any currently missing full-reduction production fact blocks the hard production surface. -/
 theorem currentMissingFullSignatureReductionProductionFact_blocksHardProductionFactsComplete
     (fact : FullSignatureReductionProductionFact)
     (hMissing :
