@@ -2753,6 +2753,61 @@ theorem selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPric
         selectedRustAcceptedSpendEvidenceReport hPricing
   · exact selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentHardPricingFactsComplete
 
+/-- The current accepted-spend pricing gap blocks top-level report completion. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksFactsAllTrue
+    (Gap : SelectedRustAcceptedSpendPricingObligationGap) :
+    ¬ selectedRustAcceptedSpendEvidenceReport.FactsAllTrue := by
+  intro hFacts
+  exact
+    selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPricingFactsComplete
+      Gap
+      (selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPricingFactsComplete.1
+        hFacts)
+
+/-- Missing aggregate numeric-bound pricing independently blocks report completion. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksFactsAllTrue
+    (Gap : SelectedRustAcceptedSpendPricingObligationGap) :
+    ¬ selectedRustAcceptedSpendEvidenceReport.FactsAllTrue := by
+  intro hFacts
+  exact
+    selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksHardPricingFactsComplete
+      Gap
+      (selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPricingFactsComplete.1
+        hFacts)
+
+/-- Missing accepted-spend event-bound pricing independently blocks report completion. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksFactsAllTrue
+    (Gap : SelectedRustAcceptedSpendPricingObligationGap) :
+    ¬ selectedRustAcceptedSpendEvidenceReport.FactsAllTrue := by
+  intro hFacts
+  exact
+    selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksHardPricingFactsComplete
+      Gap
+      (selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPricingFactsComplete.1
+        hFacts)
+
+/-- Missing named-break event-bound pricing independently blocks report completion. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksFactsAllTrue
+    (Gap : SelectedRustAcceptedSpendPricingObligationGap) :
+    ¬ selectedRustAcceptedSpendEvidenceReport.FactsAllTrue := by
+  intro hFacts
+  exact
+    selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksHardPricingFactsComplete
+      Gap
+      (selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPricingFactsComplete.1
+        hFacts)
+
+/-- Missing component-budget/priced-bound linkage independently blocks report completion. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksFactsAllTrue
+    (Gap : SelectedRustAcceptedSpendPricingObligationGap) :
+    ¬ selectedRustAcceptedSpendEvidenceReport.FactsAllTrue := by
+  intro hFacts
+  exact
+    selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksHardPricingFactsComplete
+      Gap
+      (selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPricingFactsComplete.1
+        hFacts)
+
 /--
 Selected Rust/model certificate for the accepted-spend numeric soundness layer.
 
@@ -4424,6 +4479,50 @@ theorem selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff
         selectedRustFullSignatureReductionEvidenceReport hProduction
   · exact
       selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentHardProductionFactsComplete
+
+/-- The current full-reduction production gap blocks top-level report completion. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksFactsAllTrue
+    (Gap : SelectedRustFullSignatureReductionProductionObligationGap) :
+    ¬ selectedRustFullSignatureReductionEvidenceReport.FactsAllTrue := by
+  intro hFacts
+  exact
+    selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksHardProductionFactsComplete
+      Gap
+      (selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_hardProductionFactsComplete.1
+        hFacts)
+
+/-- Missing production-probability pinning independently blocks report completion. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksFactsAllTrue
+    (Gap : SelectedRustFullSignatureReductionProductionObligationGap) :
+    ¬ selectedRustFullSignatureReductionEvidenceReport.FactsAllTrue := by
+  intro hFacts
+  exact
+    selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksHardProductionFactsComplete
+      Gap
+      (selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_hardProductionFactsComplete.1
+        hFacts)
+
+/-- Missing signature-success/accepted-spend linkage independently blocks report completion. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksFactsAllTrue
+    (Gap : SelectedRustFullSignatureReductionProductionObligationGap) :
+    ¬ selectedRustFullSignatureReductionEvidenceReport.FactsAllTrue := by
+  intro hFacts
+  exact
+    selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksHardProductionFactsComplete
+      Gap
+      (selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_hardProductionFactsComplete.1
+        hFacts)
+
+/-- Missing accepted-spend probability linkage independently blocks report completion. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksFactsAllTrue
+    (Gap : SelectedRustFullSignatureReductionProductionObligationGap) :
+    ¬ selectedRustFullSignatureReductionEvidenceReport.FactsAllTrue := by
+  intro hFacts
+  exact
+    selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksHardProductionFactsComplete
+      Gap
+      (selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_hardProductionFactsComplete.1
+        hFacts)
 
 /--
 Selected Rust/model certificate for the full-signature reduction layer.

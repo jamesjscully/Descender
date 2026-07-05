@@ -184,7 +184,13 @@ and
 `selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_hardProductionFactsComplete`.
 The Rust future-theorem scanners require and spoof those names too, so the
 selected report blocker cannot be satisfied by re-proving already-closed
-structural or budget facts. Lean now also lifts the
+structural or budget facts. The same current gap records now also block
+top-level report completion directly through
+`selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksFactsAllTrue`
+and
+`selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksFactsAllTrue`,
+with individual missing-fact blockers required and spoofed by the Rust gate.
+Lean now also lifts the
 active 9-event
 arithmetic check through `PricedAcceptedSpendNumericCertificate`,
 `SelectedAcceptedSpendNumericSource`, and the selected concrete/source numeric
@@ -293,12 +299,15 @@ so the hard surface is explicitly the four remaining cryptographic pricing
 report bits rather than caller-resupplied numeric/transcript facts; the
 current report-level completion surface is also pinned to that hard surface by
 `selectedRustAcceptedSpendEvidenceReport_currentFactsAllTrue_iff_hardPricingFactsComplete`;
-the
-current pricing gap also blocks that four-bit hard-pricing surface through
+the current pricing gap also blocks that four-bit hard-pricing surface and
+top-level report completion through
 `selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksHardPricingFactsComplete`
 and
-`selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible`.
-The
+`selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksFactsAllTrue`,
+plus individual report-completion blockers for each remaining pricing bit,
+while keeping
+`selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible`
+as the direct hard-surface impossible corollary. The
 trace-model witness endpoint and remaining-break package now have hard-pricing
 constructors/projections, and the Rust source-shape gate requires and spoofs
 those names before accepting future AP2-N003 instantiation candidates.
@@ -583,7 +592,11 @@ already supply the other production bits. It also pins
 so the hard surface is explicitly the three remaining report bits rather than a
 caller-resupplied active-query-symbol fact, and
 `selectedRustFullSignatureReductionEvidenceReport_currentFactsAllTrue_iff_hardProductionFactsComplete`
-pins current report-level completion to that exact hard surface. The certificate and production-witness
+pins current report-level completion to that exact hard surface; the current
+production gap also blocks top-level report completion through
+`selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksFactsAllTrue`,
+with individual report-completion blockers for the three remaining production
+bits. The certificate and production-witness
 constructors now have current-hard-fact variants, and
 `Descender/Path2TraceModel.lean` exposes remaining-break package adapters for
 the same three-bit handoff, including the concrete execution-source route. The

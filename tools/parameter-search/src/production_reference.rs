@@ -52158,6 +52158,10 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksHardProductionFactsComplete",
         "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksHardProductionFactsComplete",
         "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksHardProductionFactsComplete",
+        "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksFactsAllTrue",
+        "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksFactsAllTrue",
+        "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksFactsAllTrue",
+        "\ntheorem selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksFactsAllTrue",
         "\ndef SelectedRustFullSignatureReductionProductionWitness.ofAcceptedSpendAndCurrentHardProductionFacts",
         "\ntheorem hardProductionFactsComplete",
         "\ntheorem keygenDistributionModeled_holds",
@@ -52564,6 +52568,10 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksHardProductionFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksHardProductionFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksHardProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksFactsAllTrue",
+        "selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksFactsAllTrue",
+        "selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksFactsAllTrue",
+        "selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksFactsAllTrue",
         "selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_impossible",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_componentBudget",
@@ -52770,6 +52778,10 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksHardProductionFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksHardProductionFactsComplete",
         "selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksHardProductionFactsComplete",
+        "selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksFactsAllTrue",
+        "selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksFactsAllTrue",
+        "selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksFactsAllTrue",
+        "selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksFactsAllTrue",
         "selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_impossible",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_le_componentBudget",
@@ -53496,6 +53508,11 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksHardPricingFactsComplete",
         "selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksHardPricingFactsComplete",
         "selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksHardPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksFactsAllTrue",
+        "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksFactsAllTrue",
+        "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksFactsAllTrue",
+        "selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksFactsAllTrue",
+        "selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksFactsAllTrue",
         "selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificateHardPricingFacts",
@@ -53868,6 +53885,11 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksHardPricingFactsComplete",
         "selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksHardPricingFactsComplete",
         "selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksHardPricingFactsComplete",
+        "selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksFactsAllTrue",
+        "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksFactsAllTrue",
+        "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksFactsAllTrue",
+        "selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksFactsAllTrue",
+        "selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksFactsAllTrue",
         "selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificateHardPricingFacts",
@@ -89645,6 +89667,14 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksHardProductionFactsComplete
   let _fullReductionAcceptedSpendProbabilityGapBlocksHardFacts :=
     selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksHardProductionFactsComplete
+  let _fullReductionCurrentProductionGapBlocksReportComplete :=
+    selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksFactsAllTrue
+  let _fullReductionProductionProbabilityGapBlocksReportComplete :=
+    selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksFactsAllTrue
+  let _fullReductionAcceptedSpendGameGapBlocksReportComplete :=
+    selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksFactsAllTrue
+  let _fullReductionAcceptedSpendProbabilityGapBlocksReportComplete :=
+    selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksFactsAllTrue
   let _fullReductionCurrentHardProductionFactsImpossible :=
     selectedRustFullSignatureReductionEvidenceReport_currentHardProductionFactsComplete_impossible
   let _fullReductionProductionWitnessAcceptedSpendReduction :=
@@ -90188,6 +90218,22 @@ namespace NativeFullSignatureSecurityBoundary
             (
                 "selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksHardProductionFactsComplete",
                 "selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksHardProductionFactsCompleteSpoof",
+            ),
+            (
+                "selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksFactsAllTrue",
+                "selectedRustFullSignatureReductionEvidenceReport_currentProductionGap_blocksFactsAllTrueSpoof",
+            ),
+            (
+                "selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksFactsAllTrue",
+                "selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityGap_blocksFactsAllTrueSpoof",
+            ),
+            (
+                "selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksFactsAllTrue",
+                "selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessAcceptedSpendGameGap_blocksFactsAllTrueSpoof",
+            ),
+            (
+                "selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksFactsAllTrue",
+                "selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityGap_blocksFactsAllTrueSpoof",
             ),
         ] {
             let suffixed_full_signature_individual_gap_blocker =
@@ -91282,6 +91328,16 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksHardPricingFactsComplete
   let _acceptedSpendBreakPricingBudgetGapBlocksHardPricingFacts :=
     selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksHardPricingFactsComplete
+  let _acceptedSpendCurrentPricingGapBlocksReportComplete :=
+    selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksFactsAllTrue
+  let _acceptedSpendNumericBoundGapBlocksReportComplete :=
+    selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksFactsAllTrue
+  let _acceptedSpendEventBoundGapBlocksReportComplete :=
+    selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksFactsAllTrue
+  let _acceptedSpendNamedBreakBoundsGapBlocksReportComplete :=
+    selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksFactsAllTrue
+  let _acceptedSpendBreakPricingBudgetGapBlocksReportComplete :=
+    selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksFactsAllTrue
   let _acceptedSpendCurrentHardPricingFactsImpossible :=
     selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible
   let _acceptedSpendConcretePricingWitnessSource :=
@@ -91582,6 +91638,16 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksHardPricingFactsComplete
   let _acceptedSpendBreakPricingBudgetGapBlocksHardPricingFacts :=
     selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksHardPricingFactsComplete
+  let _acceptedSpendCurrentPricingGapBlocksReportComplete :=
+    selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksFactsAllTrue
+  let _acceptedSpendNumericBoundGapBlocksReportComplete :=
+    selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksFactsAllTrue
+  let _acceptedSpendEventBoundGapBlocksReportComplete :=
+    selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksFactsAllTrue
+  let _acceptedSpendNamedBreakBoundsGapBlocksReportComplete :=
+    selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksFactsAllTrue
+  let _acceptedSpendBreakPricingBudgetGapBlocksReportComplete :=
+    selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksFactsAllTrue
   let _acceptedSpendCurrentHardPricingFactsImpossible :=
     selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible
   let _acceptedSpendConcretePricingWitnessSource :=
@@ -92378,6 +92444,16 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksHardPricingFactsComplete
   let _acceptedSpendBreakPricingBudgetGapBlocksHardPricingFacts :=
     selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksHardPricingFactsComplete
+  let _acceptedSpendCurrentPricingGapBlocksReportComplete :=
+    selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksFactsAllTrue
+  let _acceptedSpendNumericBoundGapBlocksReportComplete :=
+    selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksFactsAllTrue
+  let _acceptedSpendEventBoundGapBlocksReportComplete :=
+    selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksFactsAllTrue
+  let _acceptedSpendNamedBreakBoundsGapBlocksReportComplete :=
+    selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksFactsAllTrue
+  let _acceptedSpendBreakPricingBudgetGapBlocksReportComplete :=
+    selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksFactsAllTrue
   let _acceptedSpendCurrentHardPricingFactsImpossible :=
     selectedRustAcceptedSpendEvidenceReport_currentHardPricingFactsComplete_impossible
   let _acceptedSpendConcretePricingWitnessSource :=
@@ -93003,6 +93079,26 @@ end Path2NativeAccountDesign
             (
                 "selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksHardPricingFactsComplete",
                 "selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksHardPricingFactsCompleteSpoof",
+            ),
+            (
+                "selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksFactsAllTrue",
+                "selectedRustAcceptedSpendEvidenceReport_currentPricingGap_blocksFactsAllTrueSpoof",
+            ),
+            (
+                "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksFactsAllTrue",
+                "selectedRustAcceptedSpendEvidenceReport_currentNumericBoundGap_blocksFactsAllTrueSpoof",
+            ),
+            (
+                "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksFactsAllTrue",
+                "selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundGap_blocksFactsAllTrueSpoof",
+            ),
+            (
+                "selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksFactsAllTrue",
+                "selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsGap_blocksFactsAllTrueSpoof",
+            ),
+            (
+                "selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksFactsAllTrue",
+                "selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetGap_blocksFactsAllTrueSpoof",
             ),
         ] {
             let suffixed_accepted_spend_individual_gap_blocker =
