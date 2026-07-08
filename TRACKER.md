@@ -322,14 +322,18 @@ reject a spoofed `ws7RemainingClosureObligations_card`.
 `SelectedRustWS7RemainingClosureObligationSatisfied` and
 `SelectedRustWS7RemainingClosureEvidence` now make those eight rows consumable:
 their projection theorems recover the accepted-spend probability/budget row and
-each remaining-break probability/budget row, and
+each remaining-break probability/budget row; `concreteNumericClosure_of_ws7_remaining_closure_evidence`
+and
+`concreteNumericClosure_of_ws7_remaining_closure_evidence_le_active128BitTarget`
+compose those eight rows through the concrete selected numeric game and close
+its success probability at the fixed 128-bit target; and
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence`
 erases that first-class WS7 evidence into the existing remaining-break pricing
 package while
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence_currentSelectedHardPricingReport_impossible`
 keeps the current fail-closed report guard on the WS7 route. The same
-source-shape gates require those bridge names and reject a spoofed WS7 package
-constructor.
+source-shape gates require those bridge names and reject spoofed WS7 numeric
+closure and package-constructor endpoints.
 The full-signature handoff now also has
 `selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
 and

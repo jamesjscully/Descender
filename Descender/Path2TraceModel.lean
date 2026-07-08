@@ -734,6 +734,43 @@ theorem concreteNumericClosure_of_remaining_break_bounds
       remainingBreakBound hBreakBudget)
 
 /--
+The first-class WS7 remaining-closure evidence is enough to close the concrete
+selected numeric game at the active 128-bit success target.
+-/
+theorem concreteNumericClosure_of_ws7_remaining_closure_evidence
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (E : SelectedRustWS7RemainingClosureEvidence Trace traceDist observe) :
+    (concreteNumericGame selectedRustConcreteGameConfig traceDist observe).successProb ≤
+      (1 : ℝ) / 2 ^ 128 :=
+  concreteNumericClosure_of_remaining_break_bounds
+    selectedRustConcreteGameConfig
+    traceDist
+    observe
+    E.acceptedSpendBound
+    E.remainingBreakBound
+    (SelectedRustWS7RemainingClosureEvidence.acceptedSpendProb_le_bound E)
+    (SelectedRustWS7RemainingClosureEvidence.remainingBreakProb_le_bound E)
+    (SelectedRustWS7RemainingClosureEvidence.acceptedSpendBound_le_2pow_neg129 E)
+    (SelectedRustWS7RemainingClosureEvidence.remainingBreakBound_le_2pow_neg133 E)
+
+/--
+The WS7 evidence success bound is the active 128-bit inverse-power target used
+by the selected deployment boundary.
+-/
+theorem concreteNumericClosure_of_ws7_remaining_closure_evidence_le_active128BitTarget
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (E : SelectedRustWS7RemainingClosureEvidence Trace traceDist observe) :
+    (concreteNumericGame selectedRustConcreteGameConfig traceDist observe).successProb ≤
+      ((2 : ℝ) ^ (128 : Nat))⁻¹ := by
+  simpa [one_div] using
+    (concreteNumericClosure_of_ws7_remaining_closure_evidence
+      traceDist observe E)
+
+/--
 Constructive break-pricing certificate for the faithful concrete game from
 accepted-spend pricing plus the seven remaining cryptographic break bounds.
 -/
