@@ -6637,6 +6637,132 @@ def selectedRustFullSignatureReductionProductionWitness_of_ws7_remaining_closure
     multiTargetLossPricedProof
     hardProductionFactsComplete
 
+section WS7RemainingClosureAcceptedSpendBoundaryProjection
+
+variable {Trace : Type} [Fintype Trace]
+variable (traceDist : FiniteProbability Trace)
+variable (observe : Trace → ConcreteOutcome)
+variable (E : SelectedRustWS7RemainingClosureEvidence Trace traceDist observe)
+variable (hPriced :
+  (1 : ℝ) / 2 ^ 128 ≤
+    ((2 : ℝ) ^
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+variable (hHardPricing :
+  Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete)
+variable (productionAcceptedSpendForgeryProb : ℝ)
+variable (productionAcceptedSpendForgeryBound : ℝ)
+variable (acceptedSpendForgeryProbPinned :
+  (SelectedRustAcceptedSpendRemainingBreakPricingPackage.toSelectedAcceptedSpendNumericSource
+    (selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+      traceDist observe E hPriced hHardPricing)).pricedCertificate.unionBound =
+    productionAcceptedSpendForgeryProb)
+variable (acceptedSpendForgeryBoundPinned :
+  (SelectedRustAcceptedSpendRemainingBreakPricingPackage.toSelectedAcceptedSpendNumericSource
+    (selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+      traceDist observe E hPriced hHardPricing)).pricedCertificate.pricedBound =
+    productionAcceptedSpendForgeryBound)
+variable (hiddenSourceProofSemanticsClosed : Prop)
+variable (checkedCoreCompositionClosed : Prop)
+variable (lifecycleReplayClosed : Prop)
+variable (noExportClosed : Prop)
+variable (hiddenSourceProofSemanticsClosedProof :
+  hiddenSourceProofSemanticsClosed)
+variable (checkedCoreCompositionClosedProof :
+  checkedCoreCompositionClosed)
+variable (lifecycleReplayClosedProof :
+  lifecycleReplayClosed)
+variable (noExportClosedProof :
+  noExportClosed)
+
+/--
+Erase the WS7 remaining-closure accepted-spend package into the selected
+accepted-spend soundness certificate.
+-/
+def selectedRustAcceptedSpendSoundnessCertificate_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts :
+    Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessCertificate :=
+  SelectedRustAcceptedSpendRemainingBreakPricingPackage.toSelectedRustAcceptedSpendSoundnessCertificate
+    (selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+      traceDist observe E hPriced hHardPricing)
+    productionAcceptedSpendForgeryProb
+    productionAcceptedSpendForgeryBound
+    acceptedSpendForgeryProbPinned
+    acceptedSpendForgeryBoundPinned
+    hiddenSourceProofSemanticsClosed
+    checkedCoreCompositionClosed
+    lifecycleReplayClosed
+    noExportClosed
+    hiddenSourceProofSemanticsClosedProof
+    checkedCoreCompositionClosedProof
+    lifecycleReplayClosedProof
+    noExportClosedProof
+
+/--
+Erase the WS7 remaining-closure accepted-spend certificate into the native
+accepted-spend soundness boundary.
+-/
+def selectedRustAcceptedSpendSoundnessBoundary_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts :
+    Path2NativeAccountDesign.NativeAcceptedSpendSoundnessBoundary :=
+  (selectedRustAcceptedSpendSoundnessCertificate_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+    traceDist observe E hPriced hHardPricing
+    productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+    acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+    hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+    lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+    checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+    noExportClosedProof).toAcceptedSpendSoundnessBoundary
+
+/--
+The WS7 remaining-closure accepted-spend boundary reaches the fixed active
+128-bit probability target.
+-/
+theorem selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts :
+    let B :=
+      selectedRustAcceptedSpendSoundnessBoundary_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+        traceDist observe E hPriced hHardPricing
+        productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+        acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+        hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+        lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+        checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+        noExportClosedProof
+    B.acceptedSpendForgeryProb ≤ ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget
+    (selectedRustAcceptedSpendSoundnessCertificate_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+      traceDist observe E hPriced hHardPricing
+      productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+      acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+      hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+      lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+      noExportClosedProof)
+
+/--
+The WS7 remaining-closure accepted-spend boundary keeps the exported
+accepted-spend bound on the fixed active 128-bit target.
+-/
+theorem selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts :
+    let B :=
+      selectedRustAcceptedSpendSoundnessBoundary_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+        traceDist observe E hPriced hHardPricing
+        productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+        acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+        hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+        lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+        checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+        noExportClosedProof
+    B.acceptedSpendForgeryBound ≤ ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget
+    (selectedRustAcceptedSpendSoundnessCertificate_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+      traceDist observe E hPriced hHardPricing
+      productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+      acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+      hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+      lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+      noExportClosedProof)
+
+end WS7RemainingClosureAcceptedSpendBoundaryProjection
+
 section WS7RemainingClosureFullSignatureBoundaryProjection
 
 variable {Trace : Type} [Fintype Trace]

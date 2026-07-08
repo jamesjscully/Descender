@@ -534,7 +534,15 @@ and
 `selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts`
 for the erased accepted-spend probability/bound target projections. The Rust
 source-shape gate requires those names and rejects spoofed hard trace
-source/boundary/target variants.
+source/boundary/target variants. The first-class WS7 evidence route now names
+the same accepted-spend endpoint through
+`selectedRustAcceptedSpendSoundnessCertificate_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`,
+`selectedRustAcceptedSpendSoundnessBoundary_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`,
+`selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`,
+and
+`selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`,
+with the source-shape fixture rejecting spoofed WS7 certificate/boundary/target
+variants.
 The same trace-model
 route now continues into the
 full-signature layer through
