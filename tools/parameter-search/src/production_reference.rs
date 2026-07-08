@@ -52634,6 +52634,8 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustWS7RemainingClosureEvidence.remainingBreakBound_le_2pow_neg133",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence_currentSelectedHardPricingReport_impossible",
+        "selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustFullSignatureReductionProductionWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "reductionEvidenceDigestsVerified",
         "productionSignatureProbabilityDigest",
         "signatureAcceptedSpendLinkDigest",
@@ -52949,6 +52951,8 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustWS7RemainingClosureEvidence.remainingBreakBound_le_2pow_neg133",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence_currentSelectedHardPricingReport_impossible",
+        "selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustFullSignatureReductionProductionWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndCurrentHardProductionFacts",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitness",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithCurrentHardProductionFacts",
@@ -90162,6 +90166,10 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence
   let _fullReductionRemainingBreakPackageWS7CurrentHardImpossible :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence_currentSelectedHardPricingReport_impossible
+  let _fullReductionWS7RemainingBreakPackageHardPricing :=
+    selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+  let _fullReductionWS7ProductionWitness :=
+    selectedRustFullSignatureReductionProductionWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
   let _fullReductionHardFactCertificateConstructor :=
     SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndCurrentHardProductionFacts
   let _fullReductionCertificateCurrentHardImpossible :=
@@ -90909,6 +90917,16 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_ws7_package_constructor
+            )
+        );
+        let suffixed_full_signature_ws7_production_witness =
+            full_signature_reduction_instantiation_shape.replace(
+                "selectedRustFullSignatureReductionProductionWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+                "selectedRustFullSignatureReductionProductionWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_factsSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_ws7_production_witness
             )
         );
         let suffixed_full_signature_active_query_symbols_priced =
