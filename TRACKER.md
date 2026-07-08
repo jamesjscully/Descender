@@ -336,7 +336,15 @@ and
 `selectedRustFullSignatureReductionProductionWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`,
 so WS7 evidence plus current hard pricing/production facts can directly build
 the selected full-reduction production witness; the full-reduction source-shape
-gate requires and spoofs that production-witness route.
+gate requires and spoofs that production-witness route. The same WS7 route now
+continues through
+`selectedRustFullSignatureReductionCertificate_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
+and
+`selectedRustNativeFullSignatureSecurityBoundary_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`,
+with named erased-boundary projections for accepted-spend reduction,
+probability shape, active-path handoff, fixed 128-bit target, and full claim
+completion; the source-shape gate requires those names and rejects suffixed
+WS7 boundary-route variants.
 The accepted-spend numeric report now closes the selected budget arithmetic
 bits by pinning `acceptedSpendPricedBoundSecurityBits = 128` and
 `acceptedSpendNumericBudgetMeetsTarget = true`; its current missing-pricing
@@ -786,7 +794,8 @@ also requires the `WS7RemainingClosureObligation` surface and the
 `ws7RemainingClosureObligations_card` eight-row proof before accepting a future
 full-reduction candidate, requires the WS7 evidence-to-package bridge before
 that route can consume remaining-break bounds, requires the WS7-to-production-witness
-handoff, and rejects spoofed hard-fact equivalence,
+handoff plus WS7 certificate/native-boundary projection handoff, and rejects
+spoofed hard-fact equivalence,
 accepted-spend package blocker, active
 query-symbol pricing, three-bit hard-surface, or concrete-source hard-fact adapter
 names before accepting that candidate.

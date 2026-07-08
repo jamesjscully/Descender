@@ -52636,6 +52636,16 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence_currentSelectedHardPricingReport_impossible",
         "selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustFullSignatureReductionProductionWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustFullSignatureReductionCertificate_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_acceptedSpendForgeryProb_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSecurityClaimComplete_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "reductionEvidenceDigestsVerified",
         "productionSignatureProbabilityDigest",
         "signatureAcceptedSpendLinkDigest",
@@ -52953,6 +52963,16 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence_currentSelectedHardPricingReport_impossible",
         "selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustFullSignatureReductionProductionWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustFullSignatureReductionCertificate_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_acceptedSpendForgeryProb_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSecurityClaimComplete_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndCurrentHardProductionFacts",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitness",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithCurrentHardProductionFacts",
@@ -90170,6 +90190,26 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
   let _fullReductionWS7ProductionWitness :=
     selectedRustFullSignatureReductionProductionWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+  let _fullReductionWS7Certificate :=
+    selectedRustFullSignatureReductionCertificate_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+  let _fullReductionWS7Boundary :=
+    selectedRustNativeFullSignatureSecurityBoundary_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+  let _fullReductionWS7SignatureAcceptedSpend :=
+    selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_acceptedSpendForgeryProb_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+  let _fullReductionWS7SignatureNonnegative :=
+    selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+  let _fullReductionWS7SignatureLeOne :=
+    selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+  let _fullReductionWS7SignatureTarget :=
+    selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+  let _fullReductionWS7ActivePathBound :=
+    selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+  let _fullReductionWS7ActivePathTarget :=
+    selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+  let _fullReductionWS7FullSignatureTarget :=
+    selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+  let _fullReductionWS7ClaimComplete :=
+    selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSecurityClaimComplete_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
   let _fullReductionHardFactCertificateConstructor :=
     SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndCurrentHardProductionFacts
   let _fullReductionCertificateCurrentHardImpossible :=
@@ -90929,6 +90969,56 @@ namespace NativeFullSignatureSecurityBoundary
                 &suffixed_full_signature_ws7_production_witness
             )
         );
+        for (marker, spoof) in [
+            (
+                "selectedRustFullSignatureReductionCertificate_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+                "selectedRustFullSignatureReductionCertificate_of_ws7_remaining_closure_evidence_and_current_hard_pricing_factsSpoof",
+            ),
+            (
+                "selectedRustNativeFullSignatureSecurityBoundary_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+                "selectedRustNativeFullSignatureSecurityBoundary_of_ws7_remaining_closure_evidence_and_current_hard_pricing_factsSpoof",
+            ),
+            (
+                "selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_acceptedSpendForgeryProb_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+                "selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_acceptedSpendForgeryProb_of_ws7_remaining_closure_evidence_and_current_hard_pricing_factsSpoof",
+            ),
+            (
+                "selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+                "selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg_of_ws7_remaining_closure_evidence_and_current_hard_pricing_factsSpoof",
+            ),
+            (
+                "selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+                "selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one_of_ws7_remaining_closure_evidence_and_current_hard_pricing_factsSpoof",
+            ),
+            (
+                "selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+                "selectedRustNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_factsSpoof",
+            ),
+            (
+                "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+                "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_activePathForgeryBound_of_ws7_remaining_closure_evidence_and_current_hard_pricing_factsSpoof",
+            ),
+            (
+                "selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+                "selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_factsSpoof",
+            ),
+            (
+                "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+                "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_factsSpoof",
+            ),
+            (
+                "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSecurityClaimComplete_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+                "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSecurityClaimComplete_of_ws7_remaining_closure_evidence_and_current_hard_pricing_factsSpoof",
+            ),
+        ] {
+            let suffixed_full_signature_ws7_boundary_route =
+                full_signature_reduction_instantiation_shape.replace(marker, spoof);
+            assert!(
+                !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                    &suffixed_full_signature_ws7_boundary_route
+                )
+            );
+        }
         let suffixed_full_signature_active_query_symbols_priced =
             full_signature_reduction_instantiation_shape.replace(
                 "activeNativeHashBudgetBoundary_activeDirectQuerySymbolsPriced",
