@@ -285,6 +285,13 @@ bounds, and remaining-break probability/component links with
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakComponentBound_le_2pow_neg133`,
 and
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_breakBound`,
+the composed target projections
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.acceptedSpendProb_le_active128BitTarget`,
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_2pow_neg133`,
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_active128BitTarget`,
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.unionBound_le_active128BitTarget`,
+and
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.successProb_le_active128BitTarget`,
 then carries the structural-zero slots
 through
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_eq_zero`,
@@ -608,7 +615,7 @@ and
 so the certificate-erasure step keeps both fail-closed report guards explicit.
 The Rust full-reduction source-shape gate now requires those production-witness
 guard names, certificate guard names, witness probability-shape names, and
-erased-boundary projection names, plus
+remaining-break package target names, and erased-boundary projection names, plus
 `NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound`,
 before it accepts the future final instantiation theorem.
 Pricing and per-event cryptographic bounds remain open. The
