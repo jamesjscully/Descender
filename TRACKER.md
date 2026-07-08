@@ -309,6 +309,16 @@ remaining-break finite set with `remainingCryptographicBreakEvents`,
 that the pricing package's remaining-break subtype is precisely the seven
 non-structural finite events; the Rust source-shape gate requires those names
 so future evidence cannot silently drift from that event family.
+Lean now also enumerates the WS7 remaining closure-obligation surface with
+`WS7RemainingClosureObligation`, `remainingCryptographicBreak_card`,
+`ws7AcceptedSpendClosureObligations`,
+`ws7RemainingBreakBoundObligations`,
+`ws7RemainingClosureObligations`, their membership predicates/cardinality
+theorems, and
+`no_ws7RemainingClosureObligation_accepted_and_remaining`, pinning the open
+surface to one accepted-spend bound plus seven remaining-break bounds; the
+accepted-spend and full-reduction source-shape gates require those names and
+reject a spoofed `ws7RemainingClosureObligations_card`.
 The accepted-spend numeric report now closes the selected budget arithmetic
 bits by pinning `acceptedSpendPricedBoundSecurityBits = 128` and
 `acceptedSpendNumericBudgetMeetsTarget = true`; its current missing-pricing
@@ -754,9 +764,12 @@ Rust source-shape gate requires and spoofs those names, plus
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.currentSelectedReport_impossible`,
 and the active hash-boundary
 `activeNativeHashBudgetBoundary_activeDirectQuerySymbolsPriced` route. It
-rejects spoofed hard-fact equivalence, accepted-spend package blocker, active
-query-symbol pricing, three-bit hard-surface, or concrete-source hard-fact adapter names before
-accepting a future full-reduction instantiation candidate.
+also requires the `WS7RemainingClosureObligation` surface and the
+`ws7RemainingClosureObligations_card` eight-row proof before accepting a future
+full-reduction candidate, and rejects spoofed hard-fact equivalence,
+accepted-spend package blocker, active
+query-symbol pricing, three-bit hard-surface, or concrete-source hard-fact adapter
+names before accepting that candidate.
 
 | ID | Status | Item | Evidence / next action |
 |---|---|---|---|

@@ -52611,6 +52611,21 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSecurityClaimComplete_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "remainingCryptographicBreak_card",
+        "WS7RemainingClosureObligation",
+        "ws7AcceptedSpendClosureObligations",
+        "ws7RemainingBreakBoundObligations",
+        "ws7RemainingClosureObligations",
+        "IsWS7AcceptedSpendClosureObligation",
+        "IsWS7RemainingBreakClosureObligation",
+        "IsWS7RemainingClosureObligation",
+        "mem_ws7AcceptedSpendClosureObligations_iff",
+        "mem_ws7RemainingBreakBoundObligations_iff",
+        "ws7AcceptedSpendClosureObligations_card",
+        "ws7RemainingBreakBoundObligations_card",
+        "mem_ws7RemainingClosureObligations_iff",
+        "ws7RemainingClosureObligations_card",
+        "no_ws7RemainingClosureObligation_accepted_and_remaining",
         "reductionEvidenceDigestsVerified",
         "productionSignatureProbabilityDigest",
         "signatureAcceptedSpendLinkDigest",
@@ -52903,6 +52918,21 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustNativeFullSignatureSecurityBoundary_activePathForgeryBound_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSecurityClaimComplete_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "remainingCryptographicBreak_card",
+        "WS7RemainingClosureObligation",
+        "ws7AcceptedSpendClosureObligations",
+        "ws7RemainingBreakBoundObligations",
+        "ws7RemainingClosureObligations",
+        "IsWS7AcceptedSpendClosureObligation",
+        "IsWS7RemainingBreakClosureObligation",
+        "IsWS7RemainingClosureObligation",
+        "mem_ws7AcceptedSpendClosureObligations_iff",
+        "mem_ws7RemainingBreakBoundObligations_iff",
+        "ws7AcceptedSpendClosureObligations_card",
+        "ws7RemainingBreakBoundObligations_card",
+        "mem_ws7RemainingClosureObligations_iff",
+        "ws7RemainingClosureObligations_card",
+        "no_ws7RemainingClosureObligation_accepted_and_remaining",
         "SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndCurrentHardProductionFacts",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitness",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithCurrentHardProductionFacts",
@@ -53547,6 +53577,21 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "mem_remainingCryptographicBreakEvents_iff",
         "remainingCryptographicBreakEvents_card",
         "remainingCryptographicBreak_mem_remainingCryptographicBreakEvents",
+        "remainingCryptographicBreak_card",
+        "WS7RemainingClosureObligation",
+        "ws7AcceptedSpendClosureObligations",
+        "ws7RemainingBreakBoundObligations",
+        "ws7RemainingClosureObligations",
+        "IsWS7AcceptedSpendClosureObligation",
+        "IsWS7RemainingBreakClosureObligation",
+        "IsWS7RemainingClosureObligation",
+        "mem_ws7AcceptedSpendClosureObligations_iff",
+        "mem_ws7RemainingBreakBoundObligations_iff",
+        "ws7AcceptedSpendClosureObligations_card",
+        "ws7RemainingBreakBoundObligations_card",
+        "mem_ws7RemainingClosureObligations_iff",
+        "ws7RemainingClosureObligations_card",
+        "no_ws7RemainingClosureObligation_accepted_and_remaining",
         "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendBound_le_2pow_neg129_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakBound_le_2pow_neg133_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_acceptedSpendBound_of_remaining_break_bounds",
@@ -53959,6 +54004,21 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "mem_remainingCryptographicBreakEvents_iff",
         "remainingCryptographicBreakEvents_card",
         "remainingCryptographicBreak_mem_remainingCryptographicBreakEvents",
+        "remainingCryptographicBreak_card",
+        "WS7RemainingClosureObligation",
+        "ws7AcceptedSpendClosureObligations",
+        "ws7RemainingBreakBoundObligations",
+        "ws7RemainingClosureObligations",
+        "IsWS7AcceptedSpendClosureObligation",
+        "IsWS7RemainingBreakClosureObligation",
+        "IsWS7RemainingClosureObligation",
+        "mem_ws7AcceptedSpendClosureObligations_iff",
+        "mem_ws7RemainingBreakBoundObligations_iff",
+        "ws7AcceptedSpendClosureObligations_card",
+        "ws7RemainingBreakBoundObligations_card",
+        "mem_ws7RemainingClosureObligations_iff",
+        "ws7RemainingClosureObligations_card",
+        "no_ws7RemainingClosureObligation_accepted_and_remaining",
         "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendBound_le_2pow_neg129_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakBound_le_2pow_neg133_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_acceptedSpendBound_of_remaining_break_bounds",
@@ -90024,6 +90084,36 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _fullReductionHardPricingTraceClaimComplete :=
     selectedRustNativeFullSignatureSecurityBoundary_fullSignatureSecurityClaimComplete_of_remaining_break_bounds_and_current_hard_pricing_facts
+  let _fullReductionRemainingBreakSubtypeCardinality :=
+    remainingCryptographicBreak_card
+  let _fullReductionWS7RemainingObligationSurface :=
+    WS7RemainingClosureObligation
+  let _fullReductionWS7AcceptedSpendObligations :=
+    ws7AcceptedSpendClosureObligations
+  let _fullReductionWS7RemainingBreakObligations :=
+    ws7RemainingBreakBoundObligations
+  let _fullReductionWS7RemainingClosureObligations :=
+    ws7RemainingClosureObligations
+  let _fullReductionWS7AcceptedSpendObligationPredicate :=
+    IsWS7AcceptedSpendClosureObligation
+  let _fullReductionWS7RemainingBreakObligationPredicate :=
+    IsWS7RemainingBreakClosureObligation
+  let _fullReductionWS7RemainingClosureObligationPredicate :=
+    IsWS7RemainingClosureObligation
+  let _fullReductionWS7AcceptedSpendObligationsIff :=
+    mem_ws7AcceptedSpendClosureObligations_iff
+  let _fullReductionWS7RemainingBreakObligationsIff :=
+    mem_ws7RemainingBreakBoundObligations_iff
+  let _fullReductionWS7AcceptedSpendObligationsCard :=
+    ws7AcceptedSpendClosureObligations_card
+  let _fullReductionWS7RemainingBreakObligationsCard :=
+    ws7RemainingBreakBoundObligations_card
+  let _fullReductionWS7RemainingClosureObligationsIff :=
+    mem_ws7RemainingClosureObligations_iff
+  let _fullReductionWS7RemainingClosureObligationsCard :=
+    ws7RemainingClosureObligations_card
+  let _fullReductionWS7RemainingObligationDisjoint :=
+    no_ws7RemainingClosureObligation_accepted_and_remaining
   let _fullReductionHardFactCertificateConstructor :=
     SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndCurrentHardProductionFacts
   let _fullReductionCertificateCurrentHardImpossible :=
@@ -90751,6 +90841,16 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_remaining_break_package_success_target
+            )
+        );
+        let suffixed_full_signature_ws7_remaining_closure_obligations_card =
+            full_signature_reduction_instantiation_shape.replace(
+                "ws7RemainingClosureObligations_card",
+                "ws7RemainingClosureObligations_cardSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_ws7_remaining_closure_obligations_card
             )
         );
         let suffixed_full_signature_active_query_symbols_priced =
@@ -93259,6 +93359,36 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     remainingCryptographicBreakEvents_card
   let _acceptedSpendRemainingBreakSubtypeProjectsToEventSet :=
     remainingCryptographicBreak_mem_remainingCryptographicBreakEvents
+  let _acceptedSpendRemainingBreakSubtypeCardinality :=
+    remainingCryptographicBreak_card
+  let _acceptedSpendWS7RemainingObligationSurface :=
+    WS7RemainingClosureObligation
+  let _acceptedSpendWS7AcceptedSpendObligations :=
+    ws7AcceptedSpendClosureObligations
+  let _acceptedSpendWS7RemainingBreakObligations :=
+    ws7RemainingBreakBoundObligations
+  let _acceptedSpendWS7RemainingClosureObligations :=
+    ws7RemainingClosureObligations
+  let _acceptedSpendWS7AcceptedSpendObligationPredicate :=
+    IsWS7AcceptedSpendClosureObligation
+  let _acceptedSpendWS7RemainingBreakObligationPredicate :=
+    IsWS7RemainingBreakClosureObligation
+  let _acceptedSpendWS7RemainingClosureObligationPredicate :=
+    IsWS7RemainingClosureObligation
+  let _acceptedSpendWS7AcceptedSpendObligationsIff :=
+    mem_ws7AcceptedSpendClosureObligations_iff
+  let _acceptedSpendWS7RemainingBreakObligationsIff :=
+    mem_ws7RemainingBreakBoundObligations_iff
+  let _acceptedSpendWS7AcceptedSpendObligationsCard :=
+    ws7AcceptedSpendClosureObligations_card
+  let _acceptedSpendWS7RemainingBreakObligationsCard :=
+    ws7RemainingBreakBoundObligations_card
+  let _acceptedSpendWS7RemainingClosureObligationsIff :=
+    mem_ws7RemainingClosureObligations_iff
+  let _acceptedSpendWS7RemainingClosureObligationsCard :=
+    ws7RemainingClosureObligations_card
+  let _acceptedSpendWS7RemainingObligationDisjoint :=
+    no_ws7RemainingClosureObligation_accepted_and_remaining
   let _acceptedSpendTracePricingWitnessAcceptedComponentEndpoint :=
     selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendBound_le_2pow_neg129_of_remaining_break_bounds
   let _acceptedSpendTracePricingWitnessBreakComponentEndpoint :=
@@ -93628,6 +93758,16 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_remaining_break_event_set_cardinality
+            )
+        );
+        let suffixed_ws7_remaining_closure_obligations_card =
+            accepted_spend_instantiation_shape.replace(
+                "ws7RemainingClosureObligations_card",
+                "ws7RemainingClosureObligations_cardSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_ws7_remaining_closure_obligations_card
             )
         );
         let suffixed_trace_endpoint_remaining_break_prob_active_target =

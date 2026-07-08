@@ -363,6 +363,146 @@ theorem remainingCryptographicBreak_mem_remainingCryptographicBreakEvents
     breakEvent.1 ∈ remainingCryptographicBreakEvents :=
   (mem_remainingCryptographicBreakEvents_iff breakEvent.1).2 breakEvent.2
 
+/-- The remaining cryptographic break subtype has seven witnesses. -/
+theorem remainingCryptographicBreak_card :
+    Fintype.card RemainingCryptographicBreak = 7 := by
+  rw [Fintype.card_subtype]
+  have hEvents :
+      ({ breakEvent | IsRemainingCryptographicBreak breakEvent } :
+          Finset Path2FullSpendGame.BreakEvent) =
+        remainingCryptographicBreakEvents := by
+    ext breakEvent
+    simpa using (mem_remainingCryptographicBreakEvents_iff breakEvent).symm
+  rw [hEvents]
+  exact remainingCryptographicBreakEvents_card
+
+/--
+Finite WS7 closure obligations left after the trace model discharges the two
+structurally impossible break events: the accepted-spend bound itself, plus one
+bound for each remaining cryptographic break.
+-/
+inductive WS7RemainingClosureObligation
+  | acceptedSpendForgeryBound
+  | remainingBreakBound (breakEvent : RemainingCryptographicBreak)
+  deriving DecidableEq, Fintype
+
+/-- The accepted-spend component of the WS7 remaining-obligation surface. -/
+def ws7AcceptedSpendClosureObligations :
+    Finset WS7RemainingClosureObligation :=
+  { WS7RemainingClosureObligation.acceptedSpendForgeryBound }
+
+/-- The seven per-break components of the WS7 remaining-obligation surface. -/
+def ws7RemainingBreakBoundObligations :
+    Finset WS7RemainingClosureObligation :=
+  Finset.univ.image WS7RemainingClosureObligation.remainingBreakBound
+
+/-- All WS7 remaining closure obligations. -/
+def ws7RemainingClosureObligations :
+    Finset WS7RemainingClosureObligation :=
+  ws7AcceptedSpendClosureObligations ∪
+    ws7RemainingBreakBoundObligations
+
+/-- Predicate for the accepted-spend WS7 closure obligation. -/
+def IsWS7AcceptedSpendClosureObligation
+    (obligation : WS7RemainingClosureObligation) : Prop :=
+  obligation = WS7RemainingClosureObligation.acceptedSpendForgeryBound
+
+/-- Predicate for per-break WS7 closure obligations. -/
+def IsWS7RemainingBreakClosureObligation
+    (obligation : WS7RemainingClosureObligation) : Prop :=
+  ∃ breakEvent : RemainingCryptographicBreak,
+    obligation =
+      WS7RemainingClosureObligation.remainingBreakBound breakEvent
+
+/-- Predicate for the complete WS7 remaining-obligation surface. -/
+def IsWS7RemainingClosureObligation
+    (obligation : WS7RemainingClosureObligation) : Prop :=
+  IsWS7AcceptedSpendClosureObligation obligation ∨
+    IsWS7RemainingBreakClosureObligation obligation
+
+/-- The singleton accepted-spend obligation set matches its predicate. -/
+theorem mem_ws7AcceptedSpendClosureObligations_iff
+    (obligation : WS7RemainingClosureObligation) :
+    obligation ∈ ws7AcceptedSpendClosureObligations ↔
+      IsWS7AcceptedSpendClosureObligation obligation := by
+  cases obligation <;>
+    simp [ws7AcceptedSpendClosureObligations,
+      IsWS7AcceptedSpendClosureObligation]
+
+/-- The remaining-break obligation set matches the seven-break subtype. -/
+theorem mem_ws7RemainingBreakBoundObligations_iff
+    (obligation : WS7RemainingClosureObligation) :
+    obligation ∈ ws7RemainingBreakBoundObligations ↔
+      IsWS7RemainingBreakClosureObligation obligation := by
+  cases obligation <;>
+    simp [ws7RemainingBreakBoundObligations,
+      IsWS7RemainingBreakClosureObligation]
+
+/-- The accepted-spend part contributes one WS7 closure obligation. -/
+theorem ws7AcceptedSpendClosureObligations_card :
+    ws7AcceptedSpendClosureObligations.card = 1 := by
+  native_decide
+
+/-- The remaining-break part contributes seven WS7 closure obligations. -/
+theorem ws7RemainingBreakBoundObligations_card :
+    ws7RemainingBreakBoundObligations.card = 7 := by
+  have hInjective :
+      Function.Injective
+        WS7RemainingClosureObligation.remainingBreakBound := by
+    intro left right h
+    cases h
+    rfl
+  rw [ws7RemainingBreakBoundObligations,
+    Finset.card_image_of_injective Finset.univ hInjective,
+    Finset.card_univ, remainingCryptographicBreak_card]
+
+/-- The complete WS7 remaining-obligation set matches its predicate. -/
+theorem mem_ws7RemainingClosureObligations_iff
+    (obligation : WS7RemainingClosureObligation) :
+    obligation ∈ ws7RemainingClosureObligations ↔
+      IsWS7RemainingClosureObligation obligation := by
+  cases obligation <;>
+    simp [ws7RemainingClosureObligations,
+      mem_ws7AcceptedSpendClosureObligations_iff,
+      mem_ws7RemainingBreakBoundObligations_iff,
+      IsWS7RemainingClosureObligation]
+
+/-- The complete WS7 remaining-obligation surface has eight rows. -/
+theorem ws7RemainingClosureObligations_card :
+    ws7RemainingClosureObligations.card = 8 := by
+  have hDisjoint :
+      Disjoint ws7AcceptedSpendClosureObligations
+        ws7RemainingBreakBoundObligations := by
+    rw [Finset.disjoint_left]
+    intro obligation hAccepted hRemaining
+    have hAcceptedPred :=
+      (mem_ws7AcceptedSpendClosureObligations_iff obligation).1
+        hAccepted
+    have hRemainingPred :=
+      (mem_ws7RemainingBreakBoundObligations_iff obligation).1
+        hRemaining
+    rcases hRemainingPred with ⟨breakEvent, hBreak⟩
+    cases hAcceptedPred
+    cases hBreak
+  rw [ws7RemainingClosureObligations,
+    Finset.card_union_of_disjoint hDisjoint,
+    ws7AcceptedSpendClosureObligations_card,
+    ws7RemainingBreakBoundObligations_card]
+
+/-- No WS7 remaining closure obligation is both accepted-spend and per-break. -/
+theorem no_ws7RemainingClosureObligation_accepted_and_remaining
+    (obligation : WS7RemainingClosureObligation) :
+    ¬ (obligation ∈ ws7AcceptedSpendClosureObligations ∧
+        obligation ∈ ws7RemainingBreakBoundObligations) := by
+  intro h
+  have hAccepted :=
+    (mem_ws7AcceptedSpendClosureObligations_iff obligation).1 h.1
+  have hRemaining :=
+    (mem_ws7RemainingBreakBoundObligations_iff obligation).1 h.2
+  rcases hRemaining with ⟨breakEvent, hBreak⟩
+  cases hAccepted
+  cases hBreak
+
 /--
 Extend caller-supplied remaining-break bounds to the full active break family
 by assigning zero budget to the structurally impossible events.
