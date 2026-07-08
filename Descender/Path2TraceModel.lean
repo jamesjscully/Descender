@@ -4527,6 +4527,81 @@ theorem toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndC
       queryBudgetPricedProof multiTargetLossPricedProof hardProductionFactsComplete)
 
 /--
+The concrete-source hard-production package-level certificate remains
+fail-closed for the current selected hard-production report after witness
+erasure.
+-/
+theorem toFullSignatureReductionCertificateWithConcreteExecutionSourceAndCurrentHardProductionFacts_currentSelectedHardProductionReport_impossible :
+    let _cert :=
+      toFullSignatureReductionCertificateWithConcreteExecutionSourceAndCurrentHardProductionFacts
+        P productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+        acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+        hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+        lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+        checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+        noExportClosedProof hashBoundary signatureForgerySuccessProb
+        productionSignatureForgerySuccessProb signatureForgerySuccessProbPinned
+        signatureForgerySuccessMatchesAcceptedSpendGame keygenDistributionModeled
+        keygenDistributionModeledProof signingOracleModeled signingOracleModeledProof
+        completenessModeled completenessModeledProof verifierRelationMatchesImplementation
+        verifierRelationMatchesImplementationProof C Source
+        checkedCoreFrameDomainSeparatedProof hiddenSourceFrameDomainSeparatedProof
+        queryBudgetPricedProof multiTargetLossPricedProof hardProductionFactsComplete
+    False :=
+  Path2NativeAccountDesign.SelectedRustFullSignatureReductionCertificate.currentSelectedHardProductionReport_impossible
+    (toFullSignatureReductionCertificateWithConcreteExecutionSourceAndCurrentHardProductionFacts
+      P productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+      acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+      hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+      lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+      noExportClosedProof hashBoundary signatureForgerySuccessProb
+      productionSignatureForgerySuccessProb signatureForgerySuccessProbPinned
+      signatureForgerySuccessMatchesAcceptedSpendGame keygenDistributionModeled
+      keygenDistributionModeledProof signingOracleModeled signingOracleModeledProof
+      completenessModeled completenessModeledProof verifierRelationMatchesImplementation
+      verifierRelationMatchesImplementationProof C Source
+      checkedCoreFrameDomainSeparatedProof hiddenSourceFrameDomainSeparatedProof
+      queryBudgetPricedProof multiTargetLossPricedProof hardProductionFactsComplete)
+
+/--
+The concrete-source hard-production package-level certificate remains
+fail-closed for the current selected full-reduction report after witness erasure.
+-/
+theorem toFullSignatureReductionCertificateWithConcreteExecutionSourceAndCurrentHardProductionFacts_currentSelectedReport_impossible :
+    let _cert :=
+      toFullSignatureReductionCertificateWithConcreteExecutionSourceAndCurrentHardProductionFacts
+        P productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+        acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+        hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+        lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+        checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+        noExportClosedProof hashBoundary signatureForgerySuccessProb
+        productionSignatureForgerySuccessProb signatureForgerySuccessProbPinned
+        signatureForgerySuccessMatchesAcceptedSpendGame keygenDistributionModeled
+        keygenDistributionModeledProof signingOracleModeled signingOracleModeledProof
+        completenessModeled completenessModeledProof verifierRelationMatchesImplementation
+        verifierRelationMatchesImplementationProof C Source
+        checkedCoreFrameDomainSeparatedProof hiddenSourceFrameDomainSeparatedProof
+        queryBudgetPricedProof multiTargetLossPricedProof hardProductionFactsComplete
+    False :=
+  Path2NativeAccountDesign.SelectedRustFullSignatureReductionCertificate.currentSelectedReport_impossible
+    (toFullSignatureReductionCertificateWithConcreteExecutionSourceAndCurrentHardProductionFacts
+      P productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+      acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+      hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+      lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+      noExportClosedProof hashBoundary signatureForgerySuccessProb
+      productionSignatureForgerySuccessProb signatureForgerySuccessProbPinned
+      signatureForgerySuccessMatchesAcceptedSpendGame keygenDistributionModeled
+      keygenDistributionModeledProof signingOracleModeled signingOracleModeledProof
+      completenessModeled completenessModeledProof verifierRelationMatchesImplementation
+      verifierRelationMatchesImplementationProof C Source
+      checkedCoreFrameDomainSeparatedProof hiddenSourceFrameDomainSeparatedProof
+      queryBudgetPricedProof multiTargetLossPricedProof hardProductionFactsComplete)
+
+/--
 The concrete-source hard-production package-level native boundary preserves the
 selected reduction from signature-forgery success to accepted-spend success.
 -/

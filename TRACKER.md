@@ -600,9 +600,15 @@ on the current-hard-production route. The package route also now names
 and
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts_currentSelectedHardProductionReport_impossible`,
 so production-fact completion, hard-production completion, and the fail-closed
-current hard-production guard remain visible before certificate erasure. The Rust
-full-reduction source-shape gate now requires those production-witness guard
-names, witness probability-shape names, and erased-boundary projection names, plus
+current hard-production guard remain visible before certificate erasure. It also
+names
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionCertificateWithConcreteExecutionSourceAndCurrentHardProductionFacts_currentSelectedHardProductionReport_impossible`
+and
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionCertificateWithConcreteExecutionSourceAndCurrentHardProductionFacts_currentSelectedReport_impossible`,
+so the certificate-erasure step keeps both fail-closed report guards explicit.
+The Rust full-reduction source-shape gate now requires those production-witness
+guard names, certificate guard names, witness probability-shape names, and
+erased-boundary projection names, plus
 `NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound`,
 before it accepts the future final instantiation theorem.
 Pricing and per-event cryptographic bounds remain open. The
