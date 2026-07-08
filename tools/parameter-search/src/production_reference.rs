@@ -52711,6 +52711,10 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary_fullSignatureSuccessProb_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary_fullSignatureSecurityClaimComplete",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSource",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts_productionFactsComplete",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts_hardProductionFactsComplete",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts_currentSelectedHardProductionReport_impossible",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionCertificateWithConcreteExecutionSource",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource_signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
@@ -52913,6 +52917,9 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundary_fullSignatureSecurityClaimComplete",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSource",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts_productionFactsComplete",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts_hardProductionFactsComplete",
+        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts_currentSelectedHardProductionReport_impossible",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionCertificateWithConcreteExecutionSource",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSource_signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
@@ -90049,6 +90056,12 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSource
   let _fullReductionRemainingBreakPackageConcreteSourceHardFactsProductionWitness :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts
+  let _fullReductionRemainingBreakPackageConcreteSourceHardFactsProductionFacts :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts_productionFactsComplete
+  let _fullReductionRemainingBreakPackageConcreteSourceHardFactsHardProductionFacts :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts_hardProductionFactsComplete
+  let _fullReductionRemainingBreakPackageConcreteSourceHardFactsCurrentHardImpossible :=
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts_currentSelectedHardProductionReport_impossible
   let _fullReductionRemainingBreakPackageConcreteSourceHardFactsCertificate :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionCertificateWithConcreteExecutionSourceAndCurrentHardProductionFacts
   let _fullReductionRemainingBreakPackageConcreteSourceHardFactsBoundary :=
@@ -90380,6 +90393,36 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_concrete_source_hard_fact_package
+            )
+        );
+        let suffixed_full_signature_concrete_source_hard_fact_production_facts =
+            full_signature_reduction_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts_productionFactsComplete",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts_productionFactsCompleteSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_concrete_source_hard_fact_production_facts
+            )
+        );
+        let suffixed_full_signature_concrete_source_hard_fact_hard_production_facts =
+            full_signature_reduction_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts_hardProductionFactsComplete",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts_hardProductionFactsCompleteSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_concrete_source_hard_fact_hard_production_facts
+            )
+        );
+        let suffixed_full_signature_concrete_source_hard_fact_current_impossible =
+            full_signature_reduction_instantiation_shape.replace(
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts_currentSelectedHardProductionReport_impossible",
+                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts_currentSelectedHardProductionReport_impossibleSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_concrete_source_hard_fact_current_impossible
             )
         );
         let suffixed_full_signature_concrete_source_hard_fact_certificate =

@@ -594,9 +594,15 @@ naming the active Path 2 handoff and fixed-target handoff, and
 naming the composed active-target projection, plus
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.toNativeFullSignatureSecurityBoundaryWithConcreteExecutionSourceAndCurrentHardProductionFacts_fullSignatureSecurityClaimComplete`
 naming the erased native boundary's model/reduction/hash completion conjunction
-on the current-hard-production route. The Rust
-full-reduction source-shape gate now requires those witness probability-shape
-names and erased-boundary projection names, plus
+on the current-hard-production route. The package route also now names
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts_productionFactsComplete`,
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts_hardProductionFactsComplete`,
+and
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.toFullSignatureReductionProductionWitnessWithConcreteExecutionSourceAndCurrentHardProductionFacts_currentSelectedHardProductionReport_impossible`,
+so production-fact completion, hard-production completion, and the fail-closed
+current hard-production guard remain visible before certificate erasure. The Rust
+full-reduction source-shape gate now requires those production-witness guard
+names, witness probability-shape names, and erased-boundary projection names, plus
 `NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound`,
 before it accepts the future final instantiation theorem.
 Pricing and per-event cryptographic bounds remain open. The
