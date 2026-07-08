@@ -504,6 +504,116 @@ theorem no_ws7RemainingClosureObligation_accepted_and_remaining
   cases hBreak
 
 /--
+Selected WS7 obligation semantics for the faithful trace model.  The accepted
+spend row carries its probability bound and 2^-129 component budget; each
+remaining-break row carries its break-probability bound and 2^-133 component
+budget.
+-/
+def SelectedRustWS7RemainingClosureObligationSatisfied
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ) :
+    WS7RemainingClosureObligation → Prop
+  | WS7RemainingClosureObligation.acceptedSpendForgeryBound =>
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound ∧
+        acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129
+  | WS7RemainingClosureObligation.remainingBreakBound breakEvent =>
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent ∧
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133
+
+/--
+One selected WS7 evidence object supplies exactly the eight remaining closure
+rows: one accepted-spend row and one row for each remaining cryptographic break.
+-/
+structure SelectedRustWS7RemainingClosureEvidence
+    (Trace : Type) [traceFintype : Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome) where
+  acceptedSpendBound : ℝ
+  remainingBreakBound : RemainingCryptographicBreak → ℝ
+  obligationSatisfied :
+    ∀ obligation : WS7RemainingClosureObligation,
+      obligation ∈ ws7RemainingClosureObligations →
+        SelectedRustWS7RemainingClosureObligationSatisfied
+          traceDist observe acceptedSpendBound remainingBreakBound obligation
+
+namespace SelectedRustWS7RemainingClosureEvidence
+
+/-- The WS7 accepted-spend row gives the accepted-spend probability bound. -/
+theorem acceptedSpendProb_le_bound
+    {Trace : Type} [Fintype Trace]
+    {traceDist : FiniteProbability Trace}
+    {observe : Trace → ConcreteOutcome}
+    (E : SelectedRustWS7RemainingClosureEvidence Trace traceDist observe) :
+    (concreteNumericGame selectedRustConcreteGameConfig traceDist
+        observe).acceptedSpendProb ≤ E.acceptedSpendBound := by
+  have hMem :
+      WS7RemainingClosureObligation.acceptedSpendForgeryBound ∈
+        ws7RemainingClosureObligations :=
+    (mem_ws7RemainingClosureObligations_iff _).2 (Or.inl rfl)
+  exact
+    (E.obligationSatisfied
+      WS7RemainingClosureObligation.acceptedSpendForgeryBound hMem).1
+
+/-- The WS7 accepted-spend row gives the 2^-129 component budget. -/
+theorem acceptedSpendBound_le_2pow_neg129
+    {Trace : Type} [Fintype Trace]
+    {traceDist : FiniteProbability Trace}
+    {observe : Trace → ConcreteOutcome}
+    (E : SelectedRustWS7RemainingClosureEvidence Trace traceDist observe) :
+    E.acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129 := by
+  have hMem :
+      WS7RemainingClosureObligation.acceptedSpendForgeryBound ∈
+        ws7RemainingClosureObligations :=
+    (mem_ws7RemainingClosureObligations_iff _).2 (Or.inl rfl)
+  exact
+    (E.obligationSatisfied
+      WS7RemainingClosureObligation.acceptedSpendForgeryBound hMem).2
+
+/-- Each WS7 remaining-break row gives the corresponding break-probability bound. -/
+theorem remainingBreakProb_le_bound
+    {Trace : Type} [Fintype Trace]
+    {traceDist : FiniteProbability Trace}
+    {observe : Trace → ConcreteOutcome}
+    (E : SelectedRustWS7RemainingClosureEvidence Trace traceDist observe)
+    (breakEvent : RemainingCryptographicBreak) :
+    (concreteNumericGame selectedRustConcreteGameConfig traceDist
+        observe).breakProb breakEvent.1 ≤
+      E.remainingBreakBound breakEvent := by
+  have hMem :
+      WS7RemainingClosureObligation.remainingBreakBound breakEvent ∈
+        ws7RemainingClosureObligations :=
+    (mem_ws7RemainingClosureObligations_iff _).2
+      (Or.inr ⟨breakEvent, rfl⟩)
+  exact
+    (E.obligationSatisfied
+      (WS7RemainingClosureObligation.remainingBreakBound breakEvent) hMem).1
+
+/-- Each WS7 remaining-break row gives the corresponding 2^-133 component budget. -/
+theorem remainingBreakBound_le_2pow_neg133
+    {Trace : Type} [Fintype Trace]
+    {traceDist : FiniteProbability Trace}
+    {observe : Trace → ConcreteOutcome}
+    (E : SelectedRustWS7RemainingClosureEvidence Trace traceDist observe)
+    (breakEvent : RemainingCryptographicBreak) :
+    E.remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133 := by
+  have hMem :
+      WS7RemainingClosureObligation.remainingBreakBound breakEvent ∈
+        ws7RemainingClosureObligations :=
+    (mem_ws7RemainingClosureObligations_iff _).2
+      (Or.inr ⟨breakEvent, rfl⟩)
+  exact
+    (E.obligationSatisfied
+      (WS7RemainingClosureObligation.remainingBreakBound breakEvent) hMem).2
+
+end SelectedRustWS7RemainingClosureEvidence
+
+/--
 Extend caller-supplied remaining-break bounds to the full active break family
 by assigning zero budget to the structurally impossible events.
 -/
@@ -1913,6 +2023,36 @@ def ofCurrentHardPricingFacts
     Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
       hardPricingFactsComplete
 
+/--
+Construct the remaining-break pricing package from the first-class eight-row
+WS7 remaining-obligation evidence.
+-/
+def ofWS7RemainingClosureEvidence
+    (Trace : Type) [traceFintype : Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (E : SelectedRustWS7RemainingClosureEvidence Trace traceDist observe)
+    (activePricedBound_le_reportedSecurity :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hardPricingFactsComplete :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete) :
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage := by
+  exact
+    ofCurrentHardPricingFacts
+      Trace
+      traceDist
+      observe
+      E.acceptedSpendBound
+      E.remainingBreakBound
+      (SelectedRustWS7RemainingClosureEvidence.acceptedSpendProb_le_bound E)
+      (SelectedRustWS7RemainingClosureEvidence.remainingBreakProb_le_bound E)
+      (SelectedRustWS7RemainingClosureEvidence.acceptedSpendBound_le_2pow_neg129 E)
+      (SelectedRustWS7RemainingClosureEvidence.remainingBreakBound_le_2pow_neg133 E)
+      activePricedBound_le_reportedSecurity
+      hardPricingFactsComplete
+
 /-- Erase the packaged hard-half input into the selected pricing witness. -/
 def toPricingWitness
     (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
@@ -1956,6 +2096,27 @@ theorem currentSelectedHardPricingReport_impossible
 theorem currentSelectedReport_impossible
     (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) : False :=
   currentSelectedHardPricingReport_impossible P
+
+/--
+The current fail-closed selected report also rejects a remaining-break pricing
+package produced from WS7 obligation evidence.
+-/
+theorem ofWS7RemainingClosureEvidence_currentSelectedHardPricingReport_impossible
+    (Trace : Type) [traceFintype : Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (E : SelectedRustWS7RemainingClosureEvidence Trace traceDist observe)
+    (activePricedBound_le_reportedSecurity :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hardPricingFactsComplete :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete) :
+    False :=
+  currentSelectedHardPricingReport_impossible
+    (ofWS7RemainingClosureEvidence
+      Trace traceDist observe E
+      activePricedBound_le_reportedSecurity hardPricingFactsComplete)
 
 /--
 The package keeps the concrete accepted-spend probability on the fixed

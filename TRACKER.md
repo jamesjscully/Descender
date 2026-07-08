@@ -319,6 +319,17 @@ theorems, and
 surface to one accepted-spend bound plus seven remaining-break bounds; the
 accepted-spend and full-reduction source-shape gates require those names and
 reject a spoofed `ws7RemainingClosureObligations_card`.
+`SelectedRustWS7RemainingClosureObligationSatisfied` and
+`SelectedRustWS7RemainingClosureEvidence` now make those eight rows consumable:
+their projection theorems recover the accepted-spend probability/budget row and
+each remaining-break probability/budget row, and
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence`
+erases that first-class WS7 evidence into the existing remaining-break pricing
+package while
+`SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence_currentSelectedHardPricingReport_impossible`
+keeps the current fail-closed report guard on the WS7 route. The same
+source-shape gates require those bridge names and reject a spoofed WS7 package
+constructor.
 The accepted-spend numeric report now closes the selected budget arithmetic
 bits by pinning `acceptedSpendPricedBoundSecurityBits = 128` and
 `acceptedSpendNumericBudgetMeetsTarget = true`; its current missing-pricing
@@ -766,7 +777,8 @@ and the active hash-boundary
 `activeNativeHashBudgetBoundary_activeDirectQuerySymbolsPriced` route. It
 also requires the `WS7RemainingClosureObligation` surface and the
 `ws7RemainingClosureObligations_card` eight-row proof before accepting a future
-full-reduction candidate, and rejects spoofed hard-fact equivalence,
+full-reduction candidate, requires the WS7 evidence-to-package bridge before
+that route can consume remaining-break bounds, and rejects spoofed hard-fact equivalence,
 accepted-spend package blocker, active
 query-symbol pricing, three-bit hard-surface, or concrete-source hard-fact adapter
 names before accepting that candidate.
