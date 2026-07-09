@@ -151,6 +151,137 @@
         "public_payload_exports_private_material_pointer": "/manifest/accepted_input_artifacts/account_creation_accepted_proof_boundary_evidence_artifact/audit_summary/public_payload_exports_private_material"
       }
     ],
+    "accepted_transcript_shape_tests": [
+      {
+        "id": "accepted_spend_tuple_transcript_shape",
+        "path": "formal/kat/path2_direct_accepted_spend_tuple_evidence_v1.json",
+        "evidence_pointer": "/manifest/evidence",
+        "required_public_fields": [
+          "account_id",
+          "public_key_identity",
+          "slot_id",
+          "accepted_slot_id",
+          "message_digest",
+          "prevalidated_slot_leaf_digest",
+          "slot_authorization_digest",
+          "selected_account_creation_payload_digest",
+          "account_creation_evidence_transcript_digest",
+          "checked_core_signature_digest",
+          "checked_core_challenge_digest",
+          "checked_core_proof_commitment_digest",
+          "consume_once_state_before_digest",
+          "consume_once_state_after_digest",
+          "public_result_class_name",
+          "digest",
+          "recomputed_digest"
+        ],
+        "required_true_fields": [
+          "public_result_accepts_same_slot",
+          "replay_rejected_by_consume_once",
+          "consume_once_inserted_exactly_one_authorization"
+        ],
+        "required_false_fields": []
+      },
+      {
+        "id": "account_creation_accepted_transcript_shape",
+        "path": "formal/kat/path2_account_creation_accepted_proof_boundary_evidence_v1.json",
+        "evidence_pointer": "/manifest/evidence",
+        "required_public_fields": [
+          "account_id",
+          "public_key_identity",
+          "slot_id",
+          "prevalidated_slot_leaf_digest",
+          "slot_authorization_digest",
+          "selected_account_creation_payload_digest",
+          "account_creation_evidence_transcript_digest",
+          "leaf_context_digest",
+          "creation_proof_binding_digest",
+          "aggregation_context_digest",
+          "decoded_public_anchor_digest",
+          "deployed_anchor_digest",
+          "payload_frame_digest",
+          "account_stark_bundle_digest",
+          "digest",
+          "recomputed_digest"
+        ],
+        "required_true_fields": [
+          "verifier_boundary_accepts",
+          "proof_boundary_report_validated",
+          "production_gate_fail_closed"
+        ],
+        "required_false_fields": [
+          "public_payload_exports_private_material",
+          "deployment_ready"
+        ]
+      },
+      {
+        "id": "accepted_composition_transcript_shape",
+        "path": "formal/kat/path2_direct_accepted_composition_evidence_v1.json",
+        "evidence_pointer": "/manifest/evidence",
+        "required_public_fields": [
+          "account_id",
+          "public_key_identity",
+          "slot_id",
+          "message_digest",
+          "prevalidated_slot_leaf_digest",
+          "slot_authorization_digest",
+          "selected_account_creation_payload_digest",
+          "account_creation_evidence_transcript_digest",
+          "account_creation_accepted_proof_boundary_evidence_digest",
+          "direct_accepted_spend_tuple_evidence_digest",
+          "consume_once_state_before_digest",
+          "consume_once_state_after_digest",
+          "digest",
+          "recomputed_digest"
+        ],
+        "required_true_fields": [
+          "direct_spend_tuple_accepts",
+          "verifier_boundary_accepts_creation",
+          "consume_once_transition_matches_tuple",
+          "creation_evidence_matches_direct_tuple"
+        ],
+        "required_false_fields": [
+          "deployment_ready",
+          "composition_theorem_instantiated"
+        ]
+      }
+    ],
+    "rejection_transcript_shape_tests": [
+      {
+        "id": "account_creation_frame_rejection_transcript_shape",
+        "path": "formal/kat/path2_account_creation_frame_kat_vectors_v1.json",
+        "cases_pointer": "/corpus/cases",
+        "rejection_count_pointer": "/corpus/rejection_case_count",
+        "required_rejection_fields": [
+          "case_id",
+          "mutated_surface",
+          "public_rejection_class",
+          "observed_error"
+        ],
+        "allowed_public_rejection_classes": [
+          "reject_binding_mismatch",
+          "reject_malformed_public_input"
+        ]
+      },
+      {
+        "id": "account_stark_payload_rejection_transcript_shape",
+        "path": "formal/kat/path2_account_stark_payload_kat_vectors_v1.json",
+        "cases_pointer": "/corpus/cases",
+        "rejection_count_pointer": "/corpus/rejection_case_count",
+        "required_rejection_fields": [
+          "case_id",
+          "mutated_surface",
+          "public_rejection_class",
+          "observed_error"
+        ],
+        "allowed_public_rejection_classes": [
+          "internal_error_fail_closed",
+          "reject_binding_mismatch",
+          "reject_creation_evidence",
+          "reject_malformed_public_input"
+        ]
+      }
+    ],
     "forbidden_exact_public_artifact_fields": [
       "secret_key_material",
       "secret_key",
@@ -172,7 +303,7 @@
       "raw_dependency_error"
     ],
     "test_only_deterministic_seed_field": "proof_mask_seed",
-    "negative_control_status": "structural public-artifact scan only; target leakage traces and injected-leak controls remain open",
+    "negative_control_status": "accepted/rejected transcript-shape scan only; target leakage traces and injected-leak controls remain open",
     "deployment_ready": false
   }
 }

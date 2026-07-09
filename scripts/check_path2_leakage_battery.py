@@ -55,6 +55,14 @@ TEST_ONLY_POLICY_PHRASES = (
     "deployment producers still use fresh proof randomness",
 )
 
+FORBIDDEN_OBSERVED_ERROR_SUBSTRINGS = (
+    "secret",
+    "private key",
+    "witness bytes",
+    "raw dependency",
+    "callback diagnostic",
+)
+
 
 def load_json(path: Path) -> Any:
     try:
@@ -90,6 +98,23 @@ def walk_keys(value: Any) -> set[str]:
         for child in value:
             keys.update(walk_keys(child))
     return keys
+
+
+def require_public_value(value: Any, label: str) -> None:
+    if isinstance(value, bool):
+        return
+    if isinstance(value, int):
+        return
+    if isinstance(value, str):
+        require(value != "", f"{label}: public transcript field is empty")
+        return
+    if isinstance(value, list):
+        require(bool(value), f"{label}: public transcript list is empty")
+        return
+    if isinstance(value, dict):
+        require(bool(value), f"{label}: public transcript object is empty")
+        return
+    raise SystemExit(f"{label}: unsupported public transcript value type {type(value).__name__}")
 
 
 def require(condition: bool, message: str) -> None:
@@ -192,9 +217,69 @@ def main() -> None:
         leaked = sorted(forbidden & keys)
         require(not leaked, f"{row['id']}: public artifact has forbidden exact fields {leaked}")
 
+    accepted_shape_rows = manifest.get("accepted_transcript_shape_tests")
+    require(
+        isinstance(accepted_shape_rows, list) and accepted_shape_rows,
+        "missing accepted transcript shape tests",
+    )
+    for row in accepted_shape_rows:
+        artifact = load_json(ROOT / row["path"])
+        evidence = pointer(artifact, row["evidence_pointer"])
+        require(isinstance(evidence, dict), f"{row['id']}: evidence pointer is not an object")
+        for field in row["required_public_fields"]:
+            require(field in evidence, f"{row['id']}: missing public transcript field {field}")
+            require_public_value(evidence[field], f"{row['id']}/{field}")
+        for field in row["required_true_fields"]:
+            require(evidence.get(field) is True, f"{row['id']}: expected {field} = true")
+        for field in row["required_false_fields"]:
+            require(evidence.get(field) is False, f"{row['id']}: expected {field} = false")
+        leaked = sorted(forbidden & walk_keys(evidence))
+        require(not leaked, f"{row['id']}: accepted transcript has forbidden exact fields {leaked}")
+
+    rejection_shape_rows = manifest.get("rejection_transcript_shape_tests")
+    require(
+        isinstance(rejection_shape_rows, list) and rejection_shape_rows,
+        "missing rejection transcript shape tests",
+    )
+    for row in rejection_shape_rows:
+        corpus = load_json(ROOT / row["path"])
+        cases = pointer(corpus, row["cases_pointer"])
+        expected_rejection_count = pointer(corpus, row["rejection_count_pointer"])
+        require(isinstance(cases, list) and cases, f"{row['id']}: cases must be a nonempty list")
+        accept_cases = [case for case in cases if case.get("kind") == "accept"]
+        rejection_cases = [case for case in cases if case.get("kind") == "reject"]
+        require(len(accept_cases) == 1, f"{row['id']}: expected exactly one accept case")
+        require(
+            len(rejection_cases) == expected_rejection_count,
+            f"{row['id']}: rejection count does not match manifest",
+        )
+        allowed_classes = set(row["allowed_public_rejection_classes"])
+        require(allowed_classes, f"{row['id']}: allowed public rejection class set is empty")
+        for case in rejection_cases:
+            case_id = case.get("case_id", "<unknown>")
+            for field in row["required_rejection_fields"]:
+                require(field in case, f"{row['id']}/{case_id}: missing {field}")
+                require_public_value(case[field], f"{row['id']}/{case_id}/{field}")
+            public_class = case["public_rejection_class"]
+            require(
+                public_class in allowed_classes,
+                f"{row['id']}/{case_id}: unexpected public rejection class {public_class!r}",
+            )
+            observed_error = case.get("observed_error", "")
+            lowered_error = observed_error.casefold()
+            for needle in FORBIDDEN_OBSERVED_ERROR_SUBSTRINGS:
+                require(
+                    needle not in lowered_error,
+                    f"{row['id']}/{case_id}: observed error contains forbidden substring {needle!r}",
+                )
+            leaked = sorted(forbidden & walk_keys(case))
+            require(not leaked, f"{row['id']}/{case_id}: rejection case has forbidden exact fields {leaked}")
+
     print(
         "Path 2 leakage battery manifest check passed "
-        f"({len(surfaces)} surfaces, {len(artifact_rows)} public artifact scans)."
+        f"({len(surfaces)} surfaces, {len(artifact_rows)} public artifact scans, "
+        f"{len(accepted_shape_rows)} accepted transcript scans, "
+        f"{len(rejection_shape_rows)} rejection transcript scans)."
     )
 
 
