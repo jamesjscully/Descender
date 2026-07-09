@@ -359,7 +359,7 @@ area must name local/CI gates and the active `TRACKER.md` rows that own them.
 | Stale-path framing | `python3 scripts/check_active_authority_stale_terms.py`, `python3 scripts/check_legacy_code_framing.py` | `PROC-STALE-001`, `PROC-STALE-002`, `PROC-LEGACY-GATE-001` |
 | Tool and source framing | `python3 scripts/check_tool_manifest_framing.py`, `python3 scripts/check_active_source_framing.py`, `python3 scripts/check_active_secret_float_surface.py` | `PROC-MANIFEST-001`, `PROC-SOURCE-001`, `PROC-TOOLS-001`, `DIR-CT-001`, `SPEC-LEAKAGE-001`, `ADOPT-HW-CT-001` |
 | Research automation | `python3 scripts/research/check_research_automation_routing.py`, `python3 scripts/research/audit_task_pivot_alignment.py --strict-queue` | `PROC-AUTO-001`, `PROC-AUTO-002`, `PROC-AUTO-003`, `PROC-SCRIPT-001` |
-| Wire and requirement authority | `python3 scripts/check_requirement_traceability.py`, `python3 scripts/check_wire_format_authority.py` | `PROC-REQ-001`, `DIR-CC-001` |
+| Wire and requirement authority | `python3 scripts/check_requirement_traceability.py`, `python3 scripts/check_wire_format_authority.py`, `python3 scripts/check_path2_review_package.py` | `PROC-REQ-001`, `DIR-CC-001`, `SPEC-REVIEW-001`, `DIR-REVIEW-001`, `DIR-SEC-001` |
 | CI and gate ownership | `python3 scripts/check_ci_local_gate_parity.py` | `PROC-CI-001`, `PROC-CI-002` |
 
 ## Required Checks

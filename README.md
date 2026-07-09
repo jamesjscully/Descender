@@ -107,6 +107,7 @@ python3 scripts/check_active_source_framing.py
 python3 scripts/check_active_secret_float_surface.py
 python3 scripts/research/check_research_automation_routing.py
 python3 scripts/research/audit_task_pivot_alignment.py --strict-queue
+python3 scripts/check_path2_review_package.py
 python3 scripts/check_ci_local_gate_parity.py
 python3 scripts/check_tracker_integrity.py
 python3 scripts/check_requirement_traceability.py

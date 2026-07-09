@@ -93,6 +93,13 @@ The manifest must fail closed: if a generated artifact cannot be reproduced, or
 if a reviewer output changes a tracked assumption, the package cannot support a
 deployment-ready claim until the tracker and specs are updated.
 
+The current fail-closed direct-mode draft is
+`formal/kat/path2_review_package_v1.json`, checked by
+`scripts/check_path2_review_package.py` in both the local and CI gates. It is a
+review-candidate manifest only: it hashes the current authority snapshot and
+boundary artifacts, names the included and omitted review lanes, and records the
+open residual assumptions that still block deployment or whole-system approval.
+
 ## Acceptance Rules
 
 External review can support readiness only when:

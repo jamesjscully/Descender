@@ -1,0 +1,286 @@
+{
+  "manifest": {
+    "schema": "Descender.Path2.ReviewPackageManifest.v1",
+    "package_id": "path2_direct_q128_review_candidate_v1",
+    "package_version": "2026-07-09",
+    "frozen_status": "draft_fail_closed_review_candidate",
+    "review_complete": false,
+    "deployment_ready": false,
+    "authority": {
+      "spec": "spec/review_package.md",
+      "check": "scripts/check_path2_review_package.py",
+      "tracker_rows": [
+        "SPEC-REVIEW-001",
+        "DIR-REVIEW-001",
+        "DIR-SEC-001"
+      ]
+    },
+    "authority_snapshot": {
+      "scope": "direct_mode_q128_review_candidate",
+      "source_revision_policy": "the release commit containing this manifest is the package source revision",
+      "authority_files": [
+        "spec/README.md",
+        "spec/security_model.md",
+        "spec/review_package.md",
+        "spec/blockchain_requirements.md",
+        "TRACKER.md"
+      ],
+      "boundary_artifacts": [
+        "formal/kat/path2_direct_theorem_boundary_v1.json",
+        "formal/kat/path2_account_creation_proof_boundary_v1.json",
+        "formal/kat/path2_account_stark_fri_qrom_residual_v1.json",
+        "formal/kat/path2_account_stark_fri_aok_boundary_v1.json",
+        "formal/kat/path2_direct_accepted_spend_tuple_evidence_v1.json",
+        "formal/kat/path2_direct_accepted_composition_evidence_v1.json",
+        "formal/kat/path2_leakage_battery_v1.json"
+      ]
+    },
+    "claim_scope": {
+      "included": [
+        "direct_mode_theorem_boundary",
+        "q128_security_floor_accounting",
+        "checked_core_spend_boundary",
+        "account_creation_proof_boundary",
+        "qrom_hash_framing_boundary",
+        "consume_once_lifecycle_boundary",
+        "consensus_rejection_boundary",
+        "signer_leakage_boundary"
+      ],
+      "excluded": [
+        "deployment_ready_claim",
+        "whole_system_external_acceptance",
+        "mode_b_aggregation_readiness",
+        "policy_layer_readiness",
+        "ethereum_adoption_readiness",
+        "hardware_wallet_or_hsm_readiness"
+      ]
+    },
+    "artifact_hashes": [
+      {
+        "path": "spec/README.md",
+        "sha256": "2a7b207d2f62bd54e0c30462f38854d64e78c94d84d360dead2d6ccee5d49e16"
+      },
+      {
+        "path": "spec/security_model.md",
+        "sha256": "356934a9fe614aac2f6d3d75cde6963abfd1319c432cee610a3fbf0446c83794"
+      },
+      {
+        "path": "spec/review_package.md",
+        "sha256": "a7a0a3be074142f85c5e3194ac393199250068b934ad6ccaccd0abf0829e1565"
+      },
+      {
+        "path": "spec/blockchain_requirements.md",
+        "sha256": "020d3d289ed90e36b55d8b7cdcee761da35c58911d2fb26762a596d441d223f1"
+      },
+      {
+        "path": "TRACKER.md",
+        "sha256": "5e9864615f30e708fd81042e723aae040d43d3da66dd93508727e68f38348221"
+      },
+      {
+        "path": "formal/kat/path2_direct_theorem_boundary_v1.json",
+        "sha256": "8b02c5d0a54c30726a47c78a990ed697d7278451e322439a88bce3e045b973f0"
+      },
+      {
+        "path": "formal/kat/path2_account_creation_proof_boundary_v1.json",
+        "sha256": "9c7db9ec88bb69817dd972fcf98e299b394d520154b1999ea7e4a204428604f4"
+      },
+      {
+        "path": "formal/kat/path2_account_stark_fri_qrom_residual_v1.json",
+        "sha256": "c07bf95b3be5107c554e5894cde47a94cb9a679933fe4fec0bf9d9588abc5354"
+      },
+      {
+        "path": "formal/kat/path2_account_stark_fri_aok_boundary_v1.json",
+        "sha256": "13901746a7486bfe181ae8a80e368e954eb13f595bbfb4e316fb89472b3a37ec"
+      },
+      {
+        "path": "formal/kat/path2_direct_accepted_spend_tuple_evidence_v1.json",
+        "sha256": "eddffa144e7bd6e36f4d90a102847268007f11e5299062eef2c86511fefbdff9"
+      },
+      {
+        "path": "formal/kat/path2_direct_accepted_composition_evidence_v1.json",
+        "sha256": "4b9a94b985d07010d80a0ee5a1d8cf880696f63a3ef44cf09f4092b0624349ab"
+      },
+      {
+        "path": "formal/kat/path2_leakage_battery_v1.json",
+        "sha256": "0c43a3f84504af23f76786e5b8e53b982337e6ec1171800ba82a20a55e9aa304"
+      }
+    ],
+    "reproduction_commands": [
+      {
+        "id": "review_package_gate",
+        "command": "python3 scripts/check_path2_review_package.py"
+      },
+      {
+        "id": "full_local_gate",
+        "command": "bash scripts/check_build.sh"
+      },
+      {
+        "id": "leakage_battery_gate",
+        "command": "python3 scripts/check_path2_leakage_battery.py"
+      },
+      {
+        "id": "direct_theorem_boundary",
+        "command": "cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_direct_theorem_boundary_manifest"
+      },
+      {
+        "id": "direct_theorem_obligations",
+        "command": "cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_direct_theorem_obligation_vector_consistency"
+      },
+      {
+        "id": "preflight_boundary",
+        "command": "cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_preflight_boundary_consistency"
+      }
+    ],
+    "review_lanes": [
+      {
+        "id": "cryptographic_core",
+        "included": true,
+        "review_complete": false,
+        "required_focus": "coded-SIS core, exact response-link certificate, beyond-box hardness, and q128 margin"
+      },
+      {
+        "id": "proof_system",
+        "included": true,
+        "review_complete": false,
+        "required_focus": "account-creation proof family, Plonky3/KoalaBear FRI, extractor, simulator, and composition soundness"
+      },
+      {
+        "id": "qrom_hash_framing",
+        "included": true,
+        "review_complete": false,
+        "required_focus": "Fiat-Shamir transcript, Poseidon2 domains, multi-target ledger, action-map separation, and query bounds"
+      },
+      {
+        "id": "consensus_engineering",
+        "included": true,
+        "review_complete": false,
+        "required_focus": "canonical bytes, deterministic rejection, state-no-mutation on reject, and independent-client reproducibility"
+      },
+      {
+        "id": "lifecycle_deployment",
+        "included": true,
+        "review_complete": false,
+        "required_focus": "consume-once lifecycle, finality profile, rollback, recovery, DA, and deployment-profile assumptions"
+      },
+      {
+        "id": "signer_custody",
+        "included": true,
+        "review_complete": false,
+        "required_focus": "secret-side arithmetic, leakage/fault behavior, signer state, API errors, and diagnostic-build separation"
+      },
+      {
+        "id": "aggregation_policy",
+        "included": false,
+        "review_complete": false,
+        "required_focus": "Mode B aggregation and policy claims are out of scope for this direct-mode package"
+      }
+    ],
+    "residual_assumptions": [
+      {
+        "id": "external_review_not_complete",
+        "tracker_rows": [
+          "DIR-REVIEW-001"
+        ],
+        "status": "open",
+        "required_closure": "obtain independent lane review outputs and record tracker/ADR dispositions"
+      },
+      {
+        "id": "coded_sis_beyond_box_response_link",
+        "tracker_rows": [
+          "DIR-REVIEW-001",
+          "DIR-ACTION-001"
+        ],
+        "status": "open",
+        "required_closure": "external cryptanalysis accepts or replaces the response-link and beyond-box hardness accounting"
+      },
+      {
+        "id": "fri_aok_extractor",
+        "tracker_rows": [
+          "DIR-PROOF-001",
+          "DIR-PROOF-002",
+          "DIR-STARK-001"
+        ],
+        "status": "open",
+        "required_closure": "instantiate or review the selected Plonky3/q12289 FRI argument-of-knowledge extractor theorem"
+      },
+      {
+        "id": "account_stark_transcript_qrom",
+        "tracker_rows": [
+          "DIR-QROM-001",
+          "DIR-PROOF-002"
+        ],
+        "status": "open",
+        "required_closure": "close the account-STARK transcript QROM theorem and residual pricing"
+      },
+      {
+        "id": "simulator_no_export_theorem",
+        "tracker_rows": [
+          "DIR-PAYLOAD-001",
+          "DIR-PROOF-001",
+          "DIR-CT-001"
+        ],
+        "status": "open",
+        "required_closure": "close the accepted-boundary simulator/no-export theorem and privacy statement"
+      },
+      {
+        "id": "active_kat_corpus_freeze",
+        "tracker_rows": [
+          "DIR-KAT-001",
+          "DIR-REJECT-001"
+        ],
+        "status": "open",
+        "required_closure": "freeze direct positive and negative KAT corpus with deterministic rejection coverage"
+      },
+      {
+        "id": "target_leakage_and_fixed_shape",
+        "tracker_rows": [
+          "SPEC-LEAKAGE-001",
+          "DIR-CT-001",
+          "ADOPT-HW-CT-001"
+        ],
+        "status": "open",
+        "required_closure": "add target/build leakage evidence, fixed-shape failure evidence, or reviewed substitutes"
+      },
+      {
+        "id": "deployment_profile_acceptance",
+        "tracker_rows": [
+          "SPEC-DEPLOY-001",
+          "DIR-LIFE-001",
+          "ADOPT-128-001"
+        ],
+        "status": "open",
+        "required_closure": "record target-chain deployment-profile acceptance, resource limits, finality, and q128 residual acceptance"
+      }
+    ],
+    "reviewer_outputs": [
+      {
+        "id": "lane_report",
+        "required": true,
+        "accepted_statuses": [
+          "accepted",
+          "accepted_with_residuals",
+          "rejected",
+          "needs_changes"
+        ]
+      },
+      {
+        "id": "reproduction_log",
+        "required": true,
+        "accepted_statuses": [
+          "reproduced",
+          "not_reproduced"
+        ]
+      },
+      {
+        "id": "objection_disposition",
+        "required": true,
+        "accepted_statuses": [
+          "tracker_row",
+          "adr",
+          "rejected_disposition"
+        ]
+      }
+    ],
+    "old_research_import_policy": "Historical review packets are evidence only unless imported by current spec/ADR/TRACKER authority."
+  }
+}
