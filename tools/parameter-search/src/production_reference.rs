@@ -53940,6 +53940,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget_of_remaining_break_bounds",
         "selectedRustAcceptedSpendSoundnessCertificate_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendSoundnessBoundary_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustAcceptedSpendSoundnessCertificate_package_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustAcceptedSpendSoundnessBoundary_package_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "acceptedSpendNumericBoundPriced",
@@ -54457,6 +54459,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget_of_remaining_break_bounds",
         "selectedRustAcceptedSpendSoundnessCertificate_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendSoundnessBoundary_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustAcceptedSpendSoundnessCertificate_package_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustAcceptedSpendSoundnessBoundary_package_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "NativeAcceptedSpendSoundnessBoundary.acceptedSpendForgeryProb_eq_production",
@@ -94285,6 +94289,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustAcceptedSpendSoundnessCertificate_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
   let _acceptedSpendWS7TraceBoundaryEndpoint :=
     selectedRustAcceptedSpendSoundnessBoundary_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+  let _acceptedSpendWS7TraceCertificatePackageEq :=
+    selectedRustAcceptedSpendSoundnessCertificate_package_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts
+  let _acceptedSpendWS7TraceBoundaryPackageEq :=
+    selectedRustAcceptedSpendSoundnessBoundary_package_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _acceptedSpendWS7TraceBoundaryProbActiveTarget :=
     selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
   let _acceptedSpendWS7TraceBoundaryBoundActiveTarget :=
@@ -95121,6 +95129,26 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_ws7_trace_boundary
+            )
+        );
+        let suffixed_ws7_trace_certificate_package_eq =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustAcceptedSpendSoundnessCertificate_package_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
+                "selectedRustAcceptedSpendSoundnessCertificate_package_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_factsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_ws7_trace_certificate_package_eq
+            )
+        );
+        let suffixed_ws7_trace_boundary_package_eq =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustAcceptedSpendSoundnessBoundary_package_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
+                "selectedRustAcceptedSpendSoundnessBoundary_package_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_factsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_ws7_trace_boundary_package_eq
             )
         );
         let suffixed_ws7_trace_boundary_prob_active_target =

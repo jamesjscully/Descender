@@ -632,8 +632,13 @@ the same accepted-spend endpoint through
 `selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`,
 and
 `selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`,
-with the source-shape fixture rejecting spoofed WS7 certificate/boundary/target
-variants.
+while
+`selectedRustAcceptedSpendSoundnessCertificate_package_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts`
+and
+`selectedRustAcceptedSpendSoundnessBoundary_package_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts`
+pin the direct remaining-break package certificate/boundary route to WS7
+evidence constructed from the same rows, with the source-shape fixture rejecting
+spoofed WS7 certificate/boundary/equality/target variants.
 The same trace-model
 route now continues into the
 full-signature layer through

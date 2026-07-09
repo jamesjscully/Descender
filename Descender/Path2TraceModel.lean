@@ -7714,6 +7714,120 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_le_
 
 end WS7RemainingClosureAcceptedSpendBoundaryProjection
 
+section RemainingBreakBoundsCurrentHardPricingAcceptedSpendPackage
+
+variable {Trace : Type} [Fintype Trace]
+variable (traceDist : FiniteProbability Trace)
+variable (observe : Trace → ConcreteOutcome)
+variable (acceptedSpendBound : ℝ)
+variable (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+variable (hAccept :
+  (concreteNumericGame selectedRustConcreteGameConfig traceDist
+      observe).acceptedSpendProb ≤ acceptedSpendBound)
+variable (hBreak :
+  ∀ breakEvent : RemainingCryptographicBreak,
+    (concreteNumericGame selectedRustConcreteGameConfig traceDist
+        observe).breakProb breakEvent.1 ≤
+      remainingBreakBound breakEvent)
+variable (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+variable (hBreakBudget :
+  ∀ breakEvent : RemainingCryptographicBreak,
+    remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
+variable (hPriced :
+  (1 : ℝ) / 2 ^ 128 ≤
+    ((2 : ℝ) ^
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+variable (hHardPricing :
+  Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete)
+variable (productionAcceptedSpendForgeryProb : ℝ)
+variable (productionAcceptedSpendForgeryBound : ℝ)
+variable (acceptedSpendForgeryProbPinned :
+  (SelectedRustAcceptedSpendRemainingBreakPricingPackage.toSelectedAcceptedSpendNumericSource
+    (selectedRustAcceptedSpendRemainingBreakPricingPackage_of_remaining_break_bounds_and_current_hard_pricing_facts
+      traceDist observe acceptedSpendBound remainingBreakBound
+      hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing)).pricedCertificate.unionBound =
+    productionAcceptedSpendForgeryProb)
+variable (acceptedSpendForgeryBoundPinned :
+  (SelectedRustAcceptedSpendRemainingBreakPricingPackage.toSelectedAcceptedSpendNumericSource
+    (selectedRustAcceptedSpendRemainingBreakPricingPackage_of_remaining_break_bounds_and_current_hard_pricing_facts
+      traceDist observe acceptedSpendBound remainingBreakBound
+      hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing)).pricedCertificate.pricedBound =
+    productionAcceptedSpendForgeryBound)
+variable (hiddenSourceProofSemanticsClosed : Prop)
+variable (checkedCoreCompositionClosed : Prop)
+variable (lifecycleReplayClosed : Prop)
+variable (noExportClosed : Prop)
+variable (hiddenSourceProofSemanticsClosedProof :
+  hiddenSourceProofSemanticsClosed)
+variable (checkedCoreCompositionClosedProof :
+  checkedCoreCompositionClosed)
+variable (lifecycleReplayClosedProof :
+  lifecycleReplayClosed)
+variable (noExportClosedProof :
+  noExportClosed)
+
+/--
+Constructing WS7 evidence from the same remaining-break rows gives the same
+selected accepted-spend soundness certificate as the direct remaining-break
+package route with current hard pricing facts.
+-/
+theorem selectedRustAcceptedSpendSoundnessCertificate_package_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts :
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage.toSelectedRustAcceptedSpendSoundnessCertificate
+      (selectedRustAcceptedSpendRemainingBreakPricingPackage_of_remaining_break_bounds_and_current_hard_pricing_facts
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing)
+      productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+      acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+      hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+      lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+      noExportClosedProof =
+    selectedRustAcceptedSpendSoundnessCertificate_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+      traceDist observe
+      (selectedRustWS7RemainingClosureEvidence_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget)
+      hPriced hHardPricing
+      productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+      acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+      hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+      lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+      noExportClosedProof := by
+  rfl
+
+/--
+Constructing WS7 evidence from the same remaining-break rows gives the same
+native accepted-spend boundary as the direct remaining-break package route with
+current hard pricing facts.
+-/
+theorem selectedRustAcceptedSpendSoundnessBoundary_package_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts :
+    (SelectedRustAcceptedSpendRemainingBreakPricingPackage.toSelectedRustAcceptedSpendSoundnessCertificate
+      (selectedRustAcceptedSpendRemainingBreakPricingPackage_of_remaining_break_bounds_and_current_hard_pricing_facts
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing)
+      productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+      acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+      hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+      lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+      noExportClosedProof).toAcceptedSpendSoundnessBoundary =
+    selectedRustAcceptedSpendSoundnessBoundary_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+      traceDist observe
+      (selectedRustWS7RemainingClosureEvidence_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget)
+      hPriced hHardPricing
+      productionAcceptedSpendForgeryProb productionAcceptedSpendForgeryBound
+      acceptedSpendForgeryProbPinned acceptedSpendForgeryBoundPinned
+      hiddenSourceProofSemanticsClosed checkedCoreCompositionClosed
+      lifecycleReplayClosed noExportClosed hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof lifecycleReplayClosedProof
+      noExportClosedProof := by
+  rfl
+
+end RemainingBreakBoundsCurrentHardPricingAcceptedSpendPackage
+
 section WS7RemainingClosureFullSignatureBoundaryProjection
 
 variable {Trace : Type} [Fintype Trace]
