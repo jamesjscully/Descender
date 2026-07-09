@@ -5711,6 +5711,61 @@ def selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds_and_current
       hHardPricing)
 
 /--
+Selected accepted-spend numeric source built directly from first-class WS7
+remaining-closure evidence and the current hard pricing facts.
+-/
+def selectedRustAcceptedSpendNumericSource_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (E : SelectedRustWS7RemainingClosureEvidence Trace traceDist observe)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hHardPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete) :
+    Path2AcceptedSpendProbability.SelectedAcceptedSpendNumericSource :=
+  selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds_and_current_hard_pricing_facts
+    traceDist
+    observe
+    E.acceptedSpendBound
+    E.remainingBreakBound
+    (SelectedRustWS7RemainingClosureEvidence.acceptedSpendProb_le_bound E)
+    (SelectedRustWS7RemainingClosureEvidence.remainingBreakProb_le_bound E)
+    (SelectedRustWS7RemainingClosureEvidence.acceptedSpendBound_le_2pow_neg129 E)
+    (SelectedRustWS7RemainingClosureEvidence.remainingBreakBound_le_2pow_neg133 E)
+    hPriced
+    hHardPricing
+
+/--
+The direct WS7 numeric source keeps concrete numeric success on the fixed
+active 128-bit target once the current hard pricing facts are supplied.
+-/
+theorem selectedRustAcceptedSpendNumericSource_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (E : SelectedRustWS7RemainingClosureEvidence Trace traceDist observe)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hHardPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete) :
+    let Source :=
+      selectedRustAcceptedSpendNumericSource_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+        traceDist observe E hPriced hHardPricing
+    Source.pricedCertificate.successProb ≤ ((2 : ℝ) ^ (128 : Nat))⁻¹ := by
+  simpa [selectedRustAcceptedSpendNumericSource_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts,
+    selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds_and_current_hard_pricing_facts,
+    selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds,
+    selectedRustConcreteAcceptedSpendPricingWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts]
+    using
+      selectedRustConcreteAcceptedSpendPricingWitness_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+        traceDist observe E hPriced hHardPricing
+
+/--
 Selected accepted-spend certificate built from the faithful trace model and the
 seven remaining cryptographic break bounds.
 
