@@ -52628,6 +52628,10 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "no_ws7RemainingClosureObligation_accepted_and_remaining",
         "SelectedRustWS7RemainingClosureObligationSatisfied",
         "SelectedRustWS7RemainingClosureEvidence",
+        "SelectedRustWS7RemainingClosureEvidence.ofRemainingBreakBounds",
+        "SelectedRustWS7RemainingClosureEvidence.nonempty_ofRemainingBreakBounds",
+        "selectedRustWS7RemainingClosureEvidence_of_remaining_break_bounds",
+        "selectedRustWS7RemainingClosureEvidence_nonempty_of_remaining_break_bounds",
         "SelectedRustWS7RemainingClosureEvidence.acceptedSpendProb_le_bound",
         "SelectedRustWS7RemainingClosureEvidence.acceptedSpendBound_le_2pow_neg129",
         "SelectedRustWS7RemainingClosureEvidence.remainingBreakProb_le_bound",
@@ -52971,6 +52975,10 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "no_ws7RemainingClosureObligation_accepted_and_remaining",
         "SelectedRustWS7RemainingClosureObligationSatisfied",
         "SelectedRustWS7RemainingClosureEvidence",
+        "SelectedRustWS7RemainingClosureEvidence.ofRemainingBreakBounds",
+        "SelectedRustWS7RemainingClosureEvidence.nonempty_ofRemainingBreakBounds",
+        "selectedRustWS7RemainingClosureEvidence_of_remaining_break_bounds",
+        "selectedRustWS7RemainingClosureEvidence_nonempty_of_remaining_break_bounds",
         "SelectedRustWS7RemainingClosureEvidence.acceptedSpendProb_le_bound",
         "SelectedRustWS7RemainingClosureEvidence.acceptedSpendBound_le_2pow_neg129",
         "SelectedRustWS7RemainingClosureEvidence.remainingBreakProb_le_bound",
@@ -53666,6 +53674,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "no_ws7RemainingClosureObligation_accepted_and_remaining",
         "SelectedRustWS7RemainingClosureObligationSatisfied",
         "SelectedRustWS7RemainingClosureEvidence",
+        "SelectedRustWS7RemainingClosureEvidence.ofRemainingBreakBounds",
+        "SelectedRustWS7RemainingClosureEvidence.nonempty_ofRemainingBreakBounds",
+        "selectedRustWS7RemainingClosureEvidence_of_remaining_break_bounds",
+        "selectedRustWS7RemainingClosureEvidence_nonempty_of_remaining_break_bounds",
         "SelectedRustWS7RemainingClosureEvidence.acceptedSpendProb_le_bound",
         "SelectedRustWS7RemainingClosureEvidence.acceptedSpendBound_le_2pow_neg129",
         "SelectedRustWS7RemainingClosureEvidence.remainingBreakProb_le_bound",
@@ -54121,6 +54133,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "no_ws7RemainingClosureObligation_accepted_and_remaining",
         "SelectedRustWS7RemainingClosureObligationSatisfied",
         "SelectedRustWS7RemainingClosureEvidence",
+        "SelectedRustWS7RemainingClosureEvidence.ofRemainingBreakBounds",
+        "SelectedRustWS7RemainingClosureEvidence.nonempty_ofRemainingBreakBounds",
+        "selectedRustWS7RemainingClosureEvidence_of_remaining_break_bounds",
+        "selectedRustWS7RemainingClosureEvidence_nonempty_of_remaining_break_bounds",
         "SelectedRustWS7RemainingClosureEvidence.acceptedSpendProb_le_bound",
         "SelectedRustWS7RemainingClosureEvidence.acceptedSpendBound_le_2pow_neg129",
         "SelectedRustWS7RemainingClosureEvidence.remainingBreakProb_le_bound",
@@ -90246,6 +90262,14 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustWS7RemainingClosureObligationSatisfied
   let _fullReductionWS7Evidence :=
     SelectedRustWS7RemainingClosureEvidence
+  let _fullReductionWS7EvidenceConstructor :=
+    SelectedRustWS7RemainingClosureEvidence.ofRemainingBreakBounds
+  let _fullReductionWS7EvidenceConstructorNonempty :=
+    SelectedRustWS7RemainingClosureEvidence.nonempty_ofRemainingBreakBounds
+  let _fullReductionWS7EvidenceSelectedConstructor :=
+    selectedRustWS7RemainingClosureEvidence_of_remaining_break_bounds
+  let _fullReductionWS7EvidenceSelectedConstructorNonempty :=
+    selectedRustWS7RemainingClosureEvidence_nonempty_of_remaining_break_bounds
   let _fullReductionWS7EvidenceAcceptedProb :=
     SelectedRustWS7RemainingClosureEvidence.acceptedSpendProb_le_bound
   let _fullReductionWS7EvidenceAcceptedBudget :=
@@ -91051,6 +91075,26 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_ws7_remaining_closure_obligations_card
+            )
+        );
+        let suffixed_full_signature_ws7_evidence_selected_constructor =
+            full_signature_reduction_instantiation_shape.replace(
+                "selectedRustWS7RemainingClosureEvidence_of_remaining_break_bounds",
+                "selectedRustWS7RemainingClosureEvidence_of_remaining_break_boundsSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_ws7_evidence_selected_constructor
+            )
+        );
+        let suffixed_full_signature_ws7_evidence_selected_constructor_nonempty =
+            full_signature_reduction_instantiation_shape.replace(
+                "selectedRustWS7RemainingClosureEvidence_nonempty_of_remaining_break_bounds",
+                "selectedRustWS7RemainingClosureEvidence_nonempty_of_remaining_break_boundsSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_ws7_evidence_selected_constructor_nonempty
             )
         );
         let suffixed_full_signature_ws7_numeric_closure =
@@ -93823,6 +93867,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustWS7RemainingClosureObligationSatisfied
   let _acceptedSpendWS7Evidence :=
     SelectedRustWS7RemainingClosureEvidence
+  let _acceptedSpendWS7EvidenceConstructor :=
+    SelectedRustWS7RemainingClosureEvidence.ofRemainingBreakBounds
+  let _acceptedSpendWS7EvidenceConstructorNonempty :=
+    SelectedRustWS7RemainingClosureEvidence.nonempty_ofRemainingBreakBounds
+  let _acceptedSpendWS7EvidenceSelectedConstructor :=
+    selectedRustWS7RemainingClosureEvidence_of_remaining_break_bounds
+  let _acceptedSpendWS7EvidenceSelectedConstructorNonempty :=
+    selectedRustWS7RemainingClosureEvidence_nonempty_of_remaining_break_bounds
   let _acceptedSpendWS7EvidenceAcceptedProb :=
     SelectedRustWS7RemainingClosureEvidence.acceptedSpendProb_le_bound
   let _acceptedSpendWS7EvidenceAcceptedBudget :=
@@ -94254,6 +94306,26 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_ws7_remaining_closure_obligations_card
+            )
+        );
+        let suffixed_ws7_evidence_selected_constructor =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustWS7RemainingClosureEvidence_of_remaining_break_bounds",
+                "selectedRustWS7RemainingClosureEvidence_of_remaining_break_boundsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_ws7_evidence_selected_constructor
+            )
+        );
+        let suffixed_ws7_evidence_selected_constructor_nonempty =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustWS7RemainingClosureEvidence_nonempty_of_remaining_break_bounds",
+                "selectedRustWS7RemainingClosureEvidence_nonempty_of_remaining_break_boundsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_ws7_evidence_selected_constructor_nonempty
             )
         );
         let suffixed_ws7_numeric_closure = accepted_spend_instantiation_shape.replace(

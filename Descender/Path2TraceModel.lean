@@ -544,6 +544,67 @@ structure SelectedRustWS7RemainingClosureEvidence
 
 namespace SelectedRustWS7RemainingClosureEvidence
 
+/--
+Build first-class WS7 remaining-closure evidence from the accepted-spend row
+and the seven remaining-break rows.
+-/
+def ofRemainingBreakBounds
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (acceptedSpendProb_le_bound :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (remainingBreakProb_le_bound :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (acceptedSpendBound_le_2pow_neg129 :
+      acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (remainingBreakBound_le_2pow_neg133 :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
+    SelectedRustWS7RemainingClosureEvidence Trace traceDist observe where
+  acceptedSpendBound := acceptedSpendBound
+  remainingBreakBound := remainingBreakBound
+  obligationSatisfied := by
+    intro obligation _hMem
+    cases obligation with
+    | acceptedSpendForgeryBound =>
+        exact ⟨acceptedSpendProb_le_bound, acceptedSpendBound_le_2pow_neg129⟩
+    | remainingBreakBound breakEvent =>
+        exact
+          ⟨remainingBreakProb_le_bound breakEvent,
+            remainingBreakBound_le_2pow_neg133 breakEvent⟩
+
+/-- The same per-event rows inhabit the first-class WS7 evidence object. -/
+theorem nonempty_ofRemainingBreakBounds
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (acceptedSpendProb_le_bound :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (remainingBreakProb_le_bound :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (acceptedSpendBound_le_2pow_neg129 :
+      acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (remainingBreakBound_le_2pow_neg133 :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
+    Nonempty (SelectedRustWS7RemainingClosureEvidence Trace traceDist observe) :=
+  ⟨ofRemainingBreakBounds traceDist observe acceptedSpendBound remainingBreakBound
+    acceptedSpendProb_le_bound remainingBreakProb_le_bound
+    acceptedSpendBound_le_2pow_neg129 remainingBreakBound_le_2pow_neg133⟩
+
 /-- The WS7 accepted-spend row gives the accepted-spend probability bound. -/
 theorem acceptedSpendProb_le_bound
     {Trace : Type} [Fintype Trace]
@@ -612,6 +673,64 @@ theorem remainingBreakBound_le_2pow_neg133
       (WS7RemainingClosureObligation.remainingBreakBound breakEvent) hMem).2
 
 end SelectedRustWS7RemainingClosureEvidence
+
+/--
+Selected WS7 evidence built from the accepted-spend row and the seven
+remaining-break rows.
+-/
+def selectedRustWS7RemainingClosureEvidence_of_remaining_break_bounds
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (acceptedSpendProb_le_bound :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (remainingBreakProb_le_bound :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (acceptedSpendBound_le_2pow_neg129 :
+      acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (remainingBreakBound_le_2pow_neg133 :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
+    SelectedRustWS7RemainingClosureEvidence Trace traceDist observe :=
+  SelectedRustWS7RemainingClosureEvidence.ofRemainingBreakBounds
+    traceDist observe acceptedSpendBound remainingBreakBound
+    acceptedSpendProb_le_bound remainingBreakProb_le_bound
+    acceptedSpendBound_le_2pow_neg129 remainingBreakBound_le_2pow_neg133
+
+/--
+The eight per-event remaining-break rows nonemptily produce the selected WS7
+evidence object.
+-/
+theorem selectedRustWS7RemainingClosureEvidence_nonempty_of_remaining_break_bounds
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (acceptedSpendProb_le_bound :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (remainingBreakProb_le_bound :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (acceptedSpendBound_le_2pow_neg129 :
+      acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (remainingBreakBound_le_2pow_neg133 :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
+    Nonempty (SelectedRustWS7RemainingClosureEvidence Trace traceDist observe) :=
+  ⟨selectedRustWS7RemainingClosureEvidence_of_remaining_break_bounds
+    traceDist observe acceptedSpendBound remainingBreakBound
+    acceptedSpendProb_le_bound remainingBreakProb_le_bound
+    acceptedSpendBound_le_2pow_neg129 remainingBreakBound_le_2pow_neg133⟩
 
 /--
 Extend caller-supplied remaining-break bounds to the full active break family
