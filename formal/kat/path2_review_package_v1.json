@@ -182,7 +182,29 @@
           "DIR-REVIEW-001"
         ],
         "status": "open",
-        "required_closure": "obtain independent lane review outputs and record tracker/ADR dispositions"
+        "required_closure": "obtain independent lane review outputs and record tracker/ADR dispositions",
+        "evidence_anchors": [
+          {
+            "id": "direct_theorem_external_review_open",
+            "kind": "json_pointer_equals",
+            "path": "formal/kat/path2_direct_theorem_boundary_v1.json",
+            "json_pointer": "/manifest/account_creation_proof_boundary/coverage/external_review_complete",
+            "expected_value": false
+          },
+          {
+            "id": "direct_theorem_deployment_not_ready",
+            "kind": "json_pointer_equals",
+            "path": "formal/kat/path2_direct_theorem_boundary_v1.json",
+            "json_pointer": "/manifest/account_creation_proof_boundary/coverage/deployment_ready",
+            "expected_value": false
+          },
+          {
+            "id": "tracker_external_review_gate",
+            "kind": "text_contains",
+            "path": "TRACKER.md",
+            "text": "External third-party cryptanalysis"
+          }
+        ]
       },
       {
         "id": "coded_sis_beyond_box_response_link",
@@ -191,7 +213,21 @@
           "DIR-ACTION-001"
         ],
         "status": "open",
-        "required_closure": "external cryptanalysis accepts or replaces the response-link and beyond-box hardness accounting"
+        "required_closure": "external cryptanalysis accepts or replaces the response-link and beyond-box hardness accounting",
+        "evidence_anchors": [
+          {
+            "id": "review_lane_requires_beyond_box_hardness",
+            "kind": "text_contains",
+            "path": "spec/review_package.md",
+            "text": "coded-SIS/lattice assumptions, exact response-link certificate, beyond-box hardness, and parameter margins"
+          },
+          {
+            "id": "tracker_external_review_gate",
+            "kind": "text_contains",
+            "path": "TRACKER.md",
+            "text": "External third-party cryptanalysis"
+          }
+        ]
       },
       {
         "id": "fri_aok_extractor",
@@ -201,7 +237,23 @@
           "DIR-STARK-001"
         ],
         "status": "open",
-        "required_closure": "instantiate or review the selected Plonky3/q12289 FRI argument-of-knowledge extractor theorem"
+        "required_closure": "instantiate or review the selected Plonky3/q12289 FRI argument-of-knowledge extractor theorem",
+        "evidence_anchors": [
+          {
+            "id": "fri_aok_theorem_not_instantiated",
+            "kind": "json_pointer_equals",
+            "path": "formal/kat/path2_account_stark_fri_aok_boundary_v1.json",
+            "json_pointer": "/manifest/open_obligations/fri_aok_extractor_theorem_instantiated",
+            "expected_value": false
+          },
+          {
+            "id": "fri_aok_external_review_open",
+            "kind": "json_pointer_equals",
+            "path": "formal/kat/path2_account_stark_fri_aok_boundary_v1.json",
+            "json_pointer": "/manifest/open_obligations/external_extractor_review_complete",
+            "expected_value": false
+          }
+        ]
       },
       {
         "id": "account_stark_transcript_qrom",
@@ -210,7 +262,30 @@
           "DIR-PROOF-002"
         ],
         "status": "open",
-        "required_closure": "close the account-STARK transcript QROM theorem and residual pricing"
+        "required_closure": "close the account-STARK transcript QROM theorem and residual pricing",
+        "evidence_anchors": [
+          {
+            "id": "account_stark_qrom_theorem_not_instantiated",
+            "kind": "json_pointer_equals",
+            "path": "formal/kat/path2_account_stark_fri_qrom_residual_v1.json",
+            "json_pointer": "/manifest/open_obligations/account_stark_transcript_qrom_theorem_instantiated",
+            "expected_value": false
+          },
+          {
+            "id": "account_stark_residual_pricing_open",
+            "kind": "json_pointer_equals",
+            "path": "formal/kat/path2_account_stark_fri_qrom_residual_v1.json",
+            "json_pointer": "/manifest/open_obligations/residual_pricing_complete",
+            "expected_value": false
+          },
+          {
+            "id": "checked_core_qrom_budget_pinned",
+            "kind": "json_pointer_equals",
+            "path": "formal/kat/path2_account_stark_fri_qrom_residual_v1.json",
+            "json_pointer": "/manifest/open_obligations/checked_core_qrom_budget_pinned",
+            "expected_value": true
+          }
+        ]
       },
       {
         "id": "simulator_no_export_theorem",
@@ -220,7 +295,22 @@
           "DIR-CT-001"
         ],
         "status": "open",
-        "required_closure": "close the accepted-boundary simulator/no-export theorem and privacy statement"
+        "required_closure": "close the accepted-boundary simulator/no-export theorem and privacy statement",
+        "evidence_anchors": [
+          {
+            "id": "simulator_theorem_not_instantiated",
+            "kind": "json_pointer_equals",
+            "path": "formal/kat/path2_direct_theorem_boundary_v1.json",
+            "json_pointer": "/manifest/account_creation_proof_boundary/coverage/simulator_theorem_instantiated",
+            "expected_value": false
+          },
+          {
+            "id": "simulator_no_export_dependency_open",
+            "kind": "text_contains",
+            "path": "formal/kat/path2_account_creation_proof_boundary_v1.json",
+            "text": "simulator/no_export/accepted_bundle_simulatable flags remain false"
+          }
+        ]
       },
       {
         "id": "active_kat_corpus_freeze",
@@ -229,7 +319,28 @@
           "DIR-REJECT-001"
         ],
         "status": "open",
-        "required_closure": "freeze direct positive and negative KAT corpus with deterministic rejection coverage"
+        "required_closure": "freeze direct positive and negative KAT corpus with deterministic rejection coverage",
+        "evidence_anchors": [
+          {
+            "id": "current_payload_kat_slice_pinned",
+            "kind": "json_pointer_equals",
+            "path": "formal/kat/path2_direct_theorem_boundary_v1.json",
+            "json_pointer": "/manifest/account_creation_proof_boundary/coverage/frozen_kat_corpus_complete",
+            "expected_value": true
+          },
+          {
+            "id": "direct_gate_3_kat_not_ready",
+            "kind": "text_contains",
+            "path": "spec/blockchain_requirements.md",
+            "text": "| 3 | `not_ready` | `DIR-KAT-001`, `DIR-CC-001` |"
+          },
+          {
+            "id": "direct_gate_4_kat_not_ready",
+            "kind": "text_contains",
+            "path": "spec/blockchain_requirements.md",
+            "text": "| 4 | `not_ready` | `DIR-KAT-001` |"
+          }
+        ]
       },
       {
         "id": "target_leakage_and_fixed_shape",
@@ -239,7 +350,30 @@
           "ADOPT-HW-CT-001"
         ],
         "status": "open",
-        "required_closure": "add target/build leakage evidence, fixed-shape failure evidence, or reviewed substitutes"
+        "required_closure": "add target/build leakage evidence, fixed-shape failure evidence, or reviewed substitutes",
+        "evidence_anchors": [
+          {
+            "id": "leakage_manifest_not_deployment_ready",
+            "kind": "json_pointer_equals",
+            "path": "formal/kat/path2_leakage_battery_v1.json",
+            "json_pointer": "/manifest/deployment_ready",
+            "expected_value": false
+          },
+          {
+            "id": "leakage_target_profile_not_ready",
+            "kind": "json_pointer_equals",
+            "path": "formal/kat/path2_leakage_battery_v1.json",
+            "json_pointer": "/manifest/target_profile/deployment_ready",
+            "expected_value": false
+          },
+          {
+            "id": "keygen_surface_not_ready",
+            "kind": "json_pointer_equals",
+            "path": "formal/kat/path2_leakage_battery_v1.json",
+            "json_pointer": "/manifest/required_surfaces/0/status",
+            "expected_value": "not_ready"
+          }
+        ]
       },
       {
         "id": "deployment_profile_acceptance",
@@ -249,7 +383,29 @@
           "ADOPT-128-001"
         ],
         "status": "open",
-        "required_closure": "record target-chain deployment-profile acceptance, resource limits, finality, and q128 residual acceptance"
+        "required_closure": "record target-chain deployment-profile acceptance, resource limits, finality, and q128 residual acceptance",
+        "evidence_anchors": [
+          {
+            "id": "deployment_profile_not_accepted",
+            "kind": "json_pointer_equals",
+            "path": "formal/kat/path2_account_stark_fri_qrom_residual_v1.json",
+            "json_pointer": "/manifest/open_obligations/deployment_profile_accepted",
+            "expected_value": false
+          },
+          {
+            "id": "fri_qrom_residual_not_deployment_ready",
+            "kind": "json_pointer_equals",
+            "path": "formal/kat/path2_account_stark_fri_qrom_residual_v1.json",
+            "json_pointer": "/manifest/open_obligations/deployment_ready",
+            "expected_value": false
+          },
+          {
+            "id": "hard_128_profile_not_ready",
+            "kind": "text_contains",
+            "path": "spec/blockchain_requirements.md",
+            "text": "| Hard-128 profile decision | `direct` | `not_ready` | evidence that the q128 practical floor and remaining review obligations are acceptable for the target adopter | `ADOPT-128-001`, `DIR-QROM-001`, `DIR-REVIEW-001` |"
+          }
+        ]
       }
     ],
     "reviewer_outputs": [

@@ -36,6 +36,45 @@ REQUIRED_RESIDUALS = {
     "target_leakage_and_fixed_shape",
     "deployment_profile_acceptance",
 }
+REQUIRED_RESIDUAL_ANCHORS = {
+    "external_review_not_complete": {
+        "direct_theorem_external_review_open",
+        "direct_theorem_deployment_not_ready",
+        "tracker_external_review_gate",
+    },
+    "coded_sis_beyond_box_response_link": {
+        "review_lane_requires_beyond_box_hardness",
+        "tracker_external_review_gate",
+    },
+    "fri_aok_extractor": {
+        "fri_aok_theorem_not_instantiated",
+        "fri_aok_external_review_open",
+    },
+    "account_stark_transcript_qrom": {
+        "account_stark_qrom_theorem_not_instantiated",
+        "account_stark_residual_pricing_open",
+        "checked_core_qrom_budget_pinned",
+    },
+    "simulator_no_export_theorem": {
+        "simulator_theorem_not_instantiated",
+        "simulator_no_export_dependency_open",
+    },
+    "active_kat_corpus_freeze": {
+        "current_payload_kat_slice_pinned",
+        "direct_gate_3_kat_not_ready",
+        "direct_gate_4_kat_not_ready",
+    },
+    "target_leakage_and_fixed_shape": {
+        "leakage_manifest_not_deployment_ready",
+        "leakage_target_profile_not_ready",
+        "keygen_surface_not_ready",
+    },
+    "deployment_profile_acceptance": {
+        "deployment_profile_not_accepted",
+        "fri_qrom_residual_not_deployment_ready",
+        "hard_128_profile_not_ready",
+    },
+}
 REQUIRED_ARTIFACTS = {
     "spec/README.md",
     "spec/security_model.md",
@@ -84,6 +123,54 @@ def require_hex_digest(value: Any, label: str) -> None:
     require(isinstance(value, str), f"{label}: digest is not a string")
     require(len(value) == 64, f"{label}: digest must be 64 lowercase hex characters")
     require(all(ch in "0123456789abcdef" for ch in value), f"{label}: digest must be lowercase hex")
+
+
+def pointer(value: Any, json_pointer: str) -> Any:
+    if not json_pointer.startswith("/"):
+        raise ValueError(f"invalid JSON pointer {json_pointer!r}")
+    current = value
+    for raw_part in json_pointer.split("/")[1:]:
+        part = raw_part.replace("~1", "/").replace("~0", "~")
+        if isinstance(current, dict):
+            if part not in current:
+                raise KeyError(json_pointer)
+            current = current[part]
+        elif isinstance(current, list):
+            current = current[int(part)]
+        else:
+            raise KeyError(json_pointer)
+    return current
+
+
+def check_evidence_anchor(
+    anchor: dict[str, Any],
+    residual_id: str,
+    hashed_artifact_paths: set[str],
+) -> None:
+    anchor_id = anchor.get("id")
+    require(isinstance(anchor_id, str) and anchor_id, f"{residual_id}: anchor id missing")
+    path = anchor.get("path")
+    require(isinstance(path, str), f"{residual_id}/{anchor_id}: anchor path must be a string")
+    require(path in hashed_artifact_paths, f"{residual_id}/{anchor_id}: anchor path is not package-hashed: {path}")
+    full_path = ROOT / path
+    require(full_path.exists(), f"{residual_id}/{anchor_id}: anchor path is missing: {path}")
+
+    kind = anchor.get("kind")
+    if kind == "json_pointer_equals":
+        json_pointer = anchor.get("json_pointer")
+        require(isinstance(json_pointer, str), f"{residual_id}/{anchor_id}: JSON pointer missing")
+        require("expected_value" in anchor, f"{residual_id}/{anchor_id}: expected value missing")
+        actual = pointer(load_json(full_path), json_pointer)
+        require(
+            actual == anchor["expected_value"],
+            f"{residual_id}/{anchor_id}: {json_pointer} expected {anchor['expected_value']!r}, got {actual!r}",
+        )
+    elif kind == "text_contains":
+        text = anchor.get("text")
+        require(isinstance(text, str) and text, f"{residual_id}/{anchor_id}: text anchor missing")
+        require(text in full_path.read_text(encoding="utf-8"), f"{residual_id}/{anchor_id}: text anchor not found")
+    else:
+        raise SystemExit(f"{residual_id}/{anchor_id}: unsupported evidence anchor kind {kind!r}")
 
 
 def main() -> int:
@@ -157,6 +244,7 @@ def main() -> int:
     artifact_paths = [row.get("path") for row in artifacts if isinstance(row, dict)]
     require(set(artifact_paths) == REQUIRED_ARTIFACTS, "review package artifact set drifted")
     require(len(artifact_paths) == len(set(artifact_paths)), "review package artifact paths must be unique")
+    hashed_artifact_paths = set(artifact_paths)
     for row in artifacts:
         path = row.get("path")
         require(isinstance(path, str), "artifact path must be a string")
@@ -198,6 +286,16 @@ def main() -> int:
             isinstance(row.get("required_closure"), str) and row["required_closure"],
             f"{residual_id}: required closure missing",
         )
+        anchors = row.get("evidence_anchors")
+        require(isinstance(anchors, list) and anchors, f"{residual_id}: evidence anchors missing")
+        anchor_ids = {anchor.get("id") for anchor in anchors if isinstance(anchor, dict)}
+        require(
+            anchor_ids == REQUIRED_RESIDUAL_ANCHORS[residual_id],
+            f"{residual_id}: evidence anchor set drifted",
+        )
+        for anchor in anchors:
+            require(isinstance(anchor, dict), f"{residual_id}: evidence anchor must be an object")
+            check_evidence_anchor(anchor, residual_id, hashed_artifact_paths)
 
     outputs = manifest.get("reviewer_outputs")
     require(isinstance(outputs, list) and outputs, "reviewer_outputs must be non-empty")
@@ -218,7 +316,7 @@ def main() -> int:
 
     print(
         "Path 2 review package manifest check passed "
-        f"({len(artifacts)} artifacts, {len(lanes)} lanes, {len(residuals)} residuals)."
+        f"({len(artifacts)} artifacts, {len(lanes)} lanes, {len(residuals)} residuals with anchors)."
     )
     return 0
 
