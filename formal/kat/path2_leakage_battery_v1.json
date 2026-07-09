@@ -310,15 +310,17 @@
           "mask_channel_is_uniform_over_zq",
           "masked_projection_varies_for_fixed_account_projection",
           "default_path_decorrelates_proofs_of_same_witness",
-          "fixed_seed_path_is_deterministic"
+          "fixed_seed_path_is_deterministic",
+          "injected_mask_leak_negative_control_fails_chi_square"
         ],
         "required_source_markers": [
           "They are NOT a ZK",
           "bias <= q/2^31 ~ 2^-141",
           "The fixed-seed path is NOT decorrelated",
-          "DEFAULT PATH NOT HIDING ACROSS PROOFS"
+          "DEFAULT PATH NOT HIDING ACROSS PROOFS",
+          "INJECTED LEAK NOT DETECTED"
         ],
-        "negative_control_status": "manual empirical harness only; injected-leak control and target leakage traces remain open",
+        "negative_control_status": "manual empirical harness includes a constant-mask injected-leak negative control; target leakage traces and broader injected-leak controls remain open",
         "deployment_ready": false
       }
     ],

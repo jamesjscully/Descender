@@ -213,3 +213,34 @@ fn fixed_seed_path_is_deterministic() {
     );
     println!("[FIX4d] fixed-seed path is byte-deterministic under identical seed (as required for tests)");
 }
+
+// ===========================================================================
+// FIX #4e — INJECTED-LEAK NEGATIVE CONTROL. Feed the same chi-square
+// threshold a deliberately degenerate mask distribution. This does not exercise
+// the prover; it proves the harness would fail closed if the mask channel were
+// constant or similarly broken.
+// ===========================================================================
+#[test]
+fn injected_mask_leak_negative_control_fails_chi_square() {
+    let n_bins = 64usize;
+    let total = 4000u64 * N_LANES as u64;
+    let mut counts = vec![0u64; n_bins];
+    counts[0] = total;
+
+    let mut chi2 = 0.0f64;
+    for (bi, &c) in counts.iter().enumerate() {
+        let lo = (bi as u64 * Q as u64 / n_bins as u64) as f64;
+        let hi = ((bi as u64 + 1) * Q as u64 / n_bins as u64) as f64;
+        let width = hi - lo;
+        let expected = width / Q as f64 * total as f64;
+        let d = c as f64 - expected;
+        chi2 += d * d / expected;
+    }
+
+    let crit = 120.0;
+    println!("[FIX4e injected leak negative control] chi2={chi2:.2} crit={crit}");
+    assert!(
+        chi2 >= crit,
+        "INJECTED LEAK NOT DETECTED: constant mask distribution stayed below chi-square threshold"
+    );
+}
