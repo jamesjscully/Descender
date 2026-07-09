@@ -339,12 +339,22 @@ carries the selected certificate to the active target;
 then lowers the same WS7 evidence into the selected trace-model pricing witness
 once the current hard pricing facts are supplied, and
 `selectedRustConcreteAcceptedSpendPricingWitness_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
-keeps that witness on the active target;
+keeps that witness on the active target, while
+`selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
+and
+`selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
+expose the composed component-budget and union-bound target steps on the direct
+WS7 pricing-witness route;
 `selectedRustAcceptedSpendNumericSource_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
 then erases the WS7 pricing witness into the selected accepted-spend numeric
 source, and
 `selectedRustAcceptedSpendNumericSource_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
 keeps the selected source on the active target;
+`selectedRustAcceptedSpendNumericSource_unionBound_le_componentBudget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
+and
+`selectedRustAcceptedSpendNumericSource_componentBudget_le_pricedBound_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
+expose the selected numeric-source union-to-component and component-to-priced
+bound steps; and
 `selectedRustAcceptedSpendNumericSource_unionBound_eq_package_unionBound_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
 and
 `selectedRustAcceptedSpendNumericSource_pricedBound_eq_package_pricedBound_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
@@ -357,7 +367,8 @@ package while
 keeps the current fail-closed report guard on the WS7 route. The same
 source-shape gates require those bridge names and reject spoofed WS7 numeric
 closure, concrete-certificate, selected-certificate, pricing-witness,
-numeric-source, package-pin, and package-constructor endpoints.
+pricing-witness-budget, numeric-source-budget, package-pin, and
+package-constructor endpoints.
 The full-signature handoff now also has
 `selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
 and
