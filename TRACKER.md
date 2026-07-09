@@ -393,8 +393,21 @@ The full-signature handoff now also has
 and
 `selectedRustFullSignatureReductionProductionWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`,
 so WS7 evidence plus current hard pricing/production facts can directly build
-the selected full-reduction production witness; the full-reduction source-shape
-gate requires and spoofs that production-witness route. The same WS7 route now
+the selected full-reduction production witness; the direct remaining-break route
+now also names
+`selectedRustFullSignatureReductionProductionWitness_of_remaining_break_bounds_and_current_hard_pricing_and_production_facts`,
+`selectedRustFullSignatureReductionCertificate_of_remaining_break_bounds_and_current_hard_pricing_and_production_facts`,
+and
+`selectedRustNativeFullSignatureSecurityBoundary_of_remaining_break_bounds_and_current_hard_pricing_and_production_facts`,
+so the same direct rows can consume the current hard production surface instead
+of the broader individual production-bit inputs. The bridge theorems
+`selectedRustFullSignatureReductionProductionWitness_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_and_production_facts`,
+`selectedRustFullSignatureReductionCertificate_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_and_production_facts`,
+and
+`selectedRustNativeFullSignatureSecurityBoundary_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_and_production_facts`
+pin that direct hard-facts route to WS7 evidence constructed from the same
+remaining-break rows. The full-reduction source-shape gate requires and spoofs
+those production-witness/certificate/boundary routes. The same WS7 route now
 continues through
 `selectedRustFullSignatureReductionCertificate_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
 and
@@ -861,7 +874,8 @@ also requires the `WS7RemainingClosureObligation` surface and the
 full-reduction candidate, requires the WS7 evidence-to-package bridge before
 that route can consume remaining-break bounds, requires the direct
 remaining-break-to-constructed-WS7 equality bridges for pricing witnesses,
-numeric sources, and pricing packages, requires the WS7-to-production-witness
+numeric sources, pricing packages, full-reduction production witnesses,
+certificates, and native boundaries, requires the WS7-to-production-witness
 handoff plus WS7 certificate/native-boundary projection handoff, and rejects
 spoofed hard-fact equivalence,
 accepted-spend package blocker, active
