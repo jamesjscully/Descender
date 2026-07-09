@@ -48,6 +48,9 @@ python3 scripts/check_active_source_framing.py
 echo "== active secret float surface check =="
 python3 scripts/check_active_secret_float_surface.py
 
+echo "== Path 2 leakage battery check =="
+python3 scripts/check_path2_leakage_battery.py
+
 echo "== CI/local gate parity check =="
 python3 scripts/check_ci_local_gate_parity.py
 

@@ -1,0 +1,178 @@
+{
+  "manifest": {
+    "schema": "Descender.Path2.LeakageBatteryManifest.v1",
+    "corpus_id": "Descender.Path2.LeakageBattery.v1",
+    "corpus_version": 1,
+    "frozen_status": "draft_fail_closed_leakage_battery",
+    "authority": {
+      "spec": "spec/leakage_profile.md",
+      "tracker_rows": [
+        "SPEC-LEAKAGE-001",
+        "DIR-CT-001"
+      ],
+      "check": "scripts/check_path2_leakage_battery.py"
+    },
+    "target_profile": {
+      "target_id": "desktop-reference-test-profile",
+      "compiler_profile": "repo CI/default Rust and Lean gates only",
+      "dependency_profile": "pinned by workspace lockfiles and active crate checks",
+      "feature_profile": "test/deterministic KAT evidence; not a deployment signer profile",
+      "resource_profile": "host test runner; no hardware wallet, secure-element, HSM, or custody claim",
+      "deployment_ready": false,
+      "blocker": "Target-specific CT/leakage profile and external hardware/custody review are still required before deployment readiness."
+    },
+    "required_surfaces": [
+      {
+        "id": "keygen",
+        "spec_surface": "keygen",
+        "secret_classes": [
+          "secret_key_material",
+          "secret_entropy"
+        ],
+        "required_evidence": "static secret-flow review, entropy-source review, zeroization/secure-storage review, leakage or reviewed substitute",
+        "current_evidence": "No target-specific keygen leakage harness or reviewed substitute is checked in yet.",
+        "status": "not_ready",
+        "deployment_ready": false,
+        "blocker": "Add keygen static review, entropy review, zeroization/storage review, and leakage harness or reviewed substitute."
+      },
+      {
+        "id": "sampler_rejection_loop",
+        "spec_surface": "sampler/rejection loop",
+        "secret_classes": [
+          "secret_entropy",
+          "secret_witness"
+        ],
+        "required_evidence": "bounded public shape, secret-independent externally visible retry behavior, fixed public failure class",
+        "current_evidence": "Sampler/timing manifests and no-postchallenge timing hooks exist, but no leakage harness or retry-shape battery is checked in.",
+        "status": "partial",
+        "deployment_ready": false,
+        "blocker": "Add executable sampler retry-shape leakage tests or reviewed substitute for the target profile."
+      },
+      {
+        "id": "pad_expansion_mask_prf",
+        "spec_surface": "pad expansion and mask PRF",
+        "secret_classes": [
+          "secret_entropy",
+          "secret_witness"
+        ],
+        "required_evidence": "domain/stream review, CT arithmetic review, signer/proof drift KATs, leakage or reviewed substitute",
+        "current_evidence": "Mask-PRF KAT/equivalence gates and active secret-float scan exist, but no target leakage harness is checked in.",
+        "status": "partial",
+        "deployment_ready": false,
+        "blocker": "Add CT arithmetic review and target leakage harness or reviewed substitute for pad expansion and mask PRF."
+      },
+      {
+        "id": "witness_handling",
+        "spec_surface": "witness handling",
+        "secret_classes": [
+          "secret_witness",
+          "secret_entropy"
+        ],
+        "required_evidence": "no-export serialization tests, memory lifetime review, proof-public-boundary review",
+        "current_evidence": "No-export boundary/vector gates and accepted public-artifact negative scan exist; memory lifetime review remains open.",
+        "status": "partial",
+        "deployment_ready": false,
+        "blocker": "Add memory lifetime review and target-specific proof-public-boundary leakage review."
+      },
+      {
+        "id": "proof_generation",
+        "spec_surface": "proof generation",
+        "secret_classes": [
+          "secret_witness",
+          "secret_entropy"
+        ],
+        "required_evidence": "proof-family leakage review, blinding review, deterministic-test separation, callback/log audit",
+        "current_evidence": "Accepted KAT artifacts label deterministic proof seeds as test-only and require fresh deployment randomness; proof-family leakage review remains open.",
+        "status": "partial",
+        "deployment_ready": false,
+        "blocker": "Add proof-family leakage review, blinding review, and callback/log audit for the selected target."
+      },
+      {
+        "id": "spend_authorization",
+        "spec_surface": "spend authorization",
+        "secret_classes": [
+          "local_state_secret",
+          "secret_witness"
+        ],
+        "required_evidence": "message/context binding review, slot-state fixed-shape failure tests, no hidden diagnostics",
+        "current_evidence": "Direct spend rejection state no-mutation, public-result wrapper, malformed signature, and public-object rejection tests exist; complete leakage/fault battery remains open.",
+        "status": "partial",
+        "deployment_ready": false,
+        "blocker": "Add fixed-shape leakage/fault tests for every signer-side spend authorization failure class."
+      },
+      {
+        "id": "signer_api",
+        "spec_surface": "signer API",
+        "secret_classes": [
+          "secret_key_material",
+          "secret_witness",
+          "local_state_secret"
+        ],
+        "required_evidence": "fixed public errors, diagnostic-build separation, malformed-request fixed-shape behavior",
+        "current_evidence": "Consensus-facing public result classes are pinned; signer API diagnostic-build separation remains open.",
+        "status": "partial",
+        "deployment_ready": false,
+        "blocker": "Add signer API malformed-request and diagnostic-build separation tests."
+      },
+      {
+        "id": "storage_rollback",
+        "spec_surface": "storage and rollback",
+        "secret_classes": [
+          "local_state_secret",
+          "secret_key_material"
+        ],
+        "required_evidence": "secure state update review, crash/restore tests, no secret leakage through recovery diagnostics",
+        "current_evidence": "Direct lifecycle profile evidence exists; target storage crash/restore leakage evidence remains open.",
+        "status": "partial",
+        "deployment_ready": false,
+        "blocker": "Add target storage/rollback crash-restore leakage and recovery-diagnostic tests."
+      }
+    ],
+    "public_artifact_negative_tests": [
+      {
+        "id": "accepted_spend_tuple_public_artifact",
+        "path": "formal/kat/path2_direct_accepted_spend_tuple_evidence_v1.json",
+        "proof_byte_policy_pointer": "/manifest/deterministic_tuple_mode/proof_byte_policy",
+        "deterministic_seed_pointer": "/manifest/evidence/proof_mask_seed",
+        "public_payload_exports_private_material_pointer": null
+      },
+      {
+        "id": "account_creation_accepted_public_artifact",
+        "path": "formal/kat/path2_account_creation_accepted_proof_boundary_evidence_v1.json",
+        "proof_byte_policy_pointer": "/manifest/deterministic_proof_byte_mode/proof_byte_policy",
+        "deterministic_seed_pointer": "/manifest/evidence/proof_mask_seed",
+        "public_payload_exports_private_material_pointer": "/manifest/evidence/public_payload_exports_private_material"
+      },
+      {
+        "id": "accepted_composition_public_artifact",
+        "path": "formal/kat/path2_direct_accepted_composition_evidence_v1.json",
+        "proof_byte_policy_pointer": "/manifest/deterministic_proof_byte_mode/proof_byte_policy",
+        "deterministic_seed_pointer": "/manifest/evidence/proof_mask_seed",
+        "public_payload_exports_private_material_pointer": "/manifest/accepted_input_artifacts/account_creation_accepted_proof_boundary_evidence_artifact/audit_summary/public_payload_exports_private_material"
+      }
+    ],
+    "forbidden_exact_public_artifact_fields": [
+      "secret_key_material",
+      "secret_key",
+      "private_key",
+      "private_key_bytes",
+      "secret_witness",
+      "hidden_witness",
+      "witness_bytes",
+      "opening_tuple",
+      "private_trace_material",
+      "sampler_randomness",
+      "pad_seed",
+      "pad_seed_bytes",
+      "mask_bytes",
+      "proof_blinding",
+      "spend_randomizer",
+      "local_state_secret",
+      "callback_diagnostic",
+      "raw_dependency_error"
+    ],
+    "test_only_deterministic_seed_field": "proof_mask_seed",
+    "negative_control_status": "structural public-artifact scan only; target leakage traces and injected-leak controls remain open",
+    "deployment_ready": false
+  }
+}

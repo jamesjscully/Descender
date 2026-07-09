@@ -107,6 +107,11 @@ GATES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
         ("python3 scripts/check_active_secret_float_surface.py",),
     ),
     (
+        "Path 2 leakage battery check",
+        ("python3 scripts/check_path2_leakage_battery.py",),
+        ("python3 scripts/check_path2_leakage_battery.py",),
+    ),
+    (
         "CI/local gate parity check",
         ("python3 scripts/check_ci_local_gate_parity.py",),
         ("python3 scripts/check_ci_local_gate_parity.py",),
@@ -526,6 +531,10 @@ GATE_TRACKER_ROWS: dict[str, tuple[str, ...]] = {
         "DIR-CT-001",
         "SPEC-LEAKAGE-001",
         "ADOPT-HW-CT-001",
+    ),
+    "Path 2 leakage battery check": (
+        "DIR-CT-001",
+        "SPEC-LEAKAGE-001",
     ),
     "CI/local gate parity check": ("PROC-CI-001",),
     "tracker integrity check": ("PROC-TRACKER-002",),
