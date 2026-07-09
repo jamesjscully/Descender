@@ -856,6 +856,49 @@ def concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds
   pricedBound_eq_breakPricing := rfl
 
 /--
+Constructive break-pricing certificate directly from first-class WS7
+remaining-closure evidence.
+-/
+def concreteBreakPricingCertificate_of_ws7_remaining_closure_evidence
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (E : SelectedRustWS7RemainingClosureEvidence Trace traceDist observe) :
+    AcceptedSpendBreakPricingCertificate
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist observe) :=
+  concreteBreakPricingCertificate_of_remaining_break_bounds
+    selectedRustConcreteGameConfig
+    traceDist
+    observe
+    E.acceptedSpendBound
+    E.remainingBreakBound
+    (SelectedRustWS7RemainingClosureEvidence.acceptedSpendProb_le_bound E)
+    (SelectedRustWS7RemainingClosureEvidence.remainingBreakProb_le_bound E)
+    (SelectedRustWS7RemainingClosureEvidence.acceptedSpendBound_le_2pow_neg129 E)
+    (SelectedRustWS7RemainingClosureEvidence.remainingBreakBound_le_2pow_neg133 E)
+
+/--
+Packaged priced numeric certificate directly from first-class WS7
+remaining-closure evidence.
+-/
+def concretePricedAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (E : SelectedRustWS7RemainingClosureEvidence Trace traceDist observe) :
+    PricedAcceptedSpendNumericCertificate :=
+  concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds
+    selectedRustConcreteGameConfig
+    traceDist
+    observe
+    E.acceptedSpendBound
+    E.remainingBreakBound
+    (SelectedRustWS7RemainingClosureEvidence.acceptedSpendProb_le_bound E)
+    (SelectedRustWS7RemainingClosureEvidence.remainingBreakProb_le_bound E)
+    (SelectedRustWS7RemainingClosureEvidence.acceptedSpendBound_le_2pow_neg129 E)
+    (SelectedRustWS7RemainingClosureEvidence.remainingBreakBound_le_2pow_neg133 E)
+
+/--
 Selected-Rust concrete numeric certificate wrapper built from the faithful
 trace model and the seven remaining cryptographic break bounds.
 

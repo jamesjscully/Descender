@@ -326,14 +326,18 @@ each remaining-break probability/budget row; `concreteNumericClosure_of_ws7_rema
 and
 `concreteNumericClosure_of_ws7_remaining_closure_evidence_le_active128BitTarget`
 compose those eight rows through the concrete selected numeric game and close
-its success probability at the fixed 128-bit target; and
+its success probability at the fixed 128-bit target;
+`concreteBreakPricingCertificate_of_ws7_remaining_closure_evidence` and
+`concretePricedAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence`
+erase the same first-class evidence into the concrete break-pricing and priced
+numeric certificates; and
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence`
 erases that first-class WS7 evidence into the existing remaining-break pricing
 package while
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence_currentSelectedHardPricingReport_impossible`
 keeps the current fail-closed report guard on the WS7 route. The same
 source-shape gates require those bridge names and reject spoofed WS7 numeric
-closure and package-constructor endpoints.
+closure, concrete-certificate, and package-constructor endpoints.
 The full-signature handoff now also has
 `selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
 and
