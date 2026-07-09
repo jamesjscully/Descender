@@ -2308,6 +2308,45 @@ theorem selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128B
         hPriced hHardPricing
 
 /--
+Building WS7 evidence from the same remaining-break rows gives the same
+selected trace-model pricing witness as the direct remaining-break route.
+-/
+theorem selectedRustConcreteAcceptedSpendPricingWitness_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hHardPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete) :
+    selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts
+      traceDist observe acceptedSpendBound remainingBreakBound
+      hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing =
+    selectedRustConcreteAcceptedSpendPricingWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+      traceDist observe
+      (selectedRustWS7RemainingClosureEvidence_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget)
+      hPriced hHardPricing := by
+  rfl
+
+/--
 Single AP2-N003 hard-half package for selected accepted-spend pricing over the
 faithful remaining-break trace model.
 
@@ -6004,6 +6043,45 @@ theorem selectedRustAcceptedSpendNumericSource_componentBudget_le_pricedBound_of
         traceDist observe E hPriced hHardPricing)
 
 /--
+Building WS7 evidence from the same remaining-break rows gives the same
+selected accepted-spend numeric source as the direct remaining-break route.
+-/
+theorem selectedRustAcceptedSpendNumericSource_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hHardPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete) :
+    selectedRustAcceptedSpendNumericSource_of_remaining_break_bounds_and_current_hard_pricing_facts
+      traceDist observe acceptedSpendBound remainingBreakBound
+      hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing =
+    selectedRustAcceptedSpendNumericSource_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+      traceDist observe
+      (selectedRustWS7RemainingClosureEvidence_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget)
+      hPriced hHardPricing := by
+  rfl
+
+/--
 Selected accepted-spend certificate built from the faithful trace model and the
 seven remaining cryptographic break bounds.
 
@@ -6986,6 +7064,39 @@ def selectedRustNativeFullSignatureSecurityBoundary_of_remaining_break_bounds
     verifierGameMatchesProductionExecutionProof).toNativeFullSignatureSecurityBoundary
 
 /--
+Package direct remaining-break rows into the current hard-pricing
+remaining-break package used by the full-signature route.
+-/
+def selectedRustAcceptedSpendRemainingBreakPricingPackage_of_remaining_break_bounds_and_current_hard_pricing_facts
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hHardPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete) :
+    SelectedRustAcceptedSpendRemainingBreakPricingPackage :=
+  SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofCurrentHardPricingFacts
+    Trace traceDist observe acceptedSpendBound remainingBreakBound
+    hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing
+
+/--
 Package the selected WS7 remaining-obligation evidence into the current
 hard-pricing remaining-break package used by the full-signature route.
 -/
@@ -7003,6 +7114,45 @@ def selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closu
     SelectedRustAcceptedSpendRemainingBreakPricingPackage :=
   SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence
     Trace traceDist observe E hPriced hHardPricing
+
+/--
+Building WS7 evidence from the same remaining-break rows gives the same
+remaining-break pricing package as the direct remaining-break route.
+-/
+theorem selectedRustAcceptedSpendRemainingBreakPricingPackage_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hHardPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete) :
+    selectedRustAcceptedSpendRemainingBreakPricingPackage_of_remaining_break_bounds_and_current_hard_pricing_facts
+      traceDist observe acceptedSpendBound remainingBreakBound
+      hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing =
+    selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+      traceDist observe
+      (selectedRustWS7RemainingClosureEvidence_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget)
+      hPriced hHardPricing := by
+  rfl
 
 /--
 The direct WS7 numeric-source route exposes the same union-bound component as

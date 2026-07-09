@@ -52643,10 +52643,12 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustConcreteAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence",
         "selectedRustConcreteAcceptedSpendNumericCertificate_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence",
         "selectedRustConcreteAcceptedSpendPricingWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustConcreteAcceptedSpendPricingWitness_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendNumericSource_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustAcceptedSpendNumericSource_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendNumericSource_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendNumericSource_unionBound_le_componentBudget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendNumericSource_componentBudget_le_pricedBound_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
@@ -52654,7 +52656,9 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendNumericSource_pricedBound_eq_package_pricedBound_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence_currentSelectedHardPricingReport_impossible",
+        "selectedRustAcceptedSpendRemainingBreakPricingPackage_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustAcceptedSpendRemainingBreakPricingPackage_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustFullSignatureReductionProductionWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustFullSignatureReductionCertificate_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustNativeFullSignatureSecurityBoundary_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
@@ -52990,10 +52994,12 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustConcreteAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence",
         "selectedRustConcreteAcceptedSpendNumericCertificate_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence",
         "selectedRustConcreteAcceptedSpendPricingWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustConcreteAcceptedSpendPricingWitness_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendNumericSource_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustAcceptedSpendNumericSource_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendNumericSource_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendNumericSource_unionBound_le_componentBudget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendNumericSource_componentBudget_le_pricedBound_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
@@ -53001,7 +53007,9 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendNumericSource_pricedBound_eq_package_pricedBound_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence_currentSelectedHardPricingReport_impossible",
+        "selectedRustAcceptedSpendRemainingBreakPricingPackage_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustAcceptedSpendRemainingBreakPricingPackage_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustFullSignatureReductionProductionWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustFullSignatureReductionCertificate_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustNativeFullSignatureSecurityBoundary_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
@@ -53689,10 +53697,12 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustConcreteAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence",
         "selectedRustConcreteAcceptedSpendNumericCertificate_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence",
         "selectedRustConcreteAcceptedSpendPricingWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustConcreteAcceptedSpendPricingWitness_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendNumericSource_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustAcceptedSpendNumericSource_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendNumericSource_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendNumericSource_unionBound_le_componentBudget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendNumericSource_componentBudget_le_pricedBound_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
@@ -53700,6 +53710,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendNumericSource_pricedBound_eq_package_pricedBound_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence_currentSelectedHardPricingReport_impossible",
+        "selectedRustAcceptedSpendRemainingBreakPricingPackage_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustAcceptedSpendRemainingBreakPricingPackage_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendBound_le_2pow_neg129_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakBound_le_2pow_neg133_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_acceptedSpendBound_of_remaining_break_bounds",
@@ -54148,10 +54160,12 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustConcreteAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence",
         "selectedRustConcreteAcceptedSpendNumericCertificate_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence",
         "selectedRustConcreteAcceptedSpendPricingWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustConcreteAcceptedSpendPricingWitness_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendNumericSource_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
+        "selectedRustAcceptedSpendNumericSource_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendNumericSource_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendNumericSource_unionBound_le_componentBudget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustAcceptedSpendNumericSource_componentBudget_le_pricedBound_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
@@ -54159,6 +54173,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendNumericSource_pricedBound_eq_package_pricedBound_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence_currentSelectedHardPricingReport_impossible",
+        "selectedRustAcceptedSpendRemainingBreakPricingPackage_of_remaining_break_bounds_and_current_hard_pricing_facts",
+        "selectedRustAcceptedSpendRemainingBreakPricingPackage_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendBound_le_2pow_neg129_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakBound_le_2pow_neg133_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendProb_le_acceptedSpendBound_of_remaining_break_bounds",
@@ -90292,6 +90308,8 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     selectedRustConcreteAcceptedSpendNumericCertificate_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence
   let _fullReductionWS7EvidencePricingWitness :=
     selectedRustConcreteAcceptedSpendPricingWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+  let _fullReductionWS7EvidencePricingWitnessConstructedEq :=
+    selectedRustConcreteAcceptedSpendPricingWitness_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _fullReductionWS7EvidencePricingWitnessActiveTarget :=
     selectedRustConcreteAcceptedSpendPricingWitness_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
   let _fullReductionWS7EvidencePricingWitnessComponentBudgetTarget :=
@@ -90300,6 +90318,8 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
   let _fullReductionWS7EvidenceNumericSource :=
     selectedRustAcceptedSpendNumericSource_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+  let _fullReductionWS7EvidenceNumericSourceConstructedEq :=
+    selectedRustAcceptedSpendNumericSource_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _fullReductionWS7EvidenceNumericSourceActiveTarget :=
     selectedRustAcceptedSpendNumericSource_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
   let _fullReductionWS7EvidenceNumericSourceUnionComponentBudget :=
@@ -90314,8 +90334,12 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence
   let _fullReductionRemainingBreakPackageWS7CurrentHardImpossible :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence_currentSelectedHardPricingReport_impossible
+  let _fullReductionRemainingBreakPackageHardPricing :=
+    selectedRustAcceptedSpendRemainingBreakPricingPackage_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _fullReductionWS7RemainingBreakPackageHardPricing :=
     selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+  let _fullReductionRemainingBreakPackageConstructedWS7Eq :=
+    selectedRustAcceptedSpendRemainingBreakPricingPackage_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _fullReductionWS7ProductionWitness :=
     selectedRustFullSignatureReductionProductionWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
   let _fullReductionWS7Certificate :=
@@ -91167,6 +91191,16 @@ namespace NativeFullSignatureSecurityBoundary
                 &suffixed_full_signature_ws7_pricing_witness
             )
         );
+        let suffixed_full_signature_ws7_pricing_witness_constructed_eq =
+            full_signature_reduction_instantiation_shape.replace(
+                "selectedRustConcreteAcceptedSpendPricingWitness_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
+                "selectedRustConcreteAcceptedSpendPricingWitness_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_factsSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_ws7_pricing_witness_constructed_eq
+            )
+        );
         let suffixed_full_signature_ws7_pricing_witness_active_target =
             full_signature_reduction_instantiation_shape.replace(
                 "selectedRustConcreteAcceptedSpendPricingWitness_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
@@ -91205,6 +91239,16 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_ws7_numeric_source
+            )
+        );
+        let suffixed_full_signature_ws7_numeric_source_constructed_eq =
+            full_signature_reduction_instantiation_shape.replace(
+                "selectedRustAcceptedSpendNumericSource_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
+                "selectedRustAcceptedSpendNumericSource_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_factsSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_ws7_numeric_source_constructed_eq
             )
         );
         let suffixed_full_signature_ws7_numeric_source_active_target =
@@ -91265,6 +91309,26 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_ws7_package_constructor
+            )
+        );
+        let suffixed_full_signature_remaining_break_package_direct =
+            full_signature_reduction_instantiation_shape.replace(
+                "selectedRustAcceptedSpendRemainingBreakPricingPackage_of_remaining_break_bounds_and_current_hard_pricing_facts",
+                "selectedRustAcceptedSpendRemainingBreakPricingPackage_of_remaining_break_bounds_and_current_hard_pricing_factsSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_remaining_break_package_direct
+            )
+        );
+        let suffixed_full_signature_remaining_break_package_constructed_eq =
+            full_signature_reduction_instantiation_shape.replace(
+                "selectedRustAcceptedSpendRemainingBreakPricingPackage_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
+                "selectedRustAcceptedSpendRemainingBreakPricingPackage_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_factsSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_remaining_break_package_constructed_eq
             )
         );
         let suffixed_full_signature_ws7_production_witness =
@@ -93897,6 +93961,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustConcreteAcceptedSpendNumericCertificate_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence
   let _acceptedSpendWS7EvidencePricingWitness :=
     selectedRustConcreteAcceptedSpendPricingWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+  let _acceptedSpendWS7EvidencePricingWitnessConstructedEq :=
+    selectedRustConcreteAcceptedSpendPricingWitness_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _acceptedSpendWS7EvidencePricingWitnessActiveTarget :=
     selectedRustConcreteAcceptedSpendPricingWitness_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
   let _acceptedSpendWS7EvidencePricingWitnessComponentBudgetTarget :=
@@ -93905,6 +93971,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
   let _acceptedSpendWS7EvidenceNumericSource :=
     selectedRustAcceptedSpendNumericSource_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+  let _acceptedSpendWS7EvidenceNumericSourceConstructedEq :=
+    selectedRustAcceptedSpendNumericSource_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _acceptedSpendWS7EvidenceNumericSourceActiveTarget :=
     selectedRustAcceptedSpendNumericSource_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
   let _acceptedSpendWS7EvidenceNumericSourceUnionComponentBudget :=
@@ -93919,6 +93987,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence
   let _acceptedSpendRemainingBreakPackageWS7CurrentHardImpossible :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence_currentSelectedHardPricingReport_impossible
+  let _acceptedSpendRemainingBreakPackageHardPricing :=
+    selectedRustAcceptedSpendRemainingBreakPricingPackage_of_remaining_break_bounds_and_current_hard_pricing_facts
+  let _acceptedSpendRemainingBreakPackageConstructedWS7Eq :=
+    selectedRustAcceptedSpendRemainingBreakPricingPackage_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _acceptedSpendTracePricingWitnessAcceptedComponentEndpoint :=
     selectedRustConcreteAcceptedSpendPricingWitness_acceptedSpendBound_le_2pow_neg129_of_remaining_break_bounds
   let _acceptedSpendTracePricingWitnessBreakComponentEndpoint :=
@@ -94396,6 +94468,16 @@ end Path2NativeAccountDesign
                 &suffixed_ws7_pricing_witness
             )
         );
+        let suffixed_ws7_pricing_witness_constructed_eq =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustConcreteAcceptedSpendPricingWitness_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
+                "selectedRustConcreteAcceptedSpendPricingWitness_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_factsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_ws7_pricing_witness_constructed_eq
+            )
+        );
         let suffixed_ws7_pricing_witness_active_target =
             accepted_spend_instantiation_shape.replace(
                 "selectedRustConcreteAcceptedSpendPricingWitness_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
@@ -94433,6 +94515,16 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_ws7_numeric_source
+            )
+        );
+        let suffixed_ws7_numeric_source_constructed_eq =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustAcceptedSpendNumericSource_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
+                "selectedRustAcceptedSpendNumericSource_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_factsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_ws7_numeric_source_constructed_eq
             )
         );
         let suffixed_ws7_numeric_source_active_target =
@@ -94493,6 +94585,26 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_ws7_package_constructor
+            )
+        );
+        let suffixed_remaining_break_package_direct =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustAcceptedSpendRemainingBreakPricingPackage_of_remaining_break_bounds_and_current_hard_pricing_facts",
+                "selectedRustAcceptedSpendRemainingBreakPricingPackage_of_remaining_break_bounds_and_current_hard_pricing_factsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_remaining_break_package_direct
+            )
+        );
+        let suffixed_remaining_break_package_constructed_eq =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustAcceptedSpendRemainingBreakPricingPackage_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
+                "selectedRustAcceptedSpendRemainingBreakPricingPackage_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_factsSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_remaining_break_package_constructed_eq
             )
         );
         let suffixed_trace_endpoint_remaining_break_prob_active_target =

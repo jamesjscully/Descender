@@ -353,6 +353,9 @@ and
 `selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
 expose the composed component-budget and union-bound target steps on the direct
 WS7 pricing-witness route;
+`selectedRustConcreteAcceptedSpendPricingWitness_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts`
+now pins the direct remaining-break-bounds pricing-witness constructor to the
+constructed WS7 evidence route by definitional equality;
 `selectedRustAcceptedSpendNumericSource_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
 then erases the WS7 pricing witness into the selected accepted-spend numeric
 source, and
@@ -367,7 +370,13 @@ bound steps; and
 and
 `selectedRustAcceptedSpendNumericSource_pricedBound_eq_package_pricedBound_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
 pin the direct numeric-source route to the package route used by the production
-probability/bound arguments; and
+probability/bound arguments, while
+`selectedRustAcceptedSpendNumericSource_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts`
+does the same for the constructed WS7 evidence route; and
+`selectedRustAcceptedSpendRemainingBreakPricingPackage_of_remaining_break_bounds_and_current_hard_pricing_facts`
+exposes the direct remaining-break-bounds package endpoint, with
+`selectedRustAcceptedSpendRemainingBreakPricingPackage_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts`
+pinning it to the constructed WS7 evidence route;
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence`
 erases that first-class WS7 evidence into the existing remaining-break pricing
 package while
@@ -375,9 +384,10 @@ package while
 keeps the current fail-closed report guard on the WS7 route. The same
 source-shape gates require those bridge names and reject spoofed WS7 numeric
 closure, concrete-certificate, selected-certificate, pricing-witness,
-pricing-witness-budget, numeric-source-budget, package-pin, and
-package-constructor endpoints, plus the selected WS7 evidence constructor and
-nonempty evidence endpoints.
+pricing-witness-budget, constructed-route equality, numeric-source-budget,
+package-pin, direct-package, package-equality, and package-constructor
+endpoints, plus the selected WS7 evidence constructor and nonempty evidence
+endpoints.
 The full-signature handoff now also has
 `selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
 and
@@ -849,7 +859,9 @@ and the active hash-boundary
 also requires the `WS7RemainingClosureObligation` surface and the
 `ws7RemainingClosureObligations_card` eight-row proof before accepting a future
 full-reduction candidate, requires the WS7 evidence-to-package bridge before
-that route can consume remaining-break bounds, requires the WS7-to-production-witness
+that route can consume remaining-break bounds, requires the direct
+remaining-break-to-constructed-WS7 equality bridges for pricing witnesses,
+numeric sources, and pricing packages, requires the WS7-to-production-witness
 handoff plus WS7 certificate/native-boundary projection handoff, and rejects
 spoofed hard-fact equivalence,
 accepted-spend package blocker, active
