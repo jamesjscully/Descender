@@ -47,5 +47,8 @@ RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.
 RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib deployment_callback_boundary_gate_rejects_diagnostic_paths
 RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib default_deployment_callback_profile_is_complete_and_sanitized
 
+echo "== active fast test: storage failure fail-closed evidence =="
+RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib chain_state_file_stores_lifecycle_save_failure_is_fail_closed_after_ledger_persist
+
 echo "== active fast test: recursion config scaffold smoke =="
 RUSTFLAGS="-D warnings" cargo test --manifest-path tools/descender-recursion/Cargo.toml phase1_scaffold_wired_to_leaf_config

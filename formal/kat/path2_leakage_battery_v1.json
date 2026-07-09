@@ -122,7 +122,7 @@
           "secret_key_material"
         ],
         "required_evidence": "secure state update review, crash/restore tests, no secret leakage through recovery diagnostics",
-        "current_evidence": "Direct lifecycle profile evidence exists; target storage crash/restore leakage evidence remains open.",
+        "current_evidence": "Direct lifecycle profile evidence exists, and chain-state file-store evidence pins the post-ledger lifecycle snapshot write-failure case as fail-closed on replay; target storage crash/restore leakage evidence remains open.",
         "status": "partial",
         "deployment_ready": false,
         "blocker": "Add target storage/rollback crash-restore leakage and recovery-diagnostic tests."
@@ -432,6 +432,50 @@
         ],
         "negative_control_status": "deployment callback-boundary fixed-shape evidence only; non-callback dependency/storage/resource failures and target-profile leakage traces remain open",
         "deployment_ready": false
+      },
+      {
+        "id": "chain_state_storage_failure_fail_closed",
+        "surface_ids": [
+          "spend_authorization",
+          "signer_api",
+          "storage_rollback"
+        ],
+        "source_path": "tools/parameter-search/src/production_reference.rs",
+        "fast_gate_path": "scripts/check_active_rust_fast_tests.sh",
+        "reproducibility_commands": [
+          "RUSTFLAGS=\"-D warnings\" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib chain_state_file_stores_lifecycle_save_failure_is_fail_closed_after_ledger_persist"
+        ],
+        "required_test_functions": [
+          "chain_state_file_stores_lifecycle_save_failure_is_fail_closed_after_ledger_persist"
+        ],
+        "required_public_result_classes": [],
+        "covered_failure_cases": [
+          "lifecycle snapshot write failure after spent-ledger persistence returns an error rather than a verification report",
+          "persisted spent ledger records the slot even when lifecycle snapshot commit fails",
+          "lifecycle snapshot remains at the pre-spend unused-slot state after the failed commit",
+          "retry is blocked by the persisted spent ledger before invoking the verifier callback",
+          "storage-failure diagnostics are screened for secret sentinels",
+          "lifecycle and spent-ledger locks are released after the failed save"
+        ],
+        "open_failure_cases": [
+          "entropy-source failure",
+          "ledger write failure before durable spent-slot record",
+          "storage write failure under non-file target database adapters",
+          "resource-limit failure under target profile",
+          "target database atomic transaction review"
+        ],
+        "required_source_markers": [
+          "chain_state_file_stores_lifecycle_save_failure_is_fail_closed_after_ledger_persist",
+          "create temp snapshot",
+          "slot is already in spent ledger",
+          "must not run",
+          "assert_public_report_excludes_secret_sentinels(&err)",
+          "assert!(!stores.lifecycle_store().lock_path().exists())",
+          "assert!(restored_manager.account().get_slot(0).unwrap().is_unused())",
+          "assert!(restored_ledger.is_spent(&key))"
+        ],
+        "negative_control_status": "post-ledger lifecycle snapshot write-failure evidence only; ledger-write, target database, dependency/resource, and target-profile leakage failures remain open",
+        "deployment_ready": false
       }
     ],
     "manual_empirical_harnesses": [
@@ -507,7 +551,7 @@
       "raw_dependency_error"
     ],
     "test_only_deterministic_seed_field": "proof_mask_seed",
-    "negative_control_status": "accepted/rejected transcript-shape, direct-spend transcript redaction, direct-spend fixed-shape public-result evidence, deployment callback-boundary fixed-shape evidence, plus manual empirical mask-channel harness scan only; target leakage traces, signer-side non-callback dependency/storage/resource failures, and injected-leak controls remain open",
+    "negative_control_status": "accepted/rejected transcript-shape, direct-spend transcript redaction, direct-spend fixed-shape public-result evidence, deployment callback-boundary fixed-shape evidence, post-ledger storage failure fail-closed evidence, plus manual empirical mask-channel harness scan only; target leakage traces, signer-side ledger-write/target-database/resource failures, and injected-leak controls remain open",
     "deployment_ready": false
   }
 }

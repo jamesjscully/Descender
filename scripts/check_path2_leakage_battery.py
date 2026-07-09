@@ -80,6 +80,10 @@ EXPECTED_CALLBACK_FIXED_SHAPE_FUNCTIONS = (
     "default_deployment_callback_profile_is_complete_and_sanitized",
 )
 
+EXPECTED_STORAGE_FIXED_SHAPE_FUNCTIONS = (
+    "chain_state_file_stores_lifecycle_save_failure_is_fail_closed_after_ledger_persist",
+)
+
 EXPECTED_PUBLIC_RESULT_CLASSES = (
     "accept_admit_slot",
     "accept_spend_slot",
@@ -368,7 +372,11 @@ def main() -> None:
     fixed_shape_row_ids = [row.get("id") for row in fixed_shape_rows if isinstance(row, dict)]
     require(
         tuple(fixed_shape_row_ids)
-        == ("direct_spend_public_result_fixed_shape", "deployment_callback_boundary_fixed_shape"),
+        == (
+            "direct_spend_public_result_fixed_shape",
+            "deployment_callback_boundary_fixed_shape",
+            "chain_state_storage_failure_fail_closed",
+        ),
         "fixed-shape failure row set/order drifted",
     )
     for row in fixed_shape_rows:
@@ -431,6 +439,29 @@ def main() -> None:
             require(
                 any("non-callback dependency failure" in case for case in open_cases),
                 f"{row_id}: non-callback dependency failures must remain open",
+            )
+        elif row_id == "chain_state_storage_failure_fail_closed":
+            require(
+                tuple(row.get("required_test_functions", [])) == EXPECTED_STORAGE_FIXED_SHAPE_FUNCTIONS,
+                f"{row_id}: storage fixed-shape test function set drifted",
+            )
+            for test_fn in EXPECTED_STORAGE_FIXED_SHAPE_FUNCTIONS:
+                require(f"fn {test_fn}(" in source, f"{row_id}: missing storage fixed-shape test function {test_fn}")
+            require(
+                not row.get("required_public_result_classes"),
+                f"{row_id}: storage row must not pretend to close public result-class coverage",
+            )
+            require(
+                any("lifecycle snapshot write failure" in case for case in covered_cases),
+                f"{row_id}: lifecycle snapshot write failure coverage must be explicit",
+            )
+            require(
+                any("retry is blocked by the persisted spent ledger" in case for case in covered_cases),
+                f"{row_id}: persisted-ledger retry blocking must be explicit",
+            )
+            require(
+                any("ledger write failure before durable spent-slot record" in case for case in open_cases),
+                f"{row_id}: ledger-write failure must remain open",
             )
         else:  # pragma: no cover - row id set is checked above
             raise SystemExit(f"unknown fixed-shape row {row_id}")

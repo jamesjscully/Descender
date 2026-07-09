@@ -121161,6 +121161,73 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
     }
 
     #[test]
+    fn chain_state_file_stores_lifecycle_save_failure_is_fail_closed_after_ledger_persist() {
+        let lifecycle_path = temp_json_path("descender-chain-lifecycle-save-fail");
+        let ledger_path = temp_json_path("descender-chain-ledger-save-fail");
+        let stores = ProductionChainStateFileStores::new(&lifecycle_path, &ledger_path);
+
+        let public_key = ProductionPublicKey::new(vec![0_u8; PK_BYTES]).unwrap();
+        let message = b"chain state lifecycle save failure";
+        let (account, signature) = sample_account_and_signature();
+        stores
+            .lifecycle_store()
+            .save_manager(&ProductionAccountLifecycleManager::new(account).unwrap())
+            .unwrap();
+
+        let lifecycle_tmp_path = stores.lifecycle_store().tmp_path();
+        std::fs::create_dir(&lifecycle_tmp_path).unwrap();
+        let callback_calls = Cell::new(0_usize);
+        let err = stores
+            .verify_consume_record_and_save_sanitized(
+                None,
+                &public_key,
+                message,
+                &signature,
+                |_public_key, _message, _account, _signature, checked| {
+                    callback_calls.set(callback_calls.get() + 1);
+                    assert_eq!(checked.slot_id(), 0);
+                    Ok("accepted")
+                },
+            )
+            .unwrap_err();
+        assert_eq!(callback_calls.get(), 1);
+        assert!(err.reason().contains("create temp snapshot"));
+        assert_public_report_excludes_secret_sentinels(&err);
+        assert!(!stores.lifecycle_store().lock_path().exists());
+        assert!(!stores.spent_ledger_store().lock_path().exists());
+
+        let restored_ledger = stores.spent_ledger_store().load_ledger().unwrap().unwrap();
+        let key = ProductionSpentSlotLedger::key(&public_key, 0);
+        assert!(restored_ledger.is_spent(&key));
+        let restored_manager = stores.lifecycle_store().load_manager().unwrap().unwrap();
+        assert_eq!(restored_manager.snapshot_sequence(), 0);
+        assert!(restored_manager.account().get_slot(0).unwrap().is_unused());
+
+        let replay_calls = Cell::new(0_usize);
+        let replay = stores
+            .verify_consume_record_and_save_sanitized(
+                None,
+                &public_key,
+                message,
+                &signature,
+                |_public_key, _message, _account, _signature, _checked| {
+                    replay_calls.set(replay_calls.get() + 1);
+                    Ok("must not run")
+                },
+            )
+            .unwrap_err();
+        assert_eq!(replay.reason(), "slot is already in spent ledger");
+        assert_eq!(replay_calls.get(), 0);
+        assert_public_report_excludes_secret_sentinels(&replay);
+
+        let _ = std::fs::remove_file(lifecycle_path);
+        let _ = std::fs::remove_file(ledger_path);
+        let _ = std::fs::remove_dir(lifecycle_tmp_path);
+        let _ = std::fs::remove_file(stores.lifecycle_store().lock_path());
+        let _ = std::fs::remove_file(stores.spent_ledger_store().lock_path());
+    }
+
+    #[test]
     fn lifecycle_manager_recovery_burns_reserved_slots() {
         let (account, signature) = sample_account_and_signature();
         let mut manager = ProductionAccountLifecycleManager::new(account).unwrap();
