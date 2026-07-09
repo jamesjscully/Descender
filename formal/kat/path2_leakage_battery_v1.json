@@ -316,6 +316,69 @@
         ]
       }
     ],
+    "fixed_shape_failure_tests": [
+      {
+        "id": "direct_spend_public_result_fixed_shape",
+        "surface_ids": [
+          "spend_authorization",
+          "signer_api",
+          "storage_rollback"
+        ],
+        "source_path": "tools/parameter-search/src/production_reference.rs",
+        "fast_gate_path": "scripts/check_active_rust_fast_tests.sh",
+        "reproducibility_commands": [
+          "RUSTFLAGS=\"-D warnings\" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib path2_direct_single_slot_spend_rejections_preserve_consume_once_state",
+          "RUSTFLAGS=\"-D warnings\" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib path2_public_result_class_v1_names_match_consensus_spec",
+          "RUSTFLAGS=\"-D warnings\" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib path2_direct_single_slot_spend_malformed_signature_kats_are_panic_free",
+          "RUSTFLAGS=\"-D warnings\" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib path2_direct_single_slot_spend_public_object_rejection_kats_are_panic_free",
+          "RUSTFLAGS=\"-D warnings\" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib path2_direct_single_slot_spend_public_result_wrapper_hides_internal_diagnostics"
+        ],
+        "required_test_functions": [
+          "path2_direct_single_slot_spend_rejections_preserve_consume_once_state",
+          "path2_public_result_class_v1_names_match_consensus_spec",
+          "path2_direct_single_slot_spend_malformed_signature_kats_are_panic_free",
+          "path2_direct_single_slot_spend_public_object_rejection_kats_are_panic_free",
+          "path2_direct_single_slot_spend_public_result_wrapper_hides_internal_diagnostics"
+        ],
+        "required_public_result_classes": [
+          "accept_admit_slot",
+          "accept_spend_slot",
+          "reject_malformed_public_input",
+          "reject_unsupported_version",
+          "reject_binding_mismatch",
+          "reject_creation_evidence",
+          "reject_checked_core",
+          "reject_lifecycle_state",
+          "reject_policy",
+          "reject_resource_limit",
+          "internal_error_fail_closed"
+        ],
+        "covered_failure_cases": [
+          "malformed checked-core signatures reject panic-free with fixed public class",
+          "malformed public leaf/evidence/certificate objects reject panic-free with fixed public class",
+          "checked-core rebinding rejects through a public checked-core class",
+          "already-consumed slots reject without mutating consume-once state",
+          "public result wrapper hides internal diagnostics and preserves rejection state"
+        ],
+        "open_failure_cases": [
+          "pending and burned slot signer-side fixed-shape behavior",
+          "entropy-source failure",
+          "callback or dependency failure",
+          "storage write failure before releasing an authorization",
+          "resource-limit failure under target profile"
+        ],
+        "required_source_markers": [
+          "Path2DirectSpendPublicResultV1::rejected",
+          "reject_private_detail",
+          "malformed signature case {label} panicked",
+          "direct public object case {label} panicked",
+          "public result wrapper changed state on lifecycle rejection",
+          "mutated consume-once state"
+        ],
+        "negative_control_status": "direct spend fixed-shape public-result and no-mutation evidence only; signer-side target failures, dependency/storage/resource failures, and target-profile leakage traces remain open",
+        "deployment_ready": false
+      }
+    ],
     "manual_empirical_harnesses": [
       {
         "id": "account_stark_hiding_mask_channel",
@@ -389,7 +452,7 @@
       "raw_dependency_error"
     ],
     "test_only_deterministic_seed_field": "proof_mask_seed",
-    "negative_control_status": "accepted/rejected transcript-shape, direct-spend transcript redaction, plus manual empirical mask-channel harness scan only; target leakage traces and injected-leak controls remain open",
+    "negative_control_status": "accepted/rejected transcript-shape, direct-spend transcript redaction, direct-spend fixed-shape public-result evidence, plus manual empirical mask-channel harness scan only; target leakage traces, signer-side dependency/storage/resource failures, and injected-leak controls remain open",
     "deployment_ready": false
   }
 }

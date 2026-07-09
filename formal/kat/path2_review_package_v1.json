@@ -74,7 +74,7 @@
       },
       {
         "path": "TRACKER.md",
-        "sha256": "5e9864615f30e708fd81042e723aae040d43d3da66dd93508727e68f38348221"
+        "sha256": "92cfd2dca6ca860e5c6d986f12bf5099eec4388a10a43de976afd447d31c6bd6"
       },
       {
         "path": "formal/kat/path2_direct_theorem_boundary_v1.json",
@@ -102,7 +102,7 @@
       },
       {
         "path": "formal/kat/path2_leakage_battery_v1.json",
-        "sha256": "0c43a3f84504af23f76786e5b8e53b982337e6ec1171800ba82a20a55e9aa304"
+        "sha256": "28c344ae614b5f9e75616a84bc383a799e071f185533ff23f0cb20b904c6f381"
       }
     ],
     "reproduction_commands": [

@@ -64,6 +64,28 @@ FORBIDDEN_OBSERVED_ERROR_SUBSTRINGS = (
     "callback diagnostic",
 )
 
+EXPECTED_FIXED_SHAPE_FUNCTIONS = (
+    "path2_direct_single_slot_spend_rejections_preserve_consume_once_state",
+    "path2_public_result_class_v1_names_match_consensus_spec",
+    "path2_direct_single_slot_spend_malformed_signature_kats_are_panic_free",
+    "path2_direct_single_slot_spend_public_object_rejection_kats_are_panic_free",
+    "path2_direct_single_slot_spend_public_result_wrapper_hides_internal_diagnostics",
+)
+
+EXPECTED_PUBLIC_RESULT_CLASSES = (
+    "accept_admit_slot",
+    "accept_spend_slot",
+    "reject_malformed_public_input",
+    "reject_unsupported_version",
+    "reject_binding_mismatch",
+    "reject_creation_evidence",
+    "reject_checked_core",
+    "reject_lifecycle_state",
+    "reject_policy",
+    "reject_resource_limit",
+    "internal_error_fail_closed",
+)
+
 
 def require_hex_digest(value: Any, label: str) -> None:
     require(isinstance(value, str), f"{label}: digest is not a string")
@@ -329,12 +351,61 @@ def main() -> None:
             leaked = sorted(forbidden & walk_keys(case))
             require(not leaked, f"{row['id']}/{case_id}: rejection case has forbidden exact fields {leaked}")
 
+    known_surfaces = {row["id"] for row in surfaces}
+    fixed_shape_rows = manifest.get("fixed_shape_failure_tests")
+    require(
+        isinstance(fixed_shape_rows, list) and fixed_shape_rows,
+        "missing fixed-shape failure test rows",
+    )
+    for row in fixed_shape_rows:
+        row_id = row["id"]
+        require(row.get("deployment_ready") is False, f"{row_id}: fixed-shape row must not be deployment-ready")
+        surface_ids = row.get("surface_ids")
+        require(isinstance(surface_ids, list) and surface_ids, f"{row_id}: surface_ids must be nonempty")
+        unknown = sorted(set(surface_ids) - known_surfaces)
+        require(not unknown, f"{row_id}: unknown leakage surfaces {unknown}")
+        require(
+            set(surface_ids) >= {"spend_authorization", "signer_api"},
+            f"{row_id}: fixed-shape row must cover spend authorization and signer API",
+        )
+
+        source = (ROOT / row["source_path"]).read_text()
+        fast_gate = (ROOT / row["fast_gate_path"]).read_text()
+        commands = row.get("reproducibility_commands")
+        require(isinstance(commands, list) and commands, f"{row_id}: reproducibility commands missing")
+        for command in commands:
+            require(command in fast_gate, f"{row_id}: command missing from fast gate: {command}")
+
+        require(
+            tuple(row.get("required_test_functions", [])) == EXPECTED_FIXED_SHAPE_FUNCTIONS,
+            f"{row_id}: fixed-shape test function set drifted",
+        )
+        for test_fn in EXPECTED_FIXED_SHAPE_FUNCTIONS:
+            require(f"fn {test_fn}(" in source, f"{row_id}: missing fixed-shape test function {test_fn}")
+
+        require(
+            tuple(row.get("required_public_result_classes", [])) == EXPECTED_PUBLIC_RESULT_CLASSES,
+            f"{row_id}: public result class set drifted",
+        )
+        for class_name in EXPECTED_PUBLIC_RESULT_CLASSES:
+            require(class_name in source, f"{row_id}: missing public result class name {class_name}")
+
+        covered_cases = row.get("covered_failure_cases")
+        open_cases = row.get("open_failure_cases")
+        require(isinstance(covered_cases, list) and len(covered_cases) >= 5, f"{row_id}: covered cases missing")
+        require(isinstance(open_cases, list) and len(open_cases) >= 5, f"{row_id}: open cases missing")
+        require(any("entropy-source failure" in case for case in open_cases), f"{row_id}: entropy failure must remain open")
+        require(any("storage write failure" in case for case in open_cases), f"{row_id}: storage failure must remain open")
+        require(any("resource-limit failure" in case for case in open_cases), f"{row_id}: resource-limit failure must remain open")
+        require(row.get("negative_control_status"), f"{row_id}: negative-control status is required")
+        for marker in row["required_source_markers"]:
+            require(marker in source, f"{row_id}: source missing fixed-shape marker {marker!r}")
+
     harness_rows = manifest.get("manual_empirical_harnesses")
     require(
         isinstance(harness_rows, list) and harness_rows,
         "missing manual empirical leakage harness rows",
     )
-    known_surfaces = {row["id"] for row in surfaces}
     target_id = target_profile.get("target_id")
     for row in harness_rows:
         row_id = row["id"]
@@ -367,6 +438,7 @@ def main() -> None:
         f"{len(accepted_shape_rows)} accepted transcript scans, "
         f"{len(direct_redaction_rows)} direct spend redaction scans, "
         f"{len(rejection_shape_rows)} rejection transcript scans, "
+        f"{len(fixed_shape_rows)} fixed-shape failure scans, "
         f"{len(harness_rows)} manual empirical harness scans)."
     )
 
