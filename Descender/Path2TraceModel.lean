@@ -1132,6 +1132,73 @@ theorem concretePricedAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_
     traceDist observe E⟩
 
 /--
+Constructing first-class WS7 evidence from the per-event rows and then
+building the break-pricing certificate is the same selected concrete
+certificate route as building it from those rows directly.
+-/
+theorem concreteBreakPricingCertificate_eq_ws7_constructed_of_remaining_break_bounds
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
+    concreteBreakPricingCertificate_of_remaining_break_bounds
+      selectedRustConcreteGameConfig traceDist observe
+      acceptedSpendBound remainingBreakBound
+      hAccept hBreak hAcceptBudget hBreakBudget =
+    concreteBreakPricingCertificate_of_ws7_remaining_closure_evidence
+      traceDist observe
+      (selectedRustWS7RemainingClosureEvidence_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget) := by
+  rfl
+
+/--
+The packaged priced numeric certificate follows the same direct-vs-constructed
+WS7 route equality as the underlying break-pricing certificate.
+-/
+theorem concretePricedAcceptedSpendNumericCertificate_eq_ws7_constructed_of_remaining_break_bounds
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
+    concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds
+      selectedRustConcreteGameConfig traceDist observe
+      acceptedSpendBound remainingBreakBound
+      hAccept hBreak hAcceptBudget hBreakBudget =
+    concretePricedAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence
+      traceDist observe
+      (selectedRustWS7RemainingClosureEvidence_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget) := by
+  rfl
+
+/--
 Selected-Rust concrete numeric certificate wrapper built from the faithful
 trace model and the seven remaining cryptographic break bounds.
 
@@ -1238,6 +1305,86 @@ theorem selectedRustConcreteAcceptedSpendNumericCertificate_nonempty_of_ws7_rema
     Nonempty SelectedRustConcreteAcceptedSpendNumericCertificate :=
   ⟨selectedRustConcreteAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence
     traceDist observe E⟩
+
+/--
+The direct per-event rows inhabit the selected-Rust concrete accepted-spend
+numeric certificate wrapper with the selected report digests.
+-/
+theorem selectedRustConcreteAcceptedSpendNumericCertificate_nonempty_of_remaining_break_bounds
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
+    Nonempty SelectedRustConcreteAcceptedSpendNumericCertificate :=
+  ⟨selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds
+    traceDist
+    observe
+    acceptedSpendBound
+    remainingBreakBound
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).finiteTraceSupportDigest
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).activeOutcomeCarrierDigest
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendEventSemanticsDigest
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).activeBreakFamilyDigest
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).namedBreakEventsDigest
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendUnionBoundPricingDigest
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundDigest
+    hAccept hBreak hAcceptBudget hBreakBudget⟩
+
+/--
+Constructing first-class WS7 evidence from the per-event rows and then
+building the selected wrapper is the same selected-report-digest certificate
+as building that wrapper directly from the rows.
+-/
+theorem selectedRustConcreteAcceptedSpendNumericCertificate_eq_ws7_constructed_of_remaining_break_bounds
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame selectedRustConcreteGameConfig traceDist
+          observe).acceptedSpendProb ≤ acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist
+            observe).breakProb breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
+    selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds
+      traceDist
+      observe
+      acceptedSpendBound
+      remainingBreakBound
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).finiteTraceSupportDigest
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).activeOutcomeCarrierDigest
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendEventSemanticsDigest
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).activeBreakFamilyDigest
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).namedBreakEventsDigest
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendUnionBoundPricingDigest
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundDigest
+      hAccept hBreak hAcceptBudget hBreakBudget =
+    selectedRustConcreteAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence
+      traceDist observe
+      (selectedRustWS7RemainingClosureEvidence_of_remaining_break_bounds
+        traceDist observe acceptedSpendBound remainingBreakBound
+        hAccept hBreak hAcceptBudget hBreakBudget) := by
+  rfl
 
 /--
 The selected concrete numeric certificate built from WS7 evidence closes its

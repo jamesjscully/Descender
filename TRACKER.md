@@ -350,6 +350,14 @@ make those concrete certificate inhabitants explicit;
 then binds that WS7 evidence to the selected concrete numeric certificate, and
 `selectedRustConcreteAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidence`
 exposes the corresponding selected-Rust certificate inhabitant;
+`selectedRustConcreteAcceptedSpendNumericCertificate_nonempty_of_remaining_break_bounds`
+also names the direct per-row selected-certificate inhabitant, while
+`concreteBreakPricingCertificate_eq_ws7_constructed_of_remaining_break_bounds`,
+`concretePricedAcceptedSpendNumericCertificate_eq_ws7_constructed_of_remaining_break_bounds`,
+and
+`selectedRustConcreteAcceptedSpendNumericCertificate_eq_ws7_constructed_of_remaining_break_bounds`
+pin the direct per-row certificate constructors to the certificates obtained
+after first constructing WS7 evidence from the same rows;
 `selectedRustConcreteAcceptedSpendNumericCertificate_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence`
 carries the selected certificate to the active target;
 `selectedRustConcreteAcceptedSpendPricingWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
@@ -393,7 +401,9 @@ package while
 keeps the current fail-closed report guard on the WS7 route. The same
 source-shape gates require those bridge names and reject spoofed WS7 numeric
 closure, component-budget arithmetic, concrete-certificate, certificate
-inhabitant, selected-certificate, selected-certificate inhabitant,
+inhabitant, certificate-equality, selected-certificate,
+selected-certificate inhabitant, direct selected-certificate inhabitant,
+selected-certificate equality,
 pricing-witness, pricing-witness-budget, constructed-route equality,
 numeric-source-budget, package-pin, direct-package, package-equality, and
 package-constructor endpoints, plus the selected WS7 evidence constructor and
