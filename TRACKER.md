@@ -344,7 +344,12 @@ keeps that witness on the active target;
 then erases the WS7 pricing witness into the selected accepted-spend numeric
 source, and
 `selectedRustAcceptedSpendNumericSource_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
-keeps the selected source on the active target; and
+keeps the selected source on the active target;
+`selectedRustAcceptedSpendNumericSource_unionBound_eq_package_unionBound_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
+and
+`selectedRustAcceptedSpendNumericSource_pricedBound_eq_package_pricedBound_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
+pin the direct numeric-source route to the package route used by the production
+probability/bound arguments; and
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence`
 erases that first-class WS7 evidence into the existing remaining-break pricing
 package while
@@ -352,7 +357,7 @@ package while
 keeps the current fail-closed report guard on the WS7 route. The same
 source-shape gates require those bridge names and reject spoofed WS7 numeric
 closure, concrete-certificate, selected-certificate, pricing-witness,
-numeric-source, and package-constructor endpoints.
+numeric-source, package-pin, and package-constructor endpoints.
 The full-signature handoff now also has
 `selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
 and

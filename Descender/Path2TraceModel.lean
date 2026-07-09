@@ -6767,6 +6767,50 @@ def selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closu
     Trace traceDist observe E hPriced hHardPricing
 
 /--
+The direct WS7 numeric-source route exposes the same union-bound component as
+the WS7 remaining-break pricing package route.
+-/
+theorem selectedRustAcceptedSpendNumericSource_unionBound_eq_package_unionBound_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (E : SelectedRustWS7RemainingClosureEvidence Trace traceDist observe)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hHardPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete) :
+    (selectedRustAcceptedSpendNumericSource_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+      traceDist observe E hPriced hHardPricing).pricedCertificate.unionBound =
+    (SelectedRustAcceptedSpendRemainingBreakPricingPackage.toSelectedAcceptedSpendNumericSource
+      (selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+        traceDist observe E hPriced hHardPricing)).pricedCertificate.unionBound := by
+  rfl
+
+/--
+The direct WS7 numeric-source route exposes the same priced-bound component as
+the WS7 remaining-break pricing package route.
+-/
+theorem selectedRustAcceptedSpendNumericSource_pricedBound_eq_package_pricedBound_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (E : SelectedRustWS7RemainingClosureEvidence Trace traceDist observe)
+    (hPriced :
+      (1 : ℝ) / 2 ^ 128 ≤
+        ((2 : ℝ) ^
+          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (hHardPricing :
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.HardPricingFactsComplete) :
+    (selectedRustAcceptedSpendNumericSource_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+      traceDist observe E hPriced hHardPricing).pricedCertificate.pricedBound =
+    (SelectedRustAcceptedSpendRemainingBreakPricingPackage.toSelectedAcceptedSpendNumericSource
+      (selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts
+        traceDist observe E hPriced hHardPricing)).pricedCertificate.pricedBound := by
+  rfl
+
+/--
 Selected full-reduction production witness built from the first-class WS7
 remaining-obligation evidence and the current hard pricing/production facts.
 -/
