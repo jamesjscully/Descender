@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Validate the Path 2 leakage battery manifest and first public-artifact scan.
+"""Validate the Path 2 leakage battery manifest and public leakage scans.
 
 This is a fail-closed boundary gate. It does not claim signer leakage readiness;
-it pins the required leakage surfaces from spec/leakage_profile.md and checks
-that accepted public evidence artifacts keep deterministic proof seeds labeled
-as test-only while avoiding exact forbidden secret-material fields.
+it pins the required leakage surfaces from spec/leakage_profile.md, checks that
+accepted public evidence artifacts keep deterministic proof seeds labeled as
+test-only while avoiding exact forbidden secret-material fields, and verifies
+that manual empirical harness metadata stays wired to its reproducibility source.
 """
 
 from __future__ import annotations
@@ -275,11 +276,44 @@ def main() -> None:
             leaked = sorted(forbidden & walk_keys(case))
             require(not leaked, f"{row['id']}/{case_id}: rejection case has forbidden exact fields {leaked}")
 
+    harness_rows = manifest.get("manual_empirical_harnesses")
+    require(
+        isinstance(harness_rows, list) and harness_rows,
+        "missing manual empirical leakage harness rows",
+    )
+    known_surfaces = {row["id"] for row in surfaces}
+    target_id = target_profile.get("target_id")
+    for row in harness_rows:
+        row_id = row["id"]
+        require(row.get("deployment_ready") is False, f"{row_id}: manual harness must not be deployment-ready")
+        require(row.get("target_id") == target_id, f"{row_id}: target profile mismatch")
+        surface_ids = row.get("surface_ids")
+        require(isinstance(surface_ids, list) and surface_ids, f"{row_id}: surface_ids must be nonempty")
+        unknown = sorted(set(surface_ids) - known_surfaces)
+        require(not unknown, f"{row_id}: unknown leakage surfaces {unknown}")
+        require(row.get("sample_count") == 4000, f"{row_id}: sample count drifted")
+        require("chi2 < 120.0" in row.get("threshold", ""), f"{row_id}: threshold must pin chi2 < 120.0")
+        require(row.get("negative_control_status"), f"{row_id}: negative-control status is required")
+
+        source_path = ROOT / row["source_path"]
+        slow_gate_path = ROOT / row["slow_gate_path"]
+        source = source_path.read_text()
+        slow_gate = slow_gate_path.read_text()
+        command = row["reproducibility_command"]
+        require(command in slow_gate, f"{row_id}: reproducibility command missing from slow gate")
+        require("let n_samples = 4000usize;" in source, f"{row_id}: source sample count drifted")
+        require("let crit = 120.0;" in source, f"{row_id}: source chi-square threshold drifted")
+        for test_fn in row["required_test_functions"]:
+            require(f"fn {test_fn}(" in source, f"{row_id}: missing required test function {test_fn}")
+        for marker in row["required_source_markers"]:
+            require(marker in source, f"{row_id}: source missing marker {marker!r}")
+
     print(
         "Path 2 leakage battery manifest check passed "
         f"({len(surfaces)} surfaces, {len(artifact_rows)} public artifact scans, "
         f"{len(accepted_shape_rows)} accepted transcript scans, "
-        f"{len(rejection_shape_rows)} rejection transcript scans)."
+        f"{len(rejection_shape_rows)} rejection transcript scans, "
+        f"{len(harness_rows)} manual empirical harness scans)."
     )
 
 

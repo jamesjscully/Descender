@@ -56,10 +56,10 @@
           "secret_witness"
         ],
         "required_evidence": "domain/stream review, CT arithmetic review, signer/proof drift KATs, leakage or reviewed substitute",
-        "current_evidence": "Mask-PRF KAT/equivalence gates and active secret-float scan exist, but no target leakage harness is checked in.",
+        "current_evidence": "Mask-PRF KAT/equivalence gates, active secret-float scan, and a manual desktop-reference empirical hiding mask-channel harness exist; target leakage harnesses, CT arithmetic review, and injected-leak controls remain open.",
         "status": "partial",
         "deployment_ready": false,
-        "blocker": "Add CT arithmetic review and target leakage harness or reviewed substitute for pad expansion and mask PRF."
+        "blocker": "Add CT arithmetic review, target leakage harness or reviewed substitute, and injected-leak negative controls for pad expansion and mask PRF."
       },
       {
         "id": "witness_handling",
@@ -82,7 +82,7 @@
           "secret_entropy"
         ],
         "required_evidence": "proof-family leakage review, blinding review, deterministic-test separation, callback/log audit",
-        "current_evidence": "Accepted KAT artifacts label deterministic proof seeds as test-only and require fresh deployment randomness; proof-family leakage review remains open.",
+        "current_evidence": "Accepted KAT artifacts label deterministic proof seeds as test-only and require fresh deployment randomness; the manual desktop-reference empirical hiding mask-channel harness checks default-path proof decorrelation, while proof-family leakage review remains open.",
         "status": "partial",
         "deployment_ready": false,
         "blocker": "Add proof-family leakage review, blinding review, and callback/log audit for the selected target."
@@ -282,6 +282,46 @@
         ]
       }
     ],
+    "manual_empirical_harnesses": [
+      {
+        "id": "account_stark_hiding_mask_channel",
+        "surface_ids": [
+          "pad_expansion_mask_prf",
+          "witness_handling",
+          "proof_generation"
+        ],
+        "target_id": "desktop-reference-test-profile",
+        "source_path": "tools/descender-account-stark/tests/hiding_mask_channel.rs",
+        "slow_gate_path": "scripts/check_active_rust_slow_tests.sh",
+        "reproducibility_command": "RUSTFLAGS=\"-D warnings\" cargo test --manifest-path tools/descender-account-stark/Cargo.toml --test hiding_mask_channel",
+        "secret_classes_under_variation": [
+          "secret_entropy",
+          "secret_witness"
+        ],
+        "public_context_held_fixed": [
+          "fixed account_projection for mask-uniformity samples",
+          "same witness and public statement for default-path proof decorrelation"
+        ],
+        "observation_model": "desktop-reference public masked_projection distribution and public proof-byte decorrelation",
+        "statistical_test": "Pearson chi-square over 64 bins for recovered mask values pooled across six lanes",
+        "sample_count": 4000,
+        "threshold": "chi2 < 120.0 with 63 degrees of freedom",
+        "required_test_functions": [
+          "mask_channel_is_uniform_over_zq",
+          "masked_projection_varies_for_fixed_account_projection",
+          "default_path_decorrelates_proofs_of_same_witness",
+          "fixed_seed_path_is_deterministic"
+        ],
+        "required_source_markers": [
+          "They are NOT a ZK",
+          "bias <= q/2^31 ~ 2^-141",
+          "The fixed-seed path is NOT decorrelated",
+          "DEFAULT PATH NOT HIDING ACROSS PROOFS"
+        ],
+        "negative_control_status": "manual empirical harness only; injected-leak control and target leakage traces remain open",
+        "deployment_ready": false
+      }
+    ],
     "forbidden_exact_public_artifact_fields": [
       "secret_key_material",
       "secret_key",
@@ -303,7 +343,7 @@
       "raw_dependency_error"
     ],
     "test_only_deterministic_seed_field": "proof_mask_seed",
-    "negative_control_status": "accepted/rejected transcript-shape scan only; target leakage traces and injected-leak controls remain open",
+    "negative_control_status": "accepted/rejected transcript-shape plus manual empirical mask-channel harness scan only; target leakage traces and injected-leak controls remain open",
     "deployment_ready": false
   }
 }

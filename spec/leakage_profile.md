@@ -174,6 +174,11 @@ Current active evidence is partial:
   mask-PRF drift evidence;
 - active Rust gates compile the signer-side mask-PRF crate and run mask-PRF
   equivalence tests.
+- `scripts/check_active_rust_slow_tests.sh` names a manual desktop-reference
+  empirical hiding mask-channel battery for account-STARK creation, and the
+  leakage battery checker pins that slow-test command, source markers, sample
+  count, threshold, and test functions as fail-closed metadata rather than a
+  deployment claim.
 - `scripts/check_active_secret_float_surface.py` is wired into local and CI
   gates to reject floating-point types, casts, literals, and math calls in
   first-party active signer, prover, verifier, and recursion source outside
