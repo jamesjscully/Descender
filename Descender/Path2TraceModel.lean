@@ -967,6 +967,53 @@ def selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bound
     simpa [concreteNamedBreak] using of_decide_eq_true hEvent
 
 /--
+Selected-Rust concrete numeric certificate wrapper built directly from the
+first-class WS7 remaining-closure evidence.
+-/
+def selectedRustConcreteAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (E : SelectedRustWS7RemainingClosureEvidence Trace traceDist observe) :
+    SelectedRustConcreteAcceptedSpendNumericCertificate :=
+  selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds
+    traceDist
+    observe
+    E.acceptedSpendBound
+    E.remainingBreakBound
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).finiteTraceSupportDigest
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).activeOutcomeCarrierDigest
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendEventSemanticsDigest
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).activeBreakFamilyDigest
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).namedBreakEventsDigest
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendUnionBoundPricingDigest
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundDigest
+    (SelectedRustWS7RemainingClosureEvidence.acceptedSpendProb_le_bound E)
+    (SelectedRustWS7RemainingClosureEvidence.remainingBreakProb_le_bound E)
+    (SelectedRustWS7RemainingClosureEvidence.acceptedSpendBound_le_2pow_neg129 E)
+    (SelectedRustWS7RemainingClosureEvidence.remainingBreakBound_le_2pow_neg133 E)
+
+/--
+The selected concrete numeric certificate built from WS7 evidence closes its
+success probability at the fixed active 128-bit target.
+-/
+theorem selectedRustConcreteAcceptedSpendNumericCertificate_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (E : SelectedRustWS7RemainingClosureEvidence Trace traceDist observe) :
+    let Cert :=
+      selectedRustConcreteAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence
+        traceDist observe E
+    Cert.pricedCertificate.successProb ≤ ((2 : ℝ) ^ (128 : Nat))⁻¹ := by
+  simpa [selectedRustConcreteAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence,
+    selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+    concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds,
+    one_div] using
+    (concreteNumericClosure_of_ws7_remaining_closure_evidence
+      traceDist observe E)
+
+/--
 Selected pricing witness built from the faithful trace model and the seven
 remaining cryptographic break bounds.
 
