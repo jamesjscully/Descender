@@ -174,6 +174,11 @@ Current active evidence is partial:
   mask-PRF drift evidence;
 - active Rust gates compile the signer-side mask-PRF crate and run mask-PRF
   equivalence tests.
+- `formal/kat/path2_leakage_battery_v1.json` pins a direct accepted-spend
+  transcript redaction check: the logical checked-core signature body is
+  accounted through digest fields and evidence rows, while raw signature,
+  proof-commitment, response, and randomizer field keys are forbidden in public
+  artifacts.
 - `scripts/check_active_rust_slow_tests.sh` names a manual desktop-reference
   empirical hiding mask-channel battery for account-STARK creation, and the
   leakage battery checker pins that slow-test command, source markers, sample

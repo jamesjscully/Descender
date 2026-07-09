@@ -246,6 +246,40 @@
         ]
       }
     ],
+    "direct_spend_transcript_redaction_tests": [
+      {
+        "id": "accepted_spend_checked_core_signature_redaction",
+        "path": "formal/kat/path2_direct_accepted_spend_tuple_evidence_v1.json",
+        "evidence_pointer": "/manifest/evidence",
+        "field_rows_pointer": "/manifest/evidence/accepted_tuple_field_evidence_rows",
+        "logical_tuple_field": "checked_core_signature_body",
+        "required_digest_fields": [
+          "checked_core_signature_digest",
+          "checked_core_challenge_digest",
+          "checked_core_proof_commitment_digest"
+        ],
+        "required_evidence_source_markers": [
+          "checked-core signature",
+          "challenge",
+          "proof commitment",
+          "QROM/action boundary digest"
+        ],
+        "forbidden_raw_field_keys": [
+          "checked_core_signature_body",
+          "checked_core_signature",
+          "checked_core_signature_bytes",
+          "signature_bytes",
+          "proof_commitment",
+          "proof_commitment_bytes",
+          "checked_core_proof_commitment",
+          "checked_core_response",
+          "response_bytes",
+          "randomizer",
+          "spend_randomizer"
+        ],
+        "deployment_ready": false
+      }
+    ],
     "rejection_transcript_shape_tests": [
       {
         "id": "account_creation_frame_rejection_transcript_shape",
@@ -339,13 +373,23 @@
       "pad_seed_bytes",
       "mask_bytes",
       "proof_blinding",
+      "checked_core_signature",
+      "checked_core_signature_body",
+      "checked_core_signature_bytes",
+      "signature_bytes",
+      "proof_commitment",
+      "proof_commitment_bytes",
+      "checked_core_proof_commitment",
+      "checked_core_response",
+      "response_bytes",
+      "randomizer",
       "spend_randomizer",
       "local_state_secret",
       "callback_diagnostic",
       "raw_dependency_error"
     ],
     "test_only_deterministic_seed_field": "proof_mask_seed",
-    "negative_control_status": "accepted/rejected transcript-shape plus manual empirical mask-channel harness scan only; target leakage traces and injected-leak controls remain open",
+    "negative_control_status": "accepted/rejected transcript-shape, direct-spend transcript redaction, plus manual empirical mask-channel harness scan only; target leakage traces and injected-leak controls remain open",
     "deployment_ready": false
   }
 }

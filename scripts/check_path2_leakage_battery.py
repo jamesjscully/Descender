@@ -65,6 +65,16 @@ FORBIDDEN_OBSERVED_ERROR_SUBSTRINGS = (
 )
 
 
+def require_hex_digest(value: Any, label: str) -> None:
+    require(isinstance(value, str), f"{label}: digest is not a string")
+    require(len(value) == 64, f"{label}: digest must be 64 lowercase hex characters")
+    require(
+        all(ch in "0123456789abcdef" for ch in value),
+        f"{label}: digest must be lowercase hex",
+    )
+    require(value != "0" * 64, f"{label}: digest must be nonzero")
+
+
 def load_json(path: Path) -> Any:
     try:
         return json.loads(path.read_text())
@@ -237,6 +247,49 @@ def main() -> None:
         leaked = sorted(forbidden & walk_keys(evidence))
         require(not leaked, f"{row['id']}: accepted transcript has forbidden exact fields {leaked}")
 
+    direct_redaction_rows = manifest.get("direct_spend_transcript_redaction_tests")
+    require(
+        isinstance(direct_redaction_rows, list) and direct_redaction_rows,
+        "missing direct spend transcript redaction tests",
+    )
+    for row in direct_redaction_rows:
+        artifact = load_json(ROOT / row["path"])
+        evidence = pointer(artifact, row["evidence_pointer"])
+        field_rows = pointer(artifact, row["field_rows_pointer"])
+        require(isinstance(evidence, dict), f"{row['id']}: evidence pointer is not an object")
+        require(isinstance(field_rows, list) and field_rows, f"{row['id']}: field rows are missing")
+
+        logical_tuple_field = row["logical_tuple_field"]
+        accepted_tuple_fields = evidence.get("accepted_tuple_fields")
+        require(
+            isinstance(accepted_tuple_fields, list) and logical_tuple_field in accepted_tuple_fields,
+            f"{row['id']}: logical tuple field {logical_tuple_field!r} is not accounted",
+        )
+        matching_rows = [
+            field_row
+            for field_row in field_rows
+            if field_row.get("accepted_tuple_field") == logical_tuple_field
+        ]
+        require(len(matching_rows) == 1, f"{row['id']}: expected exactly one logical field row")
+        field_row = matching_rows[0]
+        require(
+            field_row.get("accepted_path_evidence_present") is True,
+            f"{row['id']}: logical signature field lacks accepted-path evidence",
+        )
+        evidence_source = field_row.get("accepted_path_evidence_source", "")
+        require(isinstance(evidence_source, str) and evidence_source, f"{row['id']}: evidence source is empty")
+        for marker in row["required_evidence_source_markers"]:
+            require(marker in evidence_source, f"{row['id']}: evidence source missing {marker!r}")
+
+        for field in row["required_digest_fields"]:
+            require(field in evidence, f"{row['id']}: missing digest field {field}")
+            require_hex_digest(evidence[field], f"{row['id']}/{field}")
+
+        raw_forbidden = set(row["forbidden_raw_field_keys"])
+        leaked_raw = sorted(raw_forbidden & walk_keys(artifact))
+        require(not leaked_raw, f"{row['id']}: public artifact exposes raw signature fields {leaked_raw}")
+        require(row.get("deployment_ready") is False, f"{row['id']}: redaction row must not be deployment-ready")
+
     rejection_shape_rows = manifest.get("rejection_transcript_shape_tests")
     require(
         isinstance(rejection_shape_rows, list) and rejection_shape_rows,
@@ -312,6 +365,7 @@ def main() -> None:
         "Path 2 leakage battery manifest check passed "
         f"({len(surfaces)} surfaces, {len(artifact_rows)} public artifact scans, "
         f"{len(accepted_shape_rows)} accepted transcript scans, "
+        f"{len(direct_redaction_rows)} direct spend redaction scans, "
         f"{len(rejection_shape_rows)} rejection transcript scans, "
         f"{len(harness_rows)} manual empirical harness scans)."
     )
