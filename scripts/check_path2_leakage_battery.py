@@ -72,6 +72,14 @@ EXPECTED_FIXED_SHAPE_FUNCTIONS = (
     "path2_direct_single_slot_spend_public_result_wrapper_hides_internal_diagnostics",
 )
 
+EXPECTED_CALLBACK_FIXED_SHAPE_FUNCTIONS = (
+    "sanitized_callback_wrappers_do_not_echo_secret_errors",
+    "sanitized_callback_wrappers_have_bounded_invocation_shape",
+    "callback_boundary_classification_marks_only_sanitized_paths_deployment_facing",
+    "deployment_callback_boundary_gate_rejects_diagnostic_paths",
+    "default_deployment_callback_profile_is_complete_and_sanitized",
+)
+
 EXPECTED_PUBLIC_RESULT_CLASSES = (
     "accept_admit_slot",
     "accept_spend_slot",
@@ -357,6 +365,12 @@ def main() -> None:
         isinstance(fixed_shape_rows, list) and fixed_shape_rows,
         "missing fixed-shape failure test rows",
     )
+    fixed_shape_row_ids = [row.get("id") for row in fixed_shape_rows if isinstance(row, dict)]
+    require(
+        tuple(fixed_shape_row_ids)
+        == ("direct_spend_public_result_fixed_shape", "deployment_callback_boundary_fixed_shape"),
+        "fixed-shape failure row set/order drifted",
+    )
     for row in fixed_shape_rows:
         row_id = row["id"]
         require(row.get("deployment_ready") is False, f"{row_id}: fixed-shape row must not be deployment-ready")
@@ -376,24 +390,51 @@ def main() -> None:
         for command in commands:
             require(command in fast_gate, f"{row_id}: command missing from fast gate: {command}")
 
-        require(
-            tuple(row.get("required_test_functions", [])) == EXPECTED_FIXED_SHAPE_FUNCTIONS,
-            f"{row_id}: fixed-shape test function set drifted",
-        )
-        for test_fn in EXPECTED_FIXED_SHAPE_FUNCTIONS:
-            require(f"fn {test_fn}(" in source, f"{row_id}: missing fixed-shape test function {test_fn}")
-
-        require(
-            tuple(row.get("required_public_result_classes", [])) == EXPECTED_PUBLIC_RESULT_CLASSES,
-            f"{row_id}: public result class set drifted",
-        )
-        for class_name in EXPECTED_PUBLIC_RESULT_CLASSES:
-            require(class_name in source, f"{row_id}: missing public result class name {class_name}")
-
         covered_cases = row.get("covered_failure_cases")
         open_cases = row.get("open_failure_cases")
         require(isinstance(covered_cases, list) and len(covered_cases) >= 5, f"{row_id}: covered cases missing")
         require(isinstance(open_cases, list) and len(open_cases) >= 5, f"{row_id}: open cases missing")
+
+        if row_id == "direct_spend_public_result_fixed_shape":
+            require(
+                tuple(row.get("required_test_functions", [])) == EXPECTED_FIXED_SHAPE_FUNCTIONS,
+                f"{row_id}: fixed-shape test function set drifted",
+            )
+            for test_fn in EXPECTED_FIXED_SHAPE_FUNCTIONS:
+                require(f"fn {test_fn}(" in source, f"{row_id}: missing fixed-shape test function {test_fn}")
+
+            require(
+                tuple(row.get("required_public_result_classes", [])) == EXPECTED_PUBLIC_RESULT_CLASSES,
+                f"{row_id}: public result class set drifted",
+            )
+            for class_name in EXPECTED_PUBLIC_RESULT_CLASSES:
+                require(class_name in source, f"{row_id}: missing public result class name {class_name}")
+        elif row_id == "deployment_callback_boundary_fixed_shape":
+            require(
+                tuple(row.get("required_test_functions", [])) == EXPECTED_CALLBACK_FIXED_SHAPE_FUNCTIONS,
+                f"{row_id}: callback fixed-shape test function set drifted",
+            )
+            for test_fn in EXPECTED_CALLBACK_FIXED_SHAPE_FUNCTIONS:
+                require(f"fn {test_fn}(" in source, f"{row_id}: missing callback fixed-shape test function {test_fn}")
+            require(
+                not row.get("required_public_result_classes"),
+                f"{row_id}: callback row must not pretend to close public result-class coverage",
+            )
+            require(
+                any("callback failure" in case for case in covered_cases),
+                f"{row_id}: callback failure coverage must be explicit",
+            )
+            require(
+                any("diagnostic" in case for case in covered_cases),
+                f"{row_id}: diagnostic-boundary coverage must be explicit",
+            )
+            require(
+                any("non-callback dependency failure" in case for case in open_cases),
+                f"{row_id}: non-callback dependency failures must remain open",
+            )
+        else:  # pragma: no cover - row id set is checked above
+            raise SystemExit(f"unknown fixed-shape row {row_id}")
+
         require(any("entropy-source failure" in case for case in open_cases), f"{row_id}: entropy failure must remain open")
         require(any("storage write failure" in case for case in open_cases), f"{row_id}: storage failure must remain open")
         require(any("resource-limit failure" in case for case in open_cases), f"{row_id}: resource-limit failure must remain open")

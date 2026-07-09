@@ -82,7 +82,7 @@
           "secret_entropy"
         ],
         "required_evidence": "proof-family leakage review, blinding review, deterministic-test separation, callback/log audit",
-        "current_evidence": "Accepted KAT artifacts label deterministic proof seeds as test-only and require fresh deployment randomness; the manual desktop-reference empirical hiding mask-channel harness checks default-path proof decorrelation, while proof-family leakage review remains open.",
+        "current_evidence": "Accepted KAT artifacts label deterministic proof seeds as test-only and require fresh deployment randomness; the manual desktop-reference empirical hiding mask-channel harness checks default-path proof decorrelation, and sanitized callback-boundary tests pin fixed public callback errors while proof-family leakage review remains open.",
         "status": "partial",
         "deployment_ready": false,
         "blocker": "Add proof-family leakage review, blinding review, and callback/log audit for the selected target."
@@ -109,7 +109,7 @@
           "local_state_secret"
         ],
         "required_evidence": "fixed public errors, diagnostic-build separation, malformed-request fixed-shape behavior",
-        "current_evidence": "Consensus-facing public result classes are pinned; signer API diagnostic-build separation remains open.",
+        "current_evidence": "Consensus-facing public result classes are pinned, and deployment callback-boundary tests reject diagnostic-only callback paths while requiring sanitized fixed public errors for deployment-facing paths.",
         "status": "partial",
         "deployment_ready": false,
         "blocker": "Add signer API malformed-request and diagnostic-build separation tests."
@@ -363,7 +363,7 @@
         "open_failure_cases": [
           "pending and burned slot signer-side fixed-shape behavior",
           "entropy-source failure",
-          "callback or dependency failure",
+          "non-callback dependency failure",
           "storage write failure before releasing an authorization",
           "resource-limit failure under target profile"
         ],
@@ -375,7 +375,62 @@
           "public result wrapper changed state on lifecycle rejection",
           "mutated consume-once state"
         ],
-        "negative_control_status": "direct spend fixed-shape public-result and no-mutation evidence only; signer-side target failures, dependency/storage/resource failures, and target-profile leakage traces remain open",
+        "negative_control_status": "direct spend fixed-shape public-result and no-mutation evidence only; signer-side target failures, non-callback dependency/storage/resource failures, and target-profile leakage traces remain open",
+        "deployment_ready": false
+      },
+      {
+        "id": "deployment_callback_boundary_fixed_shape",
+        "surface_ids": [
+          "spend_authorization",
+          "signer_api",
+          "proof_generation",
+          "storage_rollback"
+        ],
+        "source_path": "tools/parameter-search/src/production_reference.rs",
+        "fast_gate_path": "scripts/check_active_rust_fast_tests.sh",
+        "reproducibility_commands": [
+          "RUSTFLAGS=\"-D warnings\" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib sanitized_callback_wrappers_do_not_echo_secret_errors",
+          "RUSTFLAGS=\"-D warnings\" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib sanitized_callback_wrappers_have_bounded_invocation_shape",
+          "RUSTFLAGS=\"-D warnings\" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib callback_boundary_classification_marks_only_sanitized_paths_deployment_facing",
+          "RUSTFLAGS=\"-D warnings\" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib deployment_callback_boundary_gate_rejects_diagnostic_paths",
+          "RUSTFLAGS=\"-D warnings\" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib default_deployment_callback_profile_is_complete_and_sanitized"
+        ],
+        "required_test_functions": [
+          "sanitized_callback_wrappers_do_not_echo_secret_errors",
+          "sanitized_callback_wrappers_have_bounded_invocation_shape",
+          "callback_boundary_classification_marks_only_sanitized_paths_deployment_facing",
+          "deployment_callback_boundary_gate_rejects_diagnostic_paths",
+          "default_deployment_callback_profile_is_complete_and_sanitized"
+        ],
+        "required_public_result_classes": [],
+        "covered_failure_cases": [
+          "signer callback failure maps to a fixed public signer callback failed reason without echoing secret detail",
+          "verifier callback failure maps to a fixed public verifier callback failed reason without echoing secret detail",
+          "malformed signatures and already-spent slots do not invoke verifier callbacks",
+          "diagnostic-only callback boundaries are classified as non-deployment-facing",
+          "deployment callback boundary gate rejects diagnostic-only and unknown paths",
+          "default deployment callback profile is complete and uses sanitized fixed public errors"
+        ],
+        "open_failure_cases": [
+          "entropy-source failure",
+          "non-callback dependency failure beyond the deployment callback profile",
+          "storage write failure before releasing an authorization",
+          "resource-limit failure under target profile",
+          "target deployment profile trace/audit"
+        ],
+        "required_source_markers": [
+          "PRODUCTION_SIGNER_CALLBACK_FAILURE_REASON",
+          "PRODUCTION_VERIFIER_CALLBACK_FAILURE_REASON",
+          "DESCENDER_TEST_SECRET_DO_NOT_SERIALIZE signer detail",
+          "DESCENDER_TEST_SECRET_DO_NOT_SERIALIZE verifier detail",
+          "must not run",
+          "DiagnosticRawCallbackErrors",
+          "SanitizedFixedPublicErrors",
+          "callback boundary verify_with_account_binding is diagnostic-only and not deployment-facing",
+          "unknown callback boundary: unknown_boundary",
+          "verify_default_deployment_callback_boundaries().is_ok()"
+        ],
+        "negative_control_status": "deployment callback-boundary fixed-shape evidence only; non-callback dependency/storage/resource failures and target-profile leakage traces remain open",
         "deployment_ready": false
       }
     ],
@@ -452,7 +507,7 @@
       "raw_dependency_error"
     ],
     "test_only_deterministic_seed_field": "proof_mask_seed",
-    "negative_control_status": "accepted/rejected transcript-shape, direct-spend transcript redaction, direct-spend fixed-shape public-result evidence, plus manual empirical mask-channel harness scan only; target leakage traces, signer-side dependency/storage/resource failures, and injected-leak controls remain open",
+    "negative_control_status": "accepted/rejected transcript-shape, direct-spend transcript redaction, direct-spend fixed-shape public-result evidence, deployment callback-boundary fixed-shape evidence, plus manual empirical mask-channel harness scan only; target leakage traces, signer-side non-callback dependency/storage/resource failures, and injected-leak controls remain open",
     "deployment_ready": false
   }
 }

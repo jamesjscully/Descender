@@ -40,5 +40,12 @@ RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.
 echo "== active fast test: direct public result wrapper =="
 RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib path2_direct_single_slot_spend_public_result_wrapper_hides_internal_diagnostics
 
+echo "== active fast test: sanitized callback boundary evidence =="
+RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib sanitized_callback_wrappers_do_not_echo_secret_errors
+RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib sanitized_callback_wrappers_have_bounded_invocation_shape
+RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib callback_boundary_classification_marks_only_sanitized_paths_deployment_facing
+RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib deployment_callback_boundary_gate_rejects_diagnostic_paths
+RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib default_deployment_callback_profile_is_complete_and_sanitized
+
 echo "== active fast test: recursion config scaffold smoke =="
 RUSTFLAGS="-D warnings" cargo test --manifest-path tools/descender-recursion/Cargo.toml phase1_scaffold_wired_to_leaf_config
