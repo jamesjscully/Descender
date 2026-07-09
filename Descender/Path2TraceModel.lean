@@ -890,6 +890,34 @@ theorem concreteNumericClosure_of_ws7_remaining_closure_evidence_le_active128Bit
       traceDist observe E)
 
 /--
+The first-class WS7 evidence directly closes the concrete component budget:
+one accepted-spend row at `2^-129` plus the active break-family rows at
+`2^-133` fit below the selected `2^-128` target.
+-/
+theorem ws7RemainingClosureEvidence_componentBudget_le_active128BitTarget
+    {Trace : Type} [Fintype Trace]
+    {traceDist : FiniteProbability Trace}
+    {observe : Trace → ConcreteOutcome}
+    (E : SelectedRustWS7RemainingClosureEvidence Trace traceDist observe) :
+    E.acceptedSpendBound +
+        Finset.univ.sum (remainingCryptographicBreakBound E.remainingBreakBound) ≤
+      (1 : ℝ) / 2 ^ 128 := by
+  refine activeBudget_closes ((1 : ℝ) / 2 ^ 128) (by positivity)
+    E.acceptedSpendBound
+    (remainingCryptographicBreakBound E.remainingBreakBound) ?_ ?_
+  · have : (1 : ℝ) / 2 ^ 128 / 2 = 1 / 2 ^ 129 := by norm_num
+    rw [this]
+    exact SelectedRustWS7RemainingClosureEvidence.acceptedSpendBound_le_2pow_neg129 E
+  · intro breakEvent
+    have : (1 : ℝ) / 2 ^ 128 / 32 = 1 / 2 ^ 133 := by norm_num
+    rw [this]
+    exact
+      remainingCryptographicBreakBound_le_2pow_neg133
+        E.remainingBreakBound
+        (SelectedRustWS7RemainingClosureEvidence.remainingBreakBound_le_2pow_neg133 E)
+        breakEvent
+
+/--
 Constructive break-pricing certificate for the faithful concrete game from
 accepted-spend pricing plus the seven remaining cryptographic break bounds.
 -/
@@ -975,6 +1003,64 @@ def concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds
   pricedBound_eq_breakPricing := rfl
 
 /--
+The per-event remaining-break rows inhabit the concrete break-pricing
+certificate for the faithful concrete game.
+-/
+theorem concreteBreakPricingCertificate_nonempty_of_remaining_break_bounds
+    {Trace : Type*} [Fintype Trace]
+    (C : ConcreteGameConfig)
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame C traceDist observe).acceptedSpendProb ≤
+        acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame C traceDist observe).breakProb
+            breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
+    Nonempty
+      (AcceptedSpendBreakPricingCertificate
+        (concreteNumericGame C traceDist observe)) :=
+  ⟨concreteBreakPricingCertificate_of_remaining_break_bounds
+    C traceDist observe acceptedSpendBound remainingBreakBound
+    hAccept hBreak hAcceptBudget hBreakBudget⟩
+
+/--
+The same rows inhabit the packaged priced numeric certificate for the faithful
+concrete game.
+-/
+theorem concretePricedAcceptedSpendNumericCertificate_nonempty_of_remaining_break_bounds
+    {Trace : Type} [Fintype Trace]
+    (C : ConcreteGameConfig)
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (acceptedSpendBound : ℝ)
+    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
+    (hAccept :
+      (concreteNumericGame C traceDist observe).acceptedSpendProb ≤
+        acceptedSpendBound)
+    (hBreak :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        (concreteNumericGame C traceDist observe).breakProb
+            breakEvent.1 ≤
+          remainingBreakBound breakEvent)
+    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
+    (hBreakBudget :
+      ∀ breakEvent : RemainingCryptographicBreak,
+        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133) :
+    Nonempty PricedAcceptedSpendNumericCertificate :=
+  ⟨concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds
+    C traceDist observe acceptedSpendBound remainingBreakBound
+    hAccept hBreak hAcceptBudget hBreakBudget⟩
+
+/--
 Constructive break-pricing certificate directly from first-class WS7
 remaining-closure evidence.
 -/
@@ -997,6 +1083,21 @@ def concreteBreakPricingCertificate_of_ws7_remaining_closure_evidence
     (SelectedRustWS7RemainingClosureEvidence.remainingBreakBound_le_2pow_neg133 E)
 
 /--
+First-class WS7 evidence inhabits the concrete break-pricing certificate for
+the selected faithful concrete game.
+-/
+theorem concreteBreakPricingCertificate_nonempty_of_ws7_remaining_closure_evidence
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (E : SelectedRustWS7RemainingClosureEvidence Trace traceDist observe) :
+    Nonempty
+      (AcceptedSpendBreakPricingCertificate
+        (concreteNumericGame selectedRustConcreteGameConfig traceDist observe)) :=
+  ⟨concreteBreakPricingCertificate_of_ws7_remaining_closure_evidence
+    traceDist observe E⟩
+
+/--
 Packaged priced numeric certificate directly from first-class WS7
 remaining-closure evidence.
 -/
@@ -1016,6 +1117,19 @@ def concretePricedAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evide
     (SelectedRustWS7RemainingClosureEvidence.remainingBreakProb_le_bound E)
     (SelectedRustWS7RemainingClosureEvidence.acceptedSpendBound_le_2pow_neg129 E)
     (SelectedRustWS7RemainingClosureEvidence.remainingBreakBound_le_2pow_neg133 E)
+
+/--
+First-class WS7 evidence inhabits the packaged priced numeric certificate for
+the selected faithful concrete game.
+-/
+theorem concretePricedAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidence
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (E : SelectedRustWS7RemainingClosureEvidence Trace traceDist observe) :
+    Nonempty PricedAcceptedSpendNumericCertificate :=
+  ⟨concretePricedAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence
+    traceDist observe E⟩
 
 /--
 Selected-Rust concrete numeric certificate wrapper built from the faithful
@@ -1111,6 +1225,19 @@ def selectedRustConcreteAcceptedSpendNumericCertificate_of_ws7_remaining_closure
     (SelectedRustWS7RemainingClosureEvidence.remainingBreakProb_le_bound E)
     (SelectedRustWS7RemainingClosureEvidence.acceptedSpendBound_le_2pow_neg129 E)
     (SelectedRustWS7RemainingClosureEvidence.remainingBreakBound_le_2pow_neg133 E)
+
+/--
+First-class WS7 evidence inhabits the selected-Rust concrete accepted-spend
+numeric certificate wrapper.
+-/
+theorem selectedRustConcreteAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidence
+    {Trace : Type} [Fintype Trace]
+    (traceDist : FiniteProbability Trace)
+    (observe : Trace → ConcreteOutcome)
+    (E : SelectedRustWS7RemainingClosureEvidence Trace traceDist observe) :
+    Nonempty SelectedRustConcreteAcceptedSpendNumericCertificate :=
+  ⟨selectedRustConcreteAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence
+    traceDist observe E⟩
 
 /--
 The selected concrete numeric certificate built from WS7 evidence closes its

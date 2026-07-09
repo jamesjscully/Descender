@@ -335,12 +335,21 @@ and
 `concreteNumericClosure_of_ws7_remaining_closure_evidence_le_active128BitTarget`
 compose those eight rows through the concrete selected numeric game and close
 its success probability at the fixed 128-bit target;
+`ws7RemainingClosureEvidence_componentBudget_le_active128BitTarget` now names
+the same component-budget arithmetic directly, including the `norm_num` checks
+for the accepted-spend half-target and per-break thirty-second-target rows;
 `concreteBreakPricingCertificate_of_ws7_remaining_closure_evidence` and
 `concretePricedAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence`
 erase the same first-class evidence into the concrete break-pricing and priced
-numeric certificates;
+numeric certificates, while
+`concreteBreakPricingCertificate_nonempty_of_ws7_remaining_closure_evidence`
+and
+`concretePricedAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidence`
+make those concrete certificate inhabitants explicit;
 `selectedRustConcreteAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence`
 then binds that WS7 evidence to the selected concrete numeric certificate, and
+`selectedRustConcreteAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidence`
+exposes the corresponding selected-Rust certificate inhabitant;
 `selectedRustConcreteAcceptedSpendNumericCertificate_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence`
 carries the selected certificate to the active target;
 `selectedRustConcreteAcceptedSpendPricingWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
@@ -383,11 +392,12 @@ package while
 `SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofWS7RemainingClosureEvidence_currentSelectedHardPricingReport_impossible`
 keeps the current fail-closed report guard on the WS7 route. The same
 source-shape gates require those bridge names and reject spoofed WS7 numeric
-closure, concrete-certificate, selected-certificate, pricing-witness,
-pricing-witness-budget, constructed-route equality, numeric-source-budget,
-package-pin, direct-package, package-equality, and package-constructor
-endpoints, plus the selected WS7 evidence constructor and nonempty evidence
-endpoints.
+closure, component-budget arithmetic, concrete-certificate, certificate
+inhabitant, selected-certificate, selected-certificate inhabitant,
+pricing-witness, pricing-witness-budget, constructed-route equality,
+numeric-source-budget, package-pin, direct-package, package-equality, and
+package-constructor endpoints, plus the selected WS7 evidence constructor and
+nonempty evidence endpoints.
 The full-signature handoff now also has
 `selectedRustAcceptedSpendRemainingBreakPricingPackage_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts`
 and

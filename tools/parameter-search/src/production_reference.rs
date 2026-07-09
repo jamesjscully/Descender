@@ -52641,9 +52641,13 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustWS7RemainingClosureEvidence.remainingBreakBound_le_2pow_neg133",
         "concreteNumericClosure_of_ws7_remaining_closure_evidence",
         "concreteNumericClosure_of_ws7_remaining_closure_evidence_le_active128BitTarget",
+        "ws7RemainingClosureEvidence_componentBudget_le_active128BitTarget",
         "concreteBreakPricingCertificate_of_ws7_remaining_closure_evidence",
+        "concreteBreakPricingCertificate_nonempty_of_ws7_remaining_closure_evidence",
         "concretePricedAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence",
+        "concretePricedAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidence",
         "selectedRustConcreteAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence",
+        "selectedRustConcreteAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidence",
         "selectedRustConcreteAcceptedSpendNumericCertificate_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence",
         "selectedRustConcreteAcceptedSpendPricingWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
@@ -52998,9 +53002,13 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustWS7RemainingClosureEvidence.remainingBreakBound_le_2pow_neg133",
         "concreteNumericClosure_of_ws7_remaining_closure_evidence",
         "concreteNumericClosure_of_ws7_remaining_closure_evidence_le_active128BitTarget",
+        "ws7RemainingClosureEvidence_componentBudget_le_active128BitTarget",
         "concreteBreakPricingCertificate_of_ws7_remaining_closure_evidence",
+        "concreteBreakPricingCertificate_nonempty_of_ws7_remaining_closure_evidence",
         "concretePricedAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence",
+        "concretePricedAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidence",
         "selectedRustConcreteAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence",
+        "selectedRustConcreteAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidence",
         "selectedRustConcreteAcceptedSpendNumericCertificate_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence",
         "selectedRustConcreteAcceptedSpendPricingWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
@@ -53704,9 +53712,13 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustWS7RemainingClosureEvidence.remainingBreakBound_le_2pow_neg133",
         "concreteNumericClosure_of_ws7_remaining_closure_evidence",
         "concreteNumericClosure_of_ws7_remaining_closure_evidence_le_active128BitTarget",
+        "ws7RemainingClosureEvidence_componentBudget_le_active128BitTarget",
         "concreteBreakPricingCertificate_of_ws7_remaining_closure_evidence",
+        "concreteBreakPricingCertificate_nonempty_of_ws7_remaining_closure_evidence",
         "concretePricedAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence",
+        "concretePricedAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidence",
         "selectedRustConcreteAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence",
+        "selectedRustConcreteAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidence",
         "selectedRustConcreteAcceptedSpendNumericCertificate_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence",
         "selectedRustConcreteAcceptedSpendPricingWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
@@ -54167,9 +54179,13 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustWS7RemainingClosureEvidence.remainingBreakBound_le_2pow_neg133",
         "concreteNumericClosure_of_ws7_remaining_closure_evidence",
         "concreteNumericClosure_of_ws7_remaining_closure_evidence_le_active128BitTarget",
+        "ws7RemainingClosureEvidence_componentBudget_le_active128BitTarget",
         "concreteBreakPricingCertificate_of_ws7_remaining_closure_evidence",
+        "concreteBreakPricingCertificate_nonempty_of_ws7_remaining_closure_evidence",
         "concretePricedAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence",
+        "concretePricedAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidence",
         "selectedRustConcreteAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence",
+        "selectedRustConcreteAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidence",
         "selectedRustConcreteAcceptedSpendNumericCertificate_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence",
         "selectedRustConcreteAcceptedSpendPricingWitness_of_ws7_remaining_closure_evidence_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_eq_ws7_constructed_of_remaining_break_bounds_and_current_hard_pricing_facts",
@@ -90316,12 +90332,20 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     concreteNumericClosure_of_ws7_remaining_closure_evidence
   let _fullReductionWS7EvidenceNumericClosureActiveTarget :=
     concreteNumericClosure_of_ws7_remaining_closure_evidence_le_active128BitTarget
+  let _fullReductionWS7EvidenceComponentBudgetTarget :=
+    ws7RemainingClosureEvidence_componentBudget_le_active128BitTarget
   let _fullReductionWS7EvidenceBreakPricingCertificate :=
     concreteBreakPricingCertificate_of_ws7_remaining_closure_evidence
+  let _fullReductionWS7EvidenceBreakPricingCertificateNonempty :=
+    concreteBreakPricingCertificate_nonempty_of_ws7_remaining_closure_evidence
   let _fullReductionWS7EvidencePricedNumericCertificate :=
     concretePricedAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence
+  let _fullReductionWS7EvidencePricedNumericCertificateNonempty :=
+    concretePricedAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidence
   let _fullReductionWS7EvidenceSelectedConcreteNumericCertificate :=
     selectedRustConcreteAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence
+  let _fullReductionWS7EvidenceSelectedConcreteNumericCertificateNonempty :=
+    selectedRustConcreteAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidence
   let _fullReductionWS7EvidenceSelectedConcreteNumericCertificateTarget :=
     selectedRustConcreteAcceptedSpendNumericCertificate_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence
   let _fullReductionWS7EvidencePricingWitness :=
@@ -91165,6 +91189,16 @@ namespace NativeFullSignatureSecurityBoundary
                 &suffixed_full_signature_ws7_numeric_closure_active_target
             )
         );
+        let suffixed_full_signature_ws7_component_budget_target =
+            full_signature_reduction_instantiation_shape.replace(
+                "ws7RemainingClosureEvidence_componentBudget_le_active128BitTarget",
+                "ws7RemainingClosureEvidence_componentBudget_le_active128BitTargetSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_ws7_component_budget_target
+            )
+        );
         let suffixed_full_signature_ws7_break_pricing_certificate =
             full_signature_reduction_instantiation_shape.replace(
                 "concreteBreakPricingCertificate_of_ws7_remaining_closure_evidence",
@@ -91173,6 +91207,16 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_ws7_break_pricing_certificate
+            )
+        );
+        let suffixed_full_signature_ws7_break_pricing_certificate_nonempty =
+            full_signature_reduction_instantiation_shape.replace(
+                "concreteBreakPricingCertificate_nonempty_of_ws7_remaining_closure_evidence",
+                "concreteBreakPricingCertificate_nonempty_of_ws7_remaining_closure_evidenceSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_ws7_break_pricing_certificate_nonempty
             )
         );
         let suffixed_full_signature_ws7_priced_numeric_certificate =
@@ -91185,6 +91229,16 @@ namespace NativeFullSignatureSecurityBoundary
                 &suffixed_full_signature_ws7_priced_numeric_certificate
             )
         );
+        let suffixed_full_signature_ws7_priced_numeric_certificate_nonempty =
+            full_signature_reduction_instantiation_shape.replace(
+                "concretePricedAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidence",
+                "concretePricedAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidenceSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_ws7_priced_numeric_certificate_nonempty
+            )
+        );
         let suffixed_full_signature_ws7_selected_concrete_numeric_certificate =
             full_signature_reduction_instantiation_shape.replace(
                 "selectedRustConcreteAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence",
@@ -91193,6 +91247,16 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_ws7_selected_concrete_numeric_certificate
+            )
+        );
+        let suffixed_full_signature_ws7_selected_concrete_numeric_certificate_nonempty =
+            full_signature_reduction_instantiation_shape.replace(
+                "selectedRustConcreteAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidence",
+                "selectedRustConcreteAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidenceSpoof",
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_ws7_selected_concrete_numeric_certificate_nonempty
             )
         );
         let suffixed_full_signature_ws7_selected_concrete_numeric_certificate_target =
@@ -94015,12 +94079,20 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     concreteNumericClosure_of_ws7_remaining_closure_evidence
   let _acceptedSpendWS7EvidenceNumericClosureActiveTarget :=
     concreteNumericClosure_of_ws7_remaining_closure_evidence_le_active128BitTarget
+  let _acceptedSpendWS7EvidenceComponentBudgetTarget :=
+    ws7RemainingClosureEvidence_componentBudget_le_active128BitTarget
   let _acceptedSpendWS7EvidenceBreakPricingCertificate :=
     concreteBreakPricingCertificate_of_ws7_remaining_closure_evidence
+  let _acceptedSpendWS7EvidenceBreakPricingCertificateNonempty :=
+    concreteBreakPricingCertificate_nonempty_of_ws7_remaining_closure_evidence
   let _acceptedSpendWS7EvidencePricedNumericCertificate :=
     concretePricedAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence
+  let _acceptedSpendWS7EvidencePricedNumericCertificateNonempty :=
+    concretePricedAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidence
   let _acceptedSpendWS7EvidenceSelectedConcreteNumericCertificate :=
     selectedRustConcreteAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence
+  let _acceptedSpendWS7EvidenceSelectedConcreteNumericCertificateNonempty :=
+    selectedRustConcreteAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidence
   let _acceptedSpendWS7EvidenceSelectedConcreteNumericCertificateTarget :=
     selectedRustConcreteAcceptedSpendNumericCertificate_successProb_le_active128BitTarget_of_ws7_remaining_closure_evidence
   let _acceptedSpendWS7EvidencePricingWitness :=
@@ -94483,6 +94555,16 @@ end Path2NativeAccountDesign
                 &suffixed_ws7_numeric_closure_active_target
             )
         );
+        let suffixed_ws7_component_budget_target =
+            accepted_spend_instantiation_shape.replace(
+                "ws7RemainingClosureEvidence_componentBudget_le_active128BitTarget",
+                "ws7RemainingClosureEvidence_componentBudget_le_active128BitTargetSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_ws7_component_budget_target
+            )
+        );
         let suffixed_ws7_break_pricing_certificate =
             accepted_spend_instantiation_shape.replace(
                 "concreteBreakPricingCertificate_of_ws7_remaining_closure_evidence",
@@ -94491,6 +94573,16 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_ws7_break_pricing_certificate
+            )
+        );
+        let suffixed_ws7_break_pricing_certificate_nonempty =
+            accepted_spend_instantiation_shape.replace(
+                "concreteBreakPricingCertificate_nonempty_of_ws7_remaining_closure_evidence",
+                "concreteBreakPricingCertificate_nonempty_of_ws7_remaining_closure_evidenceSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_ws7_break_pricing_certificate_nonempty
             )
         );
         let suffixed_ws7_priced_numeric_certificate =
@@ -94503,6 +94595,16 @@ end Path2NativeAccountDesign
                 &suffixed_ws7_priced_numeric_certificate
             )
         );
+        let suffixed_ws7_priced_numeric_certificate_nonempty =
+            accepted_spend_instantiation_shape.replace(
+                "concretePricedAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidence",
+                "concretePricedAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidenceSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_ws7_priced_numeric_certificate_nonempty
+            )
+        );
         let suffixed_ws7_selected_concrete_numeric_certificate =
             accepted_spend_instantiation_shape.replace(
                 "selectedRustConcreteAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence",
@@ -94511,6 +94613,16 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_ws7_selected_concrete_numeric_certificate
+            )
+        );
+        let suffixed_ws7_selected_concrete_numeric_certificate_nonempty =
+            accepted_spend_instantiation_shape.replace(
+                "selectedRustConcreteAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidence",
+                "selectedRustConcreteAcceptedSpendNumericCertificate_nonempty_of_ws7_remaining_closure_evidenceSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_ws7_selected_concrete_numeric_certificate_nonempty
             )
         );
         let suffixed_ws7_selected_concrete_numeric_certificate_target =
