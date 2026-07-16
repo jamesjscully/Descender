@@ -11,3 +11,4 @@ b52ea2863c715c334a6f1db511b5f04d95d58bdbf21353400d55fe1f5ff0a61c decisions/ADR-0
 3e6d7d5f8162688c5586c29fc87b3fc3c5c85b9b487fbc26dd2356e7c2794e29 decisions/ADR-0008-commit-hard-quantum-128-target.md
 de586b54c57858367f542def47240db8d86686b676882af181c35ac74a838469 decisions/ADR-0009-native-sovereign-pq-rollup-settlement.md
 29dd45c3811f8c4661a373dfd0afd14d0405bf9ac2a9e74a30b7adac16feccaa decisions/ADR-0010-registry-lifecycle-consensus-wiring-and-finality.md
+3fe341134e6191b028bb508d6c90d67cfa66b18f5364ba1762e002fa008a72f9 decisions/ADR-0011-account-stark-adaptive-qrom-and-c9-challenger.md

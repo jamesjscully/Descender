@@ -7,11 +7,11 @@ and (b) the checked-core Fiat–Shamir challenge derivation
 lines 156–168), now that both are native KoalaBear-Poseidon2 sponges.
 
 **Status one-liner.** The RO replacement reduces to ONE named permutation
-assumption + the standard sponge indifferentiability theorem; the concrete
-indifferentiability floor is **c/2 ≈ 123.95 bits < 128** at the deployed
-capacity. This does NOT break the scheme (the FS/mask uses are not bottlenecked
-at the indifferentiability advantage — see §6), but it means the sponge cannot
-itself be advertised as a 128-bit RO. Honest fix options in §5.
+assumption + the standard sponge indifferentiability theorem. The asymptotic
+generic floor is **c/2 ≈ 123.95 bits**, but the selected theorem is explicitly
+bounded to at most `2^54` total permutation queries; at that horizon the loose
+classical indifferentiability term is below `2^-139`. The concrete pinned
+permutation/QROM import and external review remain open.
 
 ---
 
@@ -40,10 +40,12 @@ rate lanes from post-permutation states (`output_source`).
 
 Two domain-separated instances of the SAME sponge:
 
-- **Mask PRF (C2).** Absorb `pad_seed[32] ‖ slot_id.to_le_bytes()[8]` as 40
-  byte-lanes (each byte < p), squeeze NUM_SQUEEZE = 30 field lanes, then the
+- **Mask PRF (C2).** Absorb the canonical field lane `MASK = 0x4D41534B`, then
+  `pad_seed[32] ‖ slot_id.to_le_bytes()[8]` as byte lanes. Squeeze
+  NUM_SQUEEZE = 36 field lanes, then the
   arithmetic wide-then-reduce `mask_j = (Σ_i lane_{j,i} · p^i) mod q12289`
-  (5 lanes/mask, Horner, `wide_reduce_masks`) → 6 masks in Z_q12289.
+  (6 lanes/mask, Horner, `wide_reduce_masks`) → 6 masks in Z_q12289. The explicit
+  first lane separates C2 from the `NULL` nullifier and other account sponges.
 - **FS challenge.** `poseidon2_hash_bytes::<OUT>(domain, input)` absorbs
   `domain ‖ input` one byte per lane, squeezes OUT lanes, emits the low byte of
   each. Domain prefix makes the two sponges non-colliding by construction.
@@ -146,20 +148,25 @@ the ε_indiff term is added once.
 
 ### 4.1 Mask hiding (re-host of frame_prf_ro_reduction.ec)
 The EC file proves, for the *abstract* RO H, that the production mask
-mask = wide_reduce(H(pad_seed‖slot)) is (qQ·2^{−Hseed})-indistinguishable from a
+mask = wide_reduce(H(MASK‖pad_seed‖slot)) is
+(qQ·2^{−Hseed})-indistinguishable from a
 fresh uniform mask, where Hseed = 8·32 = 256 (pad_seed min-entropy). Composing
 with §2 and the wide-then-reduce uniformity gap:
 
 > **Theorem (mask hiding, Poseidon2-instantiated).** For any distinguisher
 > making ≤ qQ RO/permutation queries with N total permutation queries,
 >
->   Adv_hide ≤ qQ·2^{−256} + 6·2^{−141} + N^2·2^{−247.9095}.
+>   Adv_hide ≤ qQ·2^{−256}
+>            + 6·2^32·12289/(2130706433^6)
+>            + N(N+1)/(2130706433^8)
+>            + Adv_poseidon2_permutation.
 >
-> Terms: (i) qQ·2^{−256} = the proven EC bound `frame_prf_advantage` (pad-seed
-> min-entropy); (ii) 6·2^{−141} = wide-then-reduce uniformity gap over the 6
-> q12289 lanes (carried from the EC RE-CHARGE banner); (iii) N^2·2^{−247.91} =
-> BDPVA indifferentiability (§2). The dominant term at N≈2^{62} is (iii) ≈
-> 2^{−123.9}.
+> Terms: (i) qQ·2^{−256} is the seed-query term; (ii) the second term charges
+> six q12289 masks across the selected 2^32 account horizon; (iii) the third is
+> the loose sponge indifferentiability term; and (iv) the final term is the
+> irreducible concrete-permutation assumption. At `qQ,N ≤ 2^54`, the first
+> three terms are dominated by the reduction term and together remain below
+> roughly `2^-137`; the concrete permutation/QROM term is still open.
 
 ### 4.2 FS challenge soundness
 The checked-core Fiat–Shamir transform is sound in the RO model when the RO
@@ -178,11 +185,14 @@ that many bits with collision/preimage resistance bounded by §2.
 
 ---
 
-## 5. The honest residual on the concrete bound (124 < 128) and what to do
+## 5. The honest residual on the concrete permutation/QROM bound
 
-The single substantive deficiency is §2.3: **c/2 = 123.95 bits < 128.** This is
-a real, named shortfall, not a rounding artifact (driven by log2 p = 30.989, not
-31). Options, in increasing cost:
+The asymptotic generic floor remains **c/2 = 123.95 bits**, so an unbounded
+"128-bit RO" label would be false. The selected theorem avoids that claim and
+uses the explicit `2^54` query horizon, where the concrete arithmetic clears
+q128. The remaining deficiency is a reviewed quantum indifferentiability and
+concrete Poseidon2 permutation theorem at that bounded horizon. Options, in
+increasing cost:
 
 1. **Accept the 124-bit ceiling, re-state the headline target as 2^{−124}.**
    Defensible because the challenge-extension field already pins the scheme's

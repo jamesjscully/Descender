@@ -101,6 +101,7 @@ name = "descender-account-stark"
 version = "0.1.0"
 dependencies = [
  "bincode",
+ "chacha20",
  "descender-mask-prf",
  "p3-air",
  "p3-challenger",

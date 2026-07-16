@@ -75,12 +75,12 @@
 use crate::air::{Air, BoundaryConstraint};
 use crate::base128_range_air_q12289 as c4;
 use crate::fq12_q12289::Fq12;
-use crate::poseidon2_air_q12289::{transition_kind, TransitionKind, N_ROWS as PERM_ROWS};
+use crate::poseidon2_air_q12289::{N_ROWS as PERM_ROWS, TransitionKind, transition_kind};
 use crate::poseidon2_q12289::{
-    apply_internal, apply_matrix, fq_add, fq_from_u32, fq_mul, init_capacity, sbox,
-    Poseidon2Params, OPENING_TUPLE_BLINDING_BYTES, OPENING_TUPLE_LIFECYCLE_ANCHOR_BYTES,
-    PAD_SOURCE_BLINDING_BYTES, POSEIDON2_OPENING_TUPLE_COMMITMENT_DOMAIN,
-    POSEIDON2_PAD_SOURCE_COMMITMENT_DOMAIN, POSEIDON2_PROJECTION_MASK_DOMAIN, RATE, R_F_HALF, R_P, T,
+    OPENING_TUPLE_BLINDING_BYTES, OPENING_TUPLE_LIFECYCLE_ANCHOR_BYTES, PAD_SOURCE_BLINDING_BYTES,
+    POSEIDON2_OPENING_TUPLE_COMMITMENT_DOMAIN, POSEIDON2_PAD_SOURCE_COMMITMENT_DOMAIN,
+    POSEIDON2_PROJECTION_MASK_DOMAIN, Poseidon2Params, R_F_HALF, R_P, RATE, T, apply_internal,
+    apply_matrix, fq_add, fq_from_u32, fq_mul, init_capacity, sbox,
 };
 
 // =============================================================================
@@ -293,7 +293,12 @@ fn block_value(e: BlockElem) -> u32 {
 impl SpongeChain {
     /// Build the full chain: run the honest sponge, recording per-perm states and
     /// the squeezed outputs.
-    fn new(params: &Poseidon2Params, domain: &'static [u8], lanes: &[(u32, bool)], n_out: usize) -> Self {
+    fn new(
+        params: &Poseidon2Params,
+        domain: &'static [u8],
+        lanes: &[(u32, bool)],
+        n_out: usize,
+    ) -> Self {
         let (roles, n_absorb, _n_squeeze) = build_roles(lanes, n_out);
         let mut run = init_capacity(domain);
         let mut states: Vec<Vec<[u32; T]>> = Vec::with_capacity(roles.len());
@@ -532,7 +537,10 @@ impl FullRelationAir {
                 for i in 0..RATE {
                     let v = block_value(block[i]);
                     in_row[off + LANE_VAL + i] = v;
-                    if let BlockElem::Lane { byte_ranged: true, .. } = block[i] {
+                    if let BlockElem::Lane {
+                        byte_ranged: true, ..
+                    } = block[i]
+                    {
                         for b in 0..BITS_PER_LANE {
                             in_row[off + bit_col_local(i, b)] = (v >> b) & 1;
                         }
@@ -628,14 +636,7 @@ impl FullRelationAir {
                     }
                 }
                 // byte-range for this absorb perm's input row (= cur).
-                byte_range_residuals(
-                    &chain.roles[p],
-                    off,
-                    cur,
-                    res,
-                    recompose_base,
-                    bool_base,
-                );
+                byte_range_residuals(&chain.roles[p], off, cur, res, recompose_base, bool_base);
             }
             TransitionKind::Full { rc_index } => {
                 let rc = &self.params.rc_full[rc_index];
@@ -740,7 +741,10 @@ fn byte_range_residuals(
     if let Role::Absorb { block } = role {
         let two = Fq12::from_base(2);
         for i in 0..RATE {
-            if let BlockElem::Lane { byte_ranged: true, .. } = block[i] {
+            if let BlockElem::Lane {
+                byte_ranged: true, ..
+            } = block[i]
+            {
                 let mut acc = Fq12::zero();
                 let mut w = Fq12::one();
                 for b in 0..BITS_PER_LANE {
@@ -971,7 +975,12 @@ impl Air for FullRelationAir {
         for j in 0..N_LANES {
             if acc_lane_row(j) == i {
                 let base = C4_OFF + j * C4_CELLS;
-                c4_residuals_fq12(cur, base, &mut res, C4_RESID_BASE + j * c4::CONSTRAINTS_PER_RESIDUE);
+                c4_residuals_fq12(
+                    cur,
+                    base,
+                    &mut res,
+                    C4_RESID_BASE + j * c4::CONSTRAINTS_PER_RESIDUE,
+                );
             }
         }
 
@@ -991,8 +1000,7 @@ impl Air for FullRelationAir {
         for j in 0..N_LANES {
             let (mrow, mlane) = self.c2.output_row_lane(j);
             if mrow == i {
-                res[MPROP_SEED_BASE + j] =
-                    cur[MPROP_OFF + j].sub(&cur[C2_OFF + STATE + mlane]);
+                res[MPROP_SEED_BASE + j] = cur[MPROP_OFF + j].sub(&cur[C2_OFF + STATE + mlane]);
             }
         }
 
@@ -1149,7 +1157,14 @@ mod tests {
         [15u8; OPENING_TUPLE_BLINDING_BYTES];
 
     fn mk(pad: &[u8; 32], slot: u64, acc: &[u16; N_LANES]) -> FullRelationAir {
-        FullRelationAir::new(pad, slot, acc, &TEST_NONCE, &TEST_ANCHOR, &TEST_OPENING_NONCE)
+        FullRelationAir::new(
+            pad,
+            slot,
+            acc,
+            &TEST_NONCE,
+            &TEST_ANCHOR,
+            &TEST_OPENING_NONCE,
+        )
     }
 
     /// CHEAP correctness: every transition residual zero on every real row, and
@@ -1231,11 +1246,20 @@ mod tests {
             // outputs match references.
             let ref_commit = pad_source_commitment_poseidon2(&pad, &TEST_NONCE);
             for j in 0..N_COMMIT_LANES {
-                assert_eq!(air.pad_source_commitment()[j] as u16, ref_commit[j], "C1 lane {j}");
+                assert_eq!(
+                    air.pad_source_commitment()[j] as u16,
+                    ref_commit[j],
+                    "C1 lane {j}"
+                );
             }
-            let ref_open = opening_tuple_commitment_poseidon2(&acc, &TEST_ANCHOR, &TEST_OPENING_NONCE);
+            let ref_open =
+                opening_tuple_commitment_poseidon2(&acc, &TEST_ANCHOR, &TEST_OPENING_NONCE);
             for j in 0..N_COMMIT_LANES {
-                assert_eq!(air.opening_tuple_commitment()[j] as u16, ref_open[j], "C6 lane {j}");
+                assert_eq!(
+                    air.opening_tuple_commitment()[j] as u16,
+                    ref_open[j],
+                    "C6 lane {j}"
+                );
             }
             let ref_mask = projection_masks_poseidon2(&pad, slot);
             for j in 0..N_LANES {
@@ -1250,7 +1274,10 @@ mod tests {
     fn full_relation_stark_completeness_verifies() {
         let air = mk(&[7u8; 32], 123456789, &[10, 20, 30, 40, 50, 60]);
         let proof = prove_with_queries(&air, None, 16);
-        assert!(verify(&air, &proof), "honest full-relation STARK proof must verify");
+        assert!(
+            verify(&air, &proof),
+            "honest full-relation STARK proof must verify"
+        );
     }
 
     /// SOUNDNESS (a): tamper a C1/C2/C6 sponge cell -> verify FAILS.
@@ -1269,7 +1296,10 @@ mod tests {
             let mut t = honest.clone();
             t[row][col] = fq_add(t[row][col], 1);
             let proof = prove_with_queries(&air, Some(t), 16);
-            assert!(!verify(&air, &proof), "component tamper [{what}] not rejected");
+            assert!(
+                !verify(&air, &proof),
+                "component tamper [{what}] not rejected"
+            );
         }
     }
 
@@ -1302,7 +1332,10 @@ mod tests {
         // rebuild trace so the carrier/other parts stay consistent; only the
         // commitment boundary now mismatches the squeezed cell.
         let proof = prove_with_queries(&air, None, 16);
-        assert!(!verify(&air, &proof), "wrong public pad_source_commitment not rejected");
+        assert!(
+            !verify(&air, &proof),
+            "wrong public pad_source_commitment not rejected"
+        );
     }
 
     /// SOUNDNESS (d): a C4 non-canonical digit violation -> verify FAILS.
@@ -1346,7 +1379,10 @@ mod tests {
         let col = c6_field_lane_col(2);
         t[acc_lane_row(2)][col] = fq_add(t[acc_lane_row(2)][col], 1);
         let proof = prove_with_queries(&air, Some(t), 16);
-        assert!(!verify(&air, &proof), "account_projection seam tamper not rejected");
+        assert!(
+            !verify(&air, &proof),
+            "account_projection seam tamper not rejected"
+        );
     }
 
     /// SOUNDNESS (f): a wrong public masked_projection -> verify FAILS.
@@ -1358,7 +1394,10 @@ mod tests {
         air.trace = air.build_trace(); // re-lay row-0 masked cell to the forged value
         // now the carrier residual fires: masked != mask + acc.
         let proof = prove_with_queries(&air, None, 16);
-        assert!(!verify(&air, &proof), "forged masked_projection not rejected");
+        assert!(
+            !verify(&air, &proof),
+            "forged masked_projection not rejected"
+        );
     }
 
     /// SIZE + TIMING report (ignored: multi-second proving at the 16384 domain).

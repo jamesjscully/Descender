@@ -53,7 +53,13 @@ pub fn octic_mul<AB: AirBuilder>(a: &[AB::Expr; D], b: &[AB::Expr; D]) -> [AB::E
 
 /// `octic_one()` as in-AIR limbs `[1, 0, ..., 0]`.
 fn octic_one<AB: AirBuilder>() -> [AB::Expr; D] {
-    core::array::from_fn(|i| if i == 0 { AB::Expr::ONE } else { AB::Expr::ZERO })
+    core::array::from_fn(|i| {
+        if i == 0 {
+            AB::Expr::ONE
+        } else {
+            AB::Expr::ZERO
+        }
+    })
 }
 
 /// Octic subtract `a - b` over the degree-8 extension (componentwise), as in-AIR expressions.
@@ -181,7 +187,10 @@ where
 
 /// GENERIC native witness fill for [`assert_committed_fold`]: given the residual VALUES, returns the
 /// committed Horner state `(a_pow[n], acc[n])` (`a_pow[r]=alpha^r`, `acc[r]=Σ_{j≤r} alpha^j·res_j`).
-pub fn committed_fold_values(alpha: Challenge, residuals: &[Challenge]) -> (Vec<Challenge>, Vec<Challenge>) {
+pub fn committed_fold_values(
+    alpha: Challenge,
+    residuals: &[Challenge],
+) -> (Vec<Challenge>, Vec<Challenge>) {
     let mut apow = Vec::with_capacity(residuals.len());
     let mut accv = Vec::with_capacity(residuals.len());
     let mut a = Challenge::ONE;
@@ -208,7 +217,12 @@ pub fn native_alpha_fold(alpha: Challenge, residuals: &[Challenge]) -> Challenge
 
 /// Fill a fold block's columns (`alpha ‖ res ‖ a_pow ‖ acc`) into `row` at `off`, returning the fold
 /// result. The native arithmetic mirrors `eval_alpha_fold` exactly.
-pub fn fill_alpha_fold(row: &mut [Val], off: usize, alpha: Challenge, residuals: &[Challenge]) -> Challenge {
+pub fn fill_alpha_fold(
+    row: &mut [Val],
+    off: usize,
+    alpha: Challenge,
+    residuals: &[Challenge],
+) -> Challenge {
     let k = residuals.len();
     row[alpha_off(off)..alpha_off(off) + D].copy_from_slice(&limbs(alpha));
     let mut a_pow = Challenge::ONE;
@@ -251,7 +265,10 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for AlphaFoldAir {
 }
 
 /// Build a 2-row trace + public values folding the given residuals.
-pub fn build_fold_trace(alpha: Challenge, residuals: &[Challenge]) -> (RowMajorMatrix<Val>, Vec<Val>) {
+pub fn build_fold_trace(
+    alpha: Challenge,
+    residuals: &[Challenge],
+) -> (RowMajorMatrix<Val>, Vec<Val>) {
     let k = residuals.len();
     let w = fold_block_width(k);
     let mut row = alloc::vec![Val::ZERO; w];
@@ -269,7 +286,9 @@ mod tests {
     use p3_field::BasedVectorSpace;
 
     fn ext(seed: u32) -> Challenge {
-        Challenge::from_basis_coefficients_fn(|i| Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32 + 1)))
+        Challenge::from_basis_coefficients_fn(|i| {
+            Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32 + 1))
+        })
     }
 
     /// The native fold matches a direct Σ alpha^r·res_r.
@@ -294,7 +313,11 @@ mod tests {
         let res: Vec<Challenge> = (0..300).map(|i| ext(200 + i)).collect();
         let (trace, pv) = build_fold_trace(alpha, &res);
         let report = check_all_constraints(&AlphaFoldAir { k: res.len() }, &trace, &pv, None);
-        assert!(report.is_ok(), "honest fold rejected: {} failures", report.failures.len());
+        assert!(
+            report.is_ok(),
+            "honest fold rejected: {} failures",
+            report.failures.len()
+        );
     }
 
     /// THE POINT: the re-arithmetized fold of MANY residuals PROVES at PRODUCTION q128 knobs (degree
@@ -314,15 +337,26 @@ mod tests {
         use p3_merkle_tree::MerkleTreeMmcs;
         use p3_uni_stark::{prove, verify, StarkConfig};
 
-        type ValMmcs = MerkleTreeMmcs<<Val as Field>::Packing, <Val as Field>::Packing, MyHash, MyCompress, 2, DIGEST_ELEMS>;
+        type ValMmcs = MerkleTreeMmcs<
+            <Val as Field>::Packing,
+            <Val as Field>::Packing,
+            MyHash,
+            MyCompress,
+            2,
+            DIGEST_ELEMS,
+        >;
         type ChallengeMmcs = ExtensionMmcs<Val, Ch, ValMmcs>;
         type DftT = Radix2DitParallel<Val>;
         type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
-        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 7>;
         type OuterConfig = StarkConfig<Pcs, Ch, MyChallenger>;
 
         let perm: Perm = default_koalabear_poseidon2_16();
-        let val_mmcs = ValMmcs::new(MyHash::new(perm.clone()), MyCompress::new(MyHash::new(perm.clone())), 0);
+        let val_mmcs = ValMmcs::new(
+            MyHash::new(perm.clone()),
+            MyCompress::new(MyHash::new(perm.clone())),
+            0,
+        );
         let challenge_mmcs = ChallengeMmcs::new(val_mmcs.clone());
         let fri_params = FriParameters {
             log_blowup: PROD_LOG_BLOWUP,

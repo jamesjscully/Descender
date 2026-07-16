@@ -525,11 +525,20 @@ pub fn verify(proof: &FriProof) -> bool {
 
             // (1) Merkle binding: both opened values verify against layer root.
             let root = &proof.layer_roots[li];
-            if !merkle::verify(root, val_idx, &fq12_to_leaf(&opening.value), &opening.value_path) {
+            if !merkle::verify(
+                root,
+                val_idx,
+                &fq12_to_leaf(&opening.value),
+                &opening.value_path,
+            ) {
                 return false;
             }
-            if !merkle::verify(root, sib_idx, &fq12_to_leaf(&opening.sibling), &opening.sibling_path)
-            {
+            if !merkle::verify(
+                root,
+                sib_idx,
+                &fq12_to_leaf(&opening.sibling),
+                &opening.sibling_path,
+            ) {
                 return false;
             }
 
@@ -668,7 +677,10 @@ mod tests {
     fn fri_completeness_k8() {
         let cw = low_degree_codeword(8, 0xC0FFEE_01);
         let proof = prove(&cw, 8, DEFAULT_NUM_QUERIES);
-        assert!(verify(&proof), "genuine low-degree k=8 codeword must verify");
+        assert!(
+            verify(&proof),
+            "genuine low-degree k=8 codeword must verify"
+        );
     }
 
     #[test]
@@ -676,7 +688,10 @@ mod tests {
         // One larger case (k=12, 4096-point domain). Slower due to Fq12 mul.
         let cw = low_degree_codeword(12, 0xC0FFEE_02);
         let proof = prove(&cw, 12, DEFAULT_NUM_QUERIES);
-        assert!(verify(&proof), "genuine low-degree k=12 codeword must verify");
+        assert!(
+            verify(&proof),
+            "genuine low-degree k=12 codeword must verify"
+        );
     }
 
     #[test]
@@ -702,7 +717,10 @@ mod tests {
             })
             .collect();
         let proof = prove(&cw, log2_domain, DEFAULT_NUM_QUERIES);
-        assert!(verify(&proof), "genuine low-degree Fq12-coeff codeword must verify");
+        assert!(
+            verify(&proof),
+            "genuine low-degree Fq12-coeff codeword must verify"
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -782,7 +800,10 @@ mod tests {
         let coeffs: Vec<u32> = (0..n).map(|_| rng.fq()).collect();
         let cw = lde_coset(&coeffs, log2_domain, coset_shift());
         let proof = prove(&cw, log2_domain, DEFAULT_NUM_QUERIES);
-        assert!(!verify(&proof), "an above-bound-degree codeword must be rejected");
+        assert!(
+            !verify(&proof),
+            "an above-bound-degree codeword must be rejected"
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -848,7 +869,10 @@ mod tests {
             })
             .collect();
 
-        assert_eq!(folded, expected, "fold must equal even + beta*odd decomposition");
+        assert_eq!(
+            folded, expected,
+            "fold must equal even + beta*odd decomposition"
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -861,17 +885,26 @@ mod tests {
         let p1 = prove(&cw, 8, DEFAULT_NUM_QUERIES);
         let p2 = prove(&cw, 8, DEFAULT_NUM_QUERIES);
         // Same input -> identical roots, challenges (positions), final layer.
-        assert_eq!(p1.layer_roots, p2.layer_roots, "roots must be deterministic");
+        assert_eq!(
+            p1.layer_roots, p2.layer_roots,
+            "roots must be deterministic"
+        );
         let pos1: Vec<usize> = p1.queries.iter().map(|q| q.position).collect();
         let pos2: Vec<usize> = p2.queries.iter().map(|q| q.position).collect();
         assert_eq!(pos1, pos2, "query positions must be deterministic");
-        assert_eq!(p1.final_layer, p2.final_layer, "final layer must be deterministic");
+        assert_eq!(
+            p1.final_layer, p2.final_layer,
+            "final layer must be deterministic"
+        );
 
         // A changed codeword -> changed roots and (almost surely) positions.
         let mut cw2 = cw.clone();
         cw2[3] = cw2[3].add(&Fq12::from_base(1));
         let p3 = prove(&cw2, 8, DEFAULT_NUM_QUERIES);
-        assert_ne!(p1.layer_roots[0], p3.layer_roots[0], "changed codeword must change root 0");
+        assert_ne!(
+            p1.layer_roots[0], p3.layer_roots[0],
+            "changed codeword must change root 0"
+        );
         let pos3: Vec<usize> = p3.queries.iter().map(|q| q.position).collect();
         assert_ne!(pos1, pos3, "changed codeword must change query positions");
     }
@@ -904,6 +937,9 @@ mod tests {
         // Tamper a sibling digest in a path.
         proof.queries[0].layers[0].value_path.siblings[0][0] =
             ((proof.queries[0].layers[0].value_path.siblings[0][0] as u32 + 1) % Q) as u16;
-        assert!(!verify(&proof), "tampering a Merkle path sibling must fail verify");
+        assert!(
+            !verify(&proof),
+            "tampering a Merkle path sibling must fail verify"
+        );
     }
 }

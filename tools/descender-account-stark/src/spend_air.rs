@@ -26,7 +26,7 @@
 //! checked-core signature.
 
 use crate::checked_core::{
-    checked_core_matrix, CC_COLS, CC_DIGEST_BYTES, CC_ROWS, CC_Q, CC_SYNDROME_DIGEST_BITS,
+    checked_core_matrix, CC_COLS, CC_DIGEST_BYTES, CC_Q, CC_ROWS, CC_SYNDROME_DIGEST_BITS,
 };
 use crate::config::{Val, HALF_FULL_ROUNDS, PARTIAL_ROUNDS, SBOX_DEGREE, SBOX_REGISTERS, WIDTH};
 use crate::poseidon2_sponge::{build_elems, eval_sponge, run_sponge, SpongeSpec};
@@ -156,7 +156,13 @@ pub fn derive_challenge(
     );
     let elems = build_elems::<Val>(&data, &spec);
     let (_blocks, _post, outputs) = run_sponge::<
-        Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+        Val,
+        LinLayers,
+        WIDTH,
+        SBOX_DEGREE,
+        SBOX_REGISTERS,
+        HALF_FULL_ROUNDS,
+        PARTIAL_ROUNDS,
     >(&elems, &spec, &air.constants, air.perm_cols);
     core::array::from_fn(|i| (outputs[i].as_canonical_u32() % CC_Q as u32) as u16)
 }
@@ -203,8 +209,10 @@ pub const FOLD_REDUCE_CELLS: usize = FOLD_K_BITS + RESIDUE_CELLS; // 6 + 30 = 36
 pub const SIGMA_PROD_COEFFS: usize = 2 * CC_ROWS - 1; // 23 raw product coefficients
 pub const SIGMA_VEC_REGION: usize = 3 * CC_ROWS * RESIDUE_CELLS; // c,w,t lanes: 36 × 30 = 1080
 /// Width of the sigma region: c/w/t lanes ‖ 23 product reductions ‖ 12 fold reductions ‖ 12 finals.
-pub const SIGMA_REGION_WIDTH: usize =
-    SIGMA_VEC_REGION + SIGMA_PROD_COEFFS * PROD_REDUCE_CELLS + CC_ROWS * FOLD_REDUCE_CELLS + CC_ROWS;
+pub const SIGMA_REGION_WIDTH: usize = SIGMA_VEC_REGION
+    + SIGMA_PROD_COEFFS * PROD_REDUCE_CELLS
+    + CC_ROWS * FOLD_REDUCE_CELLS
+    + CC_ROWS;
 
 pub const fn sigma_c_base(i: usize) -> usize {
     i * RESIDUE_CELLS
@@ -247,7 +255,7 @@ pub const SPEND_N_PUBLIC: usize = PV_PROOF_COMMITMENT_OFF + CC_DIGEST_BYTES; // 
 /// Pinned spend relation/profile id. Encodes: "SPND" ‖ ("v5" ‖ public-width) ‖ (residues<<8 ‖ bits) ‖ q.
 /// v5 = sigma inputs w/t are now bound to public commitments in-circuit (w/t = unpack(commitment)).
 pub const SPEND_RELATION_ID: [u32; SPEND_RELATION_ID_ELEMS] = [
-    0x5350_4E44, // "SPND"
+    0x5350_4E44,                                    // "SPND"
     0x7635_0000 | (SPEND_N_PUBLIC as u32 & 0xFFFF), // v5
     ((SPEND_RESIDUES as u32) << 8) | (SPEND_RESIDUE_BITS as u32),
     SPEND_Q,
@@ -322,7 +330,11 @@ impl BaseAir<Val> for SpendAir {
 
 /// Assert `local[base..]` is a canonical residue (value + 14 bits + slack canonical), returning the
 /// value expr. Layout: value ‖ bits[14] ‖ slack ‖ slack_bits[14].
-fn assert_canonical_residue<AB: AirBuilder>(builder: &mut AB, local: &[AB::Var], base: usize) -> AB::Expr {
+fn assert_canonical_residue<AB: AirBuilder>(
+    builder: &mut AB,
+    local: &[AB::Var],
+    base: usize,
+) -> AB::Expr {
     let val_off = base;
     let bits_off = base + 1;
     let slack_off = base + 1 + 14;
@@ -381,7 +393,10 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for SpendAir {
         builder.assert_eq(local[foff].into(), ce::<AB>(SPEND_FRAME_DOMAIN as u64));
         let bind = |builder: &mut AB, lane0: usize, pv0: usize, n: usize, local: &[AB::Var]| {
             for i in 0..n {
-                builder.assert_eq(local[foff + lane0 + i].into(), public[pv0 + i].clone().into());
+                builder.assert_eq(
+                    local[foff + lane0 + i].into(),
+                    public[pv0 + i].clone().into(),
+                );
             }
         };
         bind(builder, FRAME_MSG_LANE, PV_MESSAGE_OFF, 32, &local);
@@ -389,12 +404,29 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for SpendAir {
         bind(builder, FRAME_SLOT_LANE, PV_SLOT_OFF, 8, &local);
         bind(builder, FRAME_STATE_LANE, PV_STATE_ROOT_OFF, 32, &local);
         bind(builder, FRAME_PACKED_LANE, PV_PACKED_OFF, 32, &local);
-        let outs = eval_sponge::<AB, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS>(
-            builder, &local, foff, self.perm_cols, &spec,
-            &self.beginning_full_rc, &self.partial_rc, &self.ending_full_rc,
+        let outs = eval_sponge::<
+            AB,
+            LinLayers,
+            WIDTH,
+            SBOX_DEGREE,
+            SBOX_REGISTERS,
+            HALF_FULL_ROUNDS,
+            PARTIAL_ROUNDS,
+        >(
+            builder,
+            &local,
+            foff,
+            self.perm_cols,
+            &spec,
+            &self.beginning_full_rc,
+            &self.partial_rc,
+            &self.ending_full_rc,
         );
         for j in 0..FRAME_DIGEST_ELEMS {
-            builder.assert_eq(outs[j].clone(), public[PV_FRAME_DIGEST_OFF + j].clone().into());
+            builder.assert_eq(
+                outs[j].clone(),
+                public[PV_FRAME_DIGEST_OFF + j].clone().into(),
+            );
         }
 
         // ---- (3) checked-core SIS signature: syndrome[row] == Σ_col H[row][col]·response[col] mod q.
@@ -402,7 +434,11 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for SpendAir {
         // response lanes canonical.
         let mut r_val: Vec<AB::Expr> = Vec::with_capacity(CC_COLS);
         for c in 0..CC_COLS {
-            r_val.push(assert_canonical_residue(builder, &local, cc + cc_response_base(c)));
+            r_val.push(assert_canonical_residue(
+                builder,
+                &local,
+                cc + cc_response_base(c),
+            ));
         }
         let q = ce::<AB>(CC_Q as u64);
         for row in 0..CC_ROWS {
@@ -421,7 +457,8 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for SpendAir {
                 x1 += r_val[c].clone() * ce::<AB>(self.matrix[row][c] as u64);
             }
             let (k1, _k1b) = recompose_bits(builder, &local, rb + CHUNK_REDUCE_CELLS + 1, K_BITS);
-            let cr1 = assert_canonical_residue(builder, &local, rb + CHUNK_REDUCE_CELLS + 1 + K_BITS);
+            let cr1 =
+                assert_canonical_residue(builder, &local, rb + CHUNK_REDUCE_CELLS + 1 + K_BITS);
             builder.assert_eq(x1, k1 * q.clone() + cr1.clone());
             // final: cr0 + cr1 == kf·q + syndrome[row]  (kf boolean; syndrome[row] is residue row's value).
             let kf = local[rb + 2 * CHUNK_REDUCE_CELLS];
@@ -481,14 +518,20 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for SpendAir {
             let kfin = local[sg + sigma_final_base(d)];
             builder.assert_bool(kfin);
             let syndrome_d: AB::Expr = local[residue_base(d)].into();
-            builder.assert_eq(reduced + tl[d].clone(), kfin.into() * q.clone() + syndrome_d);
+            builder.assert_eq(
+                reduced + tl[d].clone(),
+                kfin.into() * q.clone() + syndrome_d,
+            );
         }
 
         // ---- (3c) bind sigma inputs to public commitments: w == unpack(witness_commitment),
         //          t == unpack(proof_commitment). 12 lanes × 14 bits → 32-byte digest (14-bit LE),
         //          bytes carrying bits ≥ 168 are forced to ZERO (high-bit canonicity).
         for (lane_base, commit_off) in [
-            (sigma_w_base as fn(usize) -> usize, PV_WITNESS_COMMITMENT_OFF),
+            (
+                sigma_w_base as fn(usize) -> usize,
+                PV_WITNESS_COMMITMENT_OFF,
+            ),
             (sigma_t_base as fn(usize) -> usize, PV_PROOF_COMMITMENT_OFF),
         ] {
             for k in 0..CC_DIGEST_BYTES {
@@ -509,7 +552,10 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for SpendAir {
         // ---- (3d) rehosted challenge: sigma_c == Poseidon2(DOMAIN ‖ statement ‖ wc ‖ pc) mod q.
         let ch = self.challenge_off();
         let cspec = challenge_spec();
-        builder.assert_eq(local[ch + CHAL_DOMAIN_LANE].into(), ce::<AB>(SPEND_CHALLENGE_DOMAIN as u64));
+        builder.assert_eq(
+            local[ch + CHAL_DOMAIN_LANE].into(),
+            ce::<AB>(SPEND_CHALLENGE_DOMAIN as u64),
+        );
         let cbind = |builder: &mut AB, lane0: usize, pv0: usize, n: usize, local: &[AB::Var]| {
             for i in 0..n {
                 builder.assert_eq(local[ch + lane0 + i].into(), public[pv0 + i].clone().into());
@@ -519,16 +565,43 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for SpendAir {
         cbind(builder, CHAL_ACCT_LANE, PV_ACCOUNT_ID_OFF, 32, &local);
         cbind(builder, CHAL_SLOT_LANE, PV_SLOT_OFF, 8, &local);
         cbind(builder, CHAL_STATE_LANE, PV_STATE_ROOT_OFF, 32, &local);
-        cbind(builder, CHAL_WC_LANE, PV_WITNESS_COMMITMENT_OFF, CC_DIGEST_BYTES, &local);
-        cbind(builder, CHAL_PC_LANE, PV_PROOF_COMMITMENT_OFF, CC_DIGEST_BYTES, &local);
-        let chal_outs = eval_sponge::<AB, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS>(
-            builder, &local, ch, self.perm_cols, &cspec,
-            &self.beginning_full_rc, &self.partial_rc, &self.ending_full_rc,
+        cbind(
+            builder,
+            CHAL_WC_LANE,
+            PV_WITNESS_COMMITMENT_OFF,
+            CC_DIGEST_BYTES,
+            &local,
+        );
+        cbind(
+            builder,
+            CHAL_PC_LANE,
+            PV_PROOF_COMMITMENT_OFF,
+            CC_DIGEST_BYTES,
+            &local,
+        );
+        let chal_outs = eval_sponge::<
+            AB,
+            LinLayers,
+            WIDTH,
+            SBOX_DEGREE,
+            SBOX_REGISTERS,
+            HALF_FULL_ROUNDS,
+            PARTIAL_ROUNDS,
+        >(
+            builder,
+            &local,
+            ch,
+            self.perm_cols,
+            &cspec,
+            &self.beginning_full_rc,
+            &self.partial_rc,
+            &self.ending_full_rc,
         );
         let ck = self.challenge_k_off();
         for i in 0..CC_ROWS {
             // squeezed lane == k·q + sigma_c[i]  (the sigma c value, bound to the acceptance identity).
-            let (k, _) = recompose_bits(builder, &local, ck + i * CHALLENGE_K_BITS, CHALLENGE_K_BITS);
+            let (k, _) =
+                recompose_bits(builder, &local, ck + i * CHALLENGE_K_BITS, CHALLENGE_K_BITS);
             let sigma_c_i: AB::Expr = local[sg + sigma_c_base(i)].into();
             builder.assert_eq(chal_outs[i].clone(), k * q.clone() + sigma_c_i);
         }
@@ -602,8 +675,8 @@ pub fn spend_derive(air: &SpendAir, w: &SpendWitness) -> SpendDerived {
         &proof_commitment,
     );
     let syndrome = crate::checked_core::sigma_expected(&w.sigma_t, &sigma_c, &w.sigma_w);
-    let response =
-        crate::checked_core::solve_response(&syndrome).expect("checked-core linear system solvable");
+    let response = crate::checked_core::solve_response(&syndrome)
+        .expect("checked-core linear system solvable");
     let mut residues = [0u16; SPEND_RESIDUES];
     residues[..CC_ROWS].copy_from_slice(&syndrome);
     residues[CC_ROWS..].copy_from_slice(&w.projection);
@@ -703,14 +776,21 @@ pub fn generate_spend_trace(
     for (i, &v) in data.iter().enumerate() {
         if spec.byte_ranged[i] {
             for b in 0..BYTE_BITS {
-                row[foff + lane_bits_off + bit_cursor * BYTE_BITS + b] = Val::from_u32((v >> b) & 1);
+                row[foff + lane_bits_off + bit_cursor * BYTE_BITS + b] =
+                    Val::from_u32((v >> b) & 1);
             }
             bit_cursor += 1;
         }
     }
     let elems = build_elems::<Val>(&data, &spec);
     let (blocks, _post, outputs) = run_sponge::<
-        Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+        Val,
+        LinLayers,
+        WIDTH,
+        SBOX_DEGREE,
+        SBOX_REGISTERS,
+        HALF_FULL_ROUNDS,
+        PARTIAL_ROUNDS,
     >(&elems, &spec, &air.constants, air.perm_cols);
     let perms_off = spec.perms_off();
     for (p, b) in blocks.iter().enumerate() {
@@ -729,13 +809,17 @@ pub fn generate_spend_trace(
     let q = CC_Q as u64;
     for r in 0..CC_ROWS {
         let rb = cc + cc_row_base(r);
-        let x0: u64 = (0..CHUNK0).map(|c| air.matrix[r][c] as u64 * response[c] as u64).sum();
+        let x0: u64 = (0..CHUNK0)
+            .map(|c| air.matrix[r][c] as u64 * response[c] as u64)
+            .sum();
         let (k0, cr0) = (x0 / q, x0 % q);
         row[rb] = Val::from_u32(k0 as u32);
         fill_bits(&mut row, rb + 1, k0 as u32, K_BITS);
         fill_canonical(&mut row, rb + 1 + K_BITS, cr0 as u32);
 
-        let x1: u64 = (CHUNK0..CC_COLS).map(|c| air.matrix[r][c] as u64 * response[c] as u64).sum();
+        let x1: u64 = (CHUNK0..CC_COLS)
+            .map(|c| air.matrix[r][c] as u64 * response[c] as u64)
+            .sum();
         let (k1, cr1) = (x1 / q, x1 % q);
         row[rb + CHUNK_REDUCE_CELLS] = Val::from_u32(k1 as u32);
         fill_bits(&mut row, rb + CHUNK_REDUCE_CELLS + 1, k1 as u32, K_BITS);
@@ -744,7 +828,11 @@ pub fn generate_spend_trace(
         let sum = cr0 + cr1;
         let kf = sum / q;
         debug_assert!(kf <= 1);
-        debug_assert_eq!(sum - kf * q, syndrome[r] as u64, "checked-core syndrome mismatch");
+        debug_assert_eq!(
+            sum - kf * q,
+            syndrome[r] as u64,
+            "checked-core syndrome mismatch"
+        );
         row[rb + 2 * CHUNK_REDUCE_CELLS] = Val::from_u32(kf as u32);
     }
 
@@ -788,7 +876,11 @@ pub fn generate_spend_trace(
         let expected = reduced + sigma_t[d] as u64;
         let kfin = expected / q;
         debug_assert!(kfin <= 1);
-        debug_assert_eq!(expected - kfin * q, syndrome[d] as u64, "sigma identity mismatch");
+        debug_assert_eq!(
+            expected - kfin * q,
+            syndrome[d] as u64,
+            "sigma identity mismatch"
+        );
         row[sg + sigma_final_base(d)] = Val::from_u32(kfin as u32);
     }
 
@@ -818,7 +910,13 @@ pub fn generate_spend_trace(
     }
     let celems = build_elems::<Val>(&cdata, &cspec);
     let (cblocks, _cp, coutputs) = run_sponge::<
-        Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+        Val,
+        LinLayers,
+        WIDTH,
+        SBOX_DEGREE,
+        SBOX_REGISTERS,
+        HALF_FULL_ROUNDS,
+        PARTIAL_ROUNDS,
     >(&celems, &cspec, &air.constants, air.perm_cols);
     let cperms_off = cspec.perms_off();
     for (p, b) in cblocks.iter().enumerate() {
@@ -829,23 +927,45 @@ pub fn generate_spend_trace(
     for i in 0..CC_ROWS {
         let out_v = coutputs[i].as_canonical_u32() as u64;
         let k = out_v / q;
-        debug_assert_eq!(out_v - k * q, sigma_c[i] as u64, "challenge squeeze reduction mismatch");
-        fill_bits(&mut row, ck + i * CHALLENGE_K_BITS, k as u32, CHALLENGE_K_BITS);
+        debug_assert_eq!(
+            out_v - k * q,
+            sigma_c[i] as u64,
+            "challenge squeeze reduction mismatch"
+        );
+        fill_bits(
+            &mut row,
+            ck + i * CHALLENGE_K_BITS,
+            k as u32,
+            CHALLENGE_K_BITS,
+        );
     }
 
     // Public values.
     let mut pv = Vec::with_capacity(SPEND_N_PUBLIC);
     pv.extend(packed.iter().map(|&b| Val::from_u32(b as u32)));
     pv.extend(w.account_id.iter().map(|&b| Val::from_u32(b as u32)));
-    pv.extend(w.slot_id.to_le_bytes().iter().map(|&b| Val::from_u32(b as u32)));
-    pv.extend(w.account_state_root.iter().map(|&b| Val::from_u32(b as u32)));
+    pv.extend(
+        w.slot_id
+            .to_le_bytes()
+            .iter()
+            .map(|&b| Val::from_u32(b as u32)),
+    );
+    pv.extend(
+        w.account_state_root
+            .iter()
+            .map(|&b| Val::from_u32(b as u32)),
+    );
     pv.extend(w.message_digest.iter().map(|&b| Val::from_u32(b as u32)));
     pv.extend(frame_digest.iter().copied());
     pv.extend(SPEND_RELATION_ID.iter().map(|&id| Val::from_u32(id)));
     pv.extend(sigma_c.iter().map(|&v| Val::from_u32(v as u32)));
     pv.extend(w.sigma_w.iter().map(|&v| Val::from_u32(v as u32)));
     pv.extend(sigma_t.iter().map(|&v| Val::from_u32(v as u32)));
-    pv.extend(d.witness_commitment.iter().map(|&b| Val::from_u32(b as u32)));
+    pv.extend(
+        d.witness_commitment
+            .iter()
+            .map(|&b| Val::from_u32(b as u32)),
+    );
     pv.extend(d.proof_commitment.iter().map(|&b| Val::from_u32(b as u32)));
     debug_assert_eq!(pv.len(), SPEND_N_PUBLIC);
 
@@ -886,7 +1006,9 @@ mod tests {
             projection: core::array::from_fn(|i| ((i as u32 * 211 + 5) % CC_Q as u32) as u16),
             account_id: core::array::from_fn(|i| (i as u8).wrapping_mul(13).wrapping_add(3)),
             slot_id: 0xDEAD_BEEF_0000_0042,
-            account_state_root: core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(7)),
+            account_state_root: core::array::from_fn(|i| {
+                (i as u8).wrapping_mul(17).wrapping_add(7)
+            }),
             message_digest: core::array::from_fn(|i| (i as u8).wrapping_mul(7).wrapping_add(1)),
         }
     }
@@ -1001,7 +1123,11 @@ mod tests {
             sigma_expected(&w.sigma_t, &d.sigma_c, &w.sigma_w),
             "syndrome != t + c⊛w"
         );
-        assert_eq!(response_syndrome(&d.response), d.syndrome, "H·response != syndrome");
+        assert_eq!(
+            response_syndrome(&d.response),
+            d.syndrome,
+            "H·response != syndrome"
+        );
     }
 
     #[test]
@@ -1021,12 +1147,17 @@ mod tests {
     /// linear-system solution, not a short-norm preimage).
     #[test]
     fn rehosted_challenge_construction_is_consistent() {
-        use crate::checked_core::{pack_syndrome_digest, response_syndrome, sigma_expected, solve_response};
+        use crate::checked_core::{
+            pack_syndrome_digest, response_syndrome, sigma_expected, solve_response,
+        };
         let a = air();
-        let sigma_w: [u16; CC_ROWS] = core::array::from_fn(|i| ((i as u32 * 149 + 29) % CC_Q as u32) as u16);
-        let sigma_t: [u16; CC_ROWS] = core::array::from_fn(|i| ((i as u32 * 71 + 5) % CC_Q as u32) as u16);
+        let sigma_w: [u16; CC_ROWS] =
+            core::array::from_fn(|i| ((i as u32 * 149 + 29) % CC_Q as u32) as u16);
+        let sigma_t: [u16; CC_ROWS] =
+            core::array::from_fn(|i| ((i as u32 * 71 + 5) % CC_Q as u32) as u16);
         let message: [u8; 32] = core::array::from_fn(|i| (i as u8).wrapping_mul(7).wrapping_add(1));
-        let account: [u8; 32] = core::array::from_fn(|i| (i as u8).wrapping_mul(13).wrapping_add(3));
+        let account: [u8; 32] =
+            core::array::from_fn(|i| (i as u8).wrapping_mul(13).wrapping_add(3));
         let state: [u8; 32] = core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(7));
         let slot = 0xDEAD_BEEF_0000_0042u64;
 
@@ -1038,10 +1169,21 @@ mod tests {
         for &v in &response {
             assert!(v < CC_Q, "response non-canonical");
         }
-        assert_eq!(response_syndrome(&response), syndrome, "SIS H·response != syndrome");
-        assert_eq!(sigma_expected(&sigma_t, &c, &sigma_w), syndrome, "sigma identity broken");
+        assert_eq!(
+            response_syndrome(&response),
+            syndrome,
+            "SIS H·response != syndrome"
+        );
+        assert_eq!(
+            sigma_expected(&sigma_t, &c, &sigma_w),
+            syndrome,
+            "sigma identity broken"
+        );
         // Determinism: the challenge is a pure function of (statement, wc, pc).
-        assert_eq!(c, derive_challenge(&a, &message, &account, slot, &state, &wc, &pc));
+        assert_eq!(
+            c,
+            derive_challenge(&a, &message, &account, slot, &state, &wc, &pc)
+        );
     }
 
     /// The derived packed witness is `pack(syndrome ‖ projection)` with `syndrome = H·response`.

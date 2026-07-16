@@ -2,12 +2,12 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     fs::{self, File, OpenOptions},
     io::Write,
-    mem::{size_of, MaybeUninit},
+    mem::{MaybeUninit, size_of},
     path::{Path, PathBuf},
     ptr,
     sync::{
-        atomic::{compiler_fence, Ordering},
         OnceLock,
+        atomic::{Ordering, compiler_fence},
     },
 };
 
@@ -4005,8 +4005,8 @@ pub fn verify_path2_native_accepted_spend_numeric_evidence_v1(
     path2_native_accepted_spend_numeric_evidence_v1_digest(evidence)
 }
 
-pub fn path2_native_full_signature_reduction_evidence_v1(
-) -> Path2NativeFullSignatureReductionEvidenceV1 {
+pub fn path2_native_full_signature_reduction_evidence_v1()
+-> Path2NativeFullSignatureReductionEvidenceV1 {
     Path2NativeFullSignatureReductionEvidenceV1 {
         schema: PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_EVIDENCE_SCHEMA,
         schema_matches: true,
@@ -5989,8 +5989,8 @@ impl Drop for Path2NativeHonestConstructorSecretMaterialV1 {
     }
 }
 
-pub fn path2_native_signer_entropy_root_from_os_v1(
-) -> Result<Path2NativeSignerEntropyRootV1, String> {
+pub fn path2_native_signer_entropy_root_from_os_v1()
+-> Result<Path2NativeSignerEntropyRootV1, String> {
     let mut root = Path2NativeSignerEntropyRootV1 {
         root_entropy: [0_u8; DIGEST_BYTES],
         account_nonce: [0_u8; DIGEST_BYTES],
@@ -6408,8 +6408,8 @@ pub fn decode_hidden_source_fallback_projection_carrier(
     })
 }
 
-pub fn hidden_source_fallback_projection_leakage_accounting(
-) -> HiddenSourceFallbackProjectionLeakageAccounting {
+pub fn hidden_source_fallback_projection_leakage_accounting()
+-> HiddenSourceFallbackProjectionLeakageAccounting {
     let algebraic_lane_bytes = HIDDEN_SOURCE_FALLBACK_PROJECTION_LANES * 2;
     let charged_projection_bytes =
         algebraic_lane_bytes + HIDDEN_SOURCE_FALLBACK_PROJECTION_CHECK_BYTES;
@@ -6766,8 +6766,8 @@ fn hidden_source_fallback_centered_mod_q(value: u16) -> i16 {
     }
 }
 
-pub fn reviewed_response_link_bounded_kernel_certificate(
-) -> HiddenSourceFallbackProjectionResponseLinkKernelCertificate {
+pub fn reviewed_response_link_bounded_kernel_certificate()
+-> HiddenSourceFallbackProjectionResponseLinkKernelCertificate {
     HiddenSourceFallbackProjectionResponseLinkKernelCertificate {
         q: Q,
         coords: REVIEWED_RESPONSE_LINK_COORDS,
@@ -9350,6 +9350,56 @@ pub struct Path2AccountStarkFriQromResidualReportV1 {
     pub challenge_extension_degree: usize,
     pub challenge_field_bits_floor: usize,
     pub poseidon2_sponge_floor_bits: usize,
+    pub fs_challenger_rate: usize,
+    pub fs_challenger_capacity: usize,
+    pub fs_challenger_capacity_bits_floor: usize,
+    pub fs_challenger_generic_collision_bits_floor: usize,
+    pub fs_target_rate: usize,
+    pub fs_target_capacity: usize,
+    pub fs_target_generic_collision_bits_floor: usize,
+    pub fs_c9_reference_source: &'static str,
+    pub fs_c9_reference_native_fidelity_test: &'static str,
+    pub fs_c9_reference_native_fidelity_bound: bool,
+    pub fs_c9_production_migration_complete: bool,
+    pub bcs_rom_error_shape: &'static str,
+    pub bcs_qrom_error_shape: &'static str,
+    pub bcs_quantum_query_bound_log2: usize,
+    pub bcs_multi_target_horizon_log2: usize,
+    pub bcs_candidate_output_bits: usize,
+    pub bcs_rbr_schedule_label_bits: usize,
+    pub bcs_qrom_lift_constant_log2_bound: usize,
+    pub bcs_rbr_term_bound_bits: usize,
+    pub bcs_oracle_term_bound_bits: usize,
+    pub bcs_dimensions_lean_theorem: &'static str,
+    pub bcs_rbr_term_lean_theorem: &'static str,
+    pub bcs_oracle_term_lean_theorem: &'static str,
+    pub bcs_normalized_budget_lean_theorem: &'static str,
+    pub bcs_dimensions_bound: bool,
+    pub bcs_rbr_term_bound: bool,
+    pub bcs_oracle_term_bound: bool,
+    pub bcs_normalized_budget_q128_bound: bool,
+    pub published_rbr_source: &'static str,
+    pub published_rbr_error_shape: &'static str,
+    pub single_leaf_degree_bits: usize,
+    pub single_leaf_fri_domain_log2: usize,
+    pub published_rbr_analysis_m: usize,
+    pub published_rbr_delta_numerator: usize,
+    pub published_rbr_delta_denominator: usize,
+    pub published_rbr_field_term_bound_bits: usize,
+    pub published_rbr_query_term_bound_bits: usize,
+    pub published_rbr_dimensions_lean_theorem: &'static str,
+    pub published_rbr_bound_lean_theorem: &'static str,
+    pub adaptive_rbr_term_bound_bits: usize,
+    pub adaptive_oracle_term_bound_bits: usize,
+    pub adaptive_budget_lean_theorem: &'static str,
+    pub adaptive_budget_q128_bound: bool,
+    pub adaptive_qrom_policy_adr: &'static str,
+    pub adaptive_qrom_policy_lean_theorem: &'static str,
+    pub adaptive_global_query_bound: bool,
+    pub bcs_account_target_multiplier: usize,
+    pub lifetime_union_profile_selected: bool,
+    pub lifetime_field_budget_not_le_q128_lean_theorem: &'static str,
+    pub lifetime_union_bound_q128_established: bool,
     pub checked_core_qrom_artifacts: &'static [&'static str],
     pub qrom_domain_vector_case_ids: &'static [&'static str],
     pub checked_core_qrom_algebraic_challenge_bits: usize,
@@ -9366,6 +9416,9 @@ pub struct Path2AccountStarkFriQromResidualReportV1 {
     pub fri_schedule_pinned: bool,
     pub challenge_field_pinned: bool,
     pub checked_core_qrom_budget_pinned: bool,
+    pub bcs_challenger_output_mapping_instantiated: bool,
+    pub bcs_rbr_error_theorem_instantiated: bool,
+    pub bcs_qrom_lift_constant_reviewed: bool,
     pub account_stark_transcript_qrom_theorem_instantiated: bool,
     pub recursion_pricing_complete: bool,
     pub external_fri_review_complete: bool,
@@ -9611,13 +9664,17 @@ pub struct Path2AccountCreationNoExportBoundaryReportV1 {
     pub named_break: &'static str,
     pub simulator_public_input_fields: &'static [&'static str],
     pub no_export_private_material_fields: &'static [&'static str],
+    pub account_stark_public_statement_fields: &'static [&'static str],
     pub no_export_vector_case_ids: &'static [&'static str],
     pub payload_public_field_count: usize,
     pub public_payload_field_mutation_count: usize,
     pub no_export_vector_case_count: usize,
     pub public_payload_exports_private_material: bool,
+    pub public_statement_exports_private_material: bool,
     pub no_export_field_denylist_pinned: bool,
     pub simulator_input_allowlist_pinned: bool,
+    pub nested_public_statement_audit_pinned: bool,
+    pub public_syndrome_classified_as_allowed: bool,
     pub byte_model_public_payload_only: bool,
     pub boundary_mapping_complete: bool,
     pub roundtrip_regression_present: bool,
@@ -9639,6 +9696,45 @@ pub struct Path2AccountCreationNoExportBoundaryReportV1 {
     pub accepted_bundle_simulator_no_export_reduction_bound: bool,
     pub accepted_boundary_simulator_no_export_reduction_lean_theorem: &'static str,
     pub accepted_boundary_simulator_no_export_reduction_bound: bool,
+    pub simulator_hybrid_lean_theorem: &'static str,
+    pub simulator_hybrid_reduction_bound: bool,
+    pub mask_translation_bijective_lean_theorem: &'static str,
+    pub mask_translation_bijective_bound: bool,
+    pub mask_prf_domain_lane: u32,
+    pub mask_prf_input_lanes: usize,
+    pub mask_prf_reduction_digits: usize,
+    pub mask_prf_squeezed_lanes: usize,
+    pub mask_prf_target_horizon_log2: usize,
+    pub mask_prf_domain_separation_lean_theorem: &'static str,
+    pub mask_prf_domain_separation_bound: bool,
+    pub mask_prf_squeeze_index_injective_lean_theorem: &'static str,
+    pub mask_prf_squeeze_index_injective_bound: bool,
+    pub mask_prf_wide_reduction_q128_lean_theorem: &'static str,
+    pub mask_prf_wide_reduction_q128_bound: bool,
+    pub mask_prf_freshness_lean_theorem: &'static str,
+    pub mask_prf_freshness_bound: bool,
+    pub poseidon_mask_prf_theorem_instantiated: bool,
+    pub pad_commitment_domain_lane: u32,
+    pub opening_commitment_domain_lane: u32,
+    pub commitment_nonce_bytes: usize,
+    pub commitment_nonce_bits: usize,
+    pub pad_commitment_input_lanes: usize,
+    pub opening_commitment_input_lanes: usize,
+    pub hiding_commitments_per_account: usize,
+    pub commitment_target_horizon_log2: usize,
+    pub commitment_qrom_query_log2: usize,
+    pub commitment_domain_separation_lean_theorem: &'static str,
+    pub commitment_domain_separation_bound: bool,
+    pub commitment_frame_dimensions_lean_theorem: &'static str,
+    pub commitment_frame_dimensions_bound: bool,
+    pub commitment_qrom_search_q128_lean_theorem: &'static str,
+    pub commitment_qrom_search_q128_bound: bool,
+    pub deployment_commitment_nonce_csprng_bound: bool,
+    pub poseidon_commitment_hiding_theorem_instantiated: bool,
+    pub hiding_rng_type: &'static str,
+    pub hiding_rng_seed_bits: usize,
+    pub hiding_rng_csprng_bound: bool,
+    pub hiding_rng_substreams_domain_separated: bool,
     pub simulator_theorem_instantiated: bool,
     pub no_export_theorem_instantiated: bool,
     pub accepted_bundle_simulatable_from_public_anchors: bool,
@@ -9872,6 +9968,7 @@ pub struct Path2AccountCreationAcceptedProofBoundaryEvidenceV1 {
     pub aggregation_context_digest: [u8; DIGEST_BYTES],
     pub native_role_root_commitment: [u8; DIGEST_BYTES],
     pub masked_projection_digest: [u8; DIGEST_BYTES],
+    pub pad_seed_nullifier: [u8; DIGEST_BYTES],
     pub deployed_anchor_digest: [u8; DIGEST_BYTES],
     pub payload_frame_digest: [u8; DIGEST_BYTES],
     pub payload_frame_bytes: usize,
@@ -9898,6 +9995,7 @@ pub struct Path2AccountCreationAcceptedProofBoundaryEvidenceV1 {
     pub deployed_anchor_masked_projection_bound: bool,
     pub deployed_anchor_role_root_export_bridge_bound: bool,
     pub deployed_anchor_packed_witness_commitment_bound: bool,
+    pub deployed_anchor_pad_seed_nullifier_bound: bool,
     pub deployed_anchor_fields_match_report: bool,
     pub account_stark_bundle_nonempty: bool,
     pub proof_family_obligations_still_open: bool,
@@ -10025,6 +10123,10 @@ pub struct Path2DirectAcceptedCompositionEvidenceV1 {
     pub creation_evidence_matches_direct_tuple: bool,
     pub proof_boundary_digest_matches_direct_theorem: bool,
     pub qrom_action_digest_matches_direct_theorem: bool,
+    pub qrom_action_budget_bridge_imported: bool,
+    pub qrom_action_theorem_linkage_reduction_imported: bool,
+    pub qrom_action_review_hypothesis_explicit: bool,
+    pub qrom_action_external_review_still_open: bool,
     pub lifecycle_digest_matches_direct_theorem: bool,
     pub direct_admission_namespace_matches_authorization: bool,
     pub consume_once_transition_matches_tuple: bool,
@@ -10084,6 +10186,14 @@ pub struct Path2DirectQromActionBoundaryReportV1 {
     pub optional_aggregation_terms_q_batch_only: bool,
     pub selected_horizon_within_margin: bool,
     pub negative_control_exceeds_margin: bool,
+    pub direct_qrom_action_budget_bridge_lean_theorem: &'static str,
+    pub direct_qrom_action_budget_bridge_bound: bool,
+    pub direct_qrom_action_theorem_linkage_reduction_lean_theorem: &'static str,
+    pub direct_qrom_action_local_linkage_reduction_imported: bool,
+    pub production_checked_core_acceptance_semantics_bound: bool,
+    pub qrom_action_valid_or_named_break_theorem_instantiated: bool,
+    pub qrom_domain_break_coupled_to_direct_game: bool,
+    pub qrom_action_assumption_instantiated: bool,
     pub theorem_imports_budget: bool,
     pub external_qrom_review_complete: bool,
     pub qrom_and_action_bounds_linked_to_theorem: bool,
@@ -10226,11 +10336,67 @@ impl Default for Path2D2FinalityProfileState {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Path2DirectAdmissionBoundaryReportV1 {
+    pub digest: [u8; DIGEST_BYTES],
+    pub domain: &'static str,
+    pub profile_id: &'static str,
+    pub architecture_authority: &'static str,
+    pub lifecycle_authority: &'static str,
+    pub deployment_profile_authority: &'static str,
+    pub direct_obligation_id: &'static str,
+    pub acceptance_hypothesis: &'static str,
+    pub registry_named_break: &'static str,
+    pub data_availability_named_break: &'static str,
+    pub storage_class: &'static str,
+    pub admission_state_type: &'static str,
+    pub admission_record_type: &'static str,
+    pub admission_endpoint: &'static str,
+    pub verified_public_anchors_type: &'static str,
+    pub verified_nullifier_decode_endpoint: &'static str,
+    pub verified_admission_candidate_type: &'static str,
+    pub verified_admission_candidate_endpoint: &'static str,
+    pub nullifier_registry_key_type: &'static str,
+    pub nullifier_encoding: &'static str,
+    pub nullifier_block_admission_endpoint: &'static str,
+    pub restore_anchor_type: &'static str,
+    pub restore_anchor_endpoint: &'static str,
+    pub restore_endpoint: &'static str,
+    pub available_record_endpoint: &'static str,
+    pub spend_endpoint: &'static str,
+    pub namespace_key_fields: &'static [&'static str],
+    pub record_value_fields: &'static [&'static str],
+    pub executable_tests: &'static [&'static str],
+    pub admission_closure_lean_theorem: &'static str,
+    pub pad_seed_reorg_safe_uniqueness_lean_theorem: &'static str,
+    pub exact_namespace_tuple_key_pinned: bool,
+    pub canonical_leaf_bytes_stored_directly: bool,
+    pub leaf_and_evidence_digests_rechecked: bool,
+    pub spend_reads_canonical_consensus_record: bool,
+    pub missing_record_rejected: bool,
+    pub corrupt_record_fails_closed: bool,
+    pub duplicate_admission_rejected: bool,
+    pub d2_finalized_head_reorg_semantics: bool,
+    pub verified_creation_nullifier_anchor_bound: bool,
+    pub sovereign_nullifier_registry_consensus_wired: bool,
+    pub sovereign_nullifier_block_atomic: bool,
+    pub sovereign_nullifier_d2_reorg_index_rebuild_verified: bool,
+    pub pad_seed_reorg_safe_uniqueness_selected_state_reduction_imported: bool,
+    pub snapshot_restores_nullifier_registry: bool,
+    pub snapshot_restore_anchor_bound: bool,
+    pub target_chain_data_availability_instantiated: bool,
+    pub admission_closure_lean_imported: bool,
+    pub external_storage_review_complete: bool,
+    pub deployment_ready: bool,
+    pub blocker: &'static str,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Path2DirectTheoremBoundaryReportV1 {
     pub digest: [u8; DIGEST_BYTES],
     pub domain: &'static str,
     pub direct_qrom_action_boundary_report_digest: [u8; DIGEST_BYTES],
     pub direct_lifecycle_boundary_report_digest: [u8; DIGEST_BYTES],
+    pub direct_admission_boundary_report_digest: [u8; DIGEST_BYTES],
     pub account_creation_proof_boundary_report_digest: [u8; DIGEST_BYTES],
     pub theorem_target: &'static str,
     pub theorem_conclusion: &'static str,
@@ -10264,11 +10430,44 @@ pub struct Path2DirectTheoremBoundaryReportV1 {
     pub accepted_composition_evidence_present: bool,
     pub acceptance_hypotheses_pinned: bool,
     pub named_break_classes_pinned: bool,
+    pub composition_theorem_reduction_lean_theorem: &'static str,
+    pub composition_theorem_reduction_imported: bool,
+    pub composition_external_hypotheses_explicit: bool,
+    pub composition_capstone_under_explicit_named_assumptions_lean_theorem: &'static str,
+    pub composition_capstone_under_explicit_named_assumptions_imported: bool,
     pub composition_theorem_instantiated: bool,
     pub account_creation_proof_boundary_verified: bool,
+    pub direct_leaf_canonical_live_lean_theorem: &'static str,
+    pub direct_leaf_canonical_live_imported: bool,
+    pub direct_leaf_canonical_live_lifecycle_and_kat_hypothesis_explicit: bool,
+    pub direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle: bool,
     pub checked_core_frame_binding_imported: bool,
     pub slot_authorization_digest_imported: bool,
+    pub direct_evidence_leaf_binding_lean_theorem: &'static str,
+    pub direct_evidence_leaf_binding_imported: bool,
+    pub direct_evidence_leaf_binding_proof_boundary_hypothesis_explicit: bool,
+    pub direct_evidence_leaf_binding_closed_by_frozen_kat: bool,
+    pub direct_admission_namespace_membership_lean_theorem: &'static str,
+    pub direct_admission_namespace_membership_imported: bool,
+    pub direct_admission_namespace_data_availability_hypothesis_explicit: bool,
+    pub direct_admission_namespace_and_data_availability_lean_theorem: &'static str,
+    pub direct_admission_namespace_and_data_availability_imported: bool,
+    pub direct_admission_namespace_closed_by_sovereign_state: bool,
+    pub direct_public_rejection_state_preserving_lean_theorem: &'static str,
+    pub direct_public_rejection_state_preserving_imported: bool,
+    pub direct_public_rejection_classifier_total: bool,
+    pub direct_public_rejection_class_kat_test: &'static str,
+    pub direct_public_rejection_all_classes_kat_covered: bool,
+    pub direct_public_rejection_panic_fail_closed_kat_covered: bool,
+    pub direct_public_rejection_all_public_objects_kat_covered: bool,
+    pub direct_public_rejection_target_client_mapping_complete: bool,
+    pub direct_public_rejection_consensus_kat_hypothesis_explicit: bool,
     pub lifecycle_transition_profile_verified: bool,
+    pub qrom_action_budget_bridge_lean_theorem: &'static str,
+    pub qrom_action_budget_bridge_imported: bool,
+    pub qrom_action_theorem_linkage_reduction_lean_theorem: &'static str,
+    pub qrom_action_theorem_linkage_reduction_imported: bool,
+    pub qrom_action_review_hypothesis_explicit: bool,
     pub qrom_and_action_bounds_linked_to_theorem: bool,
     pub deployment_ready: bool,
     pub blocker: &'static str,
@@ -10759,6 +10958,170 @@ pub const PATH2_PUBLIC_RESULT_CLASSES_V1: [Path2PublicResultClassV1; 11] = [
     Path2PublicResultClassV1::RejectResourceLimit,
     Path2PublicResultClassV1::InternalErrorFailClosed,
 ];
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Path2DirectPublicRejectionKatCaseV1 {
+    pub case_id: &'static str,
+    pub internal_reason: &'static str,
+    pub expected_class: Path2PublicResultClassV1,
+}
+
+pub const PATH2_DIRECT_PUBLIC_REJECTION_CLASS_KAT_CASES_V1: [Path2DirectPublicRejectionKatCaseV1;
+    9] = [
+    Path2DirectPublicRejectionKatCaseV1 {
+        case_id: "direct_reject_malformed_public_input",
+        internal_reason: "malformed public input",
+        expected_class: Path2PublicResultClassV1::RejectMalformedPublicInput,
+    },
+    Path2DirectPublicRejectionKatCaseV1 {
+        case_id: "direct_reject_unsupported_version",
+        internal_reason: "unsupported version",
+        expected_class: Path2PublicResultClassV1::RejectUnsupportedVersion,
+    },
+    Path2DirectPublicRejectionKatCaseV1 {
+        case_id: "direct_reject_binding_mismatch",
+        internal_reason: "public-key identity mismatch",
+        expected_class: Path2PublicResultClassV1::RejectBindingMismatch,
+    },
+    Path2DirectPublicRejectionKatCaseV1 {
+        case_id: "direct_reject_creation_evidence",
+        internal_reason: "not admitted in state namespace",
+        expected_class: Path2PublicResultClassV1::RejectCreationEvidence,
+    },
+    Path2DirectPublicRejectionKatCaseV1 {
+        case_id: "direct_reject_checked_core",
+        internal_reason: "Path 2 checked-core authorization challenge mismatch",
+        expected_class: Path2PublicResultClassV1::RejectCheckedCore,
+    },
+    Path2DirectPublicRejectionKatCaseV1 {
+        case_id: "direct_reject_lifecycle_state",
+        internal_reason: "slot is already consumed",
+        expected_class: Path2PublicResultClassV1::RejectLifecycleState,
+    },
+    Path2DirectPublicRejectionKatCaseV1 {
+        case_id: "direct_reject_policy",
+        internal_reason: "policy rejected",
+        expected_class: Path2PublicResultClassV1::RejectPolicy,
+    },
+    Path2DirectPublicRejectionKatCaseV1 {
+        case_id: "direct_reject_resource_limit",
+        internal_reason: "resource limit exceeded",
+        expected_class: Path2PublicResultClassV1::RejectResourceLimit,
+    },
+    Path2DirectPublicRejectionKatCaseV1 {
+        case_id: "direct_internal_error_fail_closed",
+        internal_reason: "internal verifier failure",
+        expected_class: Path2PublicResultClassV1::InternalErrorFailClosed,
+    },
+];
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Path2DirectConsensusVisiblePublicObjectV1 {
+    PrevalidatedSlotLeaf,
+    AccountCreationEvidence,
+    ReplayableRelationCertificate,
+    PublicKey,
+    Message,
+    AccountState,
+    Signature,
+    AdmittedStateAuthorizations,
+    ConsumedAuthorizations,
+}
+
+impl Path2DirectConsensusVisiblePublicObjectV1 {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::PrevalidatedSlotLeaf => "prevalidated_slot_leaf",
+            Self::AccountCreationEvidence => "account_creation_evidence",
+            Self::ReplayableRelationCertificate => "replayable_relation_certificate",
+            Self::PublicKey => "public_key",
+            Self::Message => "message",
+            Self::AccountState => "account_state",
+            Self::Signature => "signature",
+            Self::AdmittedStateAuthorizations => "admitted_state_authorizations",
+            Self::ConsumedAuthorizations => "consumed_authorizations",
+        }
+    }
+}
+
+pub const PATH2_DIRECT_CONSENSUS_VISIBLE_PUBLIC_OBJECTS_V1:
+    [Path2DirectConsensusVisiblePublicObjectV1; 9] = [
+    Path2DirectConsensusVisiblePublicObjectV1::PrevalidatedSlotLeaf,
+    Path2DirectConsensusVisiblePublicObjectV1::AccountCreationEvidence,
+    Path2DirectConsensusVisiblePublicObjectV1::ReplayableRelationCertificate,
+    Path2DirectConsensusVisiblePublicObjectV1::PublicKey,
+    Path2DirectConsensusVisiblePublicObjectV1::Message,
+    Path2DirectConsensusVisiblePublicObjectV1::AccountState,
+    Path2DirectConsensusVisiblePublicObjectV1::Signature,
+    Path2DirectConsensusVisiblePublicObjectV1::AdmittedStateAuthorizations,
+    Path2DirectConsensusVisiblePublicObjectV1::ConsumedAuthorizations,
+];
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Path2DirectPublicObjectMutationKatCaseV1 {
+    pub case_id: &'static str,
+    pub public_object: Path2DirectConsensusVisiblePublicObjectV1,
+    pub mutation: &'static str,
+    pub expected_class: Path2PublicResultClassV1,
+}
+
+pub const PATH2_DIRECT_PUBLIC_OBJECT_MUTATION_KAT_CASES_V1:
+    [Path2DirectPublicObjectMutationKatCaseV1; 9] = [
+    Path2DirectPublicObjectMutationKatCaseV1 {
+        case_id: "direct_public_object_leaf_version",
+        public_object: Path2DirectConsensusVisiblePublicObjectV1::PrevalidatedSlotLeaf,
+        mutation: "increment frame_version",
+        expected_class: Path2PublicResultClassV1::RejectMalformedPublicInput,
+    },
+    Path2DirectPublicObjectMutationKatCaseV1 {
+        case_id: "direct_public_object_evidence_domain",
+        public_object: Path2DirectConsensusVisiblePublicObjectV1::AccountCreationEvidence,
+        mutation: "replace evidence_domain",
+        expected_class: Path2PublicResultClassV1::RejectMalformedPublicInput,
+    },
+    Path2DirectPublicObjectMutationKatCaseV1 {
+        case_id: "direct_public_object_certificate_transcript",
+        public_object: Path2DirectConsensusVisiblePublicObjectV1::ReplayableRelationCertificate,
+        mutation: "flip relation_transcript_digest byte",
+        expected_class: Path2PublicResultClassV1::RejectBindingMismatch,
+    },
+    Path2DirectPublicObjectMutationKatCaseV1 {
+        case_id: "direct_public_object_public_key",
+        public_object: Path2DirectConsensusVisiblePublicObjectV1::PublicKey,
+        mutation: "flip public key byte",
+        expected_class: Path2PublicResultClassV1::RejectBindingMismatch,
+    },
+    Path2DirectPublicObjectMutationKatCaseV1 {
+        case_id: "direct_public_object_message",
+        public_object: Path2DirectConsensusVisiblePublicObjectV1::Message,
+        mutation: "append message byte",
+        expected_class: Path2PublicResultClassV1::RejectCheckedCore,
+    },
+    Path2DirectPublicObjectMutationKatCaseV1 {
+        case_id: "direct_public_object_account_state",
+        public_object: Path2DirectConsensusVisiblePublicObjectV1::AccountState,
+        mutation: "mark referenced account slot consumed",
+        expected_class: Path2PublicResultClassV1::RejectLifecycleState,
+    },
+    Path2DirectPublicObjectMutationKatCaseV1 {
+        case_id: "direct_public_object_signature",
+        public_object: Path2DirectConsensusVisiblePublicObjectV1::Signature,
+        mutation: "replace signature with empty bytes",
+        expected_class: Path2PublicResultClassV1::RejectMalformedPublicInput,
+    },
+    Path2DirectPublicObjectMutationKatCaseV1 {
+        case_id: "direct_public_object_admission_state",
+        public_object: Path2DirectConsensusVisiblePublicObjectV1::AdmittedStateAuthorizations,
+        mutation: "remove admitted authorization",
+        expected_class: Path2PublicResultClassV1::RejectCreationEvidence,
+    },
+    Path2DirectPublicObjectMutationKatCaseV1 {
+        case_id: "direct_public_object_consume_once_state",
+        public_object: Path2DirectConsensusVisiblePublicObjectV1::ConsumedAuthorizations,
+        mutation: "insert referenced authorization before verification",
+        expected_class: Path2PublicResultClassV1::RejectLifecycleState,
+    },
+];
 pub const PATH2_ACCOUNT_STARK_PAYLOAD_PUBLIC_REJECTION_CLASSES: [&str; 4] = [
     PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT,
     PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
@@ -10847,17 +11210,173 @@ impl Path2DirectSpendPublicResultV1 {
     }
 }
 
-pub const PATH2_ACCOUNT_STARK_PAYLOAD_FRAME_FIXED_OVERHEAD_EXCLUDING_BUNDLE: usize = 558;
+pub const PATH2_SOVEREIGN_DIRECT_CLIENT_PROFILE_ID_V1: &str =
+    "Descender.SovereignRollup.DirectModeA.D2.v1";
+pub const PATH2_SOVEREIGN_DIRECT_CLIENT_ARCHITECTURE_AUTHORITY_V1: &str =
+    "decisions/ADR-0009-native-sovereign-pq-rollup-settlement.md";
+pub const PATH2_SOVEREIGN_DIRECT_CLIENT_LIFECYCLE_AUTHORITY_V1: &str =
+    "decisions/ADR-0010-registry-lifecycle-consensus-wiring-and-finality.md";
+pub const PATH2_DIRECT_ADMISSION_BOUNDARY_REPORT_DOMAIN_V1: &str =
+    "Descender.Path2.DirectAdmissionBoundaryReport.v1";
+pub const PATH2_SOVEREIGN_DIRECT_ADMISSION_RECORD_SCHEMA_V1: &str =
+    "Descender.SovereignRollup.DirectAdmissionRecord.v1";
+pub const PATH2_SOVEREIGN_DIRECT_ADMISSION_STORAGE_CLASS_V1: &str =
+    "canonical_sovereign_consensus_state_direct_full_leaf_record";
+pub const PATH2_DIRECT_ADMISSION_NAMESPACE_KEY_FIELDS_V1: [&str; 3] = [
+    "account_id",
+    "account_state_root_before",
+    "slot_authorization_digest",
+];
+pub const PATH2_DIRECT_ADMISSION_RECORD_VALUE_FIELDS_V1: [&str; 9] = [
+    "profile_id",
+    "account_id",
+    "account_state_root_before",
+    "slot_authorization_digest",
+    "canonical_leaf_bytes",
+    "slot_leaf_digest",
+    "evidence_transcript_digest",
+    "pad_seed_nullifier",
+    "admitted_at_height",
+];
+pub const PATH2_DIRECT_ADMISSION_BOUNDARY_EXECUTABLE_TESTS_V1: [&str; 7] = [
+    "path2_sovereign_direct_admission_state_binds_available_record_and_spend",
+    "path2_sovereign_direct_admission_state_rejects_missing_mismatched_and_corrupt_records",
+    "path2_sovereign_direct_admission_state_reorg_respects_d2_finality",
+    "path2_sovereign_direct_admission_block_is_atomic_and_nullifier_global",
+    "path2_sovereign_direct_admission_snapshot_roundtrips_nullifier_registry",
+    "path2_sovereign_direct_admission_rejects_finalized_head_mutation",
+    "path2_account_stark_creation_roundtrip_and_binds",
+];
+pub const PATH2_DIRECT_ADMISSION_PAD_SEED_REORG_SAFE_UNIQUENESS_LEAN_THEOREM: &str =
+    "selectedRustSovereignPadSeedReorgSafeUniqueness_of_verifiedNullifierRegistry_v1";
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Path2SovereignConsensusStateEffectV1 {
+    NoMutation,
+    AdmitLiveSlot,
+    ConsumeLiveSlot,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Path2SovereignDirectClientMappingRowV1 {
+    pub result_class: Path2PublicResultClassV1,
+    pub consensus_code: u16,
+    pub transaction_valid: bool,
+    pub state_effect: Path2SovereignConsensusStateEffectV1,
+}
+
+pub const PATH2_SOVEREIGN_DIRECT_CLIENT_MAPPING_ROWS_V1: [Path2SovereignDirectClientMappingRowV1;
+    11] = [
+    Path2SovereignDirectClientMappingRowV1 {
+        result_class: Path2PublicResultClassV1::AcceptAdmitSlot,
+        consensus_code: 0x0001,
+        transaction_valid: true,
+        state_effect: Path2SovereignConsensusStateEffectV1::AdmitLiveSlot,
+    },
+    Path2SovereignDirectClientMappingRowV1 {
+        result_class: Path2PublicResultClassV1::AcceptSpendSlot,
+        consensus_code: 0x0002,
+        transaction_valid: true,
+        state_effect: Path2SovereignConsensusStateEffectV1::ConsumeLiveSlot,
+    },
+    Path2SovereignDirectClientMappingRowV1 {
+        result_class: Path2PublicResultClassV1::RejectMalformedPublicInput,
+        consensus_code: 0x1001,
+        transaction_valid: false,
+        state_effect: Path2SovereignConsensusStateEffectV1::NoMutation,
+    },
+    Path2SovereignDirectClientMappingRowV1 {
+        result_class: Path2PublicResultClassV1::RejectUnsupportedVersion,
+        consensus_code: 0x1002,
+        transaction_valid: false,
+        state_effect: Path2SovereignConsensusStateEffectV1::NoMutation,
+    },
+    Path2SovereignDirectClientMappingRowV1 {
+        result_class: Path2PublicResultClassV1::RejectBindingMismatch,
+        consensus_code: 0x1003,
+        transaction_valid: false,
+        state_effect: Path2SovereignConsensusStateEffectV1::NoMutation,
+    },
+    Path2SovereignDirectClientMappingRowV1 {
+        result_class: Path2PublicResultClassV1::RejectCreationEvidence,
+        consensus_code: 0x1004,
+        transaction_valid: false,
+        state_effect: Path2SovereignConsensusStateEffectV1::NoMutation,
+    },
+    Path2SovereignDirectClientMappingRowV1 {
+        result_class: Path2PublicResultClassV1::RejectCheckedCore,
+        consensus_code: 0x1005,
+        transaction_valid: false,
+        state_effect: Path2SovereignConsensusStateEffectV1::NoMutation,
+    },
+    Path2SovereignDirectClientMappingRowV1 {
+        result_class: Path2PublicResultClassV1::RejectLifecycleState,
+        consensus_code: 0x1006,
+        transaction_valid: false,
+        state_effect: Path2SovereignConsensusStateEffectV1::NoMutation,
+    },
+    Path2SovereignDirectClientMappingRowV1 {
+        result_class: Path2PublicResultClassV1::RejectPolicy,
+        consensus_code: 0x1007,
+        transaction_valid: false,
+        state_effect: Path2SovereignConsensusStateEffectV1::NoMutation,
+    },
+    Path2SovereignDirectClientMappingRowV1 {
+        result_class: Path2PublicResultClassV1::RejectResourceLimit,
+        consensus_code: 0x1008,
+        transaction_valid: false,
+        state_effect: Path2SovereignConsensusStateEffectV1::NoMutation,
+    },
+    Path2SovereignDirectClientMappingRowV1 {
+        result_class: Path2PublicResultClassV1::InternalErrorFailClosed,
+        consensus_code: 0x10ff,
+        transaction_valid: false,
+        state_effect: Path2SovereignConsensusStateEffectV1::NoMutation,
+    },
+];
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Path2SovereignDirectClientResultV1 {
+    pub profile_id: &'static str,
+    pub public_result: Path2DirectSpendPublicResultV1,
+    pub consensus_code: u16,
+    pub transaction_valid: bool,
+    pub state_effect: Path2SovereignConsensusStateEffectV1,
+}
+
+pub fn path2_sovereign_direct_client_mapping_row_v1(
+    result_class: Path2PublicResultClassV1,
+) -> &'static Path2SovereignDirectClientMappingRowV1 {
+    PATH2_SOVEREIGN_DIRECT_CLIENT_MAPPING_ROWS_V1
+        .iter()
+        .find(|row| row.result_class == result_class)
+        .expect("sovereign direct client mapping covers every public result class")
+}
+
+pub fn path2_sovereign_direct_client_result_v1(
+    public_result: Path2DirectSpendPublicResultV1,
+) -> Path2SovereignDirectClientResultV1 {
+    let row = path2_sovereign_direct_client_mapping_row_v1(public_result.result_class);
+    Path2SovereignDirectClientResultV1 {
+        profile_id: PATH2_SOVEREIGN_DIRECT_CLIENT_PROFILE_ID_V1,
+        public_result,
+        consensus_code: row.consensus_code,
+        transaction_valid: row.transaction_valid,
+        state_effect: row.state_effect,
+    }
+}
+
+pub const PATH2_ACCOUNT_STARK_PAYLOAD_FRAME_FIXED_OVERHEAD_EXCLUDING_BUNDLE: usize = 618;
 pub const PATH2_ACCOUNT_STARK_PAYLOAD_FIXED_DATA_BYTES_EXCLUDING_BUNDLE: usize =
     PATH2_ACCOUNT_STARK_CREATION_PAYLOAD_SCHEMA.len()
         + 8
         + 8
-        + (4 * DIGEST_BYTES)
+        + (5 * DIGEST_BYTES)
         + 8
         + 8
         + (HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES * core::mem::size_of::<u16>());
 pub const PATH2_ACCOUNT_STARK_PAYLOAD_BYTE_MODEL_FIELDS:
-    [Path2AccountStarkPayloadByteModelFieldV1; 11] = [
+    [Path2AccountStarkPayloadByteModelFieldV1; 12] = [
     Path2AccountStarkPayloadByteModelFieldV1 {
         field_name: "schema",
         encoding: "append_frame bytes",
@@ -10929,6 +11448,13 @@ pub const PATH2_ACCOUNT_STARK_PAYLOAD_BYTE_MODEL_FIELDS:
         public_payload_field: true,
     },
     Path2AccountStarkPayloadByteModelFieldV1 {
+        field_name: "pad_seed_nullifier",
+        encoding: "append_frame 8 canonical u32 little-endian field limbs",
+        data_bytes: DIGEST_BYTES,
+        variable_length: false,
+        public_payload_field: true,
+    },
+    Path2AccountStarkPayloadByteModelFieldV1 {
         field_name: "account_stark_bundle",
         encoding: "append_frame opaque descender-account-verifier bundle",
         data_bytes: 0,
@@ -10953,7 +11479,211 @@ pub const PATH2_ACCOUNT_STARK_FRI_OPTIMISTIC_CAPACITY_BITS: usize =
         + PATH2_ACCOUNT_STARK_FRI_QUERY_POW_BITS;
 pub const PATH2_ACCOUNT_STARK_CHALLENGE_EXTENSION_DEGREE: usize = 8;
 pub const PATH2_ACCOUNT_STARK_CHALLENGE_FIELD_BITS_FLOOR: usize = 247;
+/// Generic floor for the rate-7/capacity-9 Merkle/MMCS sponge only.
 pub const PATH2_ACCOUNT_STARK_POSEIDON2_SPONGE_FLOOR_BITS: usize = 139;
+pub const PATH2_ACCOUNT_STARK_MERKLE_SPONGE_RATE: usize = 7;
+pub const PATH2_ACCOUNT_STARK_MERKLE_SPONGE_CAPACITY: usize = 9;
+pub const PATH2_ACCOUNT_STARK_FS_CHALLENGER_RATE: usize = 7;
+pub const PATH2_ACCOUNT_STARK_FS_CHALLENGER_CAPACITY: usize = 9;
+/// Conservative integer floor of 9 * log2(KoalaBear).
+pub const PATH2_ACCOUNT_STARK_FS_CHALLENGER_CAPACITY_BITS_FLOOR: usize = 278;
+/// Conservative integer floor of 9 * log2(KoalaBear) / 2.
+pub const PATH2_ACCOUNT_STARK_FS_CHALLENGER_SPONGE_FLOOR_BITS: usize = 139;
+pub const PATH2_ACCOUNT_STARK_FS_TARGET_RATE: usize = 7;
+pub const PATH2_ACCOUNT_STARK_FS_TARGET_CAPACITY: usize = 9;
+pub const PATH2_ACCOUNT_STARK_FS_TARGET_SPONGE_FLOOR_BITS: usize = 139;
+pub const PATH2_ACCOUNT_STARK_FS_C9_REFERENCE_SOURCE: &str =
+    "tools/descender-recursion/src/c9_challenger.rs";
+pub const PATH2_ACCOUNT_STARK_FS_C9_REFERENCE_NATIVE_FIDELITY_TEST: &str =
+    "c9_challenger::tests::mixed_plonky3_transcript_matches_native_rate7_challenger";
+pub const PATH2_ACCOUNT_STARK_FS_RECURSIVE_AIR_SOURCE: &str =
+    "tools/descender-recursion/src/recursive_air.rs";
+pub const PATH2_ACCOUNT_STARK_FS_RECURSIVE_RATE_MARKER: &str =
+    "debug_assert_eq!(RATE, 7, \"ADR-0011 recursive transcript must use rate 7\")";
+pub const PATH2_ACCOUNT_STARK_FS_RECURSIVE_OOD_NATIVE_TEST: &str =
+    "air_accepts_c9_ood_bca_beta_transcript_and_matches_native";
+pub const PATH2_ACCOUNT_STARK_FS_RECURSIVE_TAMPER_TEST: &str =
+    "air_rejects_tampered_c9_ood_permutation";
+pub const PATH2_ACCOUNT_STARK_FS_RECURSIVE_PARTIAL_NATIVE_TEST: &str =
+    "air_accepts_partial_pre_alpha_and_quotient_transcript_matching_native";
+pub const PATH2_ACCOUNT_STARK_FS_RECURSIVE_PARTIAL_TAMPER_TEST: &str =
+    "air_rejects_nonzero_tail_in_partial_fs_block";
+pub const PATH2_ACCOUNT_STARK_FS_RECURSIVE_REAL_PROOF_TEST: &str =
+    "recursion_primitives_reproduce_real_proof_challenges";
+pub const PATH2_ACCOUNT_STARK_FS_VERTICAL_OOD_AIR_SOURCE: &str =
+    "tools/descender-recursion/src/ood_transcript_air.rs";
+pub const PATH2_ACCOUNT_STARK_FS_VERTICAL_OOD_NATIVE_TEST: &str =
+    "vertical_ood_accumulator_matches_native_and_rejects_tamper";
+pub const PATH2_ACCOUNT_STARK_FS_VERTICAL_OOD_Q128_TEST: &str =
+    "vertical_ood_accumulator_proves_at_production_q128_knobs";
+pub const PATH2_ACCOUNT_STARK_FS_BLOCK_OOD_BINDING_AIR_SOURCE: &str =
+    "tools/descender-recursion/src/block_ood_binding_air.rs";
+pub const PATH2_ACCOUNT_STARK_FS_BLOCK_OOD_BINDING_ATTACK_TEST: &str =
+    "block_ood_binding_rejects_bus_order_shape_and_metadata_attacks";
+pub const PATH2_ACCOUNT_STARK_FS_BLOCK_OOD_BINDING_Q128_TEST: &str =
+    "block_ood_binding_proves_at_production_q128_knobs";
+pub const PATH2_ACCOUNT_STARK_FS_BLOCK_OOD_BINDING_SHAPE_TEST: &str =
+    "production_companion_shape_is_explicit";
+pub const PATH2_ACCOUNT_STARK_FS_PRODUCTION_OOD_STREAM_ELEMS_V1: usize = 186_032;
+pub const PATH2_ACCOUNT_STARK_PCS_OPENING_SHAPE_SOURCE: &str =
+    "tools/descender-recursion/src/pcs_opening_shape.rs";
+pub const PATH2_ACCOUNT_STARK_PCS_OPENING_TERMS_V1: usize = 23_254;
+pub const PATH2_ACCOUNT_STARK_PCS_TRACE_WIDTH_V1: usize = 23_142;
+pub const PATH2_ACCOUNT_STARK_PCS_OPENING_SHAPE_TEST: &str =
+    "production_shape_matches_relation_and_vertical_stream";
+pub const PATH2_ACCOUNT_STARK_PCS_REDUCTION_AIR_SOURCE: &str =
+    "tools/descender-recursion/src/pcs_opening_reduction_air.rs";
+pub const PATH2_ACCOUNT_STARK_PCS_REDUCTION_Q128_TEST: &str =
+    "vertical_opening_reduction_proves_at_production_q128_knobs";
+pub const PATH2_ACCOUNT_STARK_PCS_REDUCTION_ATTACK_TEST: &str =
+    "rejects_claim_row_and_order_tampering";
+pub const PATH2_ACCOUNT_STARK_PCS_VERTICAL_MMCS_AIR_SOURCE: &str =
+    "tools/descender-recursion/src/vertical_mmcs_air.rs";
+pub const PATH2_ACCOUNT_STARK_PCS_VERTICAL_MMCS_Q128_TEST: &str =
+    "vertical_mmcs_opening_proves_at_production_q128_knobs";
+pub const PATH2_ACCOUNT_STARK_PCS_VERTICAL_MMCS_ATTACK_TEST: &str =
+    "vertical_leaf_and_path_accept_and_reject_tampering";
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_LINK_AIR_SOURCE: &str =
+    "tools/descender-recursion/src/pcs_query_air.rs";
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_LINK_TERMS_V1: usize = 23_254;
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_LINK_ACTIVE_ROWS_V1: usize = 3_325;
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_LINK_HEIGHT_V1: usize = 4_096;
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_LINK_WIDTH_V1: usize = 2_265;
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_LINK_PUBLIC_VALUES_V1: usize = 102;
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_LINK_BASE_WITNESS_BYTES_V1: usize = 37_109_760;
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_LINK_Q128_TEST: &str =
+    "query_link_proves_at_production_q128_knobs";
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_LINK_ATTACK_TEST: &str =
+    "query_link_rejects_each_cross_binding_mutation";
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_LINK_SHAPE_TEST: &str =
+    "production_shape_is_source_pinned_and_constant_height";
+pub const PATH2_ACCOUNT_STARK_FRI_CHAIN_AIR_SOURCE: &str =
+    "tools/descender-recursion/src/fri_chain_air.rs";
+pub const PATH2_ACCOUNT_STARK_FRI_CHAIN_PUBLIC_Q128_TEST: &str =
+    "public_reduced_opening_feeds_q128_fri_chain";
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_SETTLEMENT_SOURCE: &str =
+    "tools/descender-recursion/src/pcs_query_settlement.rs";
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_SETTLEMENT_Q128_TEST: &str =
+    "versioned_query_envelope_binds_every_component_at_q128_knobs";
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_SETTLEMENT_SHAPE_TEST: &str =
+    "production_profile_pins_all_120_queries_and_relation_shape";
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_STATEMENT_MATERIALIZER: &str =
+    "materialize_all_pcs_query_statements_v1";
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_STATEMENT_VERIFIER: &str =
+    "verify_all_pcs_query_statements_v1";
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_STATEMENT_MATERIALIZER_TEST: &str =
+    "compact_statement_materialization_recomputes_ordered_roots";
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_STATEMENT_CHECKED_MATERIALIZER: &str =
+    "materialize_all_pcs_query_statements_constraint_checked_v1";
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_STATEMENT_CHECKED_MATERIALIZER_TEST: &str =
+    "constraint_checked_materialization_rejects_component_trace_tampering";
+pub const PATH2_ACCOUNT_STARK_PCS_ALL_QUERY_STATEMENT_KAT_PATH: &str =
+    "formal/kat/path2_pcs_all_query_statement_kat_v1.json";
+pub const PATH2_ACCOUNT_STARK_PCS_ALL_QUERY_STATEMENT_KAT_SCHEMA: &str =
+    "Descender.Path2.PcsAllQueryStatementKat.v1";
+pub const PATH2_ACCOUNT_STARK_PCS_ALL_QUERY_TRANSCRIPT_ANCHOR_ROOT_V1: [u32; 13] = [
+    388_966_703,
+    1_597_752_601,
+    1_182_766_932,
+    1_087_369_876,
+    2_047_530_678,
+    1_610_795_401,
+    998_635_236,
+    1_261_927_568,
+    1_588_649_335,
+    2_074_501_591,
+    673_990_036,
+    797_892_112,
+    1_819_995_322,
+];
+pub const PATH2_ACCOUNT_STARK_PCS_ALL_QUERY_COMPLETE_STATEMENT_ROOT_V1: [u32; 13] = [
+    743_707_966,
+    1_628_690_519,
+    1_889_230_926,
+    1_721_908_629,
+    628_304_068,
+    370_313_435,
+    2_037_860_876,
+    1_200_330_507,
+    51_208_022,
+    1_093_143_143,
+    1_528_801_889,
+    1_842_129_271,
+    949_922_941,
+];
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_SETTLEMENT_VERSION_V1: usize = 1;
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_SETTLEMENT_LOG_HEIGHT_V1: usize = 6;
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_SETTLEMENT_FRI_ROUNDS_V1: usize = 2;
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_SETTLEMENT_PROOFS_PER_QUERY_V1: usize = 5;
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_SETTLEMENT_PROOFS_ALL_QUERIES_V1: usize = 600;
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_SETTLEMENT_BASE_WITNESS_PER_QUERY_V1: usize = 48_995_024;
+pub const PATH2_ACCOUNT_STARK_PCS_QUERY_SETTLEMENT_BASE_WITNESS_ALL_QUERIES_V1: usize =
+    5_879_402_880;
+pub const PATH2_ACCOUNT_STARK_FANOUT_ANCHOR_AIR_SOURCE: &str =
+    "tools/descender-recursion/src/fanout_anchor_air.rs";
+pub const PATH2_ACCOUNT_STARK_FANOUT_ANCHOR_Q128_TEST: &str =
+    "padded_anchor_crosses_q128_proof_boundary";
+pub const PATH2_ACCOUNT_STARK_FANOUT_ANCHOR_SHAPE_TEST: &str =
+    "production_profile_pins_120_active_queries_in_128_rows";
+pub const PATH2_ACCOUNT_STARK_FANOUT_ANCHOR_ACTIVE_QUERIES_V1: usize = 120;
+pub const PATH2_ACCOUNT_STARK_FANOUT_ANCHOR_TRACE_HEIGHT_V1: usize = 128;
+pub const PATH2_ACCOUNT_STARK_FANOUT_ANCHOR_PREIMAGE_ELEMS_V1: usize = 116;
+pub const PATH2_ACCOUNT_STARK_FANOUT_ANCHOR_HASH_PERMS_V1: usize = 17;
+pub const PATH2_ACCOUNT_STARK_FRI_LAYER_DEPTH_TEST: &str =
+    "layer_open_descent_accepts_production_decreasing_depths";
+pub const PATH2_ACCOUNT_STARK_FRI_LAYER_DEPTH_ROUND_0_V1: usize = 5;
+pub const PATH2_ACCOUNT_STARK_FRI_LAYER_DEPTH_ROUND_1_V1: usize = 4;
+pub const PATH2_ACCOUNT_STARK_TRANSCRIPT_ANCHORED_BLOCK_ROOT_DOMAIN_V1: u32 = 0x4453_5201;
+pub const PATH2_ACCOUNT_STARK_PCS_REAL_PROOF_CONSUMER_TEST: &str =
+    "real_proof_query_runs_through_vertical_opening_reduction";
+pub const PATH2_ACCOUNT_STARK_FS_BOUND_SETTLEMENT_SOURCE: &str =
+    "tools/descender-recursion/src/settlement.rs";
+pub const PATH2_ACCOUNT_STARK_FS_BOUND_SETTLEMENT_Q128_TEST: &str =
+    "bound_settlement_roundtrip_rejects_shape_endpoint_and_component_mixups_q128";
+pub const PATH2_ACCOUNT_STARK_BCS_ROM_ERROR_SHAPE: &str =
+    "Q * epsilon_rbr + 3 * (Q^2 + 1) / 2^kappa";
+pub const PATH2_ACCOUNT_STARK_BCS_QROM_ERROR_SHAPE: &str =
+    "C_qrom * Q * (Q * epsilon_rbr + 3 * (Q^2 + 1) / 2^kappa)";
+pub const PATH2_ACCOUNT_STARK_BCS_QUANTUM_QUERY_BOUND_LOG2: usize = 16;
+pub const PATH2_ACCOUNT_STARK_BCS_MULTI_TARGET_HORIZON_LOG2: usize = 32;
+pub const PATH2_ACCOUNT_STARK_BCS_CANDIDATE_OUTPUT_BITS: usize = 247;
+pub const PATH2_ACCOUNT_STARK_BCS_RBR_SCHEDULE_LABEL_BITS: usize = 256;
+pub const PATH2_ACCOUNT_STARK_BCS_QROM_LIFT_CONSTANT_LOG2_BOUND: usize = 32;
+pub const PATH2_ACCOUNT_STARK_BCS_RBR_TERM_BOUND_BITS: usize = 130;
+pub const PATH2_ACCOUNT_STARK_BCS_ORACLE_TERM_BOUND_BITS: usize = 130;
+pub const PATH2_ACCOUNT_STARK_BCS_DIMENSIONS_LEAN_THEOREM: &str =
+    "selectedAccountStarkFriQromDimensions_v1";
+pub const PATH2_ACCOUNT_STARK_BCS_RBR_TERM_LEAN_THEOREM: &str =
+    "selectedAccountStarkFriQromRbrTerm_le_q130_v1";
+pub const PATH2_ACCOUNT_STARK_BCS_ORACLE_TERM_LEAN_THEOREM: &str =
+    "selectedAccountStarkFriQromBcsOracleTerm_le_q130_v1";
+pub const PATH2_ACCOUNT_STARK_BCS_NORMALIZED_BUDGET_LEAN_THEOREM: &str =
+    "selectedAccountStarkFriQromNormalizedBudget_le_q128_v1";
+pub const PATH2_ACCOUNT_STARK_PUBLISHED_RBR_SOURCE: &str =
+    "Block et al., Fiat-Shamir Security of FRI and Related SNARKs, Corollary 4";
+pub const PATH2_ACCOUNT_STARK_PUBLISHED_RBR_ERROR_SHAPE: &str =
+    "max(((m + 1/2)^7 * |L0|^2) / (3 * rho^(3/2) * |F|), (1 - delta)^ell)";
+pub const PATH2_ACCOUNT_STARK_SINGLE_LEAF_DEGREE_BITS: usize = 2;
+pub const PATH2_ACCOUNT_STARK_SINGLE_LEAF_FRI_DOMAIN_LOG2: usize = 6;
+pub const PATH2_ACCOUNT_STARK_PUBLISHED_RBR_ANALYSIS_M: usize = 3;
+pub const PATH2_ACCOUNT_STARK_PUBLISHED_RBR_DELTA_NUMERATOR: usize = 191;
+pub const PATH2_ACCOUNT_STARK_PUBLISHED_RBR_DELTA_DENOMINATOR: usize = 256;
+pub const PATH2_ACCOUNT_STARK_PUBLISHED_RBR_FIELD_TERM_BOUND_BITS: usize = 218;
+pub const PATH2_ACCOUNT_STARK_PUBLISHED_RBR_QUERY_TERM_BOUND_BITS: usize = 218;
+pub const PATH2_ACCOUNT_STARK_PUBLISHED_RBR_DIMENSIONS_LEAN_THEOREM: &str =
+    "selectedAccountStarkPublishedFriRbrDimensions_v1";
+pub const PATH2_ACCOUNT_STARK_PUBLISHED_RBR_BOUND_LEAN_THEOREM: &str =
+    "selectedAccountStarkPublishedFriRbrBound_le_q218_v1";
+pub const PATH2_ACCOUNT_STARK_ADAPTIVE_RBR_TERM_BOUND_BITS: usize = 154;
+pub const PATH2_ACCOUNT_STARK_ADAPTIVE_ORACLE_TERM_BOUND_BITS: usize = 165;
+pub const PATH2_ACCOUNT_STARK_ADAPTIVE_BUDGET_LEAN_THEOREM: &str =
+    "selectedAccountStarkPublishedFriAdaptiveBudget_le_q128_v1";
+pub const PATH2_ACCOUNT_STARK_ADAPTIVE_QROM_POLICY_ADR: &str = "ADR-0011";
+pub const PATH2_ACCOUNT_STARK_ADAPTIVE_QROM_POLICY_LEAN_THEOREM: &str =
+    "selectedAccountStarkFriAdaptiveQromPolicy_v1";
+pub const PATH2_ACCOUNT_STARK_BCS_ACCOUNT_TARGET_MULTIPLIER: usize = 1;
+pub const PATH2_ACCOUNT_STARK_LIFETIME_FIELD_BUDGET_NOT_LE_Q128_LEAN_THEOREM: &str =
+    "selectedAccountStarkPublishedFriLifetimeFieldBudget_not_le_q128_v1";
 pub const PATH2_CHECKED_CORE_QROM_ALGEBRAIC_CHALLENGE_BITS: usize = 182;
 pub const PATH2_CHECKED_CORE_QROM_HARDENING_BITS: usize = 64;
 pub const PATH2_CHECKED_CORE_QROM_TOTAL_TRANSCRIPT_BITS: usize = 246;
@@ -10968,16 +11698,18 @@ pub const PATH2_CHECKED_CORE_QROM_ARTIFACTS: [&str; 4] = [
     "research/cryptanalysis/signature_readiness_20260516/pre_third_party_qrom_frame_probe_n32_q12289.json",
     "research/cryptanalysis/signature_readiness_20260516/qrom_multitarget_margin_n32_q12289.json",
 ];
-pub const PATH2_ACCOUNT_STARK_FRI_QROM_DOMAIN_CASES: [&str; 5] = [
+pub const PATH2_ACCOUNT_STARK_FRI_QROM_DOMAIN_CASES: [&str; 7] = [
     "fri_qrom_selected_proof_family_domain",
     "fri_qrom_poseidon2_width_and_sponge_floor",
     "fri_qrom_challenge_field_and_schedule",
     "fri_qrom_checked_core_budget_import",
+    "fri_qrom_conditional_bcs_budget",
+    "fri_qrom_published_rbr_single_leaf_budget",
     "fri_qrom_open_theorem_flags_fail_closed",
 ];
 
 pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS:
-    [Path2AccountStarkPayloadKatBoundaryRowV1; 13] = [
+    [Path2AccountStarkPayloadKatBoundaryRowV1; 15] = [
     Path2AccountStarkPayloadKatBoundaryRowV1 {
         case_id: "payload_leaf_context_digest_mutation",
         mutated_surface: "leaf_context_digest",
@@ -11027,6 +11759,14 @@ pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS:
         frozen_vector_present: true,
     },
     Path2AccountStarkPayloadKatBoundaryRowV1 {
+        case_id: "pad_seed_nullifier_mutation",
+        mutated_surface: "pad_seed_nullifier",
+        internal_error_match: "account-creation STARK: payload digest mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+        covered_by_roundtrip_test: true,
+        frozen_vector_present: true,
+    },
+    Path2AccountStarkPayloadKatBoundaryRowV1 {
         case_id: "account_stark_bundle_digest_mutation",
         mutated_surface: "account_stark_bundle",
         internal_error_match: "account-creation STARK: payload digest mismatch",
@@ -11059,6 +11799,14 @@ pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS:
         frozen_vector_present: true,
     },
     Path2AccountStarkPayloadKatBoundaryRowV1 {
+        case_id: "rebound_pad_seed_nullifier_anchor",
+        mutated_surface: "pad_seed_nullifier",
+        internal_error_match: "deployed anchor mismatch: pad_seed_nullifier",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_CREATION_EVIDENCE,
+        covered_by_roundtrip_test: true,
+        frozen_vector_present: true,
+    },
+    Path2AccountStarkPayloadKatBoundaryRowV1 {
         case_id: "rebound_corrupted_account_stark_bundle",
         mutated_surface: "account_stark_bundle",
         internal_error_match: "account-creation STARK verify failed",
@@ -11077,8 +11825,7 @@ pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS:
     Path2AccountStarkPayloadKatBoundaryRowV1 {
         case_id: "production_gate_closed",
         mutated_surface: "production_admission_gate",
-        internal_error_match:
-            "account-creation STARK production verification is fail-closed (external-review-gated)",
+        internal_error_match: "account-creation STARK production verification is fail-closed (external-review-gated)",
         public_rejection_class: PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED,
         covered_by_roundtrip_test: true,
         frozen_vector_present: true,
@@ -11095,7 +11842,7 @@ pub const PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS:
         internal_error_match: "Path 2 slot leaf frame version mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT,
         covered_by_unit_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountCreationFrameKatBoundaryRowV1 {
         case_id: "leaf_live_status_marker_mutation",
@@ -11105,7 +11852,7 @@ pub const PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS:
         internal_error_match: "Path 2 slot leaf is not live",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT,
         covered_by_unit_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountCreationFrameKatBoundaryRowV1 {
         case_id: "evidence_domain_mutation",
@@ -11115,7 +11862,7 @@ pub const PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS:
         internal_error_match: "Path 2 evidence domain mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT,
         covered_by_unit_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountCreationFrameKatBoundaryRowV1 {
         case_id: "evidence_version_mutation",
@@ -11125,7 +11872,7 @@ pub const PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS:
         internal_error_match: "Path 2 evidence version mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT,
         covered_by_unit_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountCreationFrameKatBoundaryRowV1 {
         case_id: "evidence_kind_mutation",
@@ -11135,7 +11882,7 @@ pub const PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS:
         internal_error_match: "Path 2 unsupported evidence kind",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT,
         covered_by_unit_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountCreationFrameKatBoundaryRowV1 {
         case_id: "slot_leaf_digest_mutation",
@@ -11145,7 +11892,7 @@ pub const PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS:
         internal_error_match: "Path 2 slot leaf digest mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
         covered_by_unit_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountCreationFrameKatBoundaryRowV1 {
         case_id: "slot_authorization_digest_mutation",
@@ -11155,7 +11902,7 @@ pub const PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS:
         internal_error_match: "Path 2 slot authorization digest mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
         covered_by_unit_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountCreationFrameKatBoundaryRowV1 {
         case_id: "creation_verifier_version_digest_mutation",
@@ -11165,7 +11912,7 @@ pub const PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS:
         internal_error_match: "Path 2 creation verifier version mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
         covered_by_unit_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountCreationFrameKatBoundaryRowV1 {
         case_id: "hidden_source_statement_digest_mutation",
@@ -11175,7 +11922,7 @@ pub const PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS:
         internal_error_match: "Path 2 hidden-source statement digest mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
         covered_by_unit_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountCreationFrameKatBoundaryRowV1 {
         case_id: "opening_commitment_mutation",
@@ -11185,7 +11932,7 @@ pub const PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS:
         internal_error_match: "Path 2 opening commitment mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
         covered_by_unit_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountCreationFrameKatBoundaryRowV1 {
         case_id: "pad_seed_digest_mutation",
@@ -11195,7 +11942,7 @@ pub const PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS:
         internal_error_match: "Path 2 pad-seed digest mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
         covered_by_unit_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountCreationFrameKatBoundaryRowV1 {
         case_id: "account_identity_digest_mutation",
@@ -11205,7 +11952,7 @@ pub const PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS:
         internal_error_match: "Path 2 account id mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
         covered_by_unit_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountCreationFrameKatBoundaryRowV1 {
         case_id: "public_key_identity_mutation",
@@ -11215,7 +11962,7 @@ pub const PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS:
         internal_error_match: "Path 2 public-key identity mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
         covered_by_unit_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountCreationFrameKatBoundaryRowV1 {
         case_id: "slot_id_mutation",
@@ -11225,7 +11972,7 @@ pub const PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS:
         internal_error_match: "Path 2 slot id mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
         covered_by_unit_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountCreationFrameKatBoundaryRowV1 {
         case_id: "state_root_before_mutation",
@@ -11235,7 +11982,7 @@ pub const PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS:
         internal_error_match: "Path 2 account state root mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
         covered_by_unit_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountCreationFrameKatBoundaryRowV1 {
         case_id: "lifecycle_anchor_mutation",
@@ -11245,7 +11992,7 @@ pub const PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS:
         internal_error_match: "Path 2 lifecycle anchor mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
         covered_by_unit_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
     Path2AccountCreationFrameKatBoundaryRowV1 {
         case_id: "prevalidation_transcript_digest_mutation",
@@ -11255,7 +12002,7 @@ pub const PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS:
         internal_error_match: "Path 2 prevalidation transcript digest mismatch",
         public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
         covered_by_unit_test: true,
-        frozen_vector_present: false,
+        frozen_vector_present: true,
     },
 ];
 
@@ -11407,45 +12154,33 @@ pub const PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS:
     [Path2AccountCreationSamplerIntegrationRowV1; 5] = [
     Path2AccountCreationSamplerIntegrationRowV1 {
         integration_id: "sampler_integration_private_to_public_order",
-        support_surface:
-            "Descender/Path2FullSpendConcrete.lean selected-Rust deterministic honest-create theorem",
-        current_evidence:
-            "selectedRustHonestCreateSamplerSoundTheoremClosed",
-        required_closure:
-            "closed by mechanizing honest_create_sampler_sound_v1 over the selected private-to-public construction order",
+        support_surface: "Descender/Path2FullSpendConcrete.lean selected-Rust deterministic honest-create theorem",
+        current_evidence: "selectedRustHonestCreateSamplerSoundTheoremClosed",
+        required_closure: "closed by mechanizing honest_create_sampler_sound_v1 over the selected private-to-public construction order",
         named_break: "creation_time_hidden_source_soundness_break",
         open: false,
     },
     Path2AccountCreationSamplerIntegrationRowV1 {
         integration_id: "sampler_integration_authorization_bridge_hooks",
-        support_surface:
-            "Descender/Path2FullSpendConcrete.lean selected-Rust deterministic honest-create theorem + bridge hooks",
-        current_evidence:
-            "selectedRustHonestCreateSamplerSoundTheoremClosed",
-        required_closure:
-            "closed by consuming the selected-Rust honest-creation soundness interface and authorization bridge hooks",
+        support_surface: "Descender/Path2FullSpendConcrete.lean selected-Rust deterministic honest-create theorem + bridge hooks",
+        current_evidence: "selectedRustHonestCreateSamplerSoundTheoremClosed",
+        required_closure: "closed by consuming the selected-Rust honest-creation soundness interface and authorization bridge hooks",
         named_break: "creation_time_hidden_source_soundness_break",
         open: false,
     },
     Path2AccountCreationSamplerIntegrationRowV1 {
         integration_id: "sampler_integration_authorization_class_audit",
-        support_surface:
-            "Path2AuthorizationClassBindingAuditReportV1 + selected-Rust Lean auth-class closure",
-        current_evidence:
-            "selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted",
-        required_closure:
-            "closed local authorization-class binding theorem imported; proof-family, deployment, and external review obligations remain separate",
+        support_surface: "Path2AuthorizationClassBindingAuditReportV1 + selected-Rust Lean auth-class closure",
+        current_evidence: "selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted",
+        required_closure: "closed local authorization-class binding theorem imported; proof-family, deployment, and external review obligations remain separate",
         named_break: "checked_core_message_binding_break",
         open: false,
     },
     Path2AccountCreationSamplerIntegrationRowV1 {
         integration_id: "sampler_integration_accepted_boundary_import",
-        support_surface:
-            "Descender/Path2FullSpendConcrete.lean accepted-boundary full sampler integration",
-        current_evidence:
-            "selectedRustFullHonestSamplerIntegrationComplete_of_boundaryAccepted",
-        required_closure:
-            "closed by consuming the accepted-boundary sampler row package and deterministic honest sampler theorem together",
+        support_surface: "Descender/Path2FullSpendConcrete.lean accepted-boundary full sampler integration",
+        current_evidence: "selectedRustFullHonestSamplerIntegrationComplete_of_boundaryAccepted",
+        required_closure: "closed by consuming the accepted-boundary sampler row package and deterministic honest sampler theorem together",
         named_break: "creation_time_hidden_source_soundness_break",
         open: false,
     },
@@ -11453,8 +12188,7 @@ pub const PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS:
         integration_id: "sampler_integration_no_postchallenge_timing_import",
         support_surface: "Descender/Path2FullSpendConcrete.lean no-postchallenge timing hooks",
         current_evidence: "noPostchallengeTiming_createdBeforeChallenge",
-        required_closure:
-            "closed timing slice imported as a separate no-postchallenge obligation",
+        required_closure: "closed timing slice imported as a separate no-postchallenge obligation",
         named_break: "postchallenge_slot_creation_or_rewrite_break",
         open: false,
     },
@@ -11513,6 +12247,34 @@ pub const PATH2_ACCOUNT_CREATION_TIMING_ORDER_STEPS: [&str; 11] = [
 
 pub const PATH2_DIRECT_QROM_ACTION_SUPPORT_FILE: &str =
     "research/path2_hash_qrom_assumption_ledger.md";
+pub const PATH2_DIRECT_QROM_ACTION_BUDGET_BRIDGE_LEAN_THEOREM: &str =
+    "selectedRustDirectQromActionBudgetBridge_v1";
+pub const PATH2_DIRECT_QROM_ACTION_THEOREM_LINKAGE_REDUCTION_LEAN_THEOREM: &str =
+    "selectedRustDirectQromActionTheoremLinkageReduction_v1";
+pub const PATH2_DIRECT_LEAF_CANONICAL_LIVE_LEAN_THEOREM: &str =
+    "selectedRustDirectLeafCanonicalLiveSupport_of_concreteSpendAccepts";
+pub const PATH2_DIRECT_EVIDENCE_LEAF_BINDING_LEAN_THEOREM: &str =
+    "selectedRustDirectEvidenceLeafBindingSupport_of_concreteSpendAccepts";
+pub const PATH2_DIRECT_ADMISSION_NAMESPACE_MEMBERSHIP_LEAN_THEOREM: &str =
+    "selectedRustDirectAdmissionNamespaceMembershipSupport_of_concreteSpendAccepts";
+pub const PATH2_DIRECT_ADMISSION_NAMESPACE_AND_DATA_AVAILABILITY_LEAN_THEOREM: &str =
+    "selectedRustDirectAdmissionNamespaceAndDataAvailabilityClosure_of_concreteSpendAccepts";
+pub const PATH2_DIRECT_COMPOSITION_THEOREM_REDUCTION_LEAN_THEOREM: &str =
+    "selectedRustDirectModeAuthorizationTheoremReduction_v1";
+pub const PATH2_DIRECT_COMPOSITION_EXPLICIT_ASSUMPTIONS_CAPSTONE_LEAN_THEOREM: &str =
+    "selectedRustDirectModeAuthorizationClosedUnderExplicitAssumptions_v1";
+pub const PATH2_DIRECT_PUBLIC_REJECTION_STATE_PRESERVING_LEAN_THEOREM: &str =
+    "selectedRustDirectPublicRejectionStatePreserving_v1";
+pub const PATH2_DIRECT_PUBLIC_REJECTION_CLOSED_LEAN_THEOREM: &str =
+    "selectedRustDirectDeterministicPublicRejectionClosed_v1";
+pub const PATH2_DIRECT_CLOSED_PUBLIC_REJECTION_COMPOSITION_LEAN_THEOREM: &str =
+    "selectedRustDirectModeAuthorizationWithClosedPublicRejectionReduction_v1";
+pub const PATH2_DIRECT_PUBLIC_REJECTION_CLASS_KAT_TEST: &str =
+    "path2_direct_public_rejection_classes_are_exhaustive_and_state_preserving";
+pub const PATH2_DIRECT_PUBLIC_OBJECT_MUTATION_KAT_TEST: &str =
+    "path2_direct_all_consensus_visible_public_object_mutations_are_panic_free";
+pub const PATH2_DIRECT_SOVEREIGN_CLIENT_MAPPING_KAT_TEST: &str =
+    "path2_sovereign_direct_client_mapping_is_exhaustive_and_state_preserving";
 pub const PATH2_DIRECT_LIFECYCLE_SUPPORT_FILE: &str =
     "research/path2_one_use_successor_state_theorem.md";
 pub const PATH2_DIRECT_LIFECYCLE_THEOREM_TARGET: &str = "one_use_successor_state_theorem_v1";
@@ -11611,21 +12373,21 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         obligation_id: "direct_obligation_leaf_canonical_live",
         acceptance_hypothesis: "leaf_is_canonical_and_live",
         supporting_surface: "PrevalidatedSlotLeafV1 bytes and lifecycle live marker",
-        current_evidence: "wire-format authority, leaf digest helpers, and accepted-tuple evidence for the leaf digest exist; lifecycle target profile and frozen leaf KATs remain open",
-        required_closure: "composition theorem imports canonical leaf parsing plus live-slot lifecycle evidence for the accepted tuple",
+        current_evidence: "selectedRustDirectLeafAndEvidenceClosure_of_concreteSpendAccepts imports the canonical/live leaf predicate into the product conclusion; the 18-case frozen account-creation frame corpus includes honest acceptance plus leaf frame-version and live-marker mutations; the verified ADR-0010 D2 lifecycle profile supplies live-slot lifecycle evidence",
+        required_closure: "closed by importing the accepted-spend leaf predicate, frozen leaf frame/live-marker vectors, and verified D2 lifecycle profile into the direct boundary",
         named_break: "prevalidation_leaf_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
-        open: true,
+        open: false,
     },
     Path2DirectTheoremObligationRowV1 {
         obligation_id: "direct_obligation_evidence_leaf_bindings",
         acceptance_hypothesis: "evidence_envelope_matches_leaf_bindings",
         supporting_surface: "AccountCreationEvidenceV1 duplicated binding fields",
-        current_evidence: "shared creation-frame verifier checks evidence/leaf field equality; the proof-boundary report pins exact binding fields; accepted-tuple evidence records the evidence transcript and selected payload digest",
-        required_closure: "composition theorem imports the evidence/leaf binding verifier and frozen malformed-field KATs",
+        current_evidence: "selectedRustDirectLeafAndEvidenceClosure_of_concreteSpendAccepts imports the evidence/certificate/leaf equality predicate into the product conclusion; the proof-boundary report pins all 15 duplicated binding fields and accepted-boundary binding evidence; the frozen 18-case frame corpus contains one honest vector plus every current malformed frame and binding mutation row",
+        required_closure: "closed by importing the evidence/leaf binding theorem, exact proof-boundary field map, and complete frozen malformed-field vector corpus",
         named_break: "prevalidation_leaf_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
-        open: true,
+        open: false,
     },
     Path2DirectTheoremObligationRowV1 {
         obligation_id: "direct_obligation_slot_authorization_digest",
@@ -11650,12 +12412,12 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
     Path2DirectTheoremObligationRowV1 {
         obligation_id: "direct_obligation_admission_namespace",
         acceptance_hypothesis: "direct_admission_namespace_contains_exact_tuple",
-        supporting_surface: "direct admission namespace record",
-        current_evidence: "namespace requirement is in the direct theorem boundary; accepted-tuple evidence records the exact account/state-root/authorization namespace digest and membership check; target-chain data-availability profile remains open",
-        required_closure: "composition theorem imports exact account/state-root/slot-authorization tuple membership and DA semantics",
+        supporting_surface: "sovereign consensus-state direct admission record",
+        current_evidence: "Path2SovereignDirectAdmissionStateV1 stores canonical leaf bytes and binding digests directly in sovereign consensus state under the exact account/state-root/authorization tuple, rechecks that record before spend, and applies ADR-0010 finalized-head reorg semantics; selectedRustDirectAdmissionNamespaceAndDataAvailabilityClosure_of_concreteSpendAccepts imports exact membership plus canonical-at-challenge data availability into the product conclusion",
+        required_closure: "closed by the executable sovereign consensus-state admission record, exact tuple lookup, fail-closed missing/corrupt record tests, D2 reorg semantics, and the Lean admission namespace/data-availability closure",
         named_break: "prevalidation_registry_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
-        open: true,
+        open: false,
     },
     Path2DirectTheoremObligationRowV1 {
         obligation_id: "direct_obligation_checked_core_frame_binding",
@@ -11671,8 +12433,8 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         obligation_id: "direct_obligation_checked_core_acceptance",
         acceptance_hypothesis: "checked_core_verification_accepts_poseidon2_and_fq12_action",
         supporting_surface: "checked-core verifier, Poseidon2 Fiat-Shamir, and Fq12 action map",
-        current_evidence: "wire-format authority, accepted-tuple evidence, and concrete-security smoke separate Poseidon2 challenge bytes from the Fq12 action-map term",
-        required_closure: "composition theorem links QROM/action-map numeric bounds to the accepted spend event",
+        current_evidence: "the production direct endpoint is source-bound to canonical decode, account commitment, authorization challenge, syndrome equation, public-fiber, pad-opening, and slot checks; selectedRustProductionCheckedCoreAccepted_valid_or_named_break_v1 proves deterministic validity or the concrete equation/frame/domain-QROM/parser taxonomy without a generic soundness callback; concreteCheckedCoreDomainQromBreak_couples_to_directGame_v1 maps the domain/QROM branch into the nonzero-capable direct trace event; the external QROM/action assumption and reviewed numeric event bound are not instantiated",
+        required_closure: "instantiate the checked-core QROM/action assumption for the concrete domain event, import the reviewed numeric bound into the theorem, and obtain external QROM/action review",
         named_break: "qrom_or_domain_separation_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
         open: true,
@@ -11691,11 +12453,11 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         obligation_id: "direct_obligation_public_rejection",
         acceptance_hypothesis: "rejection_is_deterministic_public_and_state_preserving",
         supporting_surface: "consensus-safe rejection and state-preserving failure mapping",
-        current_evidence: "Path2PublicResultClassV1 pins the consensus result-class names; Path2DirectSpendPublicResultV1 wraps direct spend results without internal diagnostics; account-STARK payload boundary maps current internal errors to public rejection classes; direct spend classifier, no-mutation test, malformed signature panic-free KATs, public leaf/evidence/certificate rejection KATs, and public-result wrapper test cover selected pre-consume failure classes; full consensus rejection KATs remain open",
-        required_closure: "public rejection enum, panic-free malformed-input KATs, and state-no-mutation tests cover every direct-mode rejection",
+        current_evidence: "Path2PublicResultClassV1 pins the consensus result-class names; path2_direct_public_result_with_rollback_v1 centralizes exact error/panic rollback; path2_direct_public_rejection_classes_are_exhaustive_and_state_preserving covers all nine rejection classes and panic fail-closed behavior; PATH2_DIRECT_PUBLIC_OBJECT_MUTATION_KAT_CASES_V1 plus path2_direct_all_consensus_visible_public_object_mutations_are_panic_free cover all nine public request/state objects through the real wrapper; PATH2_SOVEREIGN_DIRECT_CLIENT_MAPPING_ROWS_V1 plus path2_sovereign_direct_client_mapping_is_exhaustive_and_state_preserving preserve all eleven classes under the ADR-0009/ADR-0010 target profile; selectedRustDirectDeterministicPublicRejectionClosed_v1 proves rollback plus rejection-to-no-mutation mapping; selectedRustDirectModeAuthorizationWithClosedPublicRejectionReduction_v1 discharges the public-rejection composition hypothesis",
+        required_closure: "closed by importing exhaustive panic-free public-object mutation KATs, the selected sovereign-client result map, and the concrete Lean deterministic-public-rejection proof into the direct composition reduction",
         named_break: "consensus_rejection_or_state_mutation_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
-        open: true,
+        open: false,
     },
 ];
 
@@ -11704,24 +12466,24 @@ pub const PATH2_DIRECT_THEOREM_CLOSURE_DEPENDENCY_ROWS: [Path2DirectTheoremClosu
     Path2DirectTheoremClosureDependencyRowV1 {
         dependency_id: "direct_dependency_leaf_canonical_live",
         source_report: "Path2DirectTheoremBoundaryReportV1",
-        source_flag_group: "composition_theorem_instantiated",
+        source_flag_group: "direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle=true",
         direct_obligation_id: "direct_obligation_leaf_canonical_live",
         acceptance_hypothesis: "leaf_is_canonical_and_live",
         support_surface: "PrevalidatedSlotLeafV1 bytes and lifecycle live marker",
         named_break: "prevalidation_leaf_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
-        open: true,
+        open: false,
     },
     Path2DirectTheoremClosureDependencyRowV1 {
         dependency_id: "direct_dependency_evidence_leaf_bindings",
-        source_report: "Path2AccountCreationProofBoundaryReportV1",
-        source_flag_group: "account_creation_proof_boundary_verified=false",
+        source_report: "Path2DirectTheoremBoundaryReportV1",
+        source_flag_group: "direct_evidence_leaf_binding_closed_by_frozen_kat=true",
         direct_obligation_id: "direct_obligation_evidence_leaf_bindings",
         acceptance_hypothesis: "evidence_envelope_matches_leaf_bindings",
         support_surface: "AccountCreationEvidenceV1 duplicated binding fields",
         named_break: "prevalidation_leaf_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
-        open: true,
+        open: false,
     },
     Path2DirectTheoremClosureDependencyRowV1 {
         dependency_id: "direct_dependency_slot_authorization_digest",
@@ -11747,14 +12509,14 @@ pub const PATH2_DIRECT_THEOREM_CLOSURE_DEPENDENCY_ROWS: [Path2DirectTheoremClosu
     },
     Path2DirectTheoremClosureDependencyRowV1 {
         dependency_id: "direct_dependency_admission_namespace",
-        source_report: "Path2DirectTheoremBoundaryReportV1",
-        source_flag_group: "composition_theorem_instantiated/target_chain_data_availability",
+        source_report: "Path2DirectAdmissionBoundaryReportV1",
+        source_flag_group: "direct_admission_namespace_closed_by_sovereign_state=true",
         direct_obligation_id: "direct_obligation_admission_namespace",
         acceptance_hypothesis: "direct_admission_namespace_contains_exact_tuple",
-        support_surface: "direct admission namespace record",
+        support_surface: "sovereign consensus-state direct admission record",
         named_break: "prevalidation_registry_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
-        open: true,
+        open: false,
     },
     Path2DirectTheoremClosureDependencyRowV1 {
         dependency_id: "direct_dependency_checked_core_frame_binding",
@@ -11770,7 +12532,7 @@ pub const PATH2_DIRECT_THEOREM_CLOSURE_DEPENDENCY_ROWS: [Path2DirectTheoremClosu
     Path2DirectTheoremClosureDependencyRowV1 {
         dependency_id: "direct_dependency_checked_core_acceptance",
         source_report: "Path2DirectQromActionBoundaryReportV1",
-        source_flag_group: "qrom_and_action_bounds_linked_to_theorem/theorem_imports_budget/external_qrom_review_complete",
+        source_flag_group: "production_checked_core_acceptance_semantics_bound/qrom_action_valid_or_named_break_theorem_instantiated/qrom_domain_break_coupled_to_direct_game/qrom_action_assumption_instantiated/theorem_imports_budget/external_qrom_review_complete",
         direct_obligation_id: "direct_obligation_checked_core_acceptance",
         acceptance_hypothesis: "checked_core_verification_accepts_poseidon2_and_fq12_action",
         support_surface: "checked-core verifier, Poseidon2 Fiat-Shamir, and Fq12 action map",
@@ -11792,13 +12554,13 @@ pub const PATH2_DIRECT_THEOREM_CLOSURE_DEPENDENCY_ROWS: [Path2DirectTheoremClosu
     Path2DirectTheoremClosureDependencyRowV1 {
         dependency_id: "direct_dependency_public_rejection",
         source_report: "Path2DirectTheoremBoundaryReportV1",
-        source_flag_group: "composition_theorem_instantiated/full_consensus_rejection_kats",
+        source_flag_group: "direct_public_rejection_all_public_objects_kat_covered/direct_public_rejection_target_client_mapping_complete",
         direct_obligation_id: "direct_obligation_public_rejection",
         acceptance_hypothesis: "rejection_is_deterministic_public_and_state_preserving",
         support_surface: "consensus-safe rejection and state-preserving failure mapping",
         named_break: "consensus_rejection_or_state_mutation_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
-        open: true,
+        open: false,
     },
 ];
 
@@ -11862,11 +12624,13 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_LEAF_EVIDENCE_BINDING_CASES: [&s
 ];
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CERTIFICATE_PAYLOAD_DIGEST_CASES: [&str; 1] =
     ["wrong_replay_payload_digest"];
-pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_PAYLOAD_AVAILABILITY_CASES: [&str; 5] = [
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_PAYLOAD_AVAILABILITY_CASES: [&str; 7] = [
     "native_role_root_commitment_digest_mutation",
     "masked_projection_digest_mutation",
+    "pad_seed_nullifier_mutation",
     "account_stark_bundle_digest_mutation",
     "empty_account_stark_bundle",
+    "rebound_pad_seed_nullifier_anchor",
     "wrong_replay_payload_digest",
 ];
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_PAYLOAD_CONTEXT_CASES: [&str; 4] = [
@@ -11880,9 +12644,10 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_PACKED_STARK_CASES: [&str; 3] = 
     "account_stark_bundle_digest_mutation",
     "rebound_corrupted_account_stark_bundle",
 ];
-pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHOR_CASES: [&str; 2] = [
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHOR_CASES: [&str; 3] = [
     "rebound_native_role_root_anchor",
     "rebound_masked_projection_anchor",
+    "rebound_pad_seed_nullifier_anchor",
 ];
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES: [&str; 11] = [
     "no_export_public_payload_field_allowlist",
@@ -11897,17 +12662,19 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES: [&str; 11] = [
     "no_export_opaque_bundle_not_manifest_inlined",
     "no_export_public_bundle_lean_predicate",
 ];
-pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_ALL_CURRENT_PAYLOAD_KAT_CASES: [&str; 13] = [
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_ALL_CURRENT_PAYLOAD_KAT_CASES: [&str; 15] = [
     "payload_leaf_context_digest_mutation",
     "creation_proof_binding_digest_mutation",
     "aggregation_context_digest_mutation",
     "slot_id_mutation",
     "native_role_root_commitment_digest_mutation",
     "masked_projection_digest_mutation",
+    "pad_seed_nullifier_mutation",
     "account_stark_bundle_digest_mutation",
     "empty_account_stark_bundle",
     "rebound_native_role_root_anchor",
     "rebound_masked_projection_anchor",
+    "rebound_pad_seed_nullifier_anchor",
     "rebound_corrupted_account_stark_bundle",
     "wrong_replay_payload_digest",
     "production_gate_closed",
@@ -12018,8 +12785,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENT_COVERAGE_ROWS:
         public_rejection_classes:
             &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_CURRENT_REJECTION_CLASSES,
         covered_by_current_vectors: true,
-        closure_target:
-            "account-STARK transcript QROM theorem over the pinned FRI/QROM domain corpus",
+        closure_target: "account-STARK transcript QROM theorem over the pinned FRI/QROM domain corpus",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
     },
     Path2AccountCreationProofBoundaryRequirementCoverageRowV1 {
@@ -12079,16 +12845,17 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_BINDING_LEAF_CONTEXT_FIELDS: [&s
     "creation_statement_digest",
 ];
 
-pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_PAYLOAD_BINDING_FIELDS: [&str; 6] = [
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_PAYLOAD_BINDING_FIELDS: [&str; 7] = [
     "leaf_context_digest",
     "creation_proof_binding_digest",
     "aggregation_context_digest",
     "slot_id",
     "public_replay_payload_digest",
+    "pad_seed_nullifier",
     "account_stark_bundle",
 ];
 
-pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHORS: [&str; 8] = [
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHORS: [&str; 9] = [
     "account_id",
     "slot_id",
     "account_state_root",
@@ -12097,16 +12864,34 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHORS: [&str; 8] = [
     "masked_projection",
     "packed_witness_commitment",
     "role_root_export_bridge",
+    "pad_seed_nullifier",
 ];
 
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS: [&str; 7] = [
-    "pad_source",
-    "projection",
-    "syndrome",
-    "opening_tuple",
-    "witness",
+    "pad_seed",
+    "account_projection",
+    "opening_tuple_preimage",
+    "authorization_witness",
     "mask",
     "private_trace_material",
+    "commitment_nonce",
+];
+
+pub const PATH2_ACCOUNT_STARK_PUBLIC_STATEMENT_FIELDS: [&str; 14] = [
+    "pad_source_commitment",
+    "opening_tuple_commitment",
+    "masked_projection",
+    "account_id",
+    "slot_id",
+    "verifier_version",
+    "account_state_root",
+    "lifecycle_anchor",
+    "role_root",
+    "nullifier",
+    "relation_id",
+    "syndrome",
+    "packed_witness_commitment",
+    "checked_core_key_commitment",
 ];
 
 pub const PATH2_ACCOUNT_CREATION_SIMULATOR_THEOREM_TARGET: &str =
@@ -12119,16 +12904,50 @@ pub const PATH2_ACCOUNT_CREATION_SIMULATOR_INPUT_ALLOWLIST_LEAN_THEOREM: &str =
     "selectedRustAccountCreationSimulatorInputNoExport_instantiation_v1";
 pub const PATH2_ACCOUNT_CREATION_ACCEPTED_PUBLIC_ANCHOR_PACKAGE_LEAN_THEOREM: &str =
     "selectedRustAcceptedPublicAnchorPackageNoExport_instantiation_v1";
-pub const PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_PUBLIC_ANCHOR_SIMULATION_BOUNDARY_LEAN_THEOREM: &str =
-    "selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1";
-pub const PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_PUBLIC_BUNDLE_FROM_PUBLIC_ANCHORS_LEAN_THEOREM: &str =
-    "selectedRustAcceptedBundlePublicBundleFromPublicAnchors_v1";
+pub const PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_PUBLIC_ANCHOR_SIMULATION_BOUNDARY_LEAN_THEOREM:
+    &str = "selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1";
+pub const PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_PUBLIC_BUNDLE_FROM_PUBLIC_ANCHORS_LEAN_THEOREM:
+    &str = "selectedRustAcceptedBundlePublicBundleFromPublicAnchors_v1";
 pub const PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_SIMULATOR_INPUT_FROM_PUBLIC_ANCHORS_LEAN_THEOREM: &str =
     "selectedRustAcceptedBundleSimulatorInputFromPublicAnchors_v1";
 pub const PATH2_ACCOUNT_CREATION_ACCEPTED_BUNDLE_SIMULATOR_NO_EXPORT_REDUCTION_LEAN_THEOREM: &str =
     "selectedRustAcceptedBundleSimulatorNoExportReduction_v1";
-pub const PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_SIMULATOR_NO_EXPORT_REDUCTION_LEAN_THEOREM: &str =
-    "selectedRustAcceptedBoundarySimulatorNoExportReduction_v1";
+pub const PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_SIMULATOR_NO_EXPORT_REDUCTION_LEAN_THEOREM:
+    &str = "selectedRustAcceptedBoundarySimulatorNoExportReduction_v1";
+pub const PATH2_ACCOUNT_CREATION_SIMULATOR_HYBRID_LEAN_THEOREM: &str =
+    "selectedRustAcceptedBundleSimulatorNoExportFromHybrid_v1";
+pub const PATH2_ACCOUNT_CREATION_MASK_TRANSLATION_BIJECTIVE_LEAN_THEOREM: &str =
+    "selectedRustUniformMaskTranslationBijective_v1";
+pub const PATH2_ACCOUNT_CREATION_MASK_PRF_DOMAIN_LANE: u32 = 0x4D41_534B;
+pub const PATH2_ACCOUNT_CREATION_MASK_PRF_INPUT_LANES: usize = 41;
+pub const PATH2_ACCOUNT_CREATION_MASK_PRF_REDUCTION_DIGITS: usize = 6;
+pub const PATH2_ACCOUNT_CREATION_MASK_PRF_SQUEEZED_LANES: usize = 36;
+pub const PATH2_ACCOUNT_CREATION_MASK_PRF_TARGET_HORIZON_LOG2: usize = 32;
+pub const PATH2_ACCOUNT_CREATION_MASK_PRF_DOMAIN_SEPARATION_LEAN_THEOREM: &str =
+    "selectedAccountMaskPrfDomainsSeparated_v1";
+pub const PATH2_ACCOUNT_CREATION_MASK_PRF_SQUEEZE_INDEX_INJECTIVE_LEAN_THEOREM: &str =
+    "selectedAccountMaskPrfSqueezeIndexInjective_v1";
+pub const PATH2_ACCOUNT_CREATION_MASK_PRF_WIDE_REDUCTION_Q128_LEAN_THEOREM: &str =
+    "selectedAccountMaskWideReductionError_le_q128_v1";
+pub const PATH2_ACCOUNT_CREATION_MASK_PRF_FRESHNESS_LEAN_THEOREM: &str =
+    "selectedRustAccountMaskPrfFramesFresh_of_verifiedNullifierRegistry_v1";
+pub const PATH2_ACCOUNT_CREATION_PAD_COMMITMENT_DOMAIN_LANE: u32 = 0x5041_4453;
+pub const PATH2_ACCOUNT_CREATION_OPENING_COMMITMENT_DOMAIN_LANE: u32 = 0x4F50_454E;
+pub const PATH2_ACCOUNT_CREATION_COMMITMENT_NONCE_BYTES: usize = 40;
+pub const PATH2_ACCOUNT_CREATION_COMMITMENT_NONCE_BITS: usize = 320;
+pub const PATH2_ACCOUNT_CREATION_PAD_COMMITMENT_INPUT_LANES: usize = 73;
+pub const PATH2_ACCOUNT_CREATION_OPENING_COMMITMENT_INPUT_LANES: usize = 111;
+pub const PATH2_ACCOUNT_CREATION_HIDING_COMMITMENTS_PER_ACCOUNT: usize = 2;
+pub const PATH2_ACCOUNT_CREATION_COMMITMENT_TARGET_HORIZON_LOG2: usize = 32;
+pub const PATH2_ACCOUNT_CREATION_COMMITMENT_QROM_QUERY_LOG2: usize = 54;
+pub const PATH2_ACCOUNT_CREATION_COMMITMENT_DOMAIN_SEPARATION_LEAN_THEOREM: &str =
+    "selectedAccountCommitmentDomainsSeparated_v1";
+pub const PATH2_ACCOUNT_CREATION_COMMITMENT_FRAME_DIMENSIONS_LEAN_THEOREM: &str =
+    "selectedAccountCommitmentFrameDimensions_v1";
+pub const PATH2_ACCOUNT_CREATION_COMMITMENT_QROM_SEARCH_Q128_LEAN_THEOREM: &str =
+    "selectedAccountCommitmentQromSearchError_le_q128_v1";
+pub const PATH2_ACCOUNT_STARK_HIDING_RNG_TYPE: &str = "ZkCryptoRng(ChaCha20Rng)";
+pub const PATH2_ACCOUNT_STARK_HIDING_RNG_SEED_BITS: usize = 256;
 pub const PATH2_ACCOUNT_STARK_FRI_AOK_EXTRACTOR_REDUCTION_LEAN_THEOREM: &str =
     "selectedRustAcceptedBoundaryFriAokExtractorReduction_v1";
 pub const PATH2_ACCOUNT_STARK_FRI_QROM_TRANSCRIPT_REDUCTION_LEAN_THEOREM: &str =
@@ -12148,8 +12967,8 @@ pub const PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS: [&str; 14] = [
     "aggregation_context_digest",
     "slot_id",
     "masked_projection",
-    "account_stark_bundle_bytes_or_digest",
-    "public_replay_payload_digest",
+    "account_stark_public_statement_bytes_or_digest",
+    "pad_seed_nullifier",
     "deployed_account_id",
     "deployed_account_state_root",
     "deployed_lifecycle_anchor",
@@ -12252,10 +13071,8 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
     Path2AccountCreationProofBoundaryObligationRowV1 {
         obligation_id: "creation_proof_obligation_honest_sampler",
         closure_target: "honest_create_sampler_sound_v1",
-        supporting_surface:
-            "Path2AccountCreationSamplerTimingReportV1 + accepted-boundary Lean full sampler integration",
-        current_evidence:
-            "selectedRustFullHonestSamplerIntegrationComplete_of_boundaryAccepted imports the deterministic honest sampler theorem, accepted-boundary honest-create evidence, private-to-public local validity, obstruction-zero support, authorization-class matching, and the closed no-postchallenge timing row",
+        supporting_surface: "Path2AccountCreationSamplerTimingReportV1 + accepted-boundary Lean full sampler integration",
+        current_evidence: "selectedRustFullHonestSamplerIntegrationComplete_of_boundaryAccepted imports the deterministic honest sampler theorem, accepted-boundary honest-create evidence, private-to-public local validity, obstruction-zero support, authorization-class matching, and the closed no-postchallenge timing row",
         required_closure: "closed by importing the full accepted-boundary honest sampler integration theorem; leakage, no-export, proof-family, deployment, and external review obligations remain separate",
         named_break: "creation_time_hidden_source_soundness_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
@@ -12264,10 +13081,8 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
     Path2AccountCreationProofBoundaryObligationRowV1 {
         obligation_id: "creation_proof_obligation_authorization_class_binding",
         closure_target: "selected_account_creation_authorization_class_binding_v1",
-        supporting_surface:
-            "Path2AuthorizationClassBindingAuditReportV1 + selected-Rust Lean authorization-class closure + checked-core frame binding",
-        current_evidence:
-            "selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted proves accepted-boundary authorization-local class equals pSpend, every compatible private authorization local has the same public class, the semantic meaning agrees with pSpend, and the selected checked-core frame carries the same spend digest; the audit pins p_spend completeness and direct-verifier no-private-material checks",
+        supporting_surface: "Path2AuthorizationClassBindingAuditReportV1 + selected-Rust Lean authorization-class closure + checked-core frame binding",
+        current_evidence: "selectedRustAuthorizationClassBindingTheoremClosed_of_boundaryAccepted proves accepted-boundary authorization-local class equals pSpend, every compatible private authorization local has the same public class, the semantic meaning agrees with pSpend, and the selected checked-core frame carries the same spend digest; the audit pins p_spend completeness and direct-verifier no-private-material checks",
         required_closure: "closed by importing the selected-Rust authorization-class binding theorem; honest sampler, proof-family, deployment, and external-review obligations remain separate",
         named_break: "checked_core_message_binding_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
@@ -12286,10 +13101,8 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
     Path2AccountCreationProofBoundaryObligationRowV1 {
         obligation_id: "creation_proof_obligation_simulator_no_export",
         closure_target: "selected_account_stark_public_bundle_simulator_v1 + selected_account_stark_no_export_v1",
-        supporting_surface:
-            "Path2AccountCreationNoExportBoundaryReportV1 + accepted-boundary Lean no-export support",
-        current_evidence:
-            "selectedRustAcceptedBoundaryNoExportSupport_of_boundaryAccepted packages no-export boundary digest/nonzero, simulator/no-export tracking, direct proof-family break mapping, and the still-open proof-family flag while selectedRustAcceptedBoundarySimulatorNoExportReduction_v1 reduces the accepted-boundary support package to a supplied simulator/no-export theorem and the report pins public-input allowlist, private-material denylist, frozen no-export vectors, selected Rust public-bundle denylist predicate, selected Rust simulator-input allowlist predicate, selected Rust accepted public-anchor package binding predicate, selected Rust accepted-bundle public-anchor simulation-boundary predicate, selected Rust accepted-bundle public-bundle-from-public-anchors predicate, selected Rust accepted-bundle simulator-input-from-public-anchors predicate, selected Rust accepted-bundle simulator/no-export reduction predicate, and fail-closed flags",
+        supporting_surface: "Path2AccountCreationNoExportBoundaryReportV1 + accepted-boundary Lean no-export support",
+        current_evidence: "selectedRustAcceptedBoundaryNoExportSupport_of_boundaryAccepted packages no-export boundary digest/nonzero, simulator/no-export tracking, direct proof-family break mapping, and the still-open proof-family flag; the simulator allowlist carries the canonical public statement and pad-seed nullifier while excluding proof bytes and the completed replay digest, all 14 nested AccountCreationPublic fields are audited with the checked-core syndrome classified as an allowed public authorization anchor, selectedRustSimulatorInputIndependentOfProofOutput_v1 proves typed input/output independence, the selected hiding stack uses a 256-bit-seeded ChaCha20 CSPRNG with domain-separated input-MMCS/FRI-MMCS/PCS streams, and selectedRustAcceptedBundleSimulatorNoExportFromHybrid_v1 plus advantage_le_totalError compose explicit zk-FRI HVZK, mask-PRF, and commitment-hiding hop bounds without instantiating those reviewed bounds",
         required_closure: "prove accepted public bundles are simulatable from public anchors and allowed commitments without exporting private creation material",
         named_break: "account_stark_simulator_or_no_export_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
@@ -12298,10 +13111,8 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
     Path2AccountCreationProofBoundaryObligationRowV1 {
         obligation_id: "creation_proof_obligation_fri_aok_extractor",
         closure_target: "selected_plonky3_q12289_fri_iop_aok_extractor",
-        supporting_surface:
-            "Path2AccountStarkFriAokBoundaryReportV1 + accepted-boundary Lean FRI/AoK support",
-        current_evidence:
-            "selectedRustAcceptedBoundaryFriAokSupport_of_boundaryAccepted packages FRI/AoK boundary digest/nonzero, extractor-obligation tracking, direct proof-family break mapping, and the still-open proof-family flag while the report pins AIR coverage, selected proof family, FRI schedule, challenge field, extractor theorem target, and selected Rust accepted-boundary FRI/AoK extractor reduction predicate",
+        supporting_surface: "Path2AccountStarkFriAokBoundaryReportV1 + accepted-boundary Lean FRI/AoK support",
+        current_evidence: "selectedRustAcceptedBoundaryFriAokSupport_of_boundaryAccepted packages FRI/AoK boundary digest/nonzero, extractor-obligation tracking, direct proof-family break mapping, and the still-open proof-family flag while the report pins AIR coverage, selected proof family, FRI schedule, challenge field, extractor theorem target, and selected Rust accepted-boundary FRI/AoK extractor reduction predicate",
         required_closure: "prove every accepting proof for the selected Plonky3/q12289 configuration implies an extractable account-creation witness or a named FRI/AoK break",
         named_break: "account_stark_fri_aok_extractor_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
@@ -12310,10 +13121,8 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
     Path2AccountCreationProofBoundaryObligationRowV1 {
         obligation_id: "creation_proof_obligation_fri_qrom_residual_pricing",
         closure_target: "selected_account_stark_fri_poseidon2_qrom_residual_ledger_v1",
-        supporting_surface:
-            "Path2AccountStarkFriQromResidualReportV1 + accepted-boundary Lean FRI/QROM support",
-        current_evidence:
-            "selectedRustAcceptedBoundaryFriQromSupport_of_boundaryAccepted packages FRI/QROM residual digest/nonzero, residual-pricing tracking, direct proof-family break mapping, and the still-open proof-family flag while the report pins active FRI parameters, degree-8 challenge field, Poseidon2 sponge floor, checked-core QROM artifacts, selected Rust accepted-boundary FRI/QROM transcript reduction evidence, and fail-closed theorem flags",
+        supporting_surface: "Path2AccountStarkFriQromResidualReportV1 + accepted-boundary Lean FRI/QROM support",
+        current_evidence: "selectedRustAcceptedBoundaryFriQromSupport_of_boundaryAccepted packages FRI/QROM residual digest/nonzero, residual-pricing tracking, direct proof-family break mapping, and the still-open proof-family flag while the report pins active FRI parameters, degree-8 challenge field, Poseidon2 sponge floor, checked-core QROM artifacts, selected Rust accepted-boundary FRI/QROM transcript reduction evidence, and fail-closed theorem flags",
         required_closure: "price the account-STARK FRI transcript theorem, recursion if used, and multi-target/QROM terms against the selected deployment profile",
         named_break: "fri_soundness_margin_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
@@ -12322,8 +13131,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
     Path2AccountCreationProofBoundaryObligationRowV1 {
         obligation_id: "creation_proof_obligation_frozen_payload_kats",
         closure_target: "selected_account_stark_payload_frozen_kat_corpus_v1",
-        supporting_surface:
-            "Path2AccountStarkPayloadKatBoundaryReportV1 + accepted-boundary Lean payload-KAT support",
+        supporting_surface: "Path2AccountStarkPayloadKatBoundaryReportV1 + accepted-boundary Lean payload-KAT support",
         current_evidence: "selectedRustAcceptedBoundaryPayloadKatSupport_of_boundaryAccepted packages payload-KAT boundary digest/nonzero, payload-KAT tracking, direct proof-family break mapping, and the still-open proof-family flag while the payload KAT report pins current mutation rows, public rejection classes, deterministic digest-pinned boundary vectors, and the selected Rust accepted-boundary payload-KAT corpus reduction predicate for every current payload KAT row",
         required_closure: "closed by freezing the full current byte corpus and public rejection-class mapping for every consensus-visible malformed account-STARK payload row",
         named_break: "account_stark_payload_binding_break",
@@ -12333,10 +13141,8 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
     Path2AccountCreationProofBoundaryObligationRowV1 {
         obligation_id: "creation_proof_obligation_production_gate_and_review",
         closure_target: "selected_account_stark_production_admission_gate_v1",
-        supporting_surface:
-            "Path2AccountStarkResidualMatrixReportV1 + accepted-boundary Lean production-gate/review support",
-        current_evidence:
-            "selectedRustAcceptedBoundaryProductionGateSupport_of_boundaryAccepted packages selected proof-boundary and accepted-evidence digests, proof-boundary validation, verifier acceptance, production-gate fail-closed tracking, direct proof-family break mapping, and the still-open proof-family flag while selectedRustAcceptedBoundaryProductionGateReviewReduction_v1 reduces the accepted-boundary support package to a supplied external-review/maintainer-gate theorem and the residual matrix pins production-gate, external-review, and deployment-readiness flags false",
+        supporting_surface: "Path2AccountStarkResidualMatrixReportV1 + accepted-boundary Lean production-gate/review support",
+        current_evidence: "selectedRustAcceptedBoundaryProductionGateSupport_of_boundaryAccepted packages selected proof-boundary and accepted-evidence digests, proof-boundary validation, verifier acceptance, production-gate fail-closed tracking, direct proof-family break mapping, and the still-open proof-family flag while selectedRustAcceptedBoundaryProductionGateReviewReduction_v1 reduces the accepted-boundary support package to a supplied external-review/maintainer-gate theorem and the residual matrix pins production-gate, external-review, and deployment-readiness flags false",
         required_closure: "obtain external review, record tracker disposition, and make an explicit maintainer decision before production admission can open",
         named_break: "account_stark_production_gate_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
@@ -12399,8 +13205,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CLOSURE_DEPENDENCY_ROWS:
     Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
         dependency_id: "closure_dependency_fri_qrom_residual_pricing",
         source_report: "Path2AccountStarkFriQromResidualReportV1",
-        source_flag_group:
-            "account_stark_transcript_qrom/recursion/residual/profile flags remain false",
+        source_flag_group: "account_stark_transcript_qrom/recursion/residual/profile flags remain false",
         proof_obligation_id: "creation_proof_obligation_fri_qrom_residual_pricing",
         residual_item: "FRI soundness margin and recursion ledger",
         named_break: "fri_soundness_margin_break",
@@ -12410,8 +13215,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CLOSURE_DEPENDENCY_ROWS:
     Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
         dependency_id: "closure_dependency_frozen_payload_kats",
         source_report: "Path2AccountStarkPayloadKatBoundaryReportV1",
-        source_flag_group:
-            "frozen_corpus_complete=true/payload_kat_reduction_bound=true/deployment_ready=false",
+        source_flag_group: "frozen_corpus_complete=true/payload_kat_reduction_bound=true/deployment_ready=false",
         proof_obligation_id: "creation_proof_obligation_frozen_payload_kats",
         residual_item: "Path2AccountStarkCreationPayloadV1 byte and replay binding",
         named_break: "account_stark_payload_binding_break",
@@ -12421,8 +13225,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CLOSURE_DEPENDENCY_ROWS:
     Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
         dependency_id: "closure_dependency_production_gate_and_review",
         source_report: "Path2AccountStarkResidualMatrixReportV1",
-        source_flag_group:
-            "production_gate_open/external_review/deployment_ready flags remain false",
+        source_flag_group: "production_gate_open/external_review/deployment_ready flags remain false",
         proof_obligation_id: "creation_proof_obligation_production_gate_and_review",
         residual_item: "Production admission gate and review disposition",
         named_break: "account_stark_production_gate_break",
@@ -12559,8 +13362,8 @@ pub fn path2_direct_account_binding_public_result_class_for_reason(
     Path2PublicResultClassV1::InternalErrorFailClosed
 }
 
-pub fn path2_account_stark_payload_byte_model_report_v1(
-) -> Path2AccountStarkPayloadByteModelReportV1 {
+pub fn path2_account_stark_payload_byte_model_report_v1()
+-> Path2AccountStarkPayloadByteModelReportV1 {
     let field_order = &PATH2_ACCOUNT_STARK_PAYLOAD_BYTE_MODEL_FIELDS;
     let mut report = Path2AccountStarkPayloadByteModelReportV1 {
         digest: [0_u8; DIGEST_BYTES],
@@ -12628,8 +13431,8 @@ pub fn validate_path2_account_stark_payload_byte_model_report_v1(
     Ok(())
 }
 
-pub fn path2_account_creation_frame_kat_boundary_report_v1(
-) -> Path2AccountCreationFrameKatBoundaryReportV1 {
+pub fn path2_account_creation_frame_kat_boundary_report_v1()
+-> Path2AccountCreationFrameKatBoundaryReportV1 {
     let rows = &PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS;
     let mut report = Path2AccountCreationFrameKatBoundaryReportV1 {
         digest: [0_u8; DIGEST_BYTES],
@@ -12692,16 +13495,17 @@ pub fn validate_path2_account_creation_frame_kat_boundary_report_v1(
             "Path 2 account-creation frame KAT boundary report digest mismatch".to_string(),
         );
     }
-    if report.deployment_ready || report.frozen_corpus_complete {
+    if report.deployment_ready || !report.frozen_corpus_complete {
         return Err(
-            "Path 2 account-creation frame KAT boundary unexpectedly claims readiness".to_string(),
+            "Path 2 account-creation frame KAT boundary must stay frozen and non-deployable"
+                .to_string(),
         );
     }
     Ok(())
 }
 
-pub fn path2_account_stark_payload_kat_boundary_report_v1(
-) -> Path2AccountStarkPayloadKatBoundaryReportV1 {
+pub fn path2_account_stark_payload_kat_boundary_report_v1()
+-> Path2AccountStarkPayloadKatBoundaryReportV1 {
     let rows = &PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS;
     let byte_model_report = path2_account_stark_payload_byte_model_report_v1();
     let mut report = Path2AccountStarkPayloadKatBoundaryReportV1 {
@@ -12711,8 +13515,7 @@ pub fn path2_account_stark_payload_kat_boundary_report_v1(
         selected_payload_type: "Path2AccountStarkCreationPayloadV1",
         payload_digest_function: "path2_account_stark_creation_payload_v1_digest",
         verifier_boundary_endpoint: "verify_path2_direct_creation_account_stark_payload_boundary",
-        production_boundary_endpoint:
-            "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
+        production_boundary_endpoint: "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
         rows,
         public_payload_field_mutation_count: rows
             .iter()
@@ -12725,6 +13528,7 @@ pub fn path2_account_stark_payload_kat_boundary_report_v1(
                         | "slot_id"
                         | "native_role_root_commitment"
                         | "masked_projection"
+                        | "pad_seed_nullifier"
                         | "account_stark_bundle"
                 )
             })
@@ -12803,6 +13607,62 @@ pub fn path2_account_stark_fri_qrom_residual_report_v1() -> Path2AccountStarkFri
         challenge_extension_degree: PATH2_ACCOUNT_STARK_CHALLENGE_EXTENSION_DEGREE,
         challenge_field_bits_floor: PATH2_ACCOUNT_STARK_CHALLENGE_FIELD_BITS_FLOOR,
         poseidon2_sponge_floor_bits: PATH2_ACCOUNT_STARK_POSEIDON2_SPONGE_FLOOR_BITS,
+        fs_challenger_rate: PATH2_ACCOUNT_STARK_FS_CHALLENGER_RATE,
+        fs_challenger_capacity: PATH2_ACCOUNT_STARK_FS_CHALLENGER_CAPACITY,
+        fs_challenger_capacity_bits_floor: PATH2_ACCOUNT_STARK_FS_CHALLENGER_CAPACITY_BITS_FLOOR,
+        fs_challenger_generic_collision_bits_floor:
+            PATH2_ACCOUNT_STARK_FS_CHALLENGER_SPONGE_FLOOR_BITS,
+        fs_target_rate: PATH2_ACCOUNT_STARK_FS_TARGET_RATE,
+        fs_target_capacity: PATH2_ACCOUNT_STARK_FS_TARGET_CAPACITY,
+        fs_target_generic_collision_bits_floor: PATH2_ACCOUNT_STARK_FS_TARGET_SPONGE_FLOOR_BITS,
+        fs_c9_reference_source: PATH2_ACCOUNT_STARK_FS_C9_REFERENCE_SOURCE,
+        fs_c9_reference_native_fidelity_test:
+            PATH2_ACCOUNT_STARK_FS_C9_REFERENCE_NATIVE_FIDELITY_TEST,
+        fs_c9_reference_native_fidelity_bound: true,
+        fs_c9_production_migration_complete: false,
+        bcs_rom_error_shape: PATH2_ACCOUNT_STARK_BCS_ROM_ERROR_SHAPE,
+        bcs_qrom_error_shape: PATH2_ACCOUNT_STARK_BCS_QROM_ERROR_SHAPE,
+        bcs_quantum_query_bound_log2: PATH2_ACCOUNT_STARK_BCS_QUANTUM_QUERY_BOUND_LOG2,
+        bcs_multi_target_horizon_log2: PATH2_ACCOUNT_STARK_BCS_MULTI_TARGET_HORIZON_LOG2,
+        bcs_candidate_output_bits: PATH2_ACCOUNT_STARK_BCS_CANDIDATE_OUTPUT_BITS,
+        bcs_rbr_schedule_label_bits: PATH2_ACCOUNT_STARK_BCS_RBR_SCHEDULE_LABEL_BITS,
+        bcs_qrom_lift_constant_log2_bound: PATH2_ACCOUNT_STARK_BCS_QROM_LIFT_CONSTANT_LOG2_BOUND,
+        bcs_rbr_term_bound_bits: PATH2_ACCOUNT_STARK_BCS_RBR_TERM_BOUND_BITS,
+        bcs_oracle_term_bound_bits: PATH2_ACCOUNT_STARK_BCS_ORACLE_TERM_BOUND_BITS,
+        bcs_dimensions_lean_theorem: PATH2_ACCOUNT_STARK_BCS_DIMENSIONS_LEAN_THEOREM,
+        bcs_rbr_term_lean_theorem: PATH2_ACCOUNT_STARK_BCS_RBR_TERM_LEAN_THEOREM,
+        bcs_oracle_term_lean_theorem: PATH2_ACCOUNT_STARK_BCS_ORACLE_TERM_LEAN_THEOREM,
+        bcs_normalized_budget_lean_theorem: PATH2_ACCOUNT_STARK_BCS_NORMALIZED_BUDGET_LEAN_THEOREM,
+        bcs_dimensions_bound: true,
+        bcs_rbr_term_bound: true,
+        bcs_oracle_term_bound: true,
+        bcs_normalized_budget_q128_bound: true,
+        published_rbr_source: PATH2_ACCOUNT_STARK_PUBLISHED_RBR_SOURCE,
+        published_rbr_error_shape: PATH2_ACCOUNT_STARK_PUBLISHED_RBR_ERROR_SHAPE,
+        single_leaf_degree_bits: PATH2_ACCOUNT_STARK_SINGLE_LEAF_DEGREE_BITS,
+        single_leaf_fri_domain_log2: PATH2_ACCOUNT_STARK_SINGLE_LEAF_FRI_DOMAIN_LOG2,
+        published_rbr_analysis_m: PATH2_ACCOUNT_STARK_PUBLISHED_RBR_ANALYSIS_M,
+        published_rbr_delta_numerator: PATH2_ACCOUNT_STARK_PUBLISHED_RBR_DELTA_NUMERATOR,
+        published_rbr_delta_denominator: PATH2_ACCOUNT_STARK_PUBLISHED_RBR_DELTA_DENOMINATOR,
+        published_rbr_field_term_bound_bits:
+            PATH2_ACCOUNT_STARK_PUBLISHED_RBR_FIELD_TERM_BOUND_BITS,
+        published_rbr_query_term_bound_bits:
+            PATH2_ACCOUNT_STARK_PUBLISHED_RBR_QUERY_TERM_BOUND_BITS,
+        published_rbr_dimensions_lean_theorem:
+            PATH2_ACCOUNT_STARK_PUBLISHED_RBR_DIMENSIONS_LEAN_THEOREM,
+        published_rbr_bound_lean_theorem: PATH2_ACCOUNT_STARK_PUBLISHED_RBR_BOUND_LEAN_THEOREM,
+        adaptive_rbr_term_bound_bits: PATH2_ACCOUNT_STARK_ADAPTIVE_RBR_TERM_BOUND_BITS,
+        adaptive_oracle_term_bound_bits: PATH2_ACCOUNT_STARK_ADAPTIVE_ORACLE_TERM_BOUND_BITS,
+        adaptive_budget_lean_theorem: PATH2_ACCOUNT_STARK_ADAPTIVE_BUDGET_LEAN_THEOREM,
+        adaptive_budget_q128_bound: true,
+        adaptive_qrom_policy_adr: PATH2_ACCOUNT_STARK_ADAPTIVE_QROM_POLICY_ADR,
+        adaptive_qrom_policy_lean_theorem: PATH2_ACCOUNT_STARK_ADAPTIVE_QROM_POLICY_LEAN_THEOREM,
+        adaptive_global_query_bound: true,
+        bcs_account_target_multiplier: PATH2_ACCOUNT_STARK_BCS_ACCOUNT_TARGET_MULTIPLIER,
+        lifetime_union_profile_selected: false,
+        lifetime_field_budget_not_le_q128_lean_theorem:
+            PATH2_ACCOUNT_STARK_LIFETIME_FIELD_BUDGET_NOT_LE_Q128_LEAN_THEOREM,
+        lifetime_union_bound_q128_established: false,
         checked_core_qrom_artifacts: &PATH2_CHECKED_CORE_QROM_ARTIFACTS,
         qrom_domain_vector_case_ids: &PATH2_ACCOUNT_STARK_FRI_QROM_DOMAIN_CASES,
         checked_core_qrom_algebraic_challenge_bits:
@@ -12826,6 +13686,9 @@ pub fn path2_account_stark_fri_qrom_residual_report_v1() -> Path2AccountStarkFri
         fri_schedule_pinned: true,
         challenge_field_pinned: true,
         checked_core_qrom_budget_pinned: true,
+        bcs_challenger_output_mapping_instantiated: false,
+        bcs_rbr_error_theorem_instantiated: false,
+        bcs_qrom_lift_constant_reviewed: false,
         account_stark_transcript_qrom_theorem_instantiated: false,
         recursion_pricing_complete: false,
         external_fri_review_complete: false,
@@ -12865,6 +13728,44 @@ pub fn validate_path2_account_stark_fri_qrom_residual_report_v1(
     }
     if report.residual_pricing_complete
         || report.deployment_ready
+        || report.bcs_dimensions_lean_theorem != PATH2_ACCOUNT_STARK_BCS_DIMENSIONS_LEAN_THEOREM
+        || report.bcs_rbr_term_lean_theorem != PATH2_ACCOUNT_STARK_BCS_RBR_TERM_LEAN_THEOREM
+        || report.bcs_oracle_term_lean_theorem != PATH2_ACCOUNT_STARK_BCS_ORACLE_TERM_LEAN_THEOREM
+        || report.bcs_normalized_budget_lean_theorem
+            != PATH2_ACCOUNT_STARK_BCS_NORMALIZED_BUDGET_LEAN_THEOREM
+        || !report.bcs_dimensions_bound
+        || !report.bcs_rbr_term_bound
+        || !report.bcs_oracle_term_bound
+        || !report.bcs_normalized_budget_q128_bound
+        || report.fs_target_rate != PATH2_ACCOUNT_STARK_FS_TARGET_RATE
+        || report.fs_target_capacity != PATH2_ACCOUNT_STARK_FS_TARGET_CAPACITY
+        || report.fs_target_generic_collision_bits_floor
+            != PATH2_ACCOUNT_STARK_FS_TARGET_SPONGE_FLOOR_BITS
+        || report.fs_c9_reference_source != PATH2_ACCOUNT_STARK_FS_C9_REFERENCE_SOURCE
+        || report.fs_c9_reference_native_fidelity_test
+            != PATH2_ACCOUNT_STARK_FS_C9_REFERENCE_NATIVE_FIDELITY_TEST
+        || !report.fs_c9_reference_native_fidelity_bound
+        || report.fs_c9_production_migration_complete
+        || report.published_rbr_source != PATH2_ACCOUNT_STARK_PUBLISHED_RBR_SOURCE
+        || report.published_rbr_error_shape != PATH2_ACCOUNT_STARK_PUBLISHED_RBR_ERROR_SHAPE
+        || report.published_rbr_dimensions_lean_theorem
+            != PATH2_ACCOUNT_STARK_PUBLISHED_RBR_DIMENSIONS_LEAN_THEOREM
+        || report.published_rbr_bound_lean_theorem
+            != PATH2_ACCOUNT_STARK_PUBLISHED_RBR_BOUND_LEAN_THEOREM
+        || report.adaptive_budget_lean_theorem != PATH2_ACCOUNT_STARK_ADAPTIVE_BUDGET_LEAN_THEOREM
+        || !report.adaptive_budget_q128_bound
+        || report.adaptive_qrom_policy_adr != PATH2_ACCOUNT_STARK_ADAPTIVE_QROM_POLICY_ADR
+        || report.adaptive_qrom_policy_lean_theorem
+            != PATH2_ACCOUNT_STARK_ADAPTIVE_QROM_POLICY_LEAN_THEOREM
+        || !report.adaptive_global_query_bound
+        || report.bcs_account_target_multiplier != PATH2_ACCOUNT_STARK_BCS_ACCOUNT_TARGET_MULTIPLIER
+        || report.lifetime_union_profile_selected
+        || report.lifetime_field_budget_not_le_q128_lean_theorem
+            != PATH2_ACCOUNT_STARK_LIFETIME_FIELD_BUDGET_NOT_LE_Q128_LEAN_THEOREM
+        || report.lifetime_union_bound_q128_established
+        || report.bcs_challenger_output_mapping_instantiated
+        || report.bcs_rbr_error_theorem_instantiated
+        || report.bcs_qrom_lift_constant_reviewed
         || report.account_stark_fri_qrom_transcript_reduction_lean_theorem
             != PATH2_ACCOUNT_STARK_FRI_QROM_TRANSCRIPT_REDUCTION_LEAN_THEOREM
         || !report.account_stark_fri_qrom_transcript_reduction_bound
@@ -13016,8 +13917,8 @@ pub fn validate_path2_account_stark_residual_matrix_report_v1(
     Ok(())
 }
 
-pub fn path2_authorization_class_binding_audit_report_v1(
-) -> Path2AuthorizationClassBindingAuditReportV1 {
+pub fn path2_authorization_class_binding_audit_report_v1()
+-> Path2AuthorizationClassBindingAuditReportV1 {
     let rows = &PATH2_AUTHORIZATION_CLASS_BINDING_AUDIT_ROWS;
     let mut report = Path2AuthorizationClassBindingAuditReportV1 {
         digest: [0_u8; DIGEST_BYTES],
@@ -13026,8 +13927,7 @@ pub fn path2_authorization_class_binding_audit_report_v1(
         projection_audit_file: PATH2_SPEND_PROJECTION_COMPLETENESS_AUDIT_FILE,
         authorization_local_classification_file: PATH2_AUTHORIZATION_LOCAL_CLASSIFICATION_FILE,
         theorem_target: "selected_account_creation_authorization_class_binding_v1",
-        spend_authorization_class_digest_function:
-            "path2_native_spend_authorization_class_digest_v1",
+        spend_authorization_class_digest_function: "path2_native_spend_authorization_class_digest_v1",
         spend_projection_encoder: "path2_native_spend_projection_v1_bytes",
         direct_spend_verifier_endpoint: "verify_path2_direct_single_slot_spend_authorization",
         checked_core_verifier_endpoint: "verify_path2_checked_core_authorization",
@@ -13125,8 +14025,7 @@ pub fn path2_account_creation_sampler_timing_report_v1() -> Path2AccountCreation
         spend_challenge_derived_at_step: 9,
         creation_statement_builder: "path2_creation_hidden_source_statement_v1_from_reviewed",
         checked_core_challenge_frame: "path2_checked_core_authorization_challenge_frame",
-        direct_state_namespace_validator:
-            "validate_path2_direct_slot_authorization_state_namespace",
+        direct_state_namespace_validator: "validate_path2_direct_slot_authorization_state_namespace",
         consume_once_validator: "verify_path2_prevalidated_slot_consume_once",
         direct_spend_composition_endpoint: "verify_path2_direct_single_slot_spend_authorization",
         sampler_authorization_bridge_hook_ids:
@@ -13249,8 +14148,8 @@ pub fn validate_path2_account_creation_sampler_timing_report_v1(
     Ok(())
 }
 
-pub fn path2_account_creation_no_export_boundary_report_v1(
-) -> Path2AccountCreationNoExportBoundaryReportV1 {
+pub fn path2_account_creation_no_export_boundary_report_v1()
+-> Path2AccountCreationNoExportBoundaryReportV1 {
     let payload_byte_model_report = path2_account_stark_payload_byte_model_report_v1();
     let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
     let mut report = Path2AccountCreationNoExportBoundaryReportV1 {
@@ -13259,8 +14158,7 @@ pub fn path2_account_creation_no_export_boundary_report_v1(
         support_file: PATH2_ACCOUNT_CREATION_NO_EXPORT_SUPPORT_FILE,
         selected_payload_type: "Path2AccountStarkCreationPayloadV1",
         verifier_boundary_endpoint: "verify_path2_direct_creation_account_stark_payload_boundary",
-        production_boundary_endpoint:
-            "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
+        production_boundary_endpoint: "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
         payload_byte_model_report_digest: payload_byte_model_report.digest,
         payload_kat_boundary_report_digest: payload_kat_boundary_report.digest,
         no_export_requirement: "zero_knowledge_no_export_semantics",
@@ -13270,6 +14168,7 @@ pub fn path2_account_creation_no_export_boundary_report_v1(
         simulator_public_input_fields: &PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS,
         no_export_private_material_fields:
             &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS,
+        account_stark_public_statement_fields: &PATH2_ACCOUNT_STARK_PUBLIC_STATEMENT_FIELDS,
         no_export_vector_case_ids: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES,
         payload_public_field_count: payload_byte_model_report
             .field_order
@@ -13281,8 +14180,16 @@ pub fn path2_account_creation_no_export_boundary_report_v1(
         no_export_vector_case_count: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES.len(),
         public_payload_exports_private_material: payload_byte_model_report
             .public_payload_exports_private_material,
+        public_statement_exports_private_material: PATH2_ACCOUNT_STARK_PUBLIC_STATEMENT_FIELDS
+            .iter()
+            .any(|field| {
+                PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS
+                    .contains(field)
+            }),
         no_export_field_denylist_pinned: true,
         simulator_input_allowlist_pinned: true,
+        nested_public_statement_audit_pinned: true,
+        public_syndrome_classified_as_allowed: true,
         byte_model_public_payload_only: !payload_byte_model_report
             .public_payload_exports_private_material,
         boundary_mapping_complete: true,
@@ -13313,6 +14220,52 @@ pub fn path2_account_creation_no_export_boundary_report_v1(
         accepted_boundary_simulator_no_export_reduction_lean_theorem:
             PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_SIMULATOR_NO_EXPORT_REDUCTION_LEAN_THEOREM,
         accepted_boundary_simulator_no_export_reduction_bound: true,
+        simulator_hybrid_lean_theorem: PATH2_ACCOUNT_CREATION_SIMULATOR_HYBRID_LEAN_THEOREM,
+        simulator_hybrid_reduction_bound: true,
+        mask_translation_bijective_lean_theorem:
+            PATH2_ACCOUNT_CREATION_MASK_TRANSLATION_BIJECTIVE_LEAN_THEOREM,
+        mask_translation_bijective_bound: true,
+        mask_prf_domain_lane: PATH2_ACCOUNT_CREATION_MASK_PRF_DOMAIN_LANE,
+        mask_prf_input_lanes: PATH2_ACCOUNT_CREATION_MASK_PRF_INPUT_LANES,
+        mask_prf_reduction_digits: PATH2_ACCOUNT_CREATION_MASK_PRF_REDUCTION_DIGITS,
+        mask_prf_squeezed_lanes: PATH2_ACCOUNT_CREATION_MASK_PRF_SQUEEZED_LANES,
+        mask_prf_target_horizon_log2: PATH2_ACCOUNT_CREATION_MASK_PRF_TARGET_HORIZON_LOG2,
+        mask_prf_domain_separation_lean_theorem:
+            PATH2_ACCOUNT_CREATION_MASK_PRF_DOMAIN_SEPARATION_LEAN_THEOREM,
+        mask_prf_domain_separation_bound: true,
+        mask_prf_squeeze_index_injective_lean_theorem:
+            PATH2_ACCOUNT_CREATION_MASK_PRF_SQUEEZE_INDEX_INJECTIVE_LEAN_THEOREM,
+        mask_prf_squeeze_index_injective_bound: true,
+        mask_prf_wide_reduction_q128_lean_theorem:
+            PATH2_ACCOUNT_CREATION_MASK_PRF_WIDE_REDUCTION_Q128_LEAN_THEOREM,
+        mask_prf_wide_reduction_q128_bound: true,
+        mask_prf_freshness_lean_theorem: PATH2_ACCOUNT_CREATION_MASK_PRF_FRESHNESS_LEAN_THEOREM,
+        mask_prf_freshness_bound: true,
+        poseidon_mask_prf_theorem_instantiated: false,
+        pad_commitment_domain_lane: PATH2_ACCOUNT_CREATION_PAD_COMMITMENT_DOMAIN_LANE,
+        opening_commitment_domain_lane: PATH2_ACCOUNT_CREATION_OPENING_COMMITMENT_DOMAIN_LANE,
+        commitment_nonce_bytes: PATH2_ACCOUNT_CREATION_COMMITMENT_NONCE_BYTES,
+        commitment_nonce_bits: PATH2_ACCOUNT_CREATION_COMMITMENT_NONCE_BITS,
+        pad_commitment_input_lanes: PATH2_ACCOUNT_CREATION_PAD_COMMITMENT_INPUT_LANES,
+        opening_commitment_input_lanes: PATH2_ACCOUNT_CREATION_OPENING_COMMITMENT_INPUT_LANES,
+        hiding_commitments_per_account: PATH2_ACCOUNT_CREATION_HIDING_COMMITMENTS_PER_ACCOUNT,
+        commitment_target_horizon_log2: PATH2_ACCOUNT_CREATION_COMMITMENT_TARGET_HORIZON_LOG2,
+        commitment_qrom_query_log2: PATH2_ACCOUNT_CREATION_COMMITMENT_QROM_QUERY_LOG2,
+        commitment_domain_separation_lean_theorem:
+            PATH2_ACCOUNT_CREATION_COMMITMENT_DOMAIN_SEPARATION_LEAN_THEOREM,
+        commitment_domain_separation_bound: true,
+        commitment_frame_dimensions_lean_theorem:
+            PATH2_ACCOUNT_CREATION_COMMITMENT_FRAME_DIMENSIONS_LEAN_THEOREM,
+        commitment_frame_dimensions_bound: true,
+        commitment_qrom_search_q128_lean_theorem:
+            PATH2_ACCOUNT_CREATION_COMMITMENT_QROM_SEARCH_Q128_LEAN_THEOREM,
+        commitment_qrom_search_q128_bound: true,
+        deployment_commitment_nonce_csprng_bound: true,
+        poseidon_commitment_hiding_theorem_instantiated: false,
+        hiding_rng_type: PATH2_ACCOUNT_STARK_HIDING_RNG_TYPE,
+        hiding_rng_seed_bits: PATH2_ACCOUNT_STARK_HIDING_RNG_SEED_BITS,
+        hiding_rng_csprng_bound: true,
+        hiding_rng_substreams_domain_separated: true,
         simulator_theorem_instantiated: false,
         no_export_theorem_instantiated: false,
         accepted_bundle_simulatable_from_public_anchors: false,
@@ -13364,8 +14317,29 @@ pub fn validate_path2_account_creation_no_export_boundary_report_v1(
     {
         return Err("Path 2 account-creation no-export boundary vector case drift".to_string());
     }
+    if !report
+        .simulator_public_input_fields
+        .contains(&"account_stark_public_statement_bytes_or_digest")
+        || !report
+            .simulator_public_input_fields
+            .contains(&"pad_seed_nullifier")
+        || report
+            .simulator_public_input_fields
+            .contains(&"account_stark_bundle_bytes_or_digest")
+        || report
+            .simulator_public_input_fields
+            .contains(&"public_replay_payload_digest")
+    {
+        return Err(
+            "Path 2 account-creation simulator input/output boundary is circular".to_string(),
+        );
+    }
     if !report.no_export_field_denylist_pinned
         || !report.simulator_input_allowlist_pinned
+        || report.account_stark_public_statement_fields
+            != PATH2_ACCOUNT_STARK_PUBLIC_STATEMENT_FIELDS.as_ref()
+        || !report.nested_public_statement_audit_pinned
+        || !report.public_syndrome_classified_as_allowed
         || !report.byte_model_public_payload_only
         || !report.boundary_mapping_complete
         || !report.roundtrip_regression_present
@@ -13395,7 +14369,66 @@ pub fn validate_path2_account_creation_no_export_boundary_report_v1(
         || report.accepted_boundary_simulator_no_export_reduction_lean_theorem
             != PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_SIMULATOR_NO_EXPORT_REDUCTION_LEAN_THEOREM
         || !report.accepted_boundary_simulator_no_export_reduction_bound
+        || report.simulator_hybrid_lean_theorem
+            != PATH2_ACCOUNT_CREATION_SIMULATOR_HYBRID_LEAN_THEOREM
+        || !report.simulator_hybrid_reduction_bound
+        || report.mask_translation_bijective_lean_theorem
+            != PATH2_ACCOUNT_CREATION_MASK_TRANSLATION_BIJECTIVE_LEAN_THEOREM
+        || !report.mask_translation_bijective_bound
+        || report.mask_prf_domain_lane != PATH2_ACCOUNT_CREATION_MASK_PRF_DOMAIN_LANE
+        || report.mask_prf_input_lanes != PATH2_ACCOUNT_CREATION_MASK_PRF_INPUT_LANES
+        || report.mask_prf_reduction_digits
+            != PATH2_ACCOUNT_CREATION_MASK_PRF_REDUCTION_DIGITS
+        || report.mask_prf_squeezed_lanes
+            != PATH2_ACCOUNT_CREATION_MASK_PRF_SQUEEZED_LANES
+        || report.mask_prf_target_horizon_log2
+            != PATH2_ACCOUNT_CREATION_MASK_PRF_TARGET_HORIZON_LOG2
+        || report.mask_prf_domain_separation_lean_theorem
+            != PATH2_ACCOUNT_CREATION_MASK_PRF_DOMAIN_SEPARATION_LEAN_THEOREM
+        || !report.mask_prf_domain_separation_bound
+        || report.mask_prf_squeeze_index_injective_lean_theorem
+            != PATH2_ACCOUNT_CREATION_MASK_PRF_SQUEEZE_INDEX_INJECTIVE_LEAN_THEOREM
+        || !report.mask_prf_squeeze_index_injective_bound
+        || report.mask_prf_wide_reduction_q128_lean_theorem
+            != PATH2_ACCOUNT_CREATION_MASK_PRF_WIDE_REDUCTION_Q128_LEAN_THEOREM
+        || !report.mask_prf_wide_reduction_q128_bound
+        || report.mask_prf_freshness_lean_theorem
+            != PATH2_ACCOUNT_CREATION_MASK_PRF_FRESHNESS_LEAN_THEOREM
+        || !report.mask_prf_freshness_bound
+        || report.poseidon_mask_prf_theorem_instantiated
+        || report.pad_commitment_domain_lane
+            != PATH2_ACCOUNT_CREATION_PAD_COMMITMENT_DOMAIN_LANE
+        || report.opening_commitment_domain_lane
+            != PATH2_ACCOUNT_CREATION_OPENING_COMMITMENT_DOMAIN_LANE
+        || report.commitment_nonce_bytes != PATH2_ACCOUNT_CREATION_COMMITMENT_NONCE_BYTES
+        || report.commitment_nonce_bits != PATH2_ACCOUNT_CREATION_COMMITMENT_NONCE_BITS
+        || report.pad_commitment_input_lanes
+            != PATH2_ACCOUNT_CREATION_PAD_COMMITMENT_INPUT_LANES
+        || report.opening_commitment_input_lanes
+            != PATH2_ACCOUNT_CREATION_OPENING_COMMITMENT_INPUT_LANES
+        || report.hiding_commitments_per_account
+            != PATH2_ACCOUNT_CREATION_HIDING_COMMITMENTS_PER_ACCOUNT
+        || report.commitment_target_horizon_log2
+            != PATH2_ACCOUNT_CREATION_COMMITMENT_TARGET_HORIZON_LOG2
+        || report.commitment_qrom_query_log2
+            != PATH2_ACCOUNT_CREATION_COMMITMENT_QROM_QUERY_LOG2
+        || report.commitment_domain_separation_lean_theorem
+            != PATH2_ACCOUNT_CREATION_COMMITMENT_DOMAIN_SEPARATION_LEAN_THEOREM
+        || !report.commitment_domain_separation_bound
+        || report.commitment_frame_dimensions_lean_theorem
+            != PATH2_ACCOUNT_CREATION_COMMITMENT_FRAME_DIMENSIONS_LEAN_THEOREM
+        || !report.commitment_frame_dimensions_bound
+        || report.commitment_qrom_search_q128_lean_theorem
+            != PATH2_ACCOUNT_CREATION_COMMITMENT_QROM_SEARCH_Q128_LEAN_THEOREM
+        || !report.commitment_qrom_search_q128_bound
+        || !report.deployment_commitment_nonce_csprng_bound
+        || report.poseidon_commitment_hiding_theorem_instantiated
+        || report.hiding_rng_type != PATH2_ACCOUNT_STARK_HIDING_RNG_TYPE
+        || report.hiding_rng_seed_bits != PATH2_ACCOUNT_STARK_HIDING_RNG_SEED_BITS
+        || !report.hiding_rng_csprng_bound
+        || !report.hiding_rng_substreams_domain_separated
         || report.public_payload_exports_private_material
+        || report.public_statement_exports_private_material
         || report.simulator_theorem_instantiated
         || report.no_export_theorem_instantiated
         || report.accepted_bundle_simulatable_from_public_anchors
@@ -13526,8 +14559,7 @@ fn path2_account_creation_closed_authorization_class_dependency_imported_v1(
     sampler_timing_report: &Path2AccountCreationSamplerTimingReportV1,
 ) -> bool {
     dependency.dependency_id == "closure_dependency_authorization_class_binding"
-        && dependency.proof_obligation_id
-            == "creation_proof_obligation_authorization_class_binding"
+        && dependency.proof_obligation_id == "creation_proof_obligation_authorization_class_binding"
         && dependency.named_break == "checked_core_message_binding_break"
         && !dependency.open
         && sampler_timing_report.authorization_class_binding_theorem_instantiated
@@ -14119,6 +15151,19 @@ pub fn path2_direct_qrom_action_boundary_report_v1() -> Path2DirectQromActionBou
             <= budget.minimum_deployment_margin_bits,
         negative_control_exceeds_margin: budget.negative_control_horizon_log2
             > budget.minimum_deployment_margin_bits,
+        direct_qrom_action_budget_bridge_lean_theorem:
+            PATH2_DIRECT_QROM_ACTION_BUDGET_BRIDGE_LEAN_THEOREM,
+        direct_qrom_action_budget_bridge_bound: true,
+        direct_qrom_action_theorem_linkage_reduction_lean_theorem:
+            PATH2_DIRECT_QROM_ACTION_THEOREM_LINKAGE_REDUCTION_LEAN_THEOREM,
+        direct_qrom_action_local_linkage_reduction_imported: true,
+        production_checked_core_acceptance_semantics_bound:
+            path2_direct_production_checked_core_acceptance_semantics_bound_v1(),
+        qrom_action_valid_or_named_break_theorem_instantiated:
+            path2_direct_checked_core_valid_or_named_break_instantiated_v1(),
+        qrom_domain_break_coupled_to_direct_game:
+            path2_direct_qrom_domain_break_coupled_to_direct_game_v1(),
+        qrom_action_assumption_instantiated: false,
         theorem_imports_budget: false,
         external_qrom_review_complete: false,
         qrom_and_action_bounds_linked_to_theorem: false,
@@ -14152,6 +15197,15 @@ pub fn validate_path2_direct_qrom_action_boundary_report_v1(
         || !report.optional_aggregation_terms_q_batch_only
         || !report.selected_horizon_within_margin
         || !report.negative_control_exceeds_margin
+        || report.direct_qrom_action_budget_bridge_lean_theorem
+            != PATH2_DIRECT_QROM_ACTION_BUDGET_BRIDGE_LEAN_THEOREM
+        || !report.direct_qrom_action_budget_bridge_bound
+        || report.direct_qrom_action_theorem_linkage_reduction_lean_theorem
+            != PATH2_DIRECT_QROM_ACTION_THEOREM_LINKAGE_REDUCTION_LEAN_THEOREM
+        || !report.direct_qrom_action_local_linkage_reduction_imported
+        || !report.production_checked_core_acceptance_semantics_bound
+        || !report.qrom_action_valid_or_named_break_theorem_instantiated
+        || !report.qrom_domain_break_coupled_to_direct_game
     {
         return Err("Path 2 direct QROM/action boundary lost pinned budget evidence".to_string());
     }
@@ -14163,7 +15217,8 @@ pub fn validate_path2_direct_qrom_action_boundary_report_v1(
     {
         return Err("Path 2 direct QROM/action numeric margins are below target".to_string());
     }
-    if report.theorem_imports_budget
+    if report.qrom_action_assumption_instantiated
+        || report.theorem_imports_budget
         || report.external_qrom_review_complete
         || report.qrom_and_action_bounds_linked_to_theorem
         || report.deployment_ready
@@ -14293,6 +15348,125 @@ pub fn validate_path2_direct_lifecycle_boundary_report_v1(
     Ok(())
 }
 
+pub fn path2_direct_admission_boundary_report_v1() -> Path2DirectAdmissionBoundaryReportV1 {
+    let admission_closure_lean_imported =
+        path2_direct_admission_namespace_and_data_availability_imported_v1();
+    let verified_nullifier_registry_imported =
+        path2_direct_verified_nullifier_registry_imported_v1();
+    let mut report = Path2DirectAdmissionBoundaryReportV1 {
+        digest: [0_u8; DIGEST_BYTES],
+        domain: PATH2_DIRECT_ADMISSION_BOUNDARY_REPORT_DOMAIN_V1,
+        profile_id: PATH2_SOVEREIGN_DIRECT_CLIENT_PROFILE_ID_V1,
+        architecture_authority: PATH2_SOVEREIGN_DIRECT_CLIENT_ARCHITECTURE_AUTHORITY_V1,
+        lifecycle_authority: PATH2_SOVEREIGN_DIRECT_CLIENT_LIFECYCLE_AUTHORITY_V1,
+        deployment_profile_authority: "spec/deployment_profiles.md",
+        direct_obligation_id: "direct_obligation_admission_namespace",
+        acceptance_hypothesis: "direct_admission_namespace_contains_exact_tuple",
+        registry_named_break: "prevalidation_registry_binding_break",
+        data_availability_named_break: "prevalidation_data_availability_break",
+        storage_class: PATH2_SOVEREIGN_DIRECT_ADMISSION_STORAGE_CLASS_V1,
+        admission_state_type: "Path2SovereignDirectAdmissionStateV1",
+        admission_record_type: "Path2SovereignDirectAdmissionRecordV1",
+        admission_endpoint: "verify_and_admit_path2_direct_creation_account_stark_block_v1",
+        verified_public_anchors_type: "VerifiedCreationPublicAnchors",
+        verified_nullifier_decode_endpoint: "verify_and_decode_deployed_account_creation",
+        verified_admission_candidate_type: "Path2VerifiedSovereignCreationAdmissionV1",
+        verified_admission_candidate_endpoint: "verify_path2_direct_creation_account_stark_admission_candidate_v1",
+        nullifier_registry_key_type: "Path2AccountStarkNullifierV1",
+        nullifier_encoding: "8 canonical KoalaBear field-value u32 limbs encoded little-endian without verifier-version prefix; noncanonical wire limbs reject",
+        nullifier_block_admission_endpoint: "Path2SovereignDirectAdmissionStateV1::admit_verified_creation_block",
+        restore_anchor_type: "Path2SovereignDirectAdmissionRestoreAnchorV1",
+        restore_anchor_endpoint: "Path2SovereignDirectAdmissionStateV1::restore_anchor",
+        restore_endpoint: "Path2SovereignDirectAdmissionStateV1::restore",
+        available_record_endpoint: "Path2SovereignDirectAdmissionStateV1::require_available_record",
+        spend_endpoint: "verify_path2_direct_single_slot_spend_authorization_from_sovereign_state_v1",
+        namespace_key_fields: &PATH2_DIRECT_ADMISSION_NAMESPACE_KEY_FIELDS_V1,
+        record_value_fields: &PATH2_DIRECT_ADMISSION_RECORD_VALUE_FIELDS_V1,
+        executable_tests: &PATH2_DIRECT_ADMISSION_BOUNDARY_EXECUTABLE_TESTS_V1,
+        admission_closure_lean_theorem:
+            PATH2_DIRECT_ADMISSION_NAMESPACE_AND_DATA_AVAILABILITY_LEAN_THEOREM,
+        pad_seed_reorg_safe_uniqueness_lean_theorem:
+            PATH2_DIRECT_ADMISSION_PAD_SEED_REORG_SAFE_UNIQUENESS_LEAN_THEOREM,
+        exact_namespace_tuple_key_pinned: true,
+        canonical_leaf_bytes_stored_directly: true,
+        leaf_and_evidence_digests_rechecked: true,
+        spend_reads_canonical_consensus_record: true,
+        missing_record_rejected: true,
+        corrupt_record_fails_closed: true,
+        duplicate_admission_rejected: true,
+        d2_finalized_head_reorg_semantics: true,
+        verified_creation_nullifier_anchor_bound: verified_nullifier_registry_imported,
+        sovereign_nullifier_registry_consensus_wired: verified_nullifier_registry_imported,
+        sovereign_nullifier_block_atomic: verified_nullifier_registry_imported,
+        sovereign_nullifier_d2_reorg_index_rebuild_verified: verified_nullifier_registry_imported,
+        pad_seed_reorg_safe_uniqueness_selected_state_reduction_imported:
+            verified_nullifier_registry_imported,
+        snapshot_restores_nullifier_registry: verified_nullifier_registry_imported,
+        snapshot_restore_anchor_bound: verified_nullifier_registry_imported,
+        target_chain_data_availability_instantiated: admission_closure_lean_imported,
+        admission_closure_lean_imported,
+        external_storage_review_complete: false,
+        deployment_ready: false,
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_STORAGE,
+    };
+    report.digest = path2_direct_admission_boundary_report_v1_digest(&report);
+    report
+}
+
+pub fn path2_direct_admission_boundary_report_v1_digest(
+    report: &Path2DirectAdmissionBoundaryReportV1,
+) -> [u8; DIGEST_BYTES] {
+    Sha256::digest(path2_direct_admission_boundary_report_v1_frame(report)).into()
+}
+
+pub fn validate_path2_direct_admission_boundary_report_v1(
+    report: &Path2DirectAdmissionBoundaryReportV1,
+) -> Result<(), String> {
+    let expected = path2_direct_admission_boundary_report_v1();
+    if expected != *report {
+        return Err("Path 2 direct admission boundary report mismatch".to_string());
+    }
+    if path2_direct_admission_boundary_report_v1_digest(report) != report.digest {
+        return Err("Path 2 direct admission boundary report digest mismatch".to_string());
+    }
+    if report.profile_id != PATH2_SOVEREIGN_DIRECT_CLIENT_PROFILE_ID_V1
+        || report.architecture_authority != PATH2_SOVEREIGN_DIRECT_CLIENT_ARCHITECTURE_AUTHORITY_V1
+        || report.lifecycle_authority != PATH2_SOVEREIGN_DIRECT_CLIENT_LIFECYCLE_AUTHORITY_V1
+        || report.storage_class != PATH2_SOVEREIGN_DIRECT_ADMISSION_STORAGE_CLASS_V1
+        || report.namespace_key_fields != PATH2_DIRECT_ADMISSION_NAMESPACE_KEY_FIELDS_V1.as_ref()
+        || report.record_value_fields != PATH2_DIRECT_ADMISSION_RECORD_VALUE_FIELDS_V1.as_ref()
+        || report.executable_tests != PATH2_DIRECT_ADMISSION_BOUNDARY_EXECUTABLE_TESTS_V1.as_ref()
+        || report.admission_closure_lean_theorem
+            != PATH2_DIRECT_ADMISSION_NAMESPACE_AND_DATA_AVAILABILITY_LEAN_THEOREM
+        || report.pad_seed_reorg_safe_uniqueness_lean_theorem
+            != PATH2_DIRECT_ADMISSION_PAD_SEED_REORG_SAFE_UNIQUENESS_LEAN_THEOREM
+        || !report.exact_namespace_tuple_key_pinned
+        || !report.canonical_leaf_bytes_stored_directly
+        || !report.leaf_and_evidence_digests_rechecked
+        || !report.spend_reads_canonical_consensus_record
+        || !report.missing_record_rejected
+        || !report.corrupt_record_fails_closed
+        || !report.duplicate_admission_rejected
+        || !report.d2_finalized_head_reorg_semantics
+        || !report.verified_creation_nullifier_anchor_bound
+        || !report.sovereign_nullifier_registry_consensus_wired
+        || !report.sovereign_nullifier_block_atomic
+        || !report.sovereign_nullifier_d2_reorg_index_rebuild_verified
+        || !report.pad_seed_reorg_safe_uniqueness_selected_state_reduction_imported
+        || !report.snapshot_restores_nullifier_registry
+        || !report.snapshot_restore_anchor_bound
+        || !report.target_chain_data_availability_instantiated
+        || !report.admission_closure_lean_imported
+        || report.external_storage_review_complete
+        || report.deployment_ready
+    {
+        return Err(
+            "Path 2 direct admission boundary unexpectedly changes closure status".to_string(),
+        );
+    }
+    Ok(())
+}
+
 fn path2_direct_theorem_closure_dependency_has_open_obligation_v1(
     row: &Path2DirectTheoremClosureDependencyRowV1,
     obligations: &[Path2DirectTheoremObligationRowV1],
@@ -14315,10 +15489,32 @@ fn path2_direct_theorem_closure_dependency_support_open_v1(
     proof_boundary_report: &Path2AccountCreationProofBoundaryReportV1,
 ) -> bool {
     match row.dependency_id {
-        "direct_dependency_leaf_canonical_live"
-        | "direct_dependency_admission_namespace"
-        | "direct_dependency_public_rejection" => {
-            !direct_report.composition_theorem_instantiated && !direct_report.deployment_ready
+        "direct_dependency_leaf_canonical_live" => {
+            row.open
+                && !direct_report.direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle
+                && !direct_report.deployment_ready
+                && direct_report.direct_leaf_canonical_live_imported
+                && direct_report.direct_leaf_canonical_live_lean_theorem
+                    == PATH2_DIRECT_LEAF_CANONICAL_LIVE_LEAN_THEOREM
+                && direct_report.direct_leaf_canonical_live_lifecycle_and_kat_hypothesis_explicit
+        }
+        "direct_dependency_public_rejection" => {
+            row.open
+                && (!direct_report.direct_public_rejection_state_preserving_imported
+                    || !direct_report.direct_public_rejection_all_classes_kat_covered
+                    || !direct_report.direct_public_rejection_all_public_objects_kat_covered
+                    || !direct_report.direct_public_rejection_target_client_mapping_complete)
+                && !direct_report.deployment_ready
+        }
+        "direct_dependency_admission_namespace" => {
+            row.open
+                && !direct_report.direct_admission_namespace_closed_by_sovereign_state
+                && !direct_report.composition_theorem_instantiated
+                && !direct_report.deployment_ready
+                && direct_report.direct_admission_namespace_membership_imported
+                && direct_report.direct_admission_namespace_membership_lean_theorem
+                    == PATH2_DIRECT_ADMISSION_NAMESPACE_MEMBERSHIP_LEAN_THEOREM
+                && direct_report.direct_admission_namespace_data_availability_hypothesis_explicit
         }
         "direct_dependency_slot_authorization_digest" => {
             row.open
@@ -14333,8 +15529,13 @@ fn path2_direct_theorem_closure_dependency_support_open_v1(
                 && !direct_report.deployment_ready
         }
         "direct_dependency_evidence_leaf_bindings" => {
-            !direct_report.composition_theorem_instantiated
+            row.open
+                && !direct_report.direct_evidence_leaf_binding_closed_by_frozen_kat
                 && !direct_report.account_creation_proof_boundary_verified
+                && direct_report.direct_evidence_leaf_binding_imported
+                && direct_report.direct_evidence_leaf_binding_lean_theorem
+                    == PATH2_DIRECT_EVIDENCE_LEAF_BINDING_LEAN_THEOREM
+                && direct_report.direct_evidence_leaf_binding_proof_boundary_hypothesis_explicit
                 && !proof_boundary_report.deployment_ready
         }
         "direct_dependency_creation_before_challenge" => {
@@ -14343,7 +15544,24 @@ fn path2_direct_theorem_closure_dependency_support_open_v1(
                 && !proof_boundary_report.production_gate_open
         }
         "direct_dependency_checked_core_acceptance" => {
-            !direct_report.qrom_and_action_bounds_linked_to_theorem
+            row.open
+                && row.source_report == "Path2DirectQromActionBoundaryReportV1"
+                && row.source_flag_group
+                    == "production_checked_core_acceptance_semantics_bound/qrom_action_valid_or_named_break_theorem_instantiated/qrom_domain_break_coupled_to_direct_game/qrom_action_assumption_instantiated/theorem_imports_budget/external_qrom_review_complete"
+                && !direct_report.qrom_and_action_bounds_linked_to_theorem
+                && direct_report.qrom_action_budget_bridge_imported
+                && direct_report.qrom_action_budget_bridge_lean_theorem
+                    == qrom_action_report.direct_qrom_action_budget_bridge_lean_theorem
+                && direct_report.qrom_action_theorem_linkage_reduction_imported
+                && direct_report.qrom_action_theorem_linkage_reduction_lean_theorem
+                    == PATH2_DIRECT_QROM_ACTION_THEOREM_LINKAGE_REDUCTION_LEAN_THEOREM
+                && direct_report.qrom_action_review_hypothesis_explicit
+                && qrom_action_report.direct_qrom_action_budget_bridge_bound
+                && qrom_action_report.direct_qrom_action_local_linkage_reduction_imported
+                && qrom_action_report.production_checked_core_acceptance_semantics_bound
+                && qrom_action_report.qrom_action_valid_or_named_break_theorem_instantiated
+                && qrom_action_report.qrom_domain_break_coupled_to_direct_game
+                && !qrom_action_report.qrom_action_assumption_instantiated
                 && !qrom_action_report.theorem_imports_budget
                 && !qrom_action_report.external_qrom_review_complete
                 && !qrom_action_report.qrom_and_action_bounds_linked_to_theorem
@@ -14357,6 +15575,22 @@ fn path2_direct_theorem_closure_dependency_support_open_v1(
         }
         _ => false,
     }
+}
+
+fn path2_direct_theorem_closed_admission_namespace_dependency_imported_v1(
+    row: &Path2DirectTheoremClosureDependencyRowV1,
+    direct_report: &Path2DirectTheoremBoundaryReportV1,
+) -> bool {
+    row.dependency_id == "direct_dependency_admission_namespace"
+        && !row.open
+        && row.source_report == "Path2DirectAdmissionBoundaryReportV1"
+        && row.source_flag_group == "direct_admission_namespace_closed_by_sovereign_state=true"
+        && direct_report.direct_admission_namespace_membership_imported
+        && direct_report.direct_admission_namespace_and_data_availability_imported
+        && direct_report.direct_admission_namespace_closed_by_sovereign_state
+        && direct_report.composition_theorem_reduction_imported
+        && !direct_report.composition_theorem_instantiated
+        && !direct_report.deployment_ready
 }
 
 fn path2_direct_theorem_closed_lifecycle_dependency_imported_v1(
@@ -14456,6 +15690,7 @@ fn path2_direct_checked_core_frame_binding_imported_in_source_v1(full_spend_sour
         "BoundConcretePrevalidatedSlot C spend",
         "AdmittedConcretePrechallengeLeaf C spend",
         "CheckedCoreChallengeBindsAcceptedTuple C spend",
+        "ConcreteCheckedCoreAuthorizationAcceptance spend",
         "ConcreteConsumeOnceAcceptedTransition C spend",
     ];
     let import_checks = [
@@ -14600,6 +15835,1225 @@ fn path2_direct_slot_authorization_digest_imported_in_source_v1(full_spend_sourc
         && eq_checks.iter().all(|marker| eq_window.contains(marker))
 }
 
+fn path2_direct_leaf_canonical_live_imported_v1() -> bool {
+    let full_spend_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
+    path2_direct_leaf_canonical_live_imported_in_source_v1(full_spend_source)
+}
+
+fn path2_direct_leaf_canonical_live_imported_in_source_v1(full_spend_source: &str) -> bool {
+    let Some(predicate_start) =
+        full_spend_source.find("\ndef PrevalidatedSlotLeafCanonicalAndLive")
+    else {
+        return false;
+    };
+    let Some(predicate_end) =
+        full_spend_source[predicate_start..].find("\n/--\nThe leaf, account-creation evidence")
+    else {
+        return false;
+    };
+    let predicate_window = &full_spend_source[predicate_start..predicate_start + predicate_end];
+
+    let Some(bound_start) = full_spend_source.find("\ndef BoundConcretePrevalidatedSlot") else {
+        return false;
+    };
+    let Some(bound_end) =
+        full_spend_source[bound_start..].find("\n/-- Concrete prechallenge admission package")
+    else {
+        return false;
+    };
+    let bound_window = &full_spend_source[bound_start..bound_start + bound_end];
+
+    let Some(accept_start) = full_spend_source.find("\ndef ConcreteSpendVerificationAccepts")
+    else {
+        return false;
+    };
+    let Some(accept_end) =
+        full_spend_source[accept_start..].find("\n/--\nLocal direct leaf-canonical/live support")
+    else {
+        return false;
+    };
+    let accept_window = &full_spend_source[accept_start..accept_start + accept_end];
+
+    let Some(import_start) =
+        full_spend_source.find("\ntheorem leafCanonicalLive_imported_of_concreteSpendAccepts")
+    else {
+        return false;
+    };
+    let Some(import_end) =
+        full_spend_source[import_start..].find("\n/--\nSelected-Rust direct leaf-canonical/live")
+    else {
+        return false;
+    };
+    let import_window = &full_spend_source[import_start..import_start + import_end];
+
+    let Some(support_start) =
+        full_spend_source.find("\ndef SelectedRustDirectLeafCanonicalLiveSupport")
+    else {
+        return false;
+    };
+    let Some(support_end) = full_spend_source[support_start..]
+        .find("\ntheorem selectedRustDirectLeafCanonicalLiveSupport_of_concreteSpendAccepts")
+    else {
+        return false;
+    };
+    let support_window = &full_spend_source[support_start..support_start + support_end];
+
+    let Some(selected_start) = full_spend_source
+        .find("\ntheorem selectedRustDirectLeafCanonicalLiveSupport_of_concreteSpendAccepts")
+    else {
+        return false;
+    };
+    let Some(selected_end) =
+        full_spend_source[selected_start..].find("\n/--\nLocal direct evidence/leaf-binding")
+    else {
+        return false;
+    };
+    let selected_window = &full_spend_source[selected_start..selected_start + selected_end];
+
+    let predicate_checks = [
+        "spend.leaf.accountId = spend.accountId",
+        "spend.leaf.accountStateRoot = spend.accountStateRootBefore",
+        "spend.leaf.slotId = spend.slotId",
+        "spend.leaf.publicKey = spend.publicKey",
+        "spend.leaf.creationTime ≤ (spend.spendChallengeTime : Nat)",
+        "(spend.spendChallengeTime : Nat) ≤ spend.leaf.expiresAt",
+        "NativeProjectionCarrierBinding C spend.leaf",
+    ];
+    let bound_checks = [
+        "PrevalidatedSlotLeafCanonicalAndLive C spend",
+        "LeafEvidenceCertificateBinding C spend",
+        "SlotAuthorizationDigestFramesLeaf C spend",
+        "ReplayableCertificateDataAvailable C spend",
+    ];
+    let accept_checks = [
+        "BoundConcretePrevalidatedSlot C spend",
+        "AdmittedConcretePrechallengeLeaf C spend",
+        "CheckedCoreChallengeBindsAcceptedTuple C spend",
+        "ConcreteConsumeOnceAcceptedTransition C spend",
+    ];
+    let import_checks = [
+        "leafCanonicalLive_imported_of_concreteSpendAccepts",
+        "ConcreteSpendVerificationAccepts C spend",
+        "PrevalidatedSlotLeafCanonicalAndLive C spend",
+        "hAccept.1.1",
+    ];
+    let support_checks = [
+        "SelectedRustDirectLeafCanonicalLiveSupport",
+        "PrevalidatedSlotLeafCanonicalAndLive selectedRustConcreteGameConfig spend",
+    ];
+    let selected_checks = [
+        "selectedRustDirectLeafCanonicalLiveSupport_of_concreteSpendAccepts",
+        "ConcreteSpendVerificationAccepts selectedRustConcreteGameConfig spend",
+        "leafCanonicalLive_imported_of_concreteSpendAccepts hAccept",
+    ];
+
+    predicate_checks
+        .iter()
+        .all(|marker| predicate_window.contains(marker))
+        && bound_checks
+            .iter()
+            .all(|marker| bound_window.contains(marker))
+        && accept_checks
+            .iter()
+            .all(|marker| accept_window.contains(marker))
+        && import_checks
+            .iter()
+            .all(|marker| import_window.contains(marker))
+        && support_checks
+            .iter()
+            .all(|marker| support_window.contains(marker))
+        && selected_checks
+            .iter()
+            .all(|marker| selected_window.contains(marker))
+}
+
+fn path2_direct_evidence_leaf_binding_imported_v1() -> bool {
+    let full_spend_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
+    path2_direct_evidence_leaf_binding_imported_in_source_v1(full_spend_source)
+}
+
+fn path2_direct_evidence_leaf_binding_imported_in_source_v1(full_spend_source: &str) -> bool {
+    let Some(predicate_start) = full_spend_source.find("\ndef LeafEvidenceCertificateBinding")
+    else {
+        return false;
+    };
+    let Some(predicate_end) =
+        full_spend_source[predicate_start..].find("\n/-- The slot authorization digest")
+    else {
+        return false;
+    };
+    let predicate_window = &full_spend_source[predicate_start..predicate_start + predicate_end];
+
+    let Some(bound_start) = full_spend_source.find("\ndef BoundConcretePrevalidatedSlot") else {
+        return false;
+    };
+    let Some(bound_end) =
+        full_spend_source[bound_start..].find("\n/-- Concrete prechallenge admission package")
+    else {
+        return false;
+    };
+    let bound_window = &full_spend_source[bound_start..bound_start + bound_end];
+
+    let Some(accept_start) = full_spend_source.find("\ndef ConcreteSpendVerificationAccepts")
+    else {
+        return false;
+    };
+    let Some(accept_end) =
+        full_spend_source[accept_start..].find("\n/--\nLocal direct evidence/leaf-binding support")
+    else {
+        return false;
+    };
+    let accept_window = &full_spend_source[accept_start..accept_start + accept_end];
+
+    let Some(import_start) = full_spend_source
+        .find("\ntheorem leafEvidenceCertificateBinding_imported_of_concreteSpendAccepts")
+    else {
+        return false;
+    };
+    let Some(import_end) = full_spend_source[import_start..]
+        .find("\n/--\nSelected-Rust direct evidence/leaf-binding support")
+    else {
+        return false;
+    };
+    let import_window = &full_spend_source[import_start..import_start + import_end];
+
+    let Some(support_start) =
+        full_spend_source.find("\ndef SelectedRustDirectEvidenceLeafBindingSupport")
+    else {
+        return false;
+    };
+    let Some(support_end) = full_spend_source[support_start..]
+        .find("\ntheorem selectedRustDirectEvidenceLeafBindingSupport_of_concreteSpendAccepts")
+    else {
+        return false;
+    };
+    let support_window = &full_spend_source[support_start..support_start + support_end];
+
+    let Some(selected_start) = full_spend_source
+        .find("\ntheorem selectedRustDirectEvidenceLeafBindingSupport_of_concreteSpendAccepts")
+    else {
+        return false;
+    };
+    let Some(selected_end) = full_spend_source[selected_start..]
+        .find("\n/--\nClosed direct-theorem checked-core frame-binding slice.")
+    else {
+        return false;
+    };
+    let selected_window = &full_spend_source[selected_start..selected_start + selected_end];
+
+    let predicate_checks = [
+        "AccountCreationAccepted C spend",
+        "spend.directCertificate.boundary = spend.leaf.boundary",
+        "spend.directCertificate.leafDigest = spend.leaf.leafDigest",
+    ];
+    let bound_checks = [
+        "PrevalidatedSlotLeafCanonicalAndLive C spend",
+        "LeafEvidenceCertificateBinding C spend",
+        "SlotAuthorizationDigestFramesLeaf C spend",
+        "ReplayableCertificateDataAvailable C spend",
+    ];
+    let accept_checks = [
+        "BoundConcretePrevalidatedSlot C spend",
+        "AdmittedConcretePrechallengeLeaf C spend",
+        "CheckedCoreChallengeBindsAcceptedTuple C spend",
+        "ConcreteConsumeOnceAcceptedTransition C spend",
+    ];
+    let import_checks = [
+        "leafEvidenceCertificateBinding_imported_of_concreteSpendAccepts",
+        "ConcreteSpendVerificationAccepts C spend",
+        "LeafEvidenceCertificateBinding C spend",
+        "hAccept.1.2.1",
+    ];
+    let support_checks = [
+        "SelectedRustDirectEvidenceLeafBindingSupport",
+        "LeafEvidenceCertificateBinding selectedRustConcreteGameConfig spend",
+    ];
+    let selected_checks = [
+        "selectedRustDirectEvidenceLeafBindingSupport_of_concreteSpendAccepts",
+        "ConcreteSpendVerificationAccepts selectedRustConcreteGameConfig spend",
+        "leafEvidenceCertificateBinding_imported_of_concreteSpendAccepts hAccept",
+    ];
+
+    predicate_checks
+        .iter()
+        .all(|marker| predicate_window.contains(marker))
+        && bound_checks
+            .iter()
+            .all(|marker| bound_window.contains(marker))
+        && accept_checks
+            .iter()
+            .all(|marker| accept_window.contains(marker))
+        && import_checks
+            .iter()
+            .all(|marker| import_window.contains(marker))
+        && support_checks
+            .iter()
+            .all(|marker| support_window.contains(marker))
+        && selected_checks
+            .iter()
+            .all(|marker| selected_window.contains(marker))
+}
+
+fn path2_direct_leaf_and_evidence_frozen_closure_imported_v1() -> bool {
+    let lean_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
+    let frame_consistency_source =
+        include_str!("bin/path2_account_creation_frame_kat_consistency.rs");
+    let review_replay_source = include_str!("../../../scripts/check_path2_review_replay.sh");
+    let lean_checks = [
+        "structure SelectedRustDirectLeafAndEvidenceClosure",
+        "leafCanonicalLive : SelectedRustDirectLeafCanonicalLiveSupport spend",
+        "evidenceLeafBinding : SelectedRustDirectEvidenceLeafBindingSupport spend",
+        "selectedRustDirectLeafAndEvidenceClosure_of_concreteSpendAccepts",
+        "selectedRustDirectLeafCanonicalLiveSupport_of_concreteSpendAccepts hAccept",
+        "selectedRustDirectEvidenceLeafBindingSupport_of_concreteSpendAccepts hAccept",
+        "leafAndEvidenceClosed : SelectedRustDirectLeafAndEvidenceClosure spend",
+        "selectedRustDirectLeafAndEvidenceClosure_of_concreteSpendAccepts hAccept",
+    ];
+    let consistency_checks = [
+        "frozen_boundary_manifest",
+        "frozen_digest_pinned_boundary_vectors",
+        "/manifest/coverage/frozen_corpus_complete",
+        "/corpus/boundary_report/frozen_corpus_complete",
+        "every_current_row_has_generated_vector",
+        "frozen_vector_present",
+        "covered_by_unit_test",
+        "rejection_case_count",
+        "honest_frame_accepts",
+        "observed_error",
+        "public_rejection_class",
+    ];
+    let replay_checks = [
+        "account-creation frame KAT boundary manifest",
+        "path2_account_creation_frame_kat_manifest",
+        "account-creation frame KAT vectors",
+        "path2_account_creation_frame_kat_vectors",
+        "account-creation frame KAT consistency",
+        "path2_account_creation_frame_kat_consistency",
+    ];
+    lean_checks
+        .iter()
+        .all(|marker| lean_source.contains(marker))
+        && consistency_checks
+            .iter()
+            .all(|marker| frame_consistency_source.contains(marker))
+        && replay_checks
+            .iter()
+            .all(|marker| review_replay_source.contains(marker))
+        && PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS
+            .iter()
+            .all(|row| row.covered_by_unit_test && row.frozen_vector_present)
+}
+
+fn path2_direct_admission_namespace_membership_imported_v1() -> bool {
+    let full_spend_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
+    path2_direct_admission_namespace_membership_imported_in_source_v1(full_spend_source)
+}
+
+fn path2_direct_admission_namespace_membership_imported_in_source_v1(
+    full_spend_source: &str,
+) -> bool {
+    let Some(admitted_start) = full_spend_source.find("\ndef AdmittedConcretePrechallengeLeaf")
+    else {
+        return false;
+    };
+    let Some(admitted_end) =
+        full_spend_source[admitted_start..].find("\n/-- Concrete consume-once successor package.")
+    else {
+        return false;
+    };
+    let admitted_window = &full_spend_source[admitted_start..admitted_start + admitted_end];
+
+    let Some(accept_start) = full_spend_source.find("\ndef ConcreteSpendVerificationAccepts")
+    else {
+        return false;
+    };
+    let Some(accept_end) = full_spend_source[accept_start..]
+        .find("\n/--\nClosed direct-theorem checked-core frame-binding slice.")
+    else {
+        return false;
+    };
+    let accept_window = &full_spend_source[accept_start..accept_start + accept_end];
+
+    let Some(import_start) = full_spend_source
+        .find("\ntheorem directAdmissionNamespaceMembership_imported_of_concreteSpendAccepts")
+    else {
+        return false;
+    };
+    let Some(import_end) = full_spend_source[import_start..]
+        .find("\n/--\nSelected-Rust direct-admission namespace membership support")
+    else {
+        return false;
+    };
+    let import_window = &full_spend_source[import_start..import_start + import_end];
+
+    let Some(support_start) =
+        full_spend_source.find("\ndef SelectedRustDirectAdmissionNamespaceMembershipSupport")
+    else {
+        return false;
+    };
+    let Some(support_end) = full_spend_source[support_start..].find(
+        "\ntheorem selectedRustDirectAdmissionNamespaceMembershipSupport_of_concreteSpendAccepts",
+    ) else {
+        return false;
+    };
+    let support_window = &full_spend_source[support_start..support_start + support_end];
+
+    let Some(selected_start) = full_spend_source.find(
+        "\ntheorem selectedRustDirectAdmissionNamespaceMembershipSupport_of_concreteSpendAccepts",
+    ) else {
+        return false;
+    };
+    let Some(selected_end) =
+        full_spend_source[selected_start..].find("\n/--\nSelected-Rust direct QROM/action")
+    else {
+        return false;
+    };
+    let selected_window = &full_spend_source[selected_start..selected_start + selected_end];
+
+    let admitted_checks = [
+        "DirectAdmissionContains spend.admissionRecord spend.accountId",
+        "spend.accountStateRootBefore spend.slotAuthorizationDigest spend.leaf",
+        "CreationCertificateAcceptedBeforeChallenge",
+        "LeafFixedBeforeChallenge",
+    ];
+    let accept_checks = [
+        "BoundConcretePrevalidatedSlot C spend",
+        "AdmittedConcretePrechallengeLeaf C spend",
+        "CheckedCoreChallengeBindsAcceptedTuple C spend",
+        "ConcreteConsumeOnceAcceptedTransition C spend",
+    ];
+    let import_checks = [
+        "directAdmissionNamespaceMembership_imported_of_concreteSpendAccepts",
+        "ConcreteSpendVerificationAccepts C spend",
+        "DirectAdmissionContains spend.admissionRecord spend.accountId",
+        "hAccept.2.1.1",
+    ];
+    let support_checks = [
+        "SelectedRustDirectAdmissionNamespaceMembershipSupport",
+        "DirectAdmissionContains spend.admissionRecord spend.accountId",
+        "spend.accountStateRootBefore spend.slotAuthorizationDigest spend.leaf",
+    ];
+    let selected_checks = [
+        "selectedRustDirectAdmissionNamespaceMembershipSupport_of_concreteSpendAccepts",
+        "ConcreteSpendVerificationAccepts selectedRustConcreteGameConfig spend",
+        "directAdmissionNamespaceMembership_imported_of_concreteSpendAccepts hAccept",
+    ];
+
+    admitted_checks
+        .iter()
+        .all(|marker| admitted_window.contains(marker))
+        && accept_checks
+            .iter()
+            .all(|marker| accept_window.contains(marker))
+        && import_checks
+            .iter()
+            .all(|marker| import_window.contains(marker))
+        && support_checks
+            .iter()
+            .all(|marker| support_window.contains(marker))
+        && selected_checks
+            .iter()
+            .all(|marker| selected_window.contains(marker))
+}
+
+fn path2_direct_admission_namespace_and_data_availability_imported_v1() -> bool {
+    let lean_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
+    let rust_source = include_str!("production_reference.rs");
+    let lean_checks = [
+        "structure SelectedRustDirectAdmissionNamespaceAndDataAvailabilityClosure",
+        "SelectedRustDirectAdmissionNamespaceMembershipSupport spend",
+        "ReplayableCertificateDataAvailable selectedRustConcreteGameConfig spend",
+        "selectedRustDirectAdmissionNamespaceAndDataAvailabilityClosure_of_concreteSpendAccepts",
+        "selectedRustDirectAdmissionNamespaceMembershipSupport_of_concreteSpendAccepts hAccept",
+        "hAccept.1.2.2.2",
+        "admissionNamespaceAndDataAvailabilityClosed :",
+        "selectedRustDirectAdmissionNamespaceAndDataAvailabilityClosure_of_concreteSpendAccepts",
+    ];
+    let rust_checks = [
+        "Path2SovereignDirectAdmissionRecordV1",
+        "Path2SovereignDirectAdmissionStateV1",
+        "Path2VerifiedSovereignCreationAdmissionV1",
+        "Path2DirectAdmissionNamespaceKeyV1",
+        "PATH2_SOVEREIGN_DIRECT_ADMISSION_STORAGE_CLASS_V1",
+        "verify_path2_direct_creation_account_stark_admission_candidate_v1",
+        "verify_and_admit_path2_direct_creation_account_stark_block_v1",
+        "pub fn admit_verified_creation_block(",
+        "candidate_head <= self.finalized_head",
+        "let mut next_state = self.clone()",
+        "next_state.head = candidate_head",
+        "*self = next_state",
+        "pub fn require_available_record(",
+        "record.canonical_leaf_bytes != canonical_leaf_bytes",
+        "record.evidence_transcript_digest != evidence_transcript_digest",
+        "record.pad_seed_nullifier",
+        "pub fn reorg_to(&mut self, new_head: u64)",
+        "new_head < self.finalized_head",
+        "verify_path2_direct_single_slot_spend_authorization_from_sovereign_state_v1",
+        "admission_state.require_available_record",
+        "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_from_sovereign_state_v1",
+        "admission_state.admit_verified_creation_block(",
+        "path2_sovereign_direct_admission_state_binds_available_record_and_spend",
+        "path2_sovereign_direct_admission_state_rejects_missing_mismatched_and_corrupt_records",
+        "path2_sovereign_direct_admission_state_reorg_respects_d2_finality",
+        "path2_sovereign_direct_admission_rejects_finalized_head_mutation",
+    ];
+    lean_checks
+        .iter()
+        .all(|marker| lean_source.contains(marker))
+        && rust_checks
+            .iter()
+            .all(|marker| rust_source.contains(marker))
+}
+
+fn path2_direct_verified_nullifier_registry_imported_v1() -> bool {
+    let lean_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
+    let rust_source = include_str!("production_reference.rs");
+    let account_verifier_source = include_str!("../../descender-account-verifier/src/lib.rs");
+    let fast_test_source = include_str!("../../../scripts/check_active_rust_fast_tests.sh");
+    let Some(state_start) = rust_source.find("\nimpl Path2SovereignDirectAdmissionStateV1") else {
+        return false;
+    };
+    let Some(state_end) = rust_source[state_start..]
+        .find("\n#[cfg(test)]\nfn path2_test_verified_sovereign_creation_admission_v1")
+    else {
+        return false;
+    };
+    let state_window = &rust_source[state_start..state_start + state_end];
+    let Some(endpoint_start) =
+        rust_source.find("\npub fn verify_and_admit_path2_direct_creation_account_stark_block_v1(")
+    else {
+        return false;
+    };
+    let Some(endpoint_end) = rust_source[endpoint_start..]
+        .find("\n/// FAIL-CLOSED production gate for the account-creation STARK path")
+    else {
+        return false;
+    };
+    let endpoint_window = &rust_source[endpoint_start..endpoint_start + endpoint_end];
+    let public_single_state_api = ["pub fn admit_verified_", "creation("].concat();
+    let public_single_verify_and_admit_api = [
+        "pub fn verify_and_admit_path2_direct_creation_",
+        "account_stark_v1(",
+    ]
+    .concat();
+    let lean_checks = [
+        "structure SelectedRustSovereignVerifiedNullifierRegistryContract",
+        "verifiedNullifierDeterministic",
+        "selectedRustSovereignPadSeedReorgSafeUniqueness_of_verifiedNullifierRegistry_v1",
+        "padSeed_globally_injective_of_registry",
+        "D2FinalizedHeadPadSeedReorgSupport",
+    ];
+    let verifier_checks = [
+        "pub fn creation_nullifier_v1_bytes(",
+        "pub struct VerifiedCreationPublicAnchors",
+        "pub fn verify_and_decode_deployed_account_creation(",
+        "pad_seed_nullifier",
+        "x >= Val::ORDER_U32",
+        "public_wire_field_elements_must_be_canonical",
+        "creation_nullifier_bytes_are_canonical_and_version_independent",
+    ];
+    let rust_definition_checks = [
+        "\npub type Path2AccountStarkNullifierV1 = [u8; DIGEST_BYTES]",
+        "\npub struct Path2VerifiedSovereignCreationAdmissionV1",
+        "\npub struct Path2SovereignDirectAdmissionRestoreAnchorV1",
+        "\npub fn verify_path2_direct_creation_account_stark_admission_candidate_v1(",
+    ];
+    let endpoint_checks = [
+        "pub fn verify_and_admit_path2_direct_creation_account_stark_block_v1(",
+        "candidate_head: u64",
+        "if inputs.is_empty()",
+        "collect::<Result<Vec<_>, _>>()?",
+        "admission_state.admit_verified_creation_block(candidate_head, &candidates)",
+    ];
+    let state_checks = [
+        "pub fn admit_verified_creation_block(",
+        "candidate_head <= self.finalized_head",
+        "candidate_head <= self.head",
+        "let mut next_state = self.clone()",
+        "next_state.head = candidate_head",
+        "*self = next_state",
+        "candidate.pad_seed_nullifier()",
+        "self.nullifier_registry.contains_key(&nullifier)",
+        "self.nullifier_registry.clear()",
+        "pub fn snapshot(&self) -> Path2SovereignDirectAdmissionSnapshotV1",
+        "pub fn restore_anchor(&self)",
+        "pub fn restore(",
+        "Path 2 sovereign admission restore anchor mismatch",
+    ];
+    let rust_test_names = [
+        "path2_sovereign_direct_admission_block_is_atomic_and_nullifier_global",
+        "path2_sovereign_direct_admission_snapshot_roundtrips_nullifier_registry",
+        "path2_sovereign_direct_admission_rejects_finalized_head_mutation",
+        "path2_account_stark_creation_roundtrip_and_binds",
+    ];
+    lean_checks
+        .iter()
+        .all(|marker| lean_source.contains(marker))
+        && verifier_checks
+            .iter()
+            .all(|marker| account_verifier_source.contains(marker))
+        && rust_definition_checks
+            .iter()
+            .all(|marker| rust_source.contains(marker))
+        && endpoint_checks
+            .iter()
+            .all(|marker| endpoint_window.contains(marker))
+        && state_checks
+            .iter()
+            .all(|marker| state_window.contains(marker))
+        && rust_test_names.iter().all(|test_name| {
+            rust_source.contains(&format!("\n    fn {test_name}()"))
+        })
+        && !state_window.contains("leaf.pad_seed_digest")
+        && !rust_source.contains(&public_single_state_api)
+        && !rust_source.contains(&public_single_verify_and_admit_api)
+        && fast_test_source.contains(
+            "cargo test --manifest-path tools/parameter-search/Cargo.toml --lib path2_sovereign_direct_admission_",
+        )
+        && fast_test_source.contains("public_wire_field_elements_must_be_canonical")
+        && fast_test_source.contains(
+            "creation_nullifier_bytes_are_canonical_and_version_independent",
+        )
+        && fast_test_source.contains("path2_account_stark_creation_roundtrip_and_binds")
+}
+
+fn path2_direct_production_checked_core_acceptance_semantics_bound_v1() -> bool {
+    let rust_source = include_str!("production_reference.rs");
+    let lean_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
+
+    let Some(verifier_start) =
+        rust_source.find("\npub fn verify_path2_checked_core_authorization(")
+    else {
+        return false;
+    };
+    let Some(verifier_end) = rust_source[verifier_start..]
+        .find("\npub fn verify_path2_direct_single_slot_spend_authorization(")
+    else {
+        return false;
+    };
+    let verifier_window = &rust_source[verifier_start..verifier_start + verifier_end];
+
+    let direct_start = verifier_start + verifier_end;
+    let Some(direct_end) =
+        rust_source[direct_start..].find("\npub fn path2_direct_public_result_with_rollback_v1")
+    else {
+        return false;
+    };
+    let direct_window = &rust_source[direct_start..direct_start + direct_end];
+
+    let Some(lean_start) =
+        lean_source.find("\nstructure ConcreteCheckedCoreAuthorizationAcceptance")
+    else {
+        return false;
+    };
+    let Some(lean_end) = lean_source[lean_start..]
+        .find("\n/--\nChecked-core binding of message, state, native boundary")
+    else {
+        return false;
+    };
+    let lean_window = &lean_source[lean_start..lean_start + lean_end];
+
+    let verifier_checks = [
+        "decode_reviewed_fq12_account_carried_signature(signature.as_bytes())",
+        "validate_reviewed_fq12_state_assisted_account_commitment(slot.commitment())",
+        "unpack_reviewed_fq12_account_carried_syndrome_digest(&parts.proof.proof_commitment)",
+        "parts.proof.proof_commitment != slot.commitment().randomizer_commitment()",
+        "require_path2_checked_core_authorization_challenge_binding(",
+        "reviewed_fq12_account_carried_response_syndrome(&parts.proof.masked_quotient_response)",
+        "reviewed_fq12_state_assisted_expected_response_syndrome(",
+        "if actual != expected",
+        "verify_public_local_fiber_consistency(public_key, &parts.challenge, &parts.responses)",
+        "verify_public_pad_opening_consistency(",
+    ];
+    let direct_checks = [
+        "let parts = verify_path2_checked_core_authorization(",
+        "if u64::from(parts.slot_id) != leaf.slot_id",
+        "verify_path2_prevalidated_slot_consume_once(",
+    ];
+    let lean_checks = [
+        "proofByteLengthEq",
+        "proofBytesCanonical",
+        "decodedProofCommitmentEq",
+        "accountRandomizerCommitmentEq",
+        "authorizationChallengeEq",
+        "responseSyndromeEq",
+        "publicLocalFiberConsistent",
+        "publicPadOpeningConsistent",
+        "def ConcreteCheckedCoreAuthorizationValid",
+        "theorem concreteCheckedCoreAuthorizationAcceptance_valid",
+    ];
+
+    verifier_checks
+        .iter()
+        .all(|marker| verifier_window.contains(marker))
+        && direct_checks
+            .iter()
+            .all(|marker| direct_window.contains(marker))
+        && lean_checks
+            .iter()
+            .all(|marker| lean_window.contains(marker))
+}
+
+fn path2_direct_checked_core_valid_or_named_break_instantiated_v1() -> bool {
+    let lean_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
+    let Some(start) = lean_source
+        .find("\ntheorem selectedRustProductionCheckedCoreAccepted_valid_or_named_break_v1")
+    else {
+        return false;
+    };
+    let Some(end) =
+        lean_source[start..].find("\n/-- Accepted direct spends carry independently stated")
+    else {
+        return false;
+    };
+    let theorem_window = &lean_source[start..start + end];
+    let required = [
+        "ConcreteSpendVerificationAccepts selectedRustConcreteGameConfig spend",
+        "ConcreteCheckedCoreValidOrNamedBreak spend",
+        "concreteCheckedCoreAuthorizationAccepted_valid_or_named_break_v1",
+        "checkedCoreAuthorizationAcceptance_imported_of_concreteSpendAccepts hAccept",
+    ];
+    required
+        .iter()
+        .all(|marker| theorem_window.contains(marker))
+        && !theorem_window.contains("Path2NativeCheckedCoreAcceptV1Soundness")
+        && lean_source.contains(
+            "ConcreteCheckedCoreAuthorizationAcceptance spend ∧\n          ConcreteConsumeOnceAcceptedTransition C spend",
+        )
+        && lean_source.contains("ConcreteCheckedCoreValidOrNamedBreak spend")
+}
+
+fn path2_direct_qrom_domain_break_coupled_to_direct_game_v1() -> bool {
+    let lean_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
+    let Some(start) =
+        lean_source.find("\ntheorem concreteCheckedCoreDomainQromBreak_couples_to_directGame_v1")
+    else {
+        return false;
+    };
+    let Some(end) =
+        lean_source[start..].find("\n/--\nClosed direct-theorem slot-authorization digest slice.")
+    else {
+        return false;
+    };
+    let theorem_window = &lean_source[start..start + end];
+    let required = [
+        "hBreak : spend.signatureBody.qromOrDomainSeparationBreak",
+        "ConcreteBreakFor C spend",
+        "Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak",
+    ];
+    required
+        .iter()
+        .all(|marker| theorem_window.contains(marker))
+        && lean_source.contains(
+            "| Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak =>\n      spend.signatureBody.qromOrDomainSeparationBreak",
+        )
+}
+
+fn path2_direct_qrom_action_theorem_linkage_imported_v1() -> bool {
+    let full_spend_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
+    path2_direct_qrom_action_theorem_linkage_imported_in_source_v1(full_spend_source)
+}
+
+fn path2_direct_composition_theorem_reduction_imported_v1() -> bool {
+    let full_spend_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
+    path2_direct_composition_theorem_reduction_imported_in_source_v1(full_spend_source)
+}
+
+fn path2_direct_composition_theorem_reduction_imported_in_source_v1(
+    full_spend_source: &str,
+) -> bool {
+    let Some(conclusion_start) =
+        full_spend_source.find("\nstructure SelectedRustDirectProductConclusionWith")
+    else {
+        return false;
+    };
+    let Some(conclusion_end) = full_spend_source[conclusion_start..]
+        .find("\n/--\nThe selected-Rust accepted spend exposes")
+    else {
+        return false;
+    };
+    let conclusion_window = &full_spend_source[conclusion_start..conclusion_start + conclusion_end];
+
+    let Some(boundary_start) = full_spend_source
+        .find("\ntheorem accountCreationProofBoundaryEvidenceAccepted_of_concreteSpendAccepts")
+    else {
+        return false;
+    };
+    let Some(boundary_end) = full_spend_source[boundary_start..]
+        .find("\n/--\nSelected-Rust direct-mode product-theorem reduction.")
+    else {
+        return false;
+    };
+    let boundary_window = &full_spend_source[boundary_start..boundary_start + boundary_end];
+
+    let Some(reduction_start) =
+        full_spend_source.find("\ntheorem selectedRustDirectModeAuthorizationTheoremReduction_v1")
+    else {
+        return false;
+    };
+    let Some(reduction_end) =
+        full_spend_source[reduction_start..].find("\n/-- Full-game predicates")
+    else {
+        return false;
+    };
+    let reduction_window = &full_spend_source[reduction_start..reduction_start + reduction_end];
+
+    let conclusion_checks = [
+        "BoundConcretePrevalidatedSlot selectedRustConcreteGameConfig spend",
+        "AdmittedConcretePrechallengeLeaf selectedRustConcreteGameConfig spend",
+        "CheckedCoreChallengeBindsAcceptedTuple selectedRustConcreteGameConfig spend",
+        "ConcreteCheckedCoreAuthorizationValid spend",
+        "ConcreteConsumeOnceAcceptedTransition selectedRustConcreteGameConfig spend",
+        "leafAndEvidenceClosed : SelectedRustDirectLeafAndEvidenceClosure spend",
+        "admissionNamespaceAndDataAvailabilityClosed :",
+        "SelectedRustDirectAdmissionNamespaceAndDataAvailabilityClosure spend",
+        "accountCreationProofFamilyReviewed : AccountCreationProofFamilyReviewed spend",
+        "qromActionReviewed : QromActionReviewed spend",
+        "deterministicPublicRejection : DeterministicPublicRejection",
+        "signerAndKeygenReviewed : SignerAndKeygenReviewed",
+        "externalCodedSisOrLatticeCoreReviewed : ExternalCodedSisOrLatticeCoreReviewed",
+    ];
+    let boundary_checks = [
+        "AccountCreationProofBoundaryEvidenceAccepted",
+        "ConcreteSpendVerificationAccepts selectedRustConcreteGameConfig spend",
+        "hAccept.1.2.1.1.2.2.2.1",
+    ];
+    let reduction_checks = [
+        "selectedRustDirectModeAuthorizationTheoremReduction_v1",
+        "hProofFamilyReview :",
+        "hQromActionReview :",
+        "hPublicRejection : DeterministicPublicRejection",
+        "hSignerAndKeygenReview : SignerAndKeygenReviewed",
+        "hExternalCoreReview : ExternalCodedSisOrLatticeCoreReviewed",
+        "accountCreationProofBoundaryEvidenceAccepted_of_concreteSpendAccepts hAccept",
+        "selectedRustDirectQromActionTheoremSupport_of_concreteSpendAccepts hAccept",
+        "boundSlot := hAccept.1",
+        "admittedPrechallenge := hAccept.2.1",
+        "checkedCoreBinds := hAccept.2.2.1",
+        "checkedCoreAuthorizationValid :=",
+        "selectedRustProductionCheckedCoreAccepted_valid_v1 hAccept",
+        "consumeOnce := hAccept.2.2.2.2",
+        "leafAndEvidenceClosed :=",
+        "selectedRustDirectLeafAndEvidenceClosure_of_concreteSpendAccepts hAccept",
+        "admissionNamespaceAndDataAvailabilityClosed :=",
+        "selectedRustDirectAdmissionNamespaceAndDataAvailabilityClosure_of_concreteSpendAccepts",
+        "hProofFamilyReview spend hProofBoundary",
+        "hQromActionReview spend hQromSupport",
+        "selectedRustDirectModeAuthorizationWithClosedPublicRejectionReduction_v1",
+        "SelectedRustDirectDeterministicPublicRejection",
+        "selectedRustDirectDeterministicPublicRejectionClosed_v1",
+        "selectedRustDirectModeAuthorizationTheoremReduction_v1",
+    ];
+
+    conclusion_checks
+        .iter()
+        .all(|marker| conclusion_window.contains(marker))
+        && boundary_checks
+            .iter()
+            .all(|marker| boundary_window.contains(marker))
+        && reduction_checks
+            .iter()
+            .all(|marker| reduction_window.contains(marker))
+}
+
+fn path2_direct_composition_explicit_assumptions_capstone_imported_v1() -> bool {
+    let full_spend_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
+    let Some(start) = full_spend_source
+        .find("\ntheorem selectedRustDirectModeAuthorizationClosedUnderExplicitAssumptions_v1")
+    else {
+        return false;
+    };
+    let Some(end) = full_spend_source[start..].find("\n/-- Full-game predicates") else {
+        return false;
+    };
+    let window = &full_spend_source[start..start + end];
+    let required = [
+        "SelectedRustAcceptedBoundaryProofFamilyReviewedUnderExplicitAssumptionsWith",
+        "selectedRustAcceptedBoundaryProofFamilyClosureReductions_v1",
+        "hPostQuantumTarget : PostQuantumSoundnessTargetMet",
+        "selectedRustSovereignPadSeedReorgSafeUniqueness_of_verifiedNullifierRegistry_v1",
+        "SelectedRustSovereignVerifiedNullifierRegistryContract",
+        "selectedRustDirectModeAuthorizationWithClosedPublicRejectionReduction_v1",
+        "hQromActionReview",
+        "hSignerAndKeygenReview",
+        "hExternalCoreReview",
+    ];
+    let forbidden = [
+        "DeployableProofFamilyAssumptions",
+        "AccountCreationProofFamilyClosureWitness",
+        "obligationsCleared",
+        "proofFamilyObligationsStillOpen",
+    ];
+    required.iter().all(|marker| window.contains(marker))
+        && forbidden.iter().all(|marker| !window.contains(marker))
+}
+
+fn path2_direct_public_rejection_state_preserving_imported_v1() -> bool {
+    let lean_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
+    let rust_source = include_str!("production_reference.rs");
+    let fast_test_source = include_str!("../../../scripts/check_active_rust_fast_tests.sh");
+    path2_direct_public_rejection_state_preserving_imported_in_source_v1(
+        lean_source,
+        rust_source,
+        fast_test_source,
+    )
+}
+
+fn path2_direct_public_rejection_state_preserving_imported_in_source_v1(
+    lean_source: &str,
+    rust_source: &str,
+    fast_test_source: &str,
+) -> bool {
+    let Some(lean_start) = lean_source.find("\ninductive SelectedRustDirectPublicResultClass")
+    else {
+        return false;
+    };
+    let Some(lean_end) =
+        lean_source[lean_start..].find("\n/--\nSelected-Rust direct product conclusion")
+    else {
+        return false;
+    };
+    let lean_window = &lean_source[lean_start..lean_start + lean_end];
+
+    let Some(helper_start) =
+        rust_source.find("\npub fn path2_direct_public_result_with_rollback_v1")
+    else {
+        return false;
+    };
+    let Some(helper_end) = rust_source[helper_start..]
+        .find("\npub fn verify_path2_direct_single_slot_spend_authorization_public_result_v1")
+    else {
+        return false;
+    };
+    let helper_window = &rust_source[helper_start..helper_start + helper_end];
+
+    let wrapper_start = helper_start + helper_end;
+    let Some(wrapper_end) = rust_source[wrapper_start..]
+        .find("\npub fn path2_direct_admission_namespace_record_digest")
+    else {
+        return false;
+    };
+    let wrapper_window = &rust_source[wrapper_start..wrapper_start + wrapper_end];
+
+    let Some(kat_registry_start) =
+        rust_source.find("\npub const PATH2_DIRECT_PUBLIC_REJECTION_CLASS_KAT_CASES_V1")
+    else {
+        return false;
+    };
+    let Some(kat_registry_end) = rust_source[kat_registry_start..]
+        .find("\npub const PATH2_ACCOUNT_STARK_PAYLOAD_PUBLIC_REJECTION_CLASSES")
+    else {
+        return false;
+    };
+    let kat_registry_window =
+        &rust_source[kat_registry_start..kat_registry_start + kat_registry_end];
+
+    let Some(target_mapping_start) =
+        rust_source.find("\npub const PATH2_SOVEREIGN_DIRECT_CLIENT_PROFILE_ID_V1")
+    else {
+        return false;
+    };
+    let Some(target_mapping_end) = rust_source[target_mapping_start..]
+        .find("\npub const PATH2_ACCOUNT_STARK_PAYLOAD_FRAME_FIXED_OVERHEAD_EXCLUDING_BUNDLE")
+    else {
+        return false;
+    };
+    let target_mapping_window =
+        &rust_source[target_mapping_start..target_mapping_start + target_mapping_end];
+
+    let Some(object_kat_test_start) = rust_source
+        .find("\n    fn path2_direct_all_consensus_visible_public_object_mutations_are_panic_free")
+    else {
+        return false;
+    };
+    let Some(object_kat_test_end) = rust_source[object_kat_test_start..].find(
+        "\n    #[test]\n    fn path2_direct_single_slot_spend_public_result_wrapper_hides_internal_diagnostics",
+    ) else {
+        return false;
+    };
+    let object_kat_test_window =
+        &rust_source[object_kat_test_start..object_kat_test_start + object_kat_test_end];
+
+    let Some(kat_test_start) = rust_source
+        .find("\n    fn path2_direct_public_rejection_classes_are_exhaustive_and_state_preserving")
+    else {
+        return false;
+    };
+    let Some(kat_test_end) = rust_source[kat_test_start..]
+        .find("\n    #[test]\n    fn path2_public_result_class_v1_names_match_consensus_spec")
+    else {
+        return false;
+    };
+    let kat_test_window = &rust_source[kat_test_start..kat_test_start + kat_test_end];
+
+    let Some(classifier_start) =
+        rust_source.find("\npub fn path2_direct_account_binding_public_result_class(")
+    else {
+        return false;
+    };
+    let Some(classifier_end) = rust_source[classifier_start..]
+        .find("\npub fn path2_account_stark_payload_byte_model_report_v1")
+    else {
+        return false;
+    };
+    let classifier_window = &rust_source[classifier_start..classifier_start + classifier_end];
+
+    let lean_checks = [
+        "SelectedRustDirectPublicWrapperOutcome",
+        "selectedRustDirectPublicWrapperModel",
+        "Option (Except Error (Nat × State))",
+        "Except.ok (slotId, stateAfter)",
+        "Except.error err",
+        "SelectedRustDirectPublicResultClass.internalErrorFailClosed stateBefore",
+        "selectedRustDirectPublicRejectionStatePreserving_v1",
+        "rejectedState = stateBefore",
+        "SelectedRustSovereignDirectClientStateEffect",
+        "selectedRustSovereignDirectClientStateEffect",
+        "selectedRustSovereignDirectClientRejectionMapsToNoMutation_v1",
+        "SelectedRustDirectDeterministicPublicRejection",
+        "selectedRustDirectDeterministicPublicRejectionClosed_v1",
+    ];
+    let helper_checks = [
+        "let consumed_before = consumed_authorizations.clone();",
+        "std::panic::catch_unwind",
+        "path2_direct_account_binding_public_result_class(&err)",
+        "Path2PublicResultClassV1::InternalErrorFailClosed",
+        "path2_sovereign_direct_client_result_with_rollback_v1",
+    ];
+    let wrapper_checks = [
+        "path2_direct_public_result_with_rollback_v1(consumed_authorizations",
+        "verify_path2_direct_single_slot_spend_authorization(",
+        ".map(|parts| parts.slot_id)",
+        "verify_path2_direct_single_slot_spend_authorization_sovereign_client_v1",
+    ];
+    let kat_registry_checks = [
+        "[Path2DirectPublicRejectionKatCaseV1;",
+        "9] = [",
+        "Path2PublicResultClassV1::RejectMalformedPublicInput",
+        "Path2PublicResultClassV1::RejectUnsupportedVersion",
+        "Path2PublicResultClassV1::RejectBindingMismatch",
+        "Path2PublicResultClassV1::RejectCreationEvidence",
+        "Path2PublicResultClassV1::RejectCheckedCore",
+        "Path2PublicResultClassV1::RejectLifecycleState",
+        "Path2PublicResultClassV1::RejectPolicy",
+        "Path2PublicResultClassV1::RejectResourceLimit",
+        "Path2PublicResultClassV1::InternalErrorFailClosed",
+        "Path2DirectConsensusVisiblePublicObjectV1",
+        "PATH2_DIRECT_CONSENSUS_VISIBLE_PUBLIC_OBJECTS_V1",
+        "PATH2_DIRECT_PUBLIC_OBJECT_MUTATION_KAT_CASES_V1",
+        "Path2DirectConsensusVisiblePublicObjectV1::PrevalidatedSlotLeaf",
+        "Path2DirectConsensusVisiblePublicObjectV1::AccountCreationEvidence",
+        "Path2DirectConsensusVisiblePublicObjectV1::ReplayableRelationCertificate",
+        "Path2DirectConsensusVisiblePublicObjectV1::PublicKey",
+        "Path2DirectConsensusVisiblePublicObjectV1::Message",
+        "Path2DirectConsensusVisiblePublicObjectV1::AccountState",
+        "Path2DirectConsensusVisiblePublicObjectV1::Signature",
+        "Path2DirectConsensusVisiblePublicObjectV1::AdmittedStateAuthorizations",
+        "Path2DirectConsensusVisiblePublicObjectV1::ConsumedAuthorizations",
+    ];
+    let target_mapping_checks = [
+        "Descender.SovereignRollup.DirectModeA.D2.v1",
+        "decisions/ADR-0009-native-sovereign-pq-rollup-settlement.md",
+        "decisions/ADR-0010-registry-lifecycle-consensus-wiring-and-finality.md",
+        "Path2SovereignConsensusStateEffectV1",
+        "PATH2_SOVEREIGN_DIRECT_CLIENT_MAPPING_ROWS_V1",
+        "[Path2SovereignDirectClientMappingRowV1;",
+        "11] = [",
+        "Path2PublicResultClassV1::AcceptAdmitSlot",
+        "Path2PublicResultClassV1::AcceptSpendSlot",
+        "Path2PublicResultClassV1::RejectMalformedPublicInput",
+        "Path2PublicResultClassV1::RejectUnsupportedVersion",
+        "Path2PublicResultClassV1::RejectBindingMismatch",
+        "Path2PublicResultClassV1::RejectCreationEvidence",
+        "Path2PublicResultClassV1::RejectCheckedCore",
+        "Path2PublicResultClassV1::RejectLifecycleState",
+        "Path2PublicResultClassV1::RejectPolicy",
+        "Path2PublicResultClassV1::RejectResourceLimit",
+        "Path2PublicResultClassV1::InternalErrorFailClosed",
+        "Path2SovereignConsensusStateEffectV1::NoMutation",
+        "path2_sovereign_direct_client_result_v1",
+    ];
+    let object_kat_test_checks = [
+        "path2_direct_all_consensus_visible_public_object_mutations_are_panic_free",
+        "PATH2_DIRECT_PUBLIC_OBJECT_MUTATION_KAT_CASES_V1.len(), 9",
+        "assert_eq!(registry_objects, expected_objects)",
+        "verify_path2_direct_single_slot_spend_authorization_sovereign_client_v1(",
+        "Path2DirectSpendPublicResultV1::rejected(case.expected_class)",
+        "Path2SovereignConsensusStateEffectV1::NoMutation",
+        "consumed_authorizations, state_before",
+        "path2_sovereign_direct_client_mapping_is_exhaustive_and_state_preserving",
+        "PATH2_SOVEREIGN_DIRECT_CLIENT_MAPPING_ROWS_V1.len(), 11",
+        "assert_eq!(mapped_classes, expected_classes)",
+        "path2_sovereign_direct_client_result_with_rollback_v1(",
+        "panic_consumed, panic_state_before",
+    ];
+    let kat_test_checks = [
+        "path2_direct_public_rejection_classes_are_exhaustive_and_state_preserving",
+        "Path2PublicResultClassV1::all()",
+        "PATH2_DIRECT_PUBLIC_REJECTION_CLASS_KAT_CASES_V1.len(), 9",
+        "assert_eq!(kat_rejection_classes, expected_rejection_classes)",
+        "path2_direct_public_result_with_rollback_v1(",
+        "case.internal_reason",
+        "consumed, state_before",
+        "panic!(\"injected direct verifier panic\")",
+        "panic_consumed, panic_state_before",
+        "Path2DirectSpendPublicResultV1::accepted_spend(7)",
+    ];
+    let classifier_checks = [
+        "Path2PublicResultClassV1::RejectResourceLimit",
+        "Path2PublicResultClassV1::RejectUnsupportedVersion",
+        "Path2PublicResultClassV1::RejectMalformedPublicInput",
+        "Path2PublicResultClassV1::RejectCreationEvidence",
+        "Path2PublicResultClassV1::RejectLifecycleState",
+        "Path2PublicResultClassV1::RejectBindingMismatch",
+        "Path2PublicResultClassV1::RejectCheckedCore",
+        "Path2PublicResultClassV1::RejectPolicy",
+        "Path2PublicResultClassV1::InternalErrorFailClosed",
+    ];
+
+    lean_checks
+        .iter()
+        .all(|marker| lean_window.contains(marker))
+        && helper_checks
+            .iter()
+            .all(|marker| helper_window.contains(marker))
+        && helper_window
+            .matches("*consumed_authorizations = consumed_before;")
+            .count()
+            == 2
+        && wrapper_checks
+            .iter()
+            .all(|marker| wrapper_window.contains(marker))
+        && kat_registry_checks
+            .iter()
+            .all(|marker| kat_registry_window.contains(marker))
+        && target_mapping_checks
+            .iter()
+            .all(|marker| target_mapping_window.contains(marker))
+        && object_kat_test_checks
+            .iter()
+            .all(|marker| object_kat_test_window.contains(marker))
+        && kat_test_checks
+            .iter()
+            .all(|marker| kat_test_window.contains(marker))
+        && classifier_checks
+            .iter()
+            .all(|marker| classifier_window.contains(marker))
+        && fast_test_source.contains(
+            "cargo test --manifest-path tools/parameter-search/Cargo.toml --lib path2_direct_public_rejection_classes_are_exhaustive_and_state_preserving",
+        )
+        && fast_test_source.contains(
+            "cargo test --manifest-path tools/parameter-search/Cargo.toml --lib path2_direct_all_consensus_visible_public_object_mutations_are_panic_free",
+        )
+        && fast_test_source.contains(
+            "cargo test --manifest-path tools/parameter-search/Cargo.toml --lib path2_sovereign_direct_client_mapping_is_exhaustive_and_state_preserving",
+        )
+        && PATH2_PUBLIC_RESULT_CLASSES_V1.len() == 11
+        && PATH2_DIRECT_CONSENSUS_VISIBLE_PUBLIC_OBJECTS_V1.len() == 9
+        && PATH2_DIRECT_PUBLIC_OBJECT_MUTATION_KAT_CASES_V1.len() == 9
+        && PATH2_SOVEREIGN_DIRECT_CLIENT_MAPPING_ROWS_V1.len() == 11
+}
+
+fn path2_direct_qrom_action_theorem_linkage_imported_in_source_v1(full_spend_source: &str) -> bool {
+    let Some(import_start) = full_spend_source.find("import Descender.Path2HashBudget") else {
+        return false;
+    };
+    let import_window = &full_spend_source[import_start..];
+
+    let Some(support_start) =
+        full_spend_source.find("\ndef SelectedRustDirectQromActionTheoremSupport")
+    else {
+        return false;
+    };
+    let Some(support_end) =
+        full_spend_source[support_start..].find("\n/--\nConcrete selected-Rust acceptance imports")
+    else {
+        return false;
+    };
+    let support_window = &full_spend_source[support_start..support_start + support_end];
+
+    let Some(support_theorem_start) = full_spend_source
+        .find("\ntheorem selectedRustDirectQromActionTheoremSupport_of_concreteSpendAccepts")
+    else {
+        return false;
+    };
+    let Some(support_theorem_end) = full_spend_source[support_theorem_start..]
+        .find("\n/--\nDirect QROM/action theorem linkage reduced")
+    else {
+        return false;
+    };
+    let support_theorem_window =
+        &full_spend_source[support_theorem_start..support_theorem_start + support_theorem_end];
+
+    let Some(linkage_start) =
+        full_spend_source.find("\ndef SelectedRustDirectQromActionTheoremLinkageWith")
+    else {
+        return false;
+    };
+    let Some(linkage_end) = full_spend_source[linkage_start..]
+        .find("\n/--\nSelected Rust direct QROM/action linkage reduction hook.")
+    else {
+        return false;
+    };
+    let linkage_window = &full_spend_source[linkage_start..linkage_start + linkage_end];
+
+    let Some(reduction_start) =
+        full_spend_source.find("\ntheorem selectedRustDirectQromActionTheoremLinkageReduction_v1")
+    else {
+        return false;
+    };
+    let Some(reduction_end) =
+        full_spend_source[reduction_start..].find("\n/-- Full-game predicates")
+    else {
+        return false;
+    };
+    let reduction_window = &full_spend_source[reduction_start..reduction_start + reduction_end];
+
+    let import_checks = ["import Descender.Path2HashBudget"];
+    let support_checks = [
+        "Path2HashBudget.DirectQromActionBudgetBridge",
+        "Path2HashBudget.path2DirectQueryBudgetV1",
+        "CheckedCoreChallengeBindsAcceptedTuple C spend",
+        "ConcreteCheckedCoreValidOrNamedBreak spend",
+    ];
+    let support_theorem_checks = [
+        "selectedRustDirectQromActionTheoremSupport_of_concreteSpendAccepts",
+        "ConcreteSpendVerificationAccepts selectedRustConcreteGameConfig spend",
+        "Path2HashBudget.selectedRustDirectQromActionBudgetBridge_v1",
+        "hAccept.2.2.1",
+        "selectedRustProductionCheckedCoreAccepted_valid_or_named_break_v1 hAccept",
+    ];
+    let linkage_checks = [
+        "QromActionReviewed : ConcreteSpendTuple -> Prop",
+        "SelectedRustDirectQromActionTheoremSupport",
+        "QromActionReviewed spend",
+    ];
+    let reduction_checks = [
+        "selectedRustDirectQromActionTheoremLinkageReduction_v1",
+        "hReview :",
+        "SelectedRustDirectQromActionTheoremSupport",
+        "ConcreteSpendVerificationAccepts selectedRustConcreteGameConfig spend",
+        "selectedRustDirectQromActionTheoremSupport_of_concreteSpendAccepts",
+        "hReview spend hSupport",
+    ];
+
+    import_checks
+        .iter()
+        .all(|marker| import_window.contains(marker))
+        && support_checks
+            .iter()
+            .all(|marker| support_window.contains(marker))
+        && support_theorem_checks
+            .iter()
+            .all(|marker| support_theorem_window.contains(marker))
+        && linkage_checks
+            .iter()
+            .all(|marker| linkage_window.contains(marker))
+        && reduction_checks
+            .iter()
+            .all(|marker| reduction_window.contains(marker))
+}
+
 fn path2_direct_theorem_closed_checked_core_frame_dependency_imported_v1(
     row: &Path2DirectTheoremClosureDependencyRowV1,
     direct_report: &Path2DirectTheoremBoundaryReportV1,
@@ -14612,6 +17066,36 @@ fn path2_direct_theorem_closed_checked_core_frame_dependency_imported_v1(
         && !direct_report.deployment_ready
 }
 
+fn path2_direct_theorem_closed_leaf_canonical_live_dependency_imported_v1(
+    row: &Path2DirectTheoremClosureDependencyRowV1,
+    direct_report: &Path2DirectTheoremBoundaryReportV1,
+) -> bool {
+    row.dependency_id == "direct_dependency_leaf_canonical_live"
+        && !row.open
+        && row.source_flag_group
+            == "direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle=true"
+        && direct_report.direct_leaf_canonical_live_imported
+        && direct_report.direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle
+        && direct_report.lifecycle_transition_profile_verified
+        && direct_report.composition_theorem_reduction_imported
+        && !direct_report.composition_theorem_instantiated
+        && !direct_report.deployment_ready
+}
+
+fn path2_direct_theorem_closed_evidence_leaf_binding_dependency_imported_v1(
+    row: &Path2DirectTheoremClosureDependencyRowV1,
+    direct_report: &Path2DirectTheoremBoundaryReportV1,
+) -> bool {
+    row.dependency_id == "direct_dependency_evidence_leaf_bindings"
+        && !row.open
+        && row.source_flag_group == "direct_evidence_leaf_binding_closed_by_frozen_kat=true"
+        && direct_report.direct_evidence_leaf_binding_imported
+        && direct_report.direct_evidence_leaf_binding_closed_by_frozen_kat
+        && direct_report.composition_theorem_reduction_imported
+        && !direct_report.composition_theorem_instantiated
+        && !direct_report.deployment_ready
+}
+
 fn path2_direct_theorem_closed_slot_authorization_dependency_imported_v1(
     row: &Path2DirectTheoremClosureDependencyRowV1,
     direct_report: &Path2DirectTheoremBoundaryReportV1,
@@ -14620,6 +17104,25 @@ fn path2_direct_theorem_closed_slot_authorization_dependency_imported_v1(
         && !row.open
         && row.source_flag_group == "slot_authorization_digest_imported=true"
         && direct_report.slot_authorization_digest_imported
+        && !direct_report.composition_theorem_instantiated
+        && !direct_report.deployment_ready
+}
+
+fn path2_direct_theorem_closed_public_rejection_dependency_imported_v1(
+    row: &Path2DirectTheoremClosureDependencyRowV1,
+    direct_report: &Path2DirectTheoremBoundaryReportV1,
+) -> bool {
+    row.dependency_id == "direct_dependency_public_rejection"
+        && !row.open
+        && row.source_flag_group
+            == "direct_public_rejection_all_public_objects_kat_covered/direct_public_rejection_target_client_mapping_complete"
+        && direct_report.direct_public_rejection_state_preserving_imported
+        && direct_report.direct_public_rejection_classifier_total
+        && direct_report.direct_public_rejection_all_classes_kat_covered
+        && direct_report.direct_public_rejection_panic_fail_closed_kat_covered
+        && direct_report.direct_public_rejection_all_public_objects_kat_covered
+        && direct_report.direct_public_rejection_target_client_mapping_complete
+        && direct_report.composition_theorem_reduction_imported
         && !direct_report.composition_theorem_instantiated
         && !direct_report.deployment_ready
 }
@@ -14662,7 +17165,10 @@ fn path2_direct_theorem_closure_dependency_evidence_rows_v1(
 pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryReportV1 {
     let direct_qrom_action_boundary_report = path2_direct_qrom_action_boundary_report_v1();
     let direct_lifecycle_boundary_report = path2_direct_lifecycle_boundary_report_v1();
+    let direct_admission_boundary_report = path2_direct_admission_boundary_report_v1();
     let account_creation_proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
+    let account_creation_frame_kat_boundary_report =
+        path2_account_creation_frame_kat_boundary_report_v1();
     let obligation_rows = &PATH2_DIRECT_THEOREM_OBLIGATION_ROWS;
     let closure_dependency_rows = &PATH2_DIRECT_THEOREM_CLOSURE_DEPENDENCY_ROWS;
     let lifecycle_transition_profile_verified = direct_lifecycle_boundary_report
@@ -14673,19 +17179,71 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
         && !direct_lifecycle_boundary_report.deployment_ready;
     let checked_core_frame_binding_imported = path2_direct_checked_core_frame_binding_imported_v1();
     let slot_authorization_digest_imported = path2_direct_slot_authorization_digest_imported_v1();
+    let direct_leaf_canonical_live_imported = path2_direct_leaf_canonical_live_imported_v1();
+    let direct_evidence_leaf_binding_imported = path2_direct_evidence_leaf_binding_imported_v1();
+    let leaf_and_evidence_frozen_closure_imported =
+        path2_direct_leaf_and_evidence_frozen_closure_imported_v1();
+    let frame_kat_frozen_and_bound = account_creation_frame_kat_boundary_report
+        .frozen_corpus_complete
+        && account_creation_frame_kat_boundary_report.current_boundary_mapping_complete
+        && account_creation_frame_kat_boundary_report.every_row_has_public_rejection_class
+        && account_creation_frame_kat_boundary_report.unit_test_coverage_present
+        && account_creation_proof_boundary_report.frame_kat_boundary_report_digest
+            == account_creation_frame_kat_boundary_report.digest
+        && !account_creation_frame_kat_boundary_report.deployment_ready;
+    let direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle =
+        direct_leaf_canonical_live_imported
+            && leaf_and_evidence_frozen_closure_imported
+            && frame_kat_frozen_and_bound
+            && lifecycle_transition_profile_verified;
+    let direct_evidence_leaf_binding_closed_by_frozen_kat = direct_evidence_leaf_binding_imported
+        && leaf_and_evidence_frozen_closure_imported
+        && frame_kat_frozen_and_bound
+        && account_creation_proof_boundary_report.accepted_boundary_binding_evidence_present
+        && account_creation_proof_boundary_report.leaf_evidence_binding_fields
+            == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_LEAF_EVIDENCE_BINDING_FIELDS.as_ref();
+    let direct_admission_namespace_membership_imported =
+        path2_direct_admission_namespace_membership_imported_v1();
+    let direct_admission_namespace_and_data_availability_imported =
+        path2_direct_admission_namespace_and_data_availability_imported_v1();
+    let direct_admission_namespace_closed_by_sovereign_state =
+        direct_admission_namespace_membership_imported
+            && direct_admission_namespace_and_data_availability_imported
+            && direct_admission_boundary_report.target_chain_data_availability_instantiated
+            && direct_admission_boundary_report.admission_closure_lean_imported
+            && direct_admission_boundary_report.exact_namespace_tuple_key_pinned
+            && direct_admission_boundary_report.canonical_leaf_bytes_stored_directly
+            && direct_admission_boundary_report.spend_reads_canonical_consensus_record
+            && direct_admission_boundary_report.d2_finalized_head_reorg_semantics
+            && lifecycle_transition_profile_verified
+            && !direct_admission_boundary_report.deployment_ready;
+    let qrom_action_theorem_linkage_imported =
+        path2_direct_qrom_action_theorem_linkage_imported_v1();
+    let composition_theorem_reduction_imported =
+        path2_direct_composition_theorem_reduction_imported_v1();
+    let composition_capstone_under_explicit_named_assumptions_imported =
+        path2_direct_composition_explicit_assumptions_capstone_imported_v1()
+            && direct_admission_boundary_report.verified_creation_nullifier_anchor_bound
+            && direct_admission_boundary_report.sovereign_nullifier_registry_consensus_wired
+            && direct_admission_boundary_report.sovereign_nullifier_block_atomic
+            && direct_admission_boundary_report.sovereign_nullifier_d2_reorg_index_rebuild_verified
+            && direct_admission_boundary_report
+                .pad_seed_reorg_safe_uniqueness_selected_state_reduction_imported;
+    let direct_public_rejection_state_preserving_imported =
+        path2_direct_public_rejection_state_preserving_imported_v1();
     let mut report = Path2DirectTheoremBoundaryReportV1 {
         digest: [0_u8; DIGEST_BYTES],
         domain: PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN,
         direct_qrom_action_boundary_report_digest: direct_qrom_action_boundary_report.digest,
         direct_lifecycle_boundary_report_digest: direct_lifecycle_boundary_report.digest,
+        direct_admission_boundary_report_digest: direct_admission_boundary_report.digest,
         account_creation_proof_boundary_report_digest: account_creation_proof_boundary_report
             .digest,
         theorem_target: PATH2_DIRECT_THEOREM_TARGET,
         theorem_conclusion: PATH2_DIRECT_THEOREM_CONCLUSION,
         accepted_tuple_fields: &PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS,
         accepted_tuple_evidence_schema: PATH2_DIRECT_ACCEPTED_SPEND_TUPLE_EVIDENCE_SCHEMA,
-        accepted_tuple_evidence_endpoint:
-            "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1",
+        accepted_tuple_evidence_endpoint: "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_from_sovereign_state_v1",
         accepted_composition_evidence_schema: PATH2_DIRECT_ACCEPTED_COMPOSITION_EVIDENCE_SCHEMA,
         accepted_composition_evidence_endpoint: "path2_direct_accepted_composition_evidence_v1",
         acceptance_hypotheses: &PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES,
@@ -14723,11 +17281,60 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
         accepted_composition_evidence_present: true,
         acceptance_hypotheses_pinned: true,
         named_break_classes_pinned: true,
+        composition_theorem_reduction_lean_theorem:
+            PATH2_DIRECT_COMPOSITION_THEOREM_REDUCTION_LEAN_THEOREM,
+        composition_theorem_reduction_imported,
+        composition_external_hypotheses_explicit: composition_theorem_reduction_imported,
+        composition_capstone_under_explicit_named_assumptions_lean_theorem:
+            PATH2_DIRECT_COMPOSITION_EXPLICIT_ASSUMPTIONS_CAPSTONE_LEAN_THEOREM,
+        composition_capstone_under_explicit_named_assumptions_imported,
         composition_theorem_instantiated: false,
         account_creation_proof_boundary_verified: false,
+        direct_leaf_canonical_live_lean_theorem: PATH2_DIRECT_LEAF_CANONICAL_LIVE_LEAN_THEOREM,
+        direct_leaf_canonical_live_imported,
+        direct_leaf_canonical_live_lifecycle_and_kat_hypothesis_explicit:
+            direct_leaf_canonical_live_imported,
+        direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle,
         checked_core_frame_binding_imported,
         slot_authorization_digest_imported,
+        direct_evidence_leaf_binding_lean_theorem: PATH2_DIRECT_EVIDENCE_LEAF_BINDING_LEAN_THEOREM,
+        direct_evidence_leaf_binding_imported,
+        direct_evidence_leaf_binding_proof_boundary_hypothesis_explicit:
+            direct_evidence_leaf_binding_imported,
+        direct_evidence_leaf_binding_closed_by_frozen_kat,
+        direct_admission_namespace_membership_lean_theorem:
+            PATH2_DIRECT_ADMISSION_NAMESPACE_MEMBERSHIP_LEAN_THEOREM,
+        direct_admission_namespace_membership_imported,
+        direct_admission_namespace_data_availability_hypothesis_explicit:
+            direct_admission_namespace_membership_imported,
+        direct_admission_namespace_and_data_availability_lean_theorem:
+            PATH2_DIRECT_ADMISSION_NAMESPACE_AND_DATA_AVAILABILITY_LEAN_THEOREM,
+        direct_admission_namespace_and_data_availability_imported,
+        direct_admission_namespace_closed_by_sovereign_state,
+        direct_public_rejection_state_preserving_lean_theorem:
+            PATH2_DIRECT_PUBLIC_REJECTION_STATE_PRESERVING_LEAN_THEOREM,
+        direct_public_rejection_state_preserving_imported,
+        direct_public_rejection_classifier_total: direct_public_rejection_state_preserving_imported,
+        direct_public_rejection_class_kat_test: PATH2_DIRECT_PUBLIC_REJECTION_CLASS_KAT_TEST,
+        direct_public_rejection_all_classes_kat_covered:
+            direct_public_rejection_state_preserving_imported,
+        direct_public_rejection_panic_fail_closed_kat_covered:
+            direct_public_rejection_state_preserving_imported,
+        direct_public_rejection_all_public_objects_kat_covered:
+            direct_public_rejection_state_preserving_imported,
+        direct_public_rejection_target_client_mapping_complete:
+            direct_public_rejection_state_preserving_imported,
+        direct_public_rejection_consensus_kat_hypothesis_explicit:
+            direct_public_rejection_state_preserving_imported,
         lifecycle_transition_profile_verified,
+        qrom_action_budget_bridge_lean_theorem: direct_qrom_action_boundary_report
+            .direct_qrom_action_budget_bridge_lean_theorem,
+        qrom_action_budget_bridge_imported: direct_qrom_action_boundary_report
+            .direct_qrom_action_budget_bridge_bound,
+        qrom_action_theorem_linkage_reduction_lean_theorem:
+            PATH2_DIRECT_QROM_ACTION_THEOREM_LINKAGE_REDUCTION_LEAN_THEOREM,
+        qrom_action_theorem_linkage_reduction_imported: qrom_action_theorem_linkage_imported,
+        qrom_action_review_hypothesis_explicit: qrom_action_theorem_linkage_imported,
         qrom_and_action_bounds_linked_to_theorem: false,
         deployment_ready: false,
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
@@ -14797,8 +17404,12 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
                     && !row.source_support_still_open
                     && !row.blocks_deployment
                     && (row.dependency_id == "direct_dependency_consume_once"
+                        || row.dependency_id == "direct_dependency_leaf_canonical_live"
+                        || row.dependency_id == "direct_dependency_evidence_leaf_bindings"
+                        || row.dependency_id == "direct_dependency_admission_namespace"
                         || row.dependency_id == "direct_dependency_checked_core_frame_binding"
-                        || row.dependency_id == "direct_dependency_slot_authorization_digest")
+                        || row.dependency_id == "direct_dependency_slot_authorization_digest"
+                        || row.dependency_id == "direct_dependency_public_rejection")
             }
         });
     report.digest = path2_direct_theorem_boundary_report_v1_digest(&report);
@@ -14830,6 +17441,10 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
     if report.direct_lifecycle_boundary_report_digest != direct_lifecycle_boundary_report.digest {
         return Err("Path 2 direct theorem boundary lifecycle digest mismatch".to_string());
     }
+    let direct_admission_boundary_report = path2_direct_admission_boundary_report_v1();
+    if report.direct_admission_boundary_report_digest != direct_admission_boundary_report.digest {
+        return Err("Path 2 direct theorem boundary admission digest mismatch".to_string());
+    }
     let account_creation_proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
     if report.account_creation_proof_boundary_report_digest
         != account_creation_proof_boundary_report.digest
@@ -14848,7 +17463,7 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
     }
     if report.accepted_tuple_evidence_schema != PATH2_DIRECT_ACCEPTED_SPEND_TUPLE_EVIDENCE_SCHEMA
         || report.accepted_tuple_evidence_endpoint
-            != "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1"
+            != "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_from_sovereign_state_v1"
         || report.accepted_composition_evidence_schema
             != PATH2_DIRECT_ACCEPTED_COMPOSITION_EVIDENCE_SCHEMA
         || report.accepted_composition_evidence_endpoint
@@ -14930,15 +17545,27 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
                         &account_creation_proof_boundary_report,
                     )
             } else {
-                path2_direct_theorem_closed_lifecycle_dependency_imported_v1(
-                    row,
-                    report,
-                    &direct_lifecycle_boundary_report,
-                ) || path2_direct_theorem_closed_checked_core_frame_dependency_imported_v1(
-                    row, report,
-                ) || path2_direct_theorem_closed_slot_authorization_dependency_imported_v1(
-                    row, report,
-                )
+                path2_direct_theorem_closed_admission_namespace_dependency_imported_v1(row, report)
+                    || path2_direct_theorem_closed_lifecycle_dependency_imported_v1(
+                        row,
+                        report,
+                        &direct_lifecycle_boundary_report,
+                    )
+                    || path2_direct_theorem_closed_checked_core_frame_dependency_imported_v1(
+                        row, report,
+                    )
+                    || path2_direct_theorem_closed_leaf_canonical_live_dependency_imported_v1(
+                        row, report,
+                    )
+                    || path2_direct_theorem_closed_evidence_leaf_binding_dependency_imported_v1(
+                        row, report,
+                    )
+                    || path2_direct_theorem_closed_slot_authorization_dependency_imported_v1(
+                        row, report,
+                    )
+                    || path2_direct_theorem_closed_public_rejection_dependency_imported_v1(
+                        row, report,
+                    )
             }
         })
         || !report.closure_dependency_evidence_rows.iter().all(|row| {
@@ -14953,9 +17580,17 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
                     && !row.blocks_deployment
                     && ((row.dependency_id == "direct_dependency_consume_once"
                         && row.source_report == "Path2DirectLifecycleBoundaryReportV1")
+                        || (row.dependency_id == "direct_dependency_leaf_canonical_live"
+                            && row.source_report == "Path2DirectTheoremBoundaryReportV1")
+                        || (row.dependency_id == "direct_dependency_evidence_leaf_bindings"
+                            && row.source_report == "Path2DirectTheoremBoundaryReportV1")
+                        || (row.dependency_id == "direct_dependency_admission_namespace"
+                            && row.source_report == "Path2DirectAdmissionBoundaryReportV1")
                         || (row.dependency_id == "direct_dependency_checked_core_frame_binding"
                             && row.source_report == "Path2DirectTheoremBoundaryReportV1")
                         || (row.dependency_id == "direct_dependency_slot_authorization_digest"
+                            && row.source_report == "Path2DirectTheoremBoundaryReportV1")
+                        || (row.dependency_id == "direct_dependency_public_rejection"
                             && row.source_report == "Path2DirectTheoremBoundaryReportV1"))
             }
         })
@@ -14970,11 +17605,57 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
         || !report.accepted_composition_evidence_present
         || !report.acceptance_hypotheses_pinned
         || !report.named_break_classes_pinned
+        || report.composition_theorem_reduction_lean_theorem
+            != PATH2_DIRECT_COMPOSITION_THEOREM_REDUCTION_LEAN_THEOREM
+        || !report.composition_theorem_reduction_imported
+        || !report.composition_external_hypotheses_explicit
+        || report.composition_capstone_under_explicit_named_assumptions_lean_theorem
+            != PATH2_DIRECT_COMPOSITION_EXPLICIT_ASSUMPTIONS_CAPSTONE_LEAN_THEOREM
+        || !report.composition_capstone_under_explicit_named_assumptions_imported
         || report.composition_theorem_instantiated
         || report.account_creation_proof_boundary_verified
+        || report.direct_leaf_canonical_live_lean_theorem
+            != PATH2_DIRECT_LEAF_CANONICAL_LIVE_LEAN_THEOREM
+        || !report.direct_leaf_canonical_live_imported
+        || !report.direct_leaf_canonical_live_lifecycle_and_kat_hypothesis_explicit
+        || !report.direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle
         || !report.checked_core_frame_binding_imported
         || !report.slot_authorization_digest_imported
+        || report.direct_evidence_leaf_binding_lean_theorem
+            != PATH2_DIRECT_EVIDENCE_LEAF_BINDING_LEAN_THEOREM
+        || !report.direct_evidence_leaf_binding_imported
+        || !report.direct_evidence_leaf_binding_proof_boundary_hypothesis_explicit
+        || !report.direct_evidence_leaf_binding_closed_by_frozen_kat
+        || report.direct_admission_namespace_membership_lean_theorem
+            != PATH2_DIRECT_ADMISSION_NAMESPACE_MEMBERSHIP_LEAN_THEOREM
+        || !report.direct_admission_namespace_membership_imported
+        || !report.direct_admission_namespace_data_availability_hypothesis_explicit
+        || report.direct_admission_namespace_and_data_availability_lean_theorem
+            != PATH2_DIRECT_ADMISSION_NAMESPACE_AND_DATA_AVAILABILITY_LEAN_THEOREM
+        || !report.direct_admission_namespace_and_data_availability_imported
+        || !report.direct_admission_namespace_closed_by_sovereign_state
+        || !direct_admission_boundary_report.target_chain_data_availability_instantiated
+        || !direct_admission_boundary_report.admission_closure_lean_imported
+        || direct_admission_boundary_report.deployment_ready
+        || report.direct_public_rejection_state_preserving_lean_theorem
+            != PATH2_DIRECT_PUBLIC_REJECTION_STATE_PRESERVING_LEAN_THEOREM
+        || !report.direct_public_rejection_state_preserving_imported
+        || !report.direct_public_rejection_classifier_total
+        || report.direct_public_rejection_class_kat_test
+            != PATH2_DIRECT_PUBLIC_REJECTION_CLASS_KAT_TEST
+        || !report.direct_public_rejection_all_classes_kat_covered
+        || !report.direct_public_rejection_panic_fail_closed_kat_covered
+        || !report.direct_public_rejection_all_public_objects_kat_covered
+        || !report.direct_public_rejection_target_client_mapping_complete
+        || !report.direct_public_rejection_consensus_kat_hypothesis_explicit
         || !report.lifecycle_transition_profile_verified
+        || report.qrom_action_budget_bridge_lean_theorem
+            != PATH2_DIRECT_QROM_ACTION_BUDGET_BRIDGE_LEAN_THEOREM
+        || !report.qrom_action_budget_bridge_imported
+        || report.qrom_action_theorem_linkage_reduction_lean_theorem
+            != PATH2_DIRECT_QROM_ACTION_THEOREM_LINKAGE_REDUCTION_LEAN_THEOREM
+        || !report.qrom_action_theorem_linkage_reduction_imported
+        || !report.qrom_action_review_hypothesis_explicit
         || report.qrom_and_action_bounds_linked_to_theorem
         || report.deployment_ready
         || report.blocker != PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
@@ -15411,8 +18092,8 @@ fn lean_path2_reviewed_fq12_source_route_endpoint_surface_present_v1() -> bool {
             .all(|marker| byte_bridge.contains(marker))
 }
 
-fn lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present_v1(
-) -> bool {
+fn lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present_v1()
+-> bool {
     let source =
         include_str!("../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean");
     [
@@ -18630,15 +21311,15 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     }
 }
 
-pub fn path2_selected_rust_model_source_record_subcheck_v1(
-) -> Path2SelectedRustModelSourceRecordSubcheckV1 {
+pub fn path2_selected_rust_model_source_record_subcheck_v1()
+-> Path2SelectedRustModelSourceRecordSubcheckV1 {
     let boundary_source =
         include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
     path2_selected_rust_model_source_record_subcheck_from_source_v1(boundary_source)
 }
 
-pub fn path2_selected_rust_model_concrete_definition_checklist_v1(
-) -> Path2SelectedRustModelConcreteDefinitionChecklistV1 {
+pub fn path2_selected_rust_model_concrete_definition_checklist_v1()
+-> Path2SelectedRustModelConcreteDefinitionChecklistV1 {
     let boundary_source =
         include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
     path2_selected_rust_model_concrete_definition_checklist_from_source_v1(boundary_source)
@@ -21900,8 +24581,8 @@ fn path2_reviewed_fq12_extraction_certificate_availability_source_present_v1() -
             .all(|marker| test_source.contains(marker))
 }
 
-pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
-) -> Path2ReviewedFq12HiddenSourceSemanticsBridgeAudit {
+pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
+-> Path2ReviewedFq12HiddenSourceSemanticsBridgeAudit {
     let lean_payload_interface_pinned = lean_path2_reviewed_fq12_payload_interface_pinned_v1();
     let hidden_source_payload_binding_source_present =
         path2_reviewed_fq12_hidden_source_payload_binding_source_present_v1();
@@ -22204,8 +24885,8 @@ pub fn validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
     Ok(())
 }
 
-pub fn path2_reviewed_fq12_five_source_closure_evidence_v1(
-) -> Result<Path2ReviewedFq12FiveSourceClosureEvidenceV1, String> {
+pub fn path2_reviewed_fq12_five_source_closure_evidence_v1()
+-> Result<Path2ReviewedFq12FiveSourceClosureEvidenceV1, String> {
     let audit = path2_reviewed_fq12_hidden_source_semantics_bridge_audit();
     validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(&audit)?;
     let hash_byte_domain_evidence = path2_native_hash_byte_domain_evidence_v1();
@@ -22876,8 +25557,8 @@ pub fn verify_path2_reviewed_fq12_five_source_closure_evidence_v1(
     Ok(digest)
 }
 
-pub fn path2_reviewed_fq12_boundary_base_evidence_v1(
-) -> Result<Path2ReviewedFq12BoundaryBaseEvidenceV1, String> {
+pub fn path2_reviewed_fq12_boundary_base_evidence_v1()
+-> Result<Path2ReviewedFq12BoundaryBaseEvidenceV1, String> {
     let payload_projection_law_pinned =
         path2_reviewed_fq12_payload_projection_law_source_present_v1();
     let extraction_certificate_availability_pinned =
@@ -22992,8 +25673,8 @@ pub fn verify_path2_reviewed_fq12_boundary_base_evidence_v1(
     Ok(digest)
 }
 
-pub fn path2_reviewed_fq12_role_root_lift_evidence_v1(
-) -> Result<Path2ReviewedFq12RoleRootLiftEvidenceV1, String> {
+pub fn path2_reviewed_fq12_role_root_lift_evidence_v1()
+-> Result<Path2ReviewedFq12RoleRootLiftEvidenceV1, String> {
     let concrete_role_root_field_binding_pinned =
         path2_reviewed_fq12_concrete_role_root_field_binding_source_present_v1();
     let selected_lift_functionality_pinned =
@@ -23105,8 +25786,8 @@ pub fn verify_path2_reviewed_fq12_role_root_lift_evidence_v1(
     Ok(digest)
 }
 
-pub fn path2_reviewed_fq12_field_local_evidence_v1(
-) -> Result<Path2ReviewedFq12FieldLocalEvidenceV1, String> {
+pub fn path2_reviewed_fq12_field_local_evidence_v1()
+-> Result<Path2ReviewedFq12FieldLocalEvidenceV1, String> {
     let assembly_components_pinned =
         path2_reviewed_fq12_assembly_field_local_native_components_present_v1();
     let compatibility_components_pinned =
@@ -23239,8 +25920,8 @@ pub fn verify_path2_reviewed_fq12_field_local_evidence_v1(
     Ok(digest)
 }
 
-pub fn path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1(
-) -> Result<Path2ReviewedFq12SharedDigestFrameWitnessEvidenceV1, String> {
+pub fn path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1()
+-> Result<Path2ReviewedFq12SharedDigestFrameWitnessEvidenceV1, String> {
     let canonical_witness_pinned =
         path2_reviewed_fq12_full_native_opening_canonical_representative_witness_source_present_v1(
         );
@@ -23399,8 +26080,8 @@ pub fn verify_path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1(
     Ok(digest)
 }
 
-pub fn path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1(
-) -> Result<Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1, String> {
+pub fn path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1()
+-> Result<Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1, String> {
     let parser_frame_certificates_present =
         path2_reviewed_fq12_source_route_byte_parser_frame_certificates_present_v1();
     let field_evidence_present =
@@ -23555,8 +26236,8 @@ pub fn verify_path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1(
     Ok(digest)
 }
 
-pub fn path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1(
-) -> Result<Path2ReviewedFq12NativeBoundaryPredicateModelEvidenceV1, String> {
+pub fn path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1()
+-> Result<Path2ReviewedFq12NativeBoundaryPredicateModelEvidenceV1, String> {
     let source_record_subcheck = path2_selected_rust_model_source_record_subcheck_v1();
     let concrete_predicate_model_present =
         source_record_subcheck.native_boundary_concrete_predicate_model_present;
@@ -26436,8 +29117,8 @@ fn path2_reviewed_fq12_full_native_opening_canonical_representative_source_prese
         && path2_reviewed_fq12_native_representative_digest_frame_source_present_v1()
 }
 
-fn path2_reviewed_fq12_full_native_opening_canonical_representative_witness_source_present_v1(
-) -> bool {
+fn path2_reviewed_fq12_full_native_opening_canonical_representative_witness_source_present_v1()
+-> bool {
     let source = include_str!("production_reference.rs");
     let witness_start = source
         .find(
@@ -29697,8 +32378,8 @@ fn path2_native_boundary_trace_column_class(
     })
 }
 
-pub fn path2_native_boundary_trace_column_manifest_v1(
-) -> Result<Path2NativeBoundaryTraceColumnManifestV1, String> {
+pub fn path2_native_boundary_trace_column_manifest_v1()
+-> Result<Path2NativeBoundaryTraceColumnManifestV1, String> {
     let manifest = Path2NativeBoundaryTraceColumnManifestV1 {
         schema: PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA,
         profile_id: PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_PROFILE_ID,
@@ -30149,8 +32830,8 @@ pub fn verify_path2_transparent_query_schedule_count(query_count: u16) -> Result
     }
 }
 
-pub fn path2_native_boundary_trace_proof_family_interface_v1(
-) -> Result<Path2NativeBoundaryTraceProofFamilyInterfaceV1, String> {
+pub fn path2_native_boundary_trace_proof_family_interface_v1()
+-> Result<Path2NativeBoundaryTraceProofFamilyInterfaceV1, String> {
     let interface = Path2NativeBoundaryTraceProofFamilyInterfaceV1 {
         schema: PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_SCHEMA,
         profile_id: PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_PROFILE_ID,
@@ -30531,8 +33212,8 @@ pub fn verify_path2_native_boundary_trace_proof_family_interface(
     Ok(())
 }
 
-pub fn path2_native_boundary_trace_proof_family_interface_v1_digest(
-) -> Result<[u8; DIGEST_BYTES], String> {
+pub fn path2_native_boundary_trace_proof_family_interface_v1_digest()
+-> Result<[u8; DIGEST_BYTES], String> {
     let interface = path2_native_boundary_trace_proof_family_interface_v1()?;
     let mut frame = Vec::new();
     append_frame(
@@ -30785,8 +33466,8 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1_digest(
     Ok(Sha256::digest(frame).into())
 }
 
-pub fn path2_transparent_proof_friendly_inner_commitment_plan_v1(
-) -> Path2TransparentProofFriendlyInnerCommitmentPlanV1 {
+pub fn path2_transparent_proof_friendly_inner_commitment_plan_v1()
+-> Path2TransparentProofFriendlyInnerCommitmentPlanV1 {
     let proof_friendly_inner_commitment_bindings_pinned = true;
     let inner_commitment_scheme_id =
         path2_transparent_proof_friendly_inner_commitment_scheme_id_v1();
@@ -31052,8 +33733,8 @@ pub fn validate_path2_transparent_proof_friendly_inner_commitment_plan_v1(
     Ok(())
 }
 
-pub fn path2_transparent_hidden_relation_constraint_plan_v1(
-) -> Path2TransparentHiddenRelationConstraintPlanV1 {
+pub fn path2_transparent_hidden_relation_constraint_plan_v1()
+-> Path2TransparentHiddenRelationConstraintPlanV1 {
     let inner_commitment_plan = path2_transparent_proof_friendly_inner_commitment_plan_v1();
     let reference_constraint_check_profile_digest =
         path2_transparent_hidden_relation_reference_constraint_check_profile_digest_v1();
@@ -31110,8 +33791,8 @@ pub fn path2_transparent_hidden_relation_constraint_plan_v1(
     plan
 }
 
-pub fn path2_transparent_hidden_relation_reference_constraint_check_profile_digest_v1(
-) -> [u8; DIGEST_BYTES] {
+pub fn path2_transparent_hidden_relation_reference_constraint_check_profile_digest_v1()
+-> [u8; DIGEST_BYTES] {
     let mut frame = Vec::new();
     append_frame(
         &mut frame,
@@ -31338,8 +34019,8 @@ pub fn validate_path2_transparent_hidden_relation_constraint_plan_v1(
     Ok(())
 }
 
-pub fn path2_transparent_trace_to_binding_relation_layer_v1(
-) -> Path2TransparentTraceToBindingRelationLayerV1 {
+pub fn path2_transparent_trace_to_binding_relation_layer_v1()
+-> Path2TransparentTraceToBindingRelationLayerV1 {
     let relation_layout_digest = path2_transparent_relation_layout_v1_digest()
         .expect("Path 2 transparent relation layout must hash");
     let hidden_relation_plan = path2_transparent_hidden_relation_constraint_plan_v1();
@@ -31688,8 +34369,8 @@ pub fn validate_path2_transparent_trace_to_binding_relation_layer_v1(
     Ok(())
 }
 
-pub fn path2_transparent_current_core_negative_target_v1(
-) -> Path2TransparentCurrentCoreNegativeTargetV1 {
+pub fn path2_transparent_current_core_negative_target_v1()
+-> Path2TransparentCurrentCoreNegativeTargetV1 {
     let mut target = Path2TransparentCurrentCoreNegativeTargetV1 {
         digest: [0_u8; DIGEST_BYTES],
         schema: PATH2_TRANSPARENT_CURRENT_CORE_NEGATIVE_TARGET_SCHEMA,
@@ -31827,8 +34508,8 @@ pub fn validate_path2_transparent_current_core_negative_target_v1(
     Ok(())
 }
 
-pub fn path2_transparent_full_relation_backend_certificate_obligations_v1_digest(
-) -> [u8; DIGEST_BYTES] {
+pub fn path2_transparent_full_relation_backend_certificate_obligations_v1_digest()
+-> [u8; DIGEST_BYTES] {
     let mut frame = Vec::new();
     append_frame(
         &mut frame,
@@ -31855,8 +34536,8 @@ pub fn path2_transparent_full_relation_backend_certificate_obligations_v1_digest
     Sha256::digest(frame).into()
 }
 
-pub fn validate_path2_transparent_full_relation_backend_certificate_obligation_set_v1(
-) -> Result<(), String> {
+pub fn validate_path2_transparent_full_relation_backend_certificate_obligation_set_v1()
+-> Result<(), String> {
     if PATH2_TRANSPARENT_FULL_RELATION_BACKEND_CERTIFICATE_OBLIGATION_FIELDS.len()
         != PATH2_TRANSPARENT_FULL_RELATION_BACKEND_CERTIFICATE_OBLIGATION_COUNT
     {
@@ -31914,8 +34595,8 @@ pub fn validate_path2_transparent_full_relation_backend_certificate_obligation_s
     Ok(())
 }
 
-pub fn path2_transparent_full_relation_backend_sufficiency_target_v1(
-) -> Path2TransparentFullRelationBackendSufficiencyTargetV1 {
+pub fn path2_transparent_full_relation_backend_sufficiency_target_v1()
+-> Path2TransparentFullRelationBackendSufficiencyTargetV1 {
     let hidden_relation_plan = path2_transparent_hidden_relation_constraint_plan_v1();
     let certificate_obligations_digest =
         path2_transparent_full_relation_backend_certificate_obligations_v1_digest();
@@ -32074,8 +34755,8 @@ pub fn validate_path2_transparent_full_relation_backend_sufficiency_target_v1(
     Ok(())
 }
 
-pub fn path2_transparent_full_hidden_relation_backend_payload_contract_v1(
-) -> Path2TransparentFullHiddenRelationBackendPayloadContractV1 {
+pub fn path2_transparent_full_hidden_relation_backend_payload_contract_v1()
+-> Path2TransparentFullHiddenRelationBackendPayloadContractV1 {
     let backend_sufficiency_target =
         path2_transparent_full_relation_backend_sufficiency_target_v1();
     let backend_proof_system_id =
@@ -32224,16 +34905,16 @@ pub fn path2_transparent_full_hidden_relation_backend_acceptance_verifier_digest
     Sha256::digest(frame).into()
 }
 
-pub fn path2_transparent_full_hidden_relation_disabled_backend_proof_payload_digest_v1(
-) -> [u8; DIGEST_BYTES] {
+pub fn path2_transparent_full_hidden_relation_disabled_backend_proof_payload_digest_v1()
+-> [u8; DIGEST_BYTES] {
     path2_transparent_full_hidden_relation_backend_proof_payload_digest(
         path2_transparent_full_hidden_relation_disabled_backend_proof_payload_bytes_v1(),
     )
     .expect("disabled backend proof payload marker is nonempty")
 }
 
-pub fn path2_transparent_full_hidden_relation_disabled_backend_proof_payload_bytes_v1(
-) -> &'static [u8] {
+pub fn path2_transparent_full_hidden_relation_disabled_backend_proof_payload_bytes_v1()
+-> &'static [u8] {
     b"DESCENDER_PATH2_TRANSPARENT_FULL_HIDDEN_RELATION_DISABLED_BACKEND_PROOF_PAYLOAD_V1"
 }
 
@@ -32546,8 +35227,8 @@ pub fn validate_path2_transparent_full_hidden_relation_backend_payload_contract_
     Ok(())
 }
 
-pub fn path2_transparent_full_hidden_relation_proof_contract_v1(
-) -> Path2TransparentFullHiddenRelationProofContractV1 {
+pub fn path2_transparent_full_hidden_relation_proof_contract_v1()
+-> Path2TransparentFullHiddenRelationProofContractV1 {
     let hidden_relation_plan = path2_transparent_hidden_relation_constraint_plan_v1();
     let trace_to_binding_layer = path2_transparent_trace_to_binding_relation_layer_v1();
     let current_core_negative_target = path2_transparent_current_core_negative_target_v1();
@@ -36174,8 +38855,8 @@ pub(crate) fn decode_path2_transparent_full_hidden_relation_subproof_statement_v
     Ok(statement)
 }
 
-pub fn path2_transparent_full_hidden_relation_verifier_key_v1(
-) -> Result<Path2TransparentFullHiddenRelationVerifierKeyV1, String> {
+pub fn path2_transparent_full_hidden_relation_verifier_key_v1()
+-> Result<Path2TransparentFullHiddenRelationVerifierKeyV1, String> {
     let contract = path2_transparent_full_hidden_relation_proof_contract_v1();
     validate_path2_transparent_full_hidden_relation_proof_contract_v1(&contract)?;
     let hidden_relation_plan = path2_transparent_hidden_relation_constraint_plan_v1();
@@ -36544,8 +39225,8 @@ pub(crate) fn path2_transparent_full_hidden_relation_verifier_key_v1_digest(
     Ok(Sha256::digest(frame).into())
 }
 
-pub fn path2_transparent_full_relation_backend_certificate_obligation_digests_v1(
-) -> [[u8; DIGEST_BYTES]; PATH2_TRANSPARENT_FULL_RELATION_BACKEND_CERTIFICATE_OBLIGATION_COUNT] {
+pub fn path2_transparent_full_relation_backend_certificate_obligation_digests_v1()
+-> [[u8; DIGEST_BYTES]; PATH2_TRANSPARENT_FULL_RELATION_BACKEND_CERTIFICATE_OBLIGATION_COUNT] {
     let mut obligation_digests = [[0_u8; DIGEST_BYTES];
         PATH2_TRANSPARENT_FULL_RELATION_BACKEND_CERTIFICATE_OBLIGATION_COUNT];
     for (index, field) in PATH2_TRANSPARENT_FULL_RELATION_BACKEND_CERTIFICATE_OBLIGATION_FIELDS
@@ -43292,8 +45973,8 @@ fn path2_hidden_range_extractor_interface_bound(
         && interface.range_rows_to_norm_required
 }
 
-pub fn path2_transparent_production_soundness_obligations_v1(
-) -> Path2TransparentProductionSoundnessObligationsV1 {
+pub fn path2_transparent_production_soundness_obligations_v1()
+-> Path2TransparentProductionSoundnessObligationsV1 {
     let sampled_row_same_representative_enforced = true;
     let aggregate_cancellation_regression_covered = true;
     let hidden_relation_plan = path2_transparent_hidden_relation_constraint_plan_v1();
@@ -44163,8 +46844,8 @@ pub fn validate_path2_transparent_production_soundness_obligations_v1(
     Ok(())
 }
 
-pub fn path2_transparent_proof_family_capability_v1(
-) -> Result<Path2TransparentProofFamilyCapabilityV1, String> {
+pub fn path2_transparent_proof_family_capability_v1()
+-> Result<Path2TransparentProofFamilyCapabilityV1, String> {
     let trace_column_manifest = path2_native_boundary_trace_column_manifest_v1()?;
     let hidden_relation_plan = path2_transparent_hidden_relation_constraint_plan_v1();
     validate_path2_transparent_hidden_relation_constraint_plan_v1(&hidden_relation_plan)?;
@@ -47819,8 +50500,8 @@ fn path2_account_creation_frame_kat_digest(label: &str) -> [u8; DIGEST_BYTES] {
         .into()
 }
 
-pub fn path2_account_creation_frame_kat_fixture_v1(
-) -> Result<Path2AccountCreationFrameKatFixtureV1, String> {
+pub fn path2_account_creation_frame_kat_fixture_v1()
+-> Result<Path2AccountCreationFrameKatFixtureV1, String> {
     let mut leaf = Path2PrevalidatedSlotLeafV1 {
         frame_version: PATH2_PREVALIDATED_SLOT_LEAF_FRAME_VERSION,
         profile_version_digest: path2_account_creation_frame_kat_digest("profile"),
@@ -48541,6 +51222,9 @@ pub struct Path2AccountStarkCreationPayloadV1 {
     pub aggregation_context_digest: [u8; DIGEST_BYTES],
     pub slot_id: u64,
     pub masked_projection: [u16; HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES],
+    /// Stable canonical encoding of the proof-bound CLASS A-2 nullifier used by
+    /// the sovereign consensus registry.
+    pub pad_seed_nullifier: [u8; DIGEST_BYTES],
     pub account_stark_bundle: Vec<u8>,
 }
 
@@ -48600,6 +51284,11 @@ pub fn path2_account_stark_creation_payload_v1_frame(
     );
     append_frame(
         &mut frame,
+        b"pad_seed_nullifier",
+        &payload.pad_seed_nullifier,
+    );
+    append_frame(
+        &mut frame,
         b"account_stark_bundle",
         &payload.account_stark_bundle,
     );
@@ -48636,21 +51325,24 @@ fn path2_account_stark_prove_creation_with_mask_seed_option_v1(
         leaf.slot_id,
     )?;
 
-    // Commitment blinding nonces for the STARK's OWN C1/C6 commitments (independent
-    // of the deployed commitment scheme): derive deterministically from the
-    // blinding seed, domain-separated.
-    let mut h1 = Sha256::new();
-    h1.update(b"DESCENDER_ACCOUNT_STARK_C1_NONCE_V1");
-    h1.update(blinding_seed);
-    let c1_full: [u8; 32] = h1.finalize().into();
-    let mut h6 = Sha256::new();
-    h6.update(b"DESCENDER_ACCOUNT_STARK_C6_NONCE_V1");
-    h6.update(blinding_seed);
-    let c6_full: [u8; 32] = h6.finalize().into();
-    let mut c1_nonce = [0u8; 16];
-    let mut c6_nonce = [0u8; 16];
-    c1_nonce.copy_from_slice(&c1_full[..16]);
-    c6_nonce.copy_from_slice(&c6_full[..16]);
+    // Deterministic KAT-only commitment nonces. Production proving overwrites
+    // these with fresh OS-CSPRNG bytes inside `prove_account_creation`.
+    let derive_nonce = |domain: &[u8]| -> [u8; descender_account_verifier::COMMITMENT_NONCE_BYTES] {
+        let mut out = [0_u8; descender_account_verifier::COMMITMENT_NONCE_BYTES];
+        for (counter, chunk) in out.chunks_mut(32).enumerate() {
+            let mut h = Sha256::new();
+            h.update(b"DESCENDER_ACCOUNT_STARK_COMMITMENT_NONCE_V2");
+            h.update((domain.len() as u64).to_le_bytes());
+            h.update(domain);
+            h.update((counter as u64).to_le_bytes());
+            h.update(blinding_seed);
+            let block: [u8; 32] = h.finalize().into();
+            chunk.copy_from_slice(&block[..chunk.len()]);
+        }
+        out
+    };
+    let c1_nonce = derive_nonce(b"PADS");
+    let c6_nonce = derive_nonce(b"OPEN");
 
     let secrets = descender_account_verifier::AccountCreationSecrets {
         pad_seed: *pad_seed,
@@ -48677,6 +51369,7 @@ fn path2_account_stark_prove_creation_with_mask_seed_option_v1(
         .map_err(|e| format!("account-creation STARK bundle pack failed: {e}"))?;
     let native_role_root_commitment =
         descender_account_verifier::role_root_export_digest(&public.role_root);
+    let pad_seed_nullifier = descender_account_verifier::creation_nullifier_v1_bytes(&public);
 
     // The proven masked projection equals the deployed opening's (same Poseidon2
     // masks via the mask-PRF swap + same canonical mod-q reduction); use the
@@ -48695,6 +51388,7 @@ fn path2_account_stark_prove_creation_with_mask_seed_option_v1(
         aggregation_context_digest: binding.aggregation_context_digest,
         slot_id: leaf.slot_id,
         masked_projection,
+        pad_seed_nullifier,
         account_stark_bundle,
     })
 }
@@ -48769,13 +51463,13 @@ pub fn path2_account_stark_prove_creation_with_mask_seed_v1(
 /// state_root / lifecycle / verifier_version / masked_projection and — via the
 /// named export bridge — the role-root commitment.
 #[cfg(feature = "account-creation-stark-verifier")]
-pub fn verify_path2_direct_creation_account_stark_payload_boundary(
+pub fn verify_path2_direct_creation_account_stark_payload_boundary_and_decode_verified_v1(
     leaf: &Path2PrevalidatedSlotLeafV1,
     evidence: &Path2AccountCreationEvidenceV1,
     certificate: &Path2DirectReplayableRelationCertificateV1,
     binding: &Path2CreationProofBindingV1,
     payload: &Path2AccountStarkCreationPayloadV1,
-) -> Result<(), String> {
+) -> Result<descender_account_verifier::VerifiedCreationPublicAnchors, String> {
     // --- standard deployed-frame bindings (parity with the other creation paths) ---
     verify_path2_prevalidated_slot_creation_payload_bindings(leaf, evidence, Some(certificate))?;
     if binding.digest != path2_creation_proof_binding_v1_digest(binding) {
@@ -48825,13 +51519,111 @@ pub fn verify_path2_direct_creation_account_stark_payload_boundary(
         // tying the creation proof's syndrome + masked_projection to the exact
         // packed witness the spend's checked-core frame consumes.
         packed_witness_commitment: binding.packed_witness_commitment,
+        pad_seed_nullifier: payload.pad_seed_nullifier,
     };
     // --- the sound STARK relation verify + statement↔anchor binding ---
-    descender_account_verifier::verify_deployed_account_creation(
+    descender_account_verifier::verify_and_decode_deployed_account_creation(
         &payload.account_stark_bundle,
         &anchors,
     )
     .map_err(|e| format!("account-creation STARK verify failed: {e}"))
+}
+
+#[cfg(feature = "account-creation-stark-verifier")]
+pub fn verify_path2_direct_creation_account_stark_payload_boundary(
+    leaf: &Path2PrevalidatedSlotLeafV1,
+    evidence: &Path2AccountCreationEvidenceV1,
+    certificate: &Path2DirectReplayableRelationCertificateV1,
+    binding: &Path2CreationProofBindingV1,
+    payload: &Path2AccountStarkCreationPayloadV1,
+) -> Result<(), String> {
+    verify_path2_direct_creation_account_stark_payload_boundary_and_decode_verified_v1(
+        leaf,
+        evidence,
+        certificate,
+        binding,
+        payload,
+    )
+    .map(|_| ())
+}
+
+/// Verify the selected account-STARK creation boundary and construct the opaque
+/// consensus admission candidate carrying its proof-bound nullifier.
+#[cfg(feature = "account-creation-stark-verifier")]
+pub fn verify_path2_direct_creation_account_stark_admission_candidate_v1(
+    leaf: &Path2PrevalidatedSlotLeafV1,
+    evidence: &Path2AccountCreationEvidenceV1,
+    certificate: &Path2DirectReplayableRelationCertificateV1,
+    binding: &Path2CreationProofBindingV1,
+    payload: &Path2AccountStarkCreationPayloadV1,
+) -> Result<Path2VerifiedSovereignCreationAdmissionV1, String> {
+    let verified =
+        verify_path2_direct_creation_account_stark_payload_boundary_and_decode_verified_v1(
+            leaf,
+            evidence,
+            certificate,
+            binding,
+            payload,
+        )?;
+    let pad_seed_nullifier = verified.pad_seed_nullifier();
+    if pad_seed_nullifier != payload.pad_seed_nullifier {
+        return Err("account-creation STARK: verified nullifier anchor mismatch".to_string());
+    }
+    Ok(Path2VerifiedSovereignCreationAdmissionV1 {
+        record: Path2SovereignDirectAdmissionRecordV1 {
+            schema: PATH2_SOVEREIGN_DIRECT_ADMISSION_RECORD_SCHEMA_V1,
+            profile_id: PATH2_SOVEREIGN_DIRECT_CLIENT_PROFILE_ID_V1,
+            account_id: leaf.account_id,
+            account_state_root_before: leaf.account_state_root_before,
+            slot_authorization_digest: path2_slot_authorization_digest(leaf)?,
+            canonical_leaf_bytes: path2_prevalidated_slot_leaf_v1_bytes(leaf)?.to_vec(),
+            slot_leaf_digest: path2_prevalidated_slot_leaf_digest(leaf)?,
+            evidence_transcript_digest: path2_account_creation_evidence_transcript_digest(
+                evidence,
+            )?,
+            pad_seed_nullifier,
+            admitted_at_height: 0,
+        },
+        selected_payload_digest: path2_account_stark_creation_payload_v1_digest(payload)?,
+        account_stark_bundle_digest: Sha256::digest(&payload.account_stark_bundle).into(),
+        raw_verifier_version: verified.decoded().verifier_version,
+    })
+}
+
+#[cfg(feature = "account-creation-stark-verifier")]
+#[derive(Clone, Copy)]
+pub struct Path2AccountStarkCreationAdmissionInputV1<'a> {
+    pub leaf: &'a Path2PrevalidatedSlotLeafV1,
+    pub evidence: &'a Path2AccountCreationEvidenceV1,
+    pub certificate: &'a Path2DirectReplayableRelationCertificateV1,
+    pub binding: &'a Path2CreationProofBindingV1,
+    pub payload: &'a Path2AccountStarkCreationPayloadV1,
+}
+
+/// Verify every selected account-STARK creation in a candidate block before
+/// atomically registering any tuple key or proof-bound nullifier.
+#[cfg(feature = "account-creation-stark-verifier")]
+pub fn verify_and_admit_path2_direct_creation_account_stark_block_v1(
+    admission_state: &mut Path2SovereignDirectAdmissionStateV1,
+    candidate_head: u64,
+    inputs: &[Path2AccountStarkCreationAdmissionInputV1<'_>],
+) -> Result<Vec<[u8; DIGEST_BYTES]>, String> {
+    if inputs.is_empty() {
+        return Err("Path 2 sovereign admission block is empty".to_string());
+    }
+    let candidates = inputs
+        .iter()
+        .map(|input| {
+            verify_path2_direct_creation_account_stark_admission_candidate_v1(
+                input.leaf,
+                input.evidence,
+                input.certificate,
+                input.binding,
+                input.payload,
+            )
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    admission_state.admit_verified_creation_block(candidate_head, &candidates)
 }
 
 /// FAIL-CLOSED production gate for the account-creation STARK path. Returns
@@ -48913,8 +51705,8 @@ fn path2_account_stark_refresh_leaf_digest_bindings(
 }
 
 #[cfg(feature = "account-creation-stark-verifier")]
-fn path2_reviewed_fq12_packed_witness_kat_fixture_v1(
-) -> Result<Path2ReviewedFq12PackedWitnessKatFixtureV1, String> {
+fn path2_reviewed_fq12_packed_witness_kat_fixture_v1()
+-> Result<Path2ReviewedFq12PackedWitnessKatFixtureV1, String> {
     let public_key = ProductionPublicKey::new(vec![0_u8; PK_BYTES])?;
     let message = b"reviewed Fq12 packed witness reject fixture";
     let slot_id = 0_u32;
@@ -49190,14 +51982,14 @@ fn path2_account_stark_payload_kat_fixture_with_reviewed_v1() -> Result<
 }
 
 #[cfg(feature = "account-creation-stark-verifier")]
-pub fn path2_account_stark_payload_kat_fixture_v1(
-) -> Result<Path2AccountStarkPayloadKatFixtureV1, String> {
+pub fn path2_account_stark_payload_kat_fixture_v1()
+-> Result<Path2AccountStarkPayloadKatFixtureV1, String> {
     Ok(path2_account_stark_payload_kat_fixture_with_reviewed_v1()?.1)
 }
 
 #[cfg(feature = "account-creation-stark-verifier")]
-fn path2_account_stark_payload_kat_fixture_deterministic_v1(
-) -> Result<Path2AccountStarkPayloadKatFixtureV1, String> {
+fn path2_account_stark_payload_kat_fixture_deterministic_v1()
+-> Result<Path2AccountStarkPayloadKatFixtureV1, String> {
     let pool = rayon::ThreadPoolBuilder::new()
         .num_threads(1)
         .build()
@@ -49265,6 +52057,11 @@ pub fn path2_account_creation_deployed_anchor_digest(
         b"role_root_export_bridge",
         &payload.native_role_root_commitment,
     );
+    append_frame(
+        &mut frame,
+        b"pad_seed_nullifier",
+        &payload.pad_seed_nullifier,
+    );
     Sha256::digest(frame).into()
 }
 
@@ -49305,6 +52102,11 @@ pub fn path2_account_creation_decoded_public_anchor_digest(
         &mut frame,
         b"role_root_export_bridge",
         &anchors.native_role_root_commitment,
+    );
+    append_frame(
+        &mut frame,
+        b"pad_seed_nullifier",
+        &anchors.pad_seed_nullifier,
     );
     Sha256::digest(frame).into()
 }
@@ -49596,6 +52398,8 @@ fn path2_account_creation_accepted_proof_boundary_evidence_for_fixture_v1(
     let deployed_anchor_packed_witness_commitment_bound = decoded_public_anchors
         .packed_witness_commitment
         == fixture.binding.packed_witness_commitment;
+    let deployed_anchor_pad_seed_nullifier_bound =
+        decoded_public_anchors.pad_seed_nullifier == fixture.payload.pad_seed_nullifier;
     let decoded_public_anchors_match_deployed_anchors = deployed_anchor_account_id_bound
         && deployed_anchor_slot_id_bound
         && deployed_anchor_state_root_bound
@@ -49603,7 +52407,8 @@ fn path2_account_creation_accepted_proof_boundary_evidence_for_fixture_v1(
         && deployed_anchor_verifier_version_bound
         && deployed_anchor_masked_projection_bound
         && deployed_anchor_role_root_export_bridge_bound
-        && deployed_anchor_packed_witness_commitment_bound;
+        && deployed_anchor_packed_witness_commitment_bound
+        && deployed_anchor_pad_seed_nullifier_bound;
     let deployed_anchor_fields_match_report = proof_boundary_report.deployed_anchor_fields
         == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHORS.as_ref()
         && decoded_public_anchors_match_deployed_anchors;
@@ -49666,6 +52471,7 @@ fn path2_account_creation_accepted_proof_boundary_evidence_for_fixture_v1(
         masked_projection_digest: path2_account_creation_masked_projection_digest(
             &fixture.payload.masked_projection,
         ),
+        pad_seed_nullifier: fixture.payload.pad_seed_nullifier,
         deployed_anchor_digest,
         payload_frame_digest: Sha256::digest(&payload_frame).into(),
         payload_frame_bytes: payload_frame.len(),
@@ -49693,6 +52499,7 @@ fn path2_account_creation_accepted_proof_boundary_evidence_for_fixture_v1(
         deployed_anchor_masked_projection_bound,
         deployed_anchor_role_root_export_bridge_bound,
         deployed_anchor_packed_witness_commitment_bound,
+        deployed_anchor_pad_seed_nullifier_bound,
         deployed_anchor_fields_match_report,
         account_stark_bundle_nonempty,
         proof_family_obligations_still_open: proof_boundary_report
@@ -49779,8 +52586,8 @@ fn path2_account_creation_accepted_proof_boundary_evidence_for_fixture_v1(
 }
 
 #[cfg(feature = "account-creation-stark-verifier")]
-pub fn path2_account_creation_accepted_proof_boundary_evidence_v1(
-) -> Result<Path2AccountCreationAcceptedProofBoundaryEvidenceV1, String> {
+pub fn path2_account_creation_accepted_proof_boundary_evidence_v1()
+-> Result<Path2AccountCreationAcceptedProofBoundaryEvidenceV1, String> {
     let fixture = path2_account_stark_payload_kat_fixture_deterministic_v1()?;
     path2_account_creation_accepted_proof_boundary_evidence_for_fixture_v1(&fixture)
 }
@@ -52776,9 +55583,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_breakBound",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_2pow_neg133",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_active128BitTarget",
-        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_eq_zero",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_le_2pow_neg133",
-        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_eq_zero",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_le_2pow_neg133",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.unionBound_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.successProb_le_active128BitTarget",
@@ -53061,9 +55866,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_breakBound",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_2pow_neg133",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_active128BitTarget",
-        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_eq_zero",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_le_2pow_neg133",
-        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_eq_zero",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_le_2pow_neg133",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.unionBound_le_active128BitTarget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.successProb_le_active128BitTarget",
@@ -53685,9 +56488,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
-        "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts",
-        "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "remainingCryptographicBreakEvents",
         "mem_remainingCryptographicBreakEvents_iff",
@@ -53756,9 +56557,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakProb_le_active128BitTarget_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_remaining_break_bounds",
-        "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds",
-        "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofCurrentHardPricingFacts",
@@ -53774,9 +56573,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_breakBound",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_2pow_neg133",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_active128BitTarget",
-        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_eq_zero",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_le_2pow_neg133",
-        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_eq_zero",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_le_2pow_neg133",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.unionBound_le_componentBudget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.successProb_le_componentBudget",
@@ -54158,9 +56955,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakProb_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts",
-        "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts",
-        "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts",
         "remainingCryptographicBreakEvents",
         "mem_remainingCryptographicBreakEvents_iff",
@@ -54229,9 +57024,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustConcreteAcceptedSpendPricingWitness_remainingBreakProb_le_active128BitTarget_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_remaining_break_bounds",
-        "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds",
-        "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds",
         "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.ofCurrentHardPricingFacts",
@@ -54247,9 +57040,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_breakBound",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_2pow_neg133",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_active128BitTarget",
-        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_eq_zero",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_le_2pow_neg133",
-        "SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_eq_zero",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_le_2pow_neg133",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.unionBound_le_componentBudget",
         "SelectedRustAcceptedSpendRemainingBreakPricingPackage.successProb_le_componentBudget",
@@ -57182,8 +59973,7 @@ pub fn path2_native_signer_execution_report_from_entropy_root_v1(
                     output.constructed.boundary_meaning.native_boundary_digest,
                 ),
                 checked_core_proof_digest: Some(proof_digest),
-                cleanup_policy:
-                    "owned secret material drops through zeroize; public report is digest-only",
+                cleanup_policy: "owned secret material drops through zeroize; public report is digest-only",
                 entropy_q_fixed_attempts: PATH2_NATIVE_SIGNER_ENTROPY_Q_FIXED_ATTEMPTS,
                 deployment_preflight,
             }
@@ -57423,8 +60213,8 @@ pub fn path2_native_signer_execution_report_v1_frame(
     Ok(frame)
 }
 
-pub fn path2_native_signer_constant_time_stage_labels_v1(
-) -> [&'static str; PATH2_NATIVE_SIGNER_CT_STAGE_COUNT] {
+pub fn path2_native_signer_constant_time_stage_labels_v1()
+-> [&'static str; PATH2_NATIVE_SIGNER_CT_STAGE_COUNT] {
     [
         "deployment_preflight_snapshot",
         "entropy_root_acquisition",
@@ -57970,8 +60760,8 @@ pub fn path2_native_signer_sha256_boundary_audit_v1() -> Path2NativeSignerSha256
     }
 }
 
-pub fn path2_native_signer_sha256_call_schedule_audit_v1(
-) -> Path2NativeSignerSha256CallScheduleAuditV1 {
+pub fn path2_native_signer_sha256_call_schedule_audit_v1()
+-> Path2NativeSignerSha256CallScheduleAuditV1 {
     let derivation_source = path2_native_secret_material_derivation_source_window_v1();
     let q_sampler_source = path2_native_signer_entropy_q_source_window_v1();
     let secret_component_source = path2_native_secret_component_digest_source_window_v1();
@@ -58238,8 +61028,8 @@ fn path2_native_signer_os_entropy_source_window_v1() -> &'static str {
     &source[start..end]
 }
 
-pub fn path2_native_signer_os_entropy_boundary_audit_v1(
-) -> Path2NativeSignerOsEntropyBoundaryAuditV1 {
+pub fn path2_native_signer_os_entropy_boundary_audit_v1()
+-> Path2NativeSignerOsEntropyBoundaryAuditV1 {
     let source_window = path2_native_signer_os_entropy_source_window_v1();
     let root_call = "getrandom::getrandom(&mut root.root_entropy)";
     let nonce_call = "getrandom::getrandom(&mut root.account_nonce)";
@@ -59315,8 +62105,8 @@ pub fn path2_native_honest_constructor_scope_v1_frame(
     frame
 }
 
-pub fn path2_native_signer_keygen_productization_scope_v1(
-) -> Path2NativeSignerKeygenProductizationScopeV1 {
+pub fn path2_native_signer_keygen_productization_scope_v1()
+-> Path2NativeSignerKeygenProductizationScopeV1 {
     Path2NativeSignerKeygenProductizationScopeV1 {
         schema: PATH2_NATIVE_SIGNER_KEYGEN_PRODUCTIZATION_SCOPE_SCHEMA,
         productized: false,
@@ -59489,8 +62279,8 @@ pub fn path2_native_constant_time_audit_scope_v1_frame(
     frame
 }
 
-pub fn path2_native_storage_lifecycle_hardening_scope_v1(
-) -> Path2NativeStorageLifecycleHardeningScopeV1 {
+pub fn path2_native_storage_lifecycle_hardening_scope_v1()
+-> Path2NativeStorageLifecycleHardeningScopeV1 {
     Path2NativeStorageLifecycleHardeningScopeV1 {
         schema: PATH2_NATIVE_STORAGE_LIFECYCLE_HARDENING_SCOPE_SCHEMA,
         hardening_complete: false,
@@ -62631,8 +65421,8 @@ pub struct ProductionSelectedProjectionCandidateTimingFixture {
     pub carrier: HiddenSourceFallbackProjectionCarrier,
 }
 
-pub fn production_selected_projection_candidate_timing_fixture(
-) -> ProductionSelectedProjectionCandidateTimingFixture {
+pub fn production_selected_projection_candidate_timing_fixture()
+-> ProductionSelectedProjectionCandidateTimingFixture {
     let public_key = ProductionPublicKey::new(vec![0_u8; PK_BYTES]).unwrap();
     let message = b"selected 318-byte/Fq12 timing fixture".to_vec();
     let slot_id = 0_u32;
@@ -68471,6 +71261,47 @@ pub fn verify_path2_direct_single_slot_spend_authorization(
     Ok(parts)
 }
 
+pub fn path2_direct_public_result_with_rollback_v1<F>(
+    consumed_authorizations: &mut BTreeSet<[u8; DIGEST_BYTES]>,
+    verify: F,
+) -> Path2DirectSpendPublicResultV1
+where
+    F: FnOnce(&mut BTreeSet<[u8; DIGEST_BYTES]>) -> Result<u32, ProductionAccountBindingError>,
+{
+    let consumed_before = consumed_authorizations.clone();
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        verify(consumed_authorizations)
+    }));
+    match result {
+        Ok(Ok(slot_id)) => Path2DirectSpendPublicResultV1::accepted_spend(slot_id),
+        Ok(Err(err)) => {
+            *consumed_authorizations = consumed_before;
+            Path2DirectSpendPublicResultV1::rejected(
+                path2_direct_account_binding_public_result_class(&err),
+            )
+        }
+        Err(_) => {
+            *consumed_authorizations = consumed_before;
+            Path2DirectSpendPublicResultV1::rejected(
+                Path2PublicResultClassV1::InternalErrorFailClosed,
+            )
+        }
+    }
+}
+
+pub fn path2_sovereign_direct_client_result_with_rollback_v1<F>(
+    consumed_authorizations: &mut BTreeSet<[u8; DIGEST_BYTES]>,
+    verify: F,
+) -> Path2SovereignDirectClientResultV1
+where
+    F: FnOnce(&mut BTreeSet<[u8; DIGEST_BYTES]>) -> Result<u32, ProductionAccountBindingError>,
+{
+    path2_sovereign_direct_client_result_v1(path2_direct_public_result_with_rollback_v1(
+        consumed_authorizations,
+        verify,
+    ))
+}
+
 pub fn verify_path2_direct_single_slot_spend_authorization_public_result_v1(
     leaf: &Path2PrevalidatedSlotLeafV1,
     evidence: &Path2AccountCreationEvidenceV1,
@@ -68486,8 +71317,7 @@ pub fn verify_path2_direct_single_slot_spend_authorization_public_result_v1(
     )>,
     consumed_authorizations: &mut BTreeSet<[u8; DIGEST_BYTES]>,
 ) -> Path2DirectSpendPublicResultV1 {
-    let consumed_before = consumed_authorizations.clone();
-    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+    path2_direct_public_result_with_rollback_v1(consumed_authorizations, |consumed| {
         verify_path2_direct_single_slot_spend_authorization(
             leaf,
             evidence,
@@ -68497,24 +71327,522 @@ pub fn verify_path2_direct_single_slot_spend_authorization_public_result_v1(
             account,
             signature,
             admitted_state_authorizations,
-            consumed_authorizations,
+            consumed,
         )
-    }));
-    match result {
-        Ok(Ok(parts)) => Path2DirectSpendPublicResultV1::accepted_spend(parts.slot_id),
-        Ok(Err(err)) => {
-            *consumed_authorizations = consumed_before;
-            Path2DirectSpendPublicResultV1::rejected(
-                path2_direct_account_binding_public_result_class(&err),
-            )
-        }
-        Err(_) => {
-            *consumed_authorizations = consumed_before;
-            Path2DirectSpendPublicResultV1::rejected(
-                Path2PublicResultClassV1::InternalErrorFailClosed,
-            )
+        .map(|parts| parts.slot_id)
+    })
+}
+
+pub fn verify_path2_direct_single_slot_spend_authorization_sovereign_client_v1(
+    leaf: &Path2PrevalidatedSlotLeafV1,
+    evidence: &Path2AccountCreationEvidenceV1,
+    certificate: &Path2DirectReplayableRelationCertificateV1,
+    public_key: &ProductionPublicKey,
+    message: &[u8],
+    account: &ProductionReviewedFq12StateAssistedAccountState,
+    signature: &ProductionSignature,
+    admitted_state_authorizations: &BTreeSet<(
+        [u8; DIGEST_BYTES],
+        [u8; DIGEST_BYTES],
+        [u8; DIGEST_BYTES],
+    )>,
+    consumed_authorizations: &mut BTreeSet<[u8; DIGEST_BYTES]>,
+) -> Path2SovereignDirectClientResultV1 {
+    path2_sovereign_direct_client_result_v1(
+        verify_path2_direct_single_slot_spend_authorization_public_result_v1(
+            leaf,
+            evidence,
+            certificate,
+            public_key,
+            message,
+            account,
+            signature,
+            admitted_state_authorizations,
+            consumed_authorizations,
+        ),
+    )
+}
+
+pub type Path2DirectAdmissionNamespaceKeyV1 =
+    ([u8; DIGEST_BYTES], [u8; DIGEST_BYTES], [u8; DIGEST_BYTES]);
+pub type Path2AccountStarkNullifierV1 = [u8; DIGEST_BYTES];
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Path2SovereignDirectAdmissionRecordV1 {
+    pub schema: &'static str,
+    pub profile_id: &'static str,
+    pub account_id: [u8; DIGEST_BYTES],
+    pub account_state_root_before: [u8; DIGEST_BYTES],
+    pub slot_authorization_digest: [u8; DIGEST_BYTES],
+    pub canonical_leaf_bytes: Vec<u8>,
+    pub slot_leaf_digest: [u8; DIGEST_BYTES],
+    pub evidence_transcript_digest: [u8; DIGEST_BYTES],
+    pub pad_seed_nullifier: Path2AccountStarkNullifierV1,
+    pub admitted_at_height: u64,
+}
+
+impl Path2SovereignDirectAdmissionRecordV1 {
+    pub fn namespace_key(&self) -> Path2DirectAdmissionNamespaceKeyV1 {
+        (
+            self.account_id,
+            self.account_state_root_before,
+            self.slot_authorization_digest,
+        )
+    }
+}
+
+/// Opaque admission candidate constructed only by the selected account-STARK
+/// verifier path (or inside this module's tests). Consensus registration never
+/// accepts a raw caller-supplied nullifier.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Path2VerifiedSovereignCreationAdmissionV1 {
+    record: Path2SovereignDirectAdmissionRecordV1,
+    selected_payload_digest: [u8; DIGEST_BYTES],
+    account_stark_bundle_digest: [u8; DIGEST_BYTES],
+    raw_verifier_version: u32,
+}
+
+impl Path2VerifiedSovereignCreationAdmissionV1 {
+    pub fn namespace_key(&self) -> Path2DirectAdmissionNamespaceKeyV1 {
+        self.record.namespace_key()
+    }
+
+    pub fn pad_seed_nullifier(&self) -> Path2AccountStarkNullifierV1 {
+        self.record.pad_seed_nullifier
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct Path2SovereignNullifierRegistryEntryV1 {
+    namespace_key: Path2DirectAdmissionNamespaceKeyV1,
+    admitted_at_height: u64,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Path2SovereignDirectAdmissionSnapshotV1 {
+    profile_id: &'static str,
+    finalized_head: u64,
+    head: u64,
+    records: BTreeMap<Path2DirectAdmissionNamespaceKeyV1, Path2SovereignDirectAdmissionRecordV1>,
+    nullifier_registry:
+        BTreeMap<Path2AccountStarkNullifierV1, Path2SovereignNullifierRegistryEntryV1>,
+}
+
+/// Trusted checkpoint binding for snapshot restore. Placement and persistence
+/// of this anchor remain target-chain deployment responsibilities.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Path2SovereignDirectAdmissionRestoreAnchorV1 {
+    profile_id: &'static str,
+    finalized_head: u64,
+    state_digest: [u8; DIGEST_BYTES],
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Path2SovereignDirectAdmissionStateV1 {
+    profile_id: &'static str,
+    finalized_head: u64,
+    head: u64,
+    records: BTreeMap<Path2DirectAdmissionNamespaceKeyV1, Path2SovereignDirectAdmissionRecordV1>,
+    nullifier_registry:
+        BTreeMap<Path2AccountStarkNullifierV1, Path2SovereignNullifierRegistryEntryV1>,
+}
+
+impl Path2SovereignDirectAdmissionStateV1 {
+    pub fn new() -> Self {
+        Self {
+            profile_id: PATH2_SOVEREIGN_DIRECT_CLIENT_PROFILE_ID_V1,
+            finalized_head: 0,
+            head: 0,
+            records: BTreeMap::new(),
+            nullifier_registry: BTreeMap::new(),
         }
     }
+
+    pub fn profile_id(&self) -> &'static str {
+        self.profile_id
+    }
+
+    pub fn finalized_head(&self) -> u64 {
+        self.finalized_head
+    }
+
+    pub fn head(&self) -> u64 {
+        self.head
+    }
+
+    pub fn record_count(&self) -> usize {
+        self.records.len()
+    }
+
+    pub fn nullifier_count(&self) -> usize {
+        self.nullifier_registry.len()
+    }
+
+    pub fn snapshot(&self) -> Path2SovereignDirectAdmissionSnapshotV1 {
+        Path2SovereignDirectAdmissionSnapshotV1 {
+            profile_id: self.profile_id,
+            finalized_head: self.finalized_head,
+            head: self.head,
+            records: self.records.clone(),
+            nullifier_registry: self.nullifier_registry.clone(),
+        }
+    }
+
+    pub fn restore_anchor(&self) -> Path2SovereignDirectAdmissionRestoreAnchorV1 {
+        Path2SovereignDirectAdmissionRestoreAnchorV1 {
+            profile_id: self.profile_id,
+            finalized_head: self.finalized_head,
+            state_digest: self.state_digest(),
+        }
+    }
+
+    pub fn restore(
+        snapshot: Path2SovereignDirectAdmissionSnapshotV1,
+        anchor: &Path2SovereignDirectAdmissionRestoreAnchorV1,
+    ) -> Result<Self, String> {
+        let state = Self {
+            profile_id: snapshot.profile_id,
+            finalized_head: snapshot.finalized_head,
+            head: snapshot.head,
+            records: snapshot.records,
+            nullifier_registry: snapshot.nullifier_registry,
+        };
+        state.validate_integrity()?;
+        if anchor.profile_id != state.profile_id
+            || anchor.finalized_head != state.finalized_head
+            || anchor.state_digest != state.state_digest()
+        {
+            return Err("Path 2 sovereign admission restore anchor mismatch".to_string());
+        }
+        Ok(state)
+    }
+
+    fn validate_integrity(&self) -> Result<(), String> {
+        if self.profile_id != PATH2_SOVEREIGN_DIRECT_CLIENT_PROFILE_ID_V1
+            || self.finalized_head > self.head
+            || self.records.len() != self.nullifier_registry.len()
+        {
+            return Err("Path 2 sovereign admission snapshot metadata mismatch".to_string());
+        }
+        for (key, record) in &self.records {
+            let nullifier_entry = self
+                .nullifier_registry
+                .get(&record.pad_seed_nullifier)
+                .ok_or_else(|| {
+                    "Path 2 sovereign admission snapshot nullifier index missing".to_string()
+                })?;
+            if record.schema != PATH2_SOVEREIGN_DIRECT_ADMISSION_RECORD_SCHEMA_V1
+                || record.profile_id != self.profile_id
+                || record.namespace_key() != *key
+                || record.admitted_at_height > self.head
+                || nullifier_entry.namespace_key != *key
+                || nullifier_entry.admitted_at_height != record.admitted_at_height
+            {
+                return Err("Path 2 sovereign admission snapshot index mismatch".to_string());
+            }
+        }
+        Ok(())
+    }
+
+    pub fn advance_head(&mut self, new_head: u64) -> Result<(), String> {
+        if new_head <= self.head {
+            return Err(
+                "Path 2 sovereign admission state requires a strictly increasing head".to_string(),
+            );
+        }
+        self.head = new_head;
+        Ok(())
+    }
+
+    pub fn finalize_to(&mut self, finalized_head: u64) -> Result<(), String> {
+        if finalized_head < self.finalized_head {
+            return Err(
+                "Path 2 sovereign admission state rejects finalized-head rollback".to_string(),
+            );
+        }
+        if finalized_head > self.head {
+            return Err("Path 2 sovereign admission state cannot finalize beyond head".to_string());
+        }
+        self.finalized_head = finalized_head;
+        Ok(())
+    }
+
+    pub fn reorg_to(&mut self, new_head: u64) -> Result<usize, String> {
+        if new_head < self.finalized_head {
+            return Err(
+                "Path 2 sovereign admission state rejects reorg below finalized head".to_string(),
+            );
+        }
+        if new_head > self.head {
+            return Err(
+                "Path 2 sovereign admission state cannot reorg above current head".to_string(),
+            );
+        }
+        let before = self.records.len();
+        self.records
+            .retain(|_, record| record.admitted_at_height <= new_head);
+        self.nullifier_registry.clear();
+        for (key, record) in &self.records {
+            self.nullifier_registry.insert(
+                record.pad_seed_nullifier,
+                Path2SovereignNullifierRegistryEntryV1 {
+                    namespace_key: *key,
+                    admitted_at_height: record.admitted_at_height,
+                },
+            );
+        }
+        self.head = new_head;
+        self.validate_integrity()?;
+        Ok(before - self.records.len())
+    }
+
+    pub fn admit_verified_creation_block(
+        &mut self,
+        candidate_head: u64,
+        candidates: &[Path2VerifiedSovereignCreationAdmissionV1],
+    ) -> Result<Vec<[u8; DIGEST_BYTES]>, String> {
+        let before_digest = self.state_digest();
+        if candidate_head <= self.finalized_head {
+            return Err(
+                "Path 2 sovereign admission requires an unfinalized candidate head".to_string(),
+            );
+        }
+        if candidate_head <= self.head {
+            return Err(
+                "Path 2 sovereign admission requires a strictly increasing candidate head"
+                    .to_string(),
+            );
+        }
+        if candidates.is_empty() {
+            return Err("Path 2 sovereign admission block is empty".to_string());
+        }
+        let mut block_keys = BTreeSet::new();
+        let mut block_nullifiers = BTreeSet::new();
+        for candidate in candidates {
+            let key = candidate.namespace_key();
+            let nullifier = candidate.pad_seed_nullifier();
+            if candidate.record.schema != PATH2_SOVEREIGN_DIRECT_ADMISSION_RECORD_SCHEMA_V1
+                || candidate.record.profile_id != self.profile_id
+                || candidate.raw_verifier_version != PATH2_ACCOUNT_STARK_VERIFIER_VERSION
+                || candidate.selected_payload_digest == [0_u8; DIGEST_BYTES]
+                || candidate.account_stark_bundle_digest == [0_u8; DIGEST_BYTES]
+            {
+                return Err("Path 2 verified sovereign admission candidate mismatch".to_string());
+            }
+            if self.records.contains_key(&key) || !block_keys.insert(key) {
+                debug_assert_eq!(self.state_digest(), before_digest);
+                return Err("Path 2 duplicate sovereign slot admission".to_string());
+            }
+            if self.nullifier_registry.contains_key(&nullifier)
+                || !block_nullifiers.insert(nullifier)
+            {
+                debug_assert_eq!(self.state_digest(), before_digest);
+                return Err("Path 2 duplicate sovereign account-STARK nullifier".to_string());
+            }
+        }
+
+        let mut next_state = self.clone();
+        next_state.head = candidate_head;
+        let mut digests = Vec::with_capacity(candidates.len());
+        for candidate in candidates {
+            let key = candidate.namespace_key();
+            let nullifier = candidate.pad_seed_nullifier();
+            let mut record = candidate.record.clone();
+            record.admitted_at_height = candidate_head;
+            next_state.records.insert(key, record);
+            next_state.nullifier_registry.insert(
+                nullifier,
+                Path2SovereignNullifierRegistryEntryV1 {
+                    namespace_key: key,
+                    admitted_at_height: candidate_head,
+                },
+            );
+            digests.push(path2_direct_admission_namespace_record_digest(
+                &key.0, &key.1, &key.2,
+            ));
+        }
+        next_state.validate_integrity()?;
+        *self = next_state;
+        Ok(digests)
+    }
+
+    #[cfg(test)]
+    fn admit_verified_creation(
+        &mut self,
+        candidate_head: u64,
+        candidate: Path2VerifiedSovereignCreationAdmissionV1,
+    ) -> Result<[u8; DIGEST_BYTES], String> {
+        self.admit_verified_creation_block(candidate_head, &[candidate])?
+            .into_iter()
+            .next()
+            .ok_or_else(|| "Path 2 empty sovereign admission block".to_string())
+    }
+
+    pub fn require_available_record(
+        &self,
+        leaf: &Path2PrevalidatedSlotLeafV1,
+        evidence: &Path2AccountCreationEvidenceV1,
+        certificate: &Path2DirectReplayableRelationCertificateV1,
+    ) -> Result<&Path2SovereignDirectAdmissionRecordV1, String> {
+        verify_path2_prevalidated_slot_creation_payload_bindings(
+            leaf,
+            evidence,
+            Some(certificate),
+        )?;
+        let canonical_leaf_bytes = path2_prevalidated_slot_leaf_v1_bytes(leaf)?;
+        let slot_leaf_digest = path2_prevalidated_slot_leaf_digest(leaf)?;
+        let slot_authorization_digest = path2_slot_authorization_digest(leaf)?;
+        let evidence_transcript_digest =
+            path2_account_creation_evidence_transcript_digest(evidence)?;
+        let key = (
+            leaf.account_id,
+            leaf.account_state_root_before,
+            slot_authorization_digest,
+        );
+        let record = self.records.get(&key).ok_or_else(|| {
+            "Path 2 slot authorization not admitted in state namespace".to_string()
+        })?;
+        if record.schema != PATH2_SOVEREIGN_DIRECT_ADMISSION_RECORD_SCHEMA_V1
+            || record.profile_id != self.profile_id
+            || record.namespace_key() != key
+            || record.canonical_leaf_bytes != canonical_leaf_bytes
+            || record.slot_leaf_digest != slot_leaf_digest
+            || record.evidence_transcript_digest != evidence_transcript_digest
+            || record.admitted_at_height > self.head
+            || self
+                .nullifier_registry
+                .get(&record.pad_seed_nullifier)
+                .map(|entry| (entry.namespace_key, entry.admitted_at_height))
+                != Some((key, record.admitted_at_height))
+        {
+            return Err(
+                "Path 2 internal sovereign admission state record unavailable or corrupt"
+                    .to_string(),
+            );
+        }
+        Ok(record)
+    }
+
+    pub fn state_digest(&self) -> [u8; DIGEST_BYTES] {
+        let mut frame = Vec::new();
+        append_frame(
+            &mut frame,
+            b"domain",
+            b"Descender.Path2.SovereignDirectAdmissionState.v1",
+        );
+        append_frame(&mut frame, b"profile_id", self.profile_id.as_bytes());
+        append_u64(&mut frame, b"finalized_head", self.finalized_head);
+        append_u64(&mut frame, b"head", self.head);
+        append_u64(&mut frame, b"record_count", self.records.len() as u64);
+        for (index, (key, record)) in self.records.iter().enumerate() {
+            append_u64(&mut frame, b"record_index", index as u64);
+            append_frame(&mut frame, b"account_id", &key.0);
+            append_frame(&mut frame, b"account_state_root_before", &key.1);
+            append_frame(&mut frame, b"slot_authorization_digest", &key.2);
+            append_frame(
+                &mut frame,
+                b"canonical_leaf_bytes",
+                &record.canonical_leaf_bytes,
+            );
+            append_frame(&mut frame, b"slot_leaf_digest", &record.slot_leaf_digest);
+            append_frame(
+                &mut frame,
+                b"evidence_transcript_digest",
+                &record.evidence_transcript_digest,
+            );
+            append_frame(
+                &mut frame,
+                b"pad_seed_nullifier",
+                &record.pad_seed_nullifier,
+            );
+            append_u64(&mut frame, b"admitted_at_height", record.admitted_at_height);
+        }
+        append_u64(
+            &mut frame,
+            b"nullifier_count",
+            self.nullifier_registry.len() as u64,
+        );
+        for (index, (nullifier, entry)) in self.nullifier_registry.iter().enumerate() {
+            append_u64(&mut frame, b"nullifier_index", index as u64);
+            append_frame(&mut frame, b"pad_seed_nullifier", nullifier);
+            append_frame(&mut frame, b"account_id", &entry.namespace_key.0);
+            append_frame(
+                &mut frame,
+                b"account_state_root_before",
+                &entry.namespace_key.1,
+            );
+            append_frame(
+                &mut frame,
+                b"slot_authorization_digest",
+                &entry.namespace_key.2,
+            );
+            append_u64(&mut frame, b"admitted_at_height", entry.admitted_at_height);
+        }
+        Sha256::digest(frame).into()
+    }
+}
+
+impl Default for Path2SovereignDirectAdmissionStateV1 {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(test)]
+fn path2_test_verified_sovereign_creation_admission_v1(
+    leaf: &Path2PrevalidatedSlotLeafV1,
+    evidence: &Path2AccountCreationEvidenceV1,
+    certificate: &Path2DirectReplayableRelationCertificateV1,
+    pad_seed_nullifier: Path2AccountStarkNullifierV1,
+) -> Result<Path2VerifiedSovereignCreationAdmissionV1, String> {
+    verify_path2_prevalidated_slot_creation_payload_bindings(leaf, evidence, Some(certificate))?;
+    Ok(Path2VerifiedSovereignCreationAdmissionV1 {
+        record: Path2SovereignDirectAdmissionRecordV1 {
+            schema: PATH2_SOVEREIGN_DIRECT_ADMISSION_RECORD_SCHEMA_V1,
+            profile_id: PATH2_SOVEREIGN_DIRECT_CLIENT_PROFILE_ID_V1,
+            account_id: leaf.account_id,
+            account_state_root_before: leaf.account_state_root_before,
+            slot_authorization_digest: path2_slot_authorization_digest(leaf)?,
+            canonical_leaf_bytes: path2_prevalidated_slot_leaf_v1_bytes(leaf)?.to_vec(),
+            slot_leaf_digest: path2_prevalidated_slot_leaf_digest(leaf)?,
+            evidence_transcript_digest: path2_account_creation_evidence_transcript_digest(
+                evidence,
+            )?,
+            pad_seed_nullifier,
+            admitted_at_height: 0,
+        },
+        selected_payload_digest: Sha256::digest(b"test-selected-account-stark-payload").into(),
+        account_stark_bundle_digest: Sha256::digest(b"test-account-stark-bundle").into(),
+        raw_verifier_version: PATH2_ACCOUNT_STARK_VERIFIER_VERSION,
+    })
+}
+
+pub fn verify_path2_direct_single_slot_spend_authorization_from_sovereign_state_v1(
+    leaf: &Path2PrevalidatedSlotLeafV1,
+    evidence: &Path2AccountCreationEvidenceV1,
+    certificate: &Path2DirectReplayableRelationCertificateV1,
+    public_key: &ProductionPublicKey,
+    message: &[u8],
+    account: &ProductionReviewedFq12StateAssistedAccountState,
+    signature: &ProductionSignature,
+    admission_state: &Path2SovereignDirectAdmissionStateV1,
+    consumed_authorizations: &mut BTreeSet<[u8; DIGEST_BYTES]>,
+) -> Result<ProductionReviewedFq12AccountCarriedSignatureParts, ProductionAccountBindingError> {
+    let record = admission_state
+        .require_available_record(leaf, evidence, certificate)
+        .map_err(|err| ProductionAccountBindingError::new(None, err))?;
+    let admitted_state_authorizations = BTreeSet::from([record.namespace_key()]);
+    verify_path2_direct_single_slot_spend_authorization(
+        leaf,
+        evidence,
+        certificate,
+        public_key,
+        message,
+        account,
+        signature,
+        &admitted_state_authorizations,
+        consumed_authorizations,
+    )
 }
 
 pub fn path2_direct_admission_namespace_record_digest(
@@ -68577,6 +71905,14 @@ fn path2_direct_referenced_obligations_open_or_imported_v1(obligation_ids: &[&st
             PATH2_DIRECT_THEOREM_OBLIGATION_ROWS.iter().any(|row| {
                 row.obligation_id == *obligation_id
                     && (row.open
+                        || (*obligation_id == "direct_obligation_leaf_canonical_live"
+                            && row.acceptance_hypothesis == "leaf_is_canonical_and_live")
+                        || (*obligation_id == "direct_obligation_evidence_leaf_bindings"
+                            && row.acceptance_hypothesis
+                                == "evidence_envelope_matches_leaf_bindings")
+                        || (*obligation_id == "direct_obligation_admission_namespace"
+                            && row.acceptance_hypothesis
+                                == "direct_admission_namespace_contains_exact_tuple")
                         || (*obligation_id == "direct_obligation_consume_once"
                             && row.acceptance_hypothesis
                                 == "lifecycle_transition_consumes_authorization_once")
@@ -68585,7 +71921,10 @@ fn path2_direct_referenced_obligations_open_or_imported_v1(obligation_ids: &[&st
                                 == "checked_core_challenge_binds_public_spend_context")
                         || (*obligation_id == "direct_obligation_slot_authorization_digest"
                             && row.acceptance_hypothesis
-                                == "slot_authorization_digest_matches_canonical_leaf"))
+                                == "slot_authorization_digest_matches_canonical_leaf")
+                        || (*obligation_id == "direct_obligation_public_rejection"
+                            && row.acceptance_hypothesis
+                                == "rejection_is_deterministic_public_and_state_preserving"))
             })
         })
 }
@@ -68596,15 +71935,26 @@ fn path2_direct_referenced_obligations_closed_by_import_v1(obligation_ids: &[&st
             PATH2_DIRECT_THEOREM_OBLIGATION_ROWS.iter().any(|row| {
                 row.obligation_id == *obligation_id
                     && !row.open
-                    && ((*obligation_id == "direct_obligation_consume_once"
-                        && row.acceptance_hypothesis
-                            == "lifecycle_transition_consumes_authorization_once")
+                    && ((*obligation_id == "direct_obligation_leaf_canonical_live"
+                        && row.acceptance_hypothesis == "leaf_is_canonical_and_live")
+                        || (*obligation_id == "direct_obligation_evidence_leaf_bindings"
+                            && row.acceptance_hypothesis
+                                == "evidence_envelope_matches_leaf_bindings")
+                        || (*obligation_id == "direct_obligation_admission_namespace"
+                            && row.acceptance_hypothesis
+                                == "direct_admission_namespace_contains_exact_tuple")
+                        || (*obligation_id == "direct_obligation_consume_once"
+                            && row.acceptance_hypothesis
+                                == "lifecycle_transition_consumes_authorization_once")
                         || (*obligation_id == "direct_obligation_checked_core_frame_binding"
                             && row.acceptance_hypothesis
                                 == "checked_core_challenge_binds_public_spend_context")
                         || (*obligation_id == "direct_obligation_slot_authorization_digest"
                             && row.acceptance_hypothesis
-                                == "slot_authorization_digest_matches_canonical_leaf"))
+                                == "slot_authorization_digest_matches_canonical_leaf")
+                        || (*obligation_id == "direct_obligation_public_rejection"
+                            && row.acceptance_hypothesis
+                                == "rejection_is_deterministic_public_and_state_preserving"))
             })
         })
 }
@@ -69020,6 +72370,34 @@ pub fn verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v
     )
 }
 
+pub fn verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_from_sovereign_state_v1(
+    leaf: &Path2PrevalidatedSlotLeafV1,
+    evidence: &Path2AccountCreationEvidenceV1,
+    certificate: &Path2DirectReplayableRelationCertificateV1,
+    public_key: &ProductionPublicKey,
+    message: &[u8],
+    account: &ProductionReviewedFq12StateAssistedAccountState,
+    signature: &ProductionSignature,
+    admission_state: &Path2SovereignDirectAdmissionStateV1,
+    consumed_authorizations: &mut BTreeSet<[u8; DIGEST_BYTES]>,
+) -> Result<Path2DirectAcceptedSpendTupleEvidenceV1, ProductionAccountBindingError> {
+    let record = admission_state
+        .require_available_record(leaf, evidence, certificate)
+        .map_err(|err| ProductionAccountBindingError::new(None, err))?;
+    let admitted_state_authorizations = BTreeSet::from([record.namespace_key()]);
+    verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1(
+        leaf,
+        evidence,
+        certificate,
+        public_key,
+        message,
+        account,
+        signature,
+        &admitted_state_authorizations,
+        consumed_authorizations,
+    )
+}
+
 #[cfg(feature = "account-creation-stark-verifier")]
 struct Path2DirectAcceptedSpendTupleKatContextV1 {
     direct_report: Path2DirectTheoremBoundaryReportV1,
@@ -69035,8 +72413,8 @@ struct Path2DirectAcceptedSpendTupleKatContextV1 {
 }
 
 #[cfg(feature = "account-creation-stark-verifier")]
-fn path2_direct_accepted_spend_tuple_kat_context_v1(
-) -> Result<Path2DirectAcceptedSpendTupleKatContextV1, String> {
+fn path2_direct_accepted_spend_tuple_kat_context_v1()
+-> Result<Path2DirectAcceptedSpendTupleKatContextV1, String> {
     let direct_report = path2_direct_theorem_boundary_report_v1();
     validate_path2_direct_theorem_boundary_report_v1(&direct_report)?;
     let qrom_report = path2_direct_qrom_action_boundary_report_v1();
@@ -69050,21 +72428,19 @@ fn path2_direct_accepted_spend_tuple_kat_context_v1(
     let creation_evidence =
         path2_account_creation_accepted_proof_boundary_evidence_for_fixture_v1(&stark_fixture)?;
 
-    verify_path2_direct_creation_account_stark_payload_boundary(
-        &stark_fixture.leaf,
-        &stark_fixture.evidence,
-        &stark_fixture.certificate,
-        &stark_fixture.binding,
-        &stark_fixture.payload,
-    )?;
-
     let authorization = path2_slot_authorization_digest(&stark_fixture.leaf)?;
-    let mut admitted_state_authorizations = BTreeSet::new();
-    admitted_state_authorizations.insert((
-        stark_fixture.leaf.account_id,
-        stark_fixture.leaf.account_state_root_before,
-        authorization,
-    ));
+    let mut admission_state = Path2SovereignDirectAdmissionStateV1::new();
+    verify_and_admit_path2_direct_creation_account_stark_block_v1(
+        &mut admission_state,
+        1,
+        &[Path2AccountStarkCreationAdmissionInputV1 {
+            leaf: &stark_fixture.leaf,
+            evidence: &stark_fixture.evidence,
+            certificate: &stark_fixture.certificate,
+            binding: &stark_fixture.binding,
+            payload: &stark_fixture.payload,
+        }],
+    )?;
     let responses = ProductionCompactResponses {
         active_free: [[0_i16; LOCAL_FREE]; REPS],
     };
@@ -69082,7 +72458,7 @@ fn path2_direct_accepted_spend_tuple_kat_context_v1(
     .map_err(|err| err.reason().to_string())?;
     let mut consumed = BTreeSet::new();
     let tuple_evidence =
-        verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1(
+        verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_from_sovereign_state_v1(
             &stark_fixture.leaf,
             &stark_fixture.evidence,
             &stark_fixture.certificate,
@@ -69090,7 +72466,7 @@ fn path2_direct_accepted_spend_tuple_kat_context_v1(
             reviewed_fixture.message,
             &reviewed_fixture.account,
             &signature,
-            &admitted_state_authorizations,
+            &admission_state,
             &mut consumed,
         )
         .map_err(|err| err.reason().to_string())?;
@@ -69109,7 +72485,7 @@ fn path2_direct_accepted_spend_tuple_kat_context_v1(
         return Err("Path 2 direct accepted spend tuple KAT lost acceptance flags".to_string());
     }
     let replay_rejected_by_consume_once =
-        match verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1(
+        match verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_from_sovereign_state_v1(
             &stark_fixture.leaf,
             &stark_fixture.evidence,
             &stark_fixture.certificate,
@@ -69117,7 +72493,7 @@ fn path2_direct_accepted_spend_tuple_kat_context_v1(
             reviewed_fixture.message,
             &reviewed_fixture.account,
             &signature,
-            &admitted_state_authorizations,
+            &admission_state,
             &mut consumed,
         ) {
             Ok(_) => false,
@@ -69145,8 +72521,8 @@ fn path2_direct_accepted_spend_tuple_kat_context_v1(
 }
 
 #[cfg(feature = "account-creation-stark-verifier")]
-fn path2_direct_accepted_spend_tuple_kat_evidence_unpooled_v1(
-) -> Result<Path2DirectAcceptedSpendTupleKatEvidenceV1, String> {
+fn path2_direct_accepted_spend_tuple_kat_evidence_unpooled_v1()
+-> Result<Path2DirectAcceptedSpendTupleKatEvidenceV1, String> {
     let context = path2_direct_accepted_spend_tuple_kat_context_v1()?;
     Ok(Path2DirectAcceptedSpendTupleKatEvidenceV1 {
         account_creation_fixture_id: context.stark_fixture.fixture_id,
@@ -69157,8 +72533,8 @@ fn path2_direct_accepted_spend_tuple_kat_evidence_unpooled_v1(
 }
 
 #[cfg(feature = "account-creation-stark-verifier")]
-pub fn path2_direct_accepted_spend_tuple_kat_evidence_v1(
-) -> Result<Path2DirectAcceptedSpendTupleKatEvidenceV1, String> {
+pub fn path2_direct_accepted_spend_tuple_kat_evidence_v1()
+-> Result<Path2DirectAcceptedSpendTupleKatEvidenceV1, String> {
     let pool = rayon::ThreadPoolBuilder::new()
         .num_threads(1)
         .build()
@@ -69260,10 +72636,13 @@ fn path2_direct_accepted_composition_hypothesis_evidence_rows_v1(
         row(
             "checked_core_verification_accepts_poseidon2_and_fq12_action",
             "direct_obligation_checked_core_acceptance",
-            "accepted direct spend tuple and QROM/action boundary digest",
-            "direct_spend_tuple_accepts && qrom_action_digest_matches_direct_theorem",
+            "accepted direct spend tuple, QROM/action boundary digest, imported local budget bridge, and explicit theorem-linkage hypothesis",
+            "direct_spend_tuple_accepts && qrom_action_digest_matches_direct_theorem && qrom_action_budget_bridge_imported && qrom_action_theorem_linkage_reduction_imported && qrom_action_review_hypothesis_explicit",
             evidence.direct_spend_tuple_accepts
-                && evidence.qrom_action_digest_matches_direct_theorem,
+                && evidence.qrom_action_digest_matches_direct_theorem
+                && evidence.qrom_action_budget_bridge_imported
+                && evidence.qrom_action_theorem_linkage_reduction_imported
+                && evidence.qrom_action_review_hypothesis_explicit,
             false,
         ),
         row(
@@ -69278,17 +72657,19 @@ fn path2_direct_accepted_composition_hypothesis_evidence_rows_v1(
         row(
             "rejection_is_deterministic_public_and_state_preserving",
             "direct_obligation_public_rejection",
-            "direct public rejection KAT suite",
-            "not a happy-path composition property; covered by direct rejection KAT gates",
-            false,
+            "typed public-object rejection KATs, selected sovereign-client mapping, and concrete Lean closure theorem",
+            "direct_public_rejection_state_preserving_imported && direct_public_rejection_all_public_objects_kat_covered && direct_public_rejection_target_client_mapping_complete",
+            direct_report.direct_public_rejection_state_preserving_imported
+                && direct_report.direct_public_rejection_all_public_objects_kat_covered
+                && direct_report.direct_public_rejection_target_client_mapping_complete,
             true,
         ),
     ]
 }
 
 #[cfg(feature = "account-creation-stark-verifier")]
-fn path2_direct_accepted_composition_evidence_unpooled_v1(
-) -> Result<Path2DirectAcceptedCompositionEvidenceV1, String> {
+fn path2_direct_accepted_composition_evidence_unpooled_v1()
+-> Result<Path2DirectAcceptedCompositionEvidenceV1, String> {
     let Path2DirectAcceptedSpendTupleKatContextV1 {
         direct_report,
         qrom_report,
@@ -69322,6 +72703,23 @@ fn path2_direct_accepted_composition_evidence_unpooled_v1(
     let qrom_action_digest_matches_direct_theorem =
         direct_report.direct_qrom_action_boundary_report_digest == qrom_report.digest
             && tuple_evidence.direct_qrom_action_boundary_report_digest == qrom_report.digest;
+    let qrom_action_budget_bridge_imported = direct_report.qrom_action_budget_bridge_imported
+        && direct_report.qrom_action_budget_bridge_lean_theorem
+            == qrom_report.direct_qrom_action_budget_bridge_lean_theorem
+        && qrom_report.direct_qrom_action_budget_bridge_bound;
+    let qrom_action_theorem_linkage_reduction_imported = direct_report
+        .qrom_action_theorem_linkage_reduction_imported
+        && direct_report.qrom_action_theorem_linkage_reduction_lean_theorem
+            == PATH2_DIRECT_QROM_ACTION_THEOREM_LINKAGE_REDUCTION_LEAN_THEOREM
+        && direct_report.qrom_action_review_hypothesis_explicit;
+    let qrom_action_review_hypothesis_explicit = direct_report
+        .qrom_action_review_hypothesis_explicit
+        && !direct_report.qrom_and_action_bounds_linked_to_theorem;
+    let qrom_action_external_review_still_open = !qrom_report.theorem_imports_budget
+        && !qrom_report.external_qrom_review_complete
+        && !qrom_report.qrom_and_action_bounds_linked_to_theorem
+        && !qrom_report.deployment_ready
+        && !direct_report.qrom_and_action_bounds_linked_to_theorem;
     let lifecycle_digest_matches_direct_theorem =
         direct_report.direct_lifecycle_boundary_report_digest == lifecycle_report.digest
             && tuple_evidence.direct_lifecycle_boundary_report_digest == lifecycle_report.digest;
@@ -69346,6 +72744,10 @@ fn path2_direct_accepted_composition_evidence_unpooled_v1(
     if !creation_evidence_matches_direct_tuple
         || !proof_boundary_digest_matches_direct_theorem
         || !qrom_action_digest_matches_direct_theorem
+        || !qrom_action_budget_bridge_imported
+        || !qrom_action_theorem_linkage_reduction_imported
+        || !qrom_action_review_hypothesis_explicit
+        || !qrom_action_external_review_still_open
         || !lifecycle_digest_matches_direct_theorem
         || !direct_admission_namespace_matches_authorization
         || !consume_once_transition_matches_tuple
@@ -69389,6 +72791,10 @@ fn path2_direct_accepted_composition_evidence_unpooled_v1(
         creation_evidence_matches_direct_tuple,
         proof_boundary_digest_matches_direct_theorem,
         qrom_action_digest_matches_direct_theorem,
+        qrom_action_budget_bridge_imported,
+        qrom_action_theorem_linkage_reduction_imported,
+        qrom_action_review_hypothesis_explicit,
+        qrom_action_external_review_still_open,
         lifecycle_digest_matches_direct_theorem,
         direct_admission_namespace_matches_authorization,
         consume_once_transition_matches_tuple,
@@ -69443,8 +72849,8 @@ fn path2_direct_accepted_composition_evidence_unpooled_v1(
 }
 
 #[cfg(feature = "account-creation-stark-verifier")]
-pub fn path2_direct_accepted_composition_evidence_v1(
-) -> Result<Path2DirectAcceptedCompositionEvidenceV1, String> {
+pub fn path2_direct_accepted_composition_evidence_v1()
+-> Result<Path2DirectAcceptedCompositionEvidenceV1, String> {
     let pool = rayon::ThreadPoolBuilder::new()
         .num_threads(1)
         .build()
@@ -69569,6 +72975,7 @@ pub fn validate_path2_account_creation_accepted_proof_boundary_evidence_v1(
                 != path2_account_creation_masked_projection_digest(
                     &fixture.payload.masked_projection,
                 )
+            || evidence.pad_seed_nullifier != fixture.payload.pad_seed_nullifier
             || evidence.deployed_anchor_digest != deployed_anchor_digest
             || evidence.payload_frame_digest != payload_frame_digest
             || evidence.payload_frame_bytes != payload_frame.len()
@@ -69679,6 +73086,10 @@ pub fn validate_path2_account_creation_accepted_proof_boundary_evidence_v1(
         (
             "deployed_anchor_packed_witness_commitment_bound",
             evidence.deployed_anchor_packed_witness_commitment_bound,
+        ),
+        (
+            "deployed_anchor_pad_seed_nullifier_bound",
+            evidence.deployed_anchor_pad_seed_nullifier_bound,
         ),
         (
             "deployed_anchor_fields_match_report",
@@ -69794,8 +73205,8 @@ pub fn validate_path2_direct_accepted_spend_tuple_evidence_v1(
             != evidence.accepted_tuple_field_evidence_rows.len()
         || evidence.accepted_tuple_field_evidence_present_count
             != PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
-        || evidence.accepted_tuple_field_open_obligation_count != 6
-        || evidence.accepted_tuple_field_imported_closure_count != 2
+        || evidence.accepted_tuple_field_open_obligation_count != 1
+        || evidence.accepted_tuple_field_imported_closure_count != 9
         || !evidence.every_accepted_tuple_field_has_evidence
         || evidence.every_accepted_tuple_field_has_open_direct_obligation
         || !evidence.every_accepted_tuple_field_has_open_or_imported_direct_obligation
@@ -69875,6 +73286,34 @@ pub fn validate_path2_direct_accepted_composition_evidence_v1(
                 .to_string(),
         );
     }
+    let qrom_action_budget_bridge_imported = direct_report.qrom_action_budget_bridge_imported
+        && direct_report.qrom_action_budget_bridge_lean_theorem
+            == qrom_report.direct_qrom_action_budget_bridge_lean_theorem
+        && qrom_report.direct_qrom_action_budget_bridge_bound;
+    let qrom_action_theorem_linkage_reduction_imported = direct_report
+        .qrom_action_theorem_linkage_reduction_imported
+        && direct_report.qrom_action_theorem_linkage_reduction_lean_theorem
+            == PATH2_DIRECT_QROM_ACTION_THEOREM_LINKAGE_REDUCTION_LEAN_THEOREM
+        && direct_report.qrom_action_review_hypothesis_explicit;
+    let qrom_action_review_hypothesis_explicit = direct_report
+        .qrom_action_review_hypothesis_explicit
+        && !direct_report.qrom_and_action_bounds_linked_to_theorem;
+    let qrom_action_external_review_still_open = !qrom_report.theorem_imports_budget
+        && !qrom_report.external_qrom_review_complete
+        && !qrom_report.qrom_and_action_bounds_linked_to_theorem
+        && !qrom_report.deployment_ready
+        && !direct_report.qrom_and_action_bounds_linked_to_theorem;
+    if evidence.qrom_action_budget_bridge_imported != qrom_action_budget_bridge_imported
+        || evidence.qrom_action_theorem_linkage_reduction_imported
+            != qrom_action_theorem_linkage_reduction_imported
+        || evidence.qrom_action_review_hypothesis_explicit != qrom_action_review_hypothesis_explicit
+        || evidence.qrom_action_external_review_still_open != qrom_action_external_review_still_open
+    {
+        return Err(
+            "Path 2 direct accepted composition evidence QROM/action theorem-linkage binding mismatch"
+                .to_string(),
+        );
+    }
     if evidence.direct_admission_namespace_record_digest
         != path2_direct_admission_namespace_record_digest(
             &evidence.account_id,
@@ -69894,7 +73333,7 @@ pub fn validate_path2_direct_accepted_composition_evidence_v1(
             != evidence.accepted_hypothesis_evidence_rows.len()
         || evidence.positive_acceptance_hypothesis_evidence_count != 8
         || !evidence.every_positive_acceptance_hypothesis_has_accepted_path_evidence
-        || !evidence.public_rejection_hypothesis_deferred_to_rejection_kats
+        || evidence.public_rejection_hypothesis_deferred_to_rejection_kats
     {
         return Err(
             "Path 2 direct accepted composition evidence lost hypothesis evidence rows".to_string(),
@@ -69913,6 +73352,22 @@ pub fn validate_path2_direct_accepted_composition_evidence_v1(
         (
             "qrom_action_digest_matches_direct_theorem",
             evidence.qrom_action_digest_matches_direct_theorem,
+        ),
+        (
+            "qrom_action_budget_bridge_imported",
+            evidence.qrom_action_budget_bridge_imported,
+        ),
+        (
+            "qrom_action_theorem_linkage_reduction_imported",
+            evidence.qrom_action_theorem_linkage_reduction_imported,
+        ),
+        (
+            "qrom_action_review_hypothesis_explicit",
+            evidence.qrom_action_review_hypothesis_explicit,
+        ),
+        (
+            "qrom_action_external_review_still_open",
+            evidence.qrom_action_external_review_still_open,
         ),
         (
             "lifecycle_digest_matches_direct_theorem",
@@ -69943,10 +73398,6 @@ pub fn validate_path2_direct_accepted_composition_evidence_v1(
             evidence.every_positive_acceptance_hypothesis_has_accepted_path_evidence,
         ),
         (
-            "public_rejection_hypothesis_deferred_to_rejection_kats",
-            evidence.public_rejection_hypothesis_deferred_to_rejection_kats,
-        ),
-        (
             "direct_theorem_obligations_still_open",
             evidence.direct_theorem_obligations_still_open,
         ),
@@ -69960,7 +73411,8 @@ pub fn validate_path2_direct_accepted_composition_evidence_v1(
             "Path 2 direct accepted composition evidence lost required flag {name}"
         ));
     }
-    if evidence.composition_theorem_instantiated
+    if evidence.public_rejection_hypothesis_deferred_to_rejection_kats
+        || evidence.composition_theorem_instantiated
         || evidence.account_creation_proof_boundary_verified
         || evidence.deployment_ready
     {
@@ -71235,6 +74687,254 @@ fn path2_account_stark_fri_qrom_residual_report_v1_frame(
         b"poseidon2_sponge_floor_bits",
         report.poseidon2_sponge_floor_bits as u64,
     );
+    append_u64(
+        &mut frame,
+        b"fs_challenger_rate",
+        report.fs_challenger_rate as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"fs_challenger_capacity",
+        report.fs_challenger_capacity as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"fs_challenger_capacity_bits_floor",
+        report.fs_challenger_capacity_bits_floor as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"fs_challenger_generic_collision_bits_floor",
+        report.fs_challenger_generic_collision_bits_floor as u64,
+    );
+    append_u64(&mut frame, b"fs_target_rate", report.fs_target_rate as u64);
+    append_u64(
+        &mut frame,
+        b"fs_target_capacity",
+        report.fs_target_capacity as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"fs_target_generic_collision_bits_floor",
+        report.fs_target_generic_collision_bits_floor as u64,
+    );
+    append_frame(
+        &mut frame,
+        b"fs_c9_reference_source",
+        report.fs_c9_reference_source.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"fs_c9_reference_native_fidelity_test",
+        report.fs_c9_reference_native_fidelity_test.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"fs_c9_reference_native_fidelity_bound",
+        u64::from(report.fs_c9_reference_native_fidelity_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"fs_c9_production_migration_complete",
+        u64::from(report.fs_c9_production_migration_complete),
+    );
+    append_frame(
+        &mut frame,
+        b"bcs_rom_error_shape",
+        report.bcs_rom_error_shape.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"bcs_qrom_error_shape",
+        report.bcs_qrom_error_shape.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"bcs_quantum_query_bound_log2",
+        report.bcs_quantum_query_bound_log2 as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"bcs_multi_target_horizon_log2",
+        report.bcs_multi_target_horizon_log2 as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"bcs_candidate_output_bits",
+        report.bcs_candidate_output_bits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"bcs_rbr_schedule_label_bits",
+        report.bcs_rbr_schedule_label_bits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"bcs_qrom_lift_constant_log2_bound",
+        report.bcs_qrom_lift_constant_log2_bound as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"bcs_rbr_term_bound_bits",
+        report.bcs_rbr_term_bound_bits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"bcs_oracle_term_bound_bits",
+        report.bcs_oracle_term_bound_bits as u64,
+    );
+    append_frame(
+        &mut frame,
+        b"bcs_dimensions_lean_theorem",
+        report.bcs_dimensions_lean_theorem.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"bcs_rbr_term_lean_theorem",
+        report.bcs_rbr_term_lean_theorem.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"bcs_oracle_term_lean_theorem",
+        report.bcs_oracle_term_lean_theorem.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"bcs_normalized_budget_lean_theorem",
+        report.bcs_normalized_budget_lean_theorem.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"bcs_dimensions_bound",
+        u64::from(report.bcs_dimensions_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"bcs_rbr_term_bound",
+        u64::from(report.bcs_rbr_term_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"bcs_oracle_term_bound",
+        u64::from(report.bcs_oracle_term_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"bcs_normalized_budget_q128_bound",
+        u64::from(report.bcs_normalized_budget_q128_bound),
+    );
+    append_frame(
+        &mut frame,
+        b"published_rbr_source",
+        report.published_rbr_source.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"published_rbr_error_shape",
+        report.published_rbr_error_shape.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"single_leaf_degree_bits",
+        report.single_leaf_degree_bits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"single_leaf_fri_domain_log2",
+        report.single_leaf_fri_domain_log2 as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"published_rbr_analysis_m",
+        report.published_rbr_analysis_m as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"published_rbr_delta_numerator",
+        report.published_rbr_delta_numerator as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"published_rbr_delta_denominator",
+        report.published_rbr_delta_denominator as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"published_rbr_field_term_bound_bits",
+        report.published_rbr_field_term_bound_bits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"published_rbr_query_term_bound_bits",
+        report.published_rbr_query_term_bound_bits as u64,
+    );
+    append_frame(
+        &mut frame,
+        b"published_rbr_dimensions_lean_theorem",
+        report.published_rbr_dimensions_lean_theorem.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"published_rbr_bound_lean_theorem",
+        report.published_rbr_bound_lean_theorem.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"adaptive_rbr_term_bound_bits",
+        report.adaptive_rbr_term_bound_bits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"adaptive_oracle_term_bound_bits",
+        report.adaptive_oracle_term_bound_bits as u64,
+    );
+    append_frame(
+        &mut frame,
+        b"adaptive_budget_lean_theorem",
+        report.adaptive_budget_lean_theorem.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"adaptive_budget_q128_bound",
+        u64::from(report.adaptive_budget_q128_bound),
+    );
+    append_frame(
+        &mut frame,
+        b"adaptive_qrom_policy_adr",
+        report.adaptive_qrom_policy_adr.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"adaptive_qrom_policy_lean_theorem",
+        report.adaptive_qrom_policy_lean_theorem.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"adaptive_global_query_bound",
+        u64::from(report.adaptive_global_query_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"bcs_account_target_multiplier",
+        report.bcs_account_target_multiplier as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"lifetime_union_profile_selected",
+        u64::from(report.lifetime_union_profile_selected),
+    );
+    append_frame(
+        &mut frame,
+        b"lifetime_field_budget_not_le_q128_lean_theorem",
+        report
+            .lifetime_field_budget_not_le_q128_lean_theorem
+            .as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"lifetime_union_bound_q128_established",
+        u64::from(report.lifetime_union_bound_q128_established),
+    );
     for (index, artifact) in report.checked_core_qrom_artifacts.iter().enumerate() {
         append_u64(
             &mut frame,
@@ -71329,6 +75029,21 @@ fn path2_account_stark_fri_qrom_residual_report_v1_frame(
     );
     append_u64(
         &mut frame,
+        b"bcs_challenger_output_mapping_instantiated",
+        u64::from(report.bcs_challenger_output_mapping_instantiated),
+    );
+    append_u64(
+        &mut frame,
+        b"bcs_rbr_error_theorem_instantiated",
+        u64::from(report.bcs_rbr_error_theorem_instantiated),
+    );
+    append_u64(
+        &mut frame,
+        b"bcs_qrom_lift_constant_reviewed",
+        u64::from(report.bcs_qrom_lift_constant_reviewed),
+    );
+    append_u64(
+        &mut frame,
         b"account_stark_transcript_qrom_theorem_instantiated",
         u64::from(report.account_stark_transcript_qrom_theorem_instantiated),
     );
@@ -71402,8 +75117,7 @@ fn path2_account_stark_fri_aok_boundary_report_v1_frame(
     append_frame(
         &mut frame,
         b"fri_aok_extractor_reduction_lean_theorem",
-        report.fri_aok_extractor_reduction_lean_theorem
-            .as_bytes(),
+        report.fri_aok_extractor_reduction_lean_theorem.as_bytes(),
     );
     append_u64(
         &mut frame,
@@ -72143,6 +75857,22 @@ fn path2_account_creation_no_export_boundary_report_v1_frame(
             field.as_bytes(),
         );
     }
+    for (index, field) in report
+        .account_stark_public_statement_fields
+        .iter()
+        .enumerate()
+    {
+        append_u64(
+            &mut frame,
+            b"account_stark_public_statement_field_index",
+            index as u64,
+        );
+        append_frame(
+            &mut frame,
+            b"account_stark_public_statement_field",
+            field.as_bytes(),
+        );
+    }
     for (index, case_id) in report.no_export_vector_case_ids.iter().enumerate() {
         append_u64(&mut frame, b"no_export_vector_case_index", index as u64);
         append_frame(&mut frame, b"no_export_vector_case_id", case_id.as_bytes());
@@ -72169,6 +75899,11 @@ fn path2_account_creation_no_export_boundary_report_v1_frame(
     );
     append_u64(
         &mut frame,
+        b"public_statement_exports_private_material",
+        u64::from(report.public_statement_exports_private_material),
+    );
+    append_u64(
+        &mut frame,
         b"no_export_field_denylist_pinned",
         u64::from(report.no_export_field_denylist_pinned),
     );
@@ -72176,6 +75911,16 @@ fn path2_account_creation_no_export_boundary_report_v1_frame(
         &mut frame,
         b"simulator_input_allowlist_pinned",
         u64::from(report.simulator_input_allowlist_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"nested_public_statement_audit_pinned",
+        u64::from(report.nested_public_statement_audit_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"public_syndrome_classified_as_allowed",
+        u64::from(report.public_syndrome_classified_as_allowed),
     );
     append_u64(
         &mut frame,
@@ -72225,7 +75970,9 @@ fn path2_account_creation_no_export_boundary_report_v1_frame(
     append_frame(
         &mut frame,
         b"accepted_public_anchor_package_lean_theorem",
-        report.accepted_public_anchor_package_lean_theorem.as_bytes(),
+        report
+            .accepted_public_anchor_package_lean_theorem
+            .as_bytes(),
     );
     append_u64(
         &mut frame,
@@ -72291,6 +76038,203 @@ fn path2_account_creation_no_export_boundary_report_v1_frame(
         &mut frame,
         b"accepted_boundary_simulator_no_export_reduction_bound",
         u64::from(report.accepted_boundary_simulator_no_export_reduction_bound),
+    );
+    append_frame(
+        &mut frame,
+        b"simulator_hybrid_lean_theorem",
+        report.simulator_hybrid_lean_theorem.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"simulator_hybrid_reduction_bound",
+        u64::from(report.simulator_hybrid_reduction_bound),
+    );
+    append_frame(
+        &mut frame,
+        b"mask_translation_bijective_lean_theorem",
+        report.mask_translation_bijective_lean_theorem.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"mask_translation_bijective_bound",
+        u64::from(report.mask_translation_bijective_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"mask_prf_domain_lane",
+        report.mask_prf_domain_lane as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"mask_prf_input_lanes",
+        report.mask_prf_input_lanes as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"mask_prf_reduction_digits",
+        report.mask_prf_reduction_digits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"mask_prf_squeezed_lanes",
+        report.mask_prf_squeezed_lanes as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"mask_prf_target_horizon_log2",
+        report.mask_prf_target_horizon_log2 as u64,
+    );
+    append_frame(
+        &mut frame,
+        b"mask_prf_domain_separation_lean_theorem",
+        report.mask_prf_domain_separation_lean_theorem.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"mask_prf_domain_separation_bound",
+        u64::from(report.mask_prf_domain_separation_bound),
+    );
+    append_frame(
+        &mut frame,
+        b"mask_prf_squeeze_index_injective_lean_theorem",
+        report
+            .mask_prf_squeeze_index_injective_lean_theorem
+            .as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"mask_prf_squeeze_index_injective_bound",
+        u64::from(report.mask_prf_squeeze_index_injective_bound),
+    );
+    append_frame(
+        &mut frame,
+        b"mask_prf_wide_reduction_q128_lean_theorem",
+        report.mask_prf_wide_reduction_q128_lean_theorem.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"mask_prf_wide_reduction_q128_bound",
+        u64::from(report.mask_prf_wide_reduction_q128_bound),
+    );
+    append_frame(
+        &mut frame,
+        b"mask_prf_freshness_lean_theorem",
+        report.mask_prf_freshness_lean_theorem.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"mask_prf_freshness_bound",
+        u64::from(report.mask_prf_freshness_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"poseidon_mask_prf_theorem_instantiated",
+        u64::from(report.poseidon_mask_prf_theorem_instantiated),
+    );
+    append_u64(
+        &mut frame,
+        b"pad_commitment_domain_lane",
+        report.pad_commitment_domain_lane as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"opening_commitment_domain_lane",
+        report.opening_commitment_domain_lane as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"commitment_nonce_bytes",
+        report.commitment_nonce_bytes as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"commitment_nonce_bits",
+        report.commitment_nonce_bits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"pad_commitment_input_lanes",
+        report.pad_commitment_input_lanes as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"opening_commitment_input_lanes",
+        report.opening_commitment_input_lanes as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"hiding_commitments_per_account",
+        report.hiding_commitments_per_account as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"commitment_target_horizon_log2",
+        report.commitment_target_horizon_log2 as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"commitment_qrom_query_log2",
+        report.commitment_qrom_query_log2 as u64,
+    );
+    append_frame(
+        &mut frame,
+        b"commitment_domain_separation_lean_theorem",
+        report.commitment_domain_separation_lean_theorem.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"commitment_domain_separation_bound",
+        u64::from(report.commitment_domain_separation_bound),
+    );
+    append_frame(
+        &mut frame,
+        b"commitment_frame_dimensions_lean_theorem",
+        report.commitment_frame_dimensions_lean_theorem.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"commitment_frame_dimensions_bound",
+        u64::from(report.commitment_frame_dimensions_bound),
+    );
+    append_frame(
+        &mut frame,
+        b"commitment_qrom_search_q128_lean_theorem",
+        report.commitment_qrom_search_q128_lean_theorem.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"commitment_qrom_search_q128_bound",
+        u64::from(report.commitment_qrom_search_q128_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"deployment_commitment_nonce_csprng_bound",
+        u64::from(report.deployment_commitment_nonce_csprng_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"poseidon_commitment_hiding_theorem_instantiated",
+        u64::from(report.poseidon_commitment_hiding_theorem_instantiated),
+    );
+    append_frame(
+        &mut frame,
+        b"hiding_rng_type",
+        report.hiding_rng_type.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"hiding_rng_seed_bits",
+        report.hiding_rng_seed_bits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"hiding_rng_csprng_bound",
+        u64::from(report.hiding_rng_csprng_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"hiding_rng_substreams_domain_separated",
+        u64::from(report.hiding_rng_substreams_domain_separated),
     );
     append_u64(
         &mut frame,
@@ -72929,6 +76873,50 @@ fn path2_direct_qrom_action_boundary_report_v1_frame(
         b"negative_control_exceeds_margin",
         u64::from(report.negative_control_exceeds_margin),
     );
+    append_frame(
+        &mut frame,
+        b"direct_qrom_action_budget_bridge_lean_theorem",
+        report
+            .direct_qrom_action_budget_bridge_lean_theorem
+            .as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_qrom_action_budget_bridge_bound",
+        u64::from(report.direct_qrom_action_budget_bridge_bound),
+    );
+    append_frame(
+        &mut frame,
+        b"direct_qrom_action_theorem_linkage_reduction_lean_theorem",
+        report
+            .direct_qrom_action_theorem_linkage_reduction_lean_theorem
+            .as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_qrom_action_local_linkage_reduction_imported",
+        u64::from(report.direct_qrom_action_local_linkage_reduction_imported),
+    );
+    append_u64(
+        &mut frame,
+        b"production_checked_core_acceptance_semantics_bound",
+        u64::from(report.production_checked_core_acceptance_semantics_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"qrom_action_valid_or_named_break_theorem_instantiated",
+        u64::from(report.qrom_action_valid_or_named_break_theorem_instantiated),
+    );
+    append_u64(
+        &mut frame,
+        b"qrom_domain_break_coupled_to_direct_game",
+        u64::from(report.qrom_domain_break_coupled_to_direct_game),
+    );
+    append_u64(
+        &mut frame,
+        b"qrom_action_assumption_instantiated",
+        u64::from(report.qrom_action_assumption_instantiated),
+    );
     append_u64(
         &mut frame,
         b"theorem_imports_budget",
@@ -73194,6 +77182,232 @@ fn path2_direct_lifecycle_boundary_report_v1_frame(
         b"deployment_ready",
         u64::from(report.deployment_ready),
     );
+    append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
+    frame
+}
+
+fn path2_direct_admission_boundary_report_v1_frame(
+    report: &Path2DirectAdmissionBoundaryReportV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"domain", report.domain.as_bytes());
+    append_frame(&mut frame, b"profile_id", report.profile_id.as_bytes());
+    append_frame(
+        &mut frame,
+        b"architecture_authority",
+        report.architecture_authority.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"lifecycle_authority",
+        report.lifecycle_authority.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"deployment_profile_authority",
+        report.deployment_profile_authority.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"direct_obligation_id",
+        report.direct_obligation_id.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"acceptance_hypothesis",
+        report.acceptance_hypothesis.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"registry_named_break",
+        report.registry_named_break.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"data_availability_named_break",
+        report.data_availability_named_break.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"storage_class",
+        report.storage_class.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"admission_state_type",
+        report.admission_state_type.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"admission_record_type",
+        report.admission_record_type.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"admission_endpoint",
+        report.admission_endpoint.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"verified_public_anchors_type",
+        report.verified_public_anchors_type.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"verified_nullifier_decode_endpoint",
+        report.verified_nullifier_decode_endpoint.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"verified_admission_candidate_type",
+        report.verified_admission_candidate_type.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"verified_admission_candidate_endpoint",
+        report.verified_admission_candidate_endpoint.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"nullifier_registry_key_type",
+        report.nullifier_registry_key_type.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"nullifier_encoding",
+        report.nullifier_encoding.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"nullifier_block_admission_endpoint",
+        report.nullifier_block_admission_endpoint.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"restore_anchor_type",
+        report.restore_anchor_type.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"restore_anchor_endpoint",
+        report.restore_anchor_endpoint.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"restore_endpoint",
+        report.restore_endpoint.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"available_record_endpoint",
+        report.available_record_endpoint.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"spend_endpoint",
+        report.spend_endpoint.as_bytes(),
+    );
+    for (index, field) in report.namespace_key_fields.iter().enumerate() {
+        append_u64(&mut frame, b"namespace_key_field_index", index as u64);
+        append_frame(&mut frame, b"namespace_key_field", field.as_bytes());
+    }
+    for (index, field) in report.record_value_fields.iter().enumerate() {
+        append_u64(&mut frame, b"record_value_field_index", index as u64);
+        append_frame(&mut frame, b"record_value_field", field.as_bytes());
+    }
+    for (index, test) in report.executable_tests.iter().enumerate() {
+        append_u64(&mut frame, b"executable_test_index", index as u64);
+        append_frame(&mut frame, b"executable_test", test.as_bytes());
+    }
+    append_frame(
+        &mut frame,
+        b"admission_closure_lean_theorem",
+        report.admission_closure_lean_theorem.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"pad_seed_reorg_safe_uniqueness_lean_theorem",
+        report
+            .pad_seed_reorg_safe_uniqueness_lean_theorem
+            .as_bytes(),
+    );
+    for (label, value) in [
+        (
+            b"exact_namespace_tuple_key_pinned".as_slice(),
+            report.exact_namespace_tuple_key_pinned,
+        ),
+        (
+            b"canonical_leaf_bytes_stored_directly".as_slice(),
+            report.canonical_leaf_bytes_stored_directly,
+        ),
+        (
+            b"leaf_and_evidence_digests_rechecked".as_slice(),
+            report.leaf_and_evidence_digests_rechecked,
+        ),
+        (
+            b"spend_reads_canonical_consensus_record".as_slice(),
+            report.spend_reads_canonical_consensus_record,
+        ),
+        (
+            b"missing_record_rejected".as_slice(),
+            report.missing_record_rejected,
+        ),
+        (
+            b"corrupt_record_fails_closed".as_slice(),
+            report.corrupt_record_fails_closed,
+        ),
+        (
+            b"duplicate_admission_rejected".as_slice(),
+            report.duplicate_admission_rejected,
+        ),
+        (
+            b"d2_finalized_head_reorg_semantics".as_slice(),
+            report.d2_finalized_head_reorg_semantics,
+        ),
+        (
+            b"verified_creation_nullifier_anchor_bound".as_slice(),
+            report.verified_creation_nullifier_anchor_bound,
+        ),
+        (
+            b"sovereign_nullifier_registry_consensus_wired".as_slice(),
+            report.sovereign_nullifier_registry_consensus_wired,
+        ),
+        (
+            b"sovereign_nullifier_block_atomic".as_slice(),
+            report.sovereign_nullifier_block_atomic,
+        ),
+        (
+            b"sovereign_nullifier_d2_reorg_index_rebuild_verified".as_slice(),
+            report.sovereign_nullifier_d2_reorg_index_rebuild_verified,
+        ),
+        (
+            b"pad_seed_reorg_safe_uniqueness_selected_state_reduction_imported".as_slice(),
+            report.pad_seed_reorg_safe_uniqueness_selected_state_reduction_imported,
+        ),
+        (
+            b"snapshot_restores_nullifier_registry".as_slice(),
+            report.snapshot_restores_nullifier_registry,
+        ),
+        (
+            b"snapshot_restore_anchor_bound".as_slice(),
+            report.snapshot_restore_anchor_bound,
+        ),
+        (
+            b"target_chain_data_availability_instantiated".as_slice(),
+            report.target_chain_data_availability_instantiated,
+        ),
+        (
+            b"admission_closure_lean_imported".as_slice(),
+            report.admission_closure_lean_imported,
+        ),
+        (
+            b"external_storage_review_complete".as_slice(),
+            report.external_storage_review_complete,
+        ),
+        (b"deployment_ready".as_slice(), report.deployment_ready),
+    ] {
+        append_u64(&mut frame, label, u64::from(value));
+    }
     append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
     frame
 }
@@ -73495,6 +77709,11 @@ pub fn path2_account_creation_accepted_proof_boundary_evidence_v1_frame(
     );
     append_frame(
         &mut frame,
+        b"pad_seed_nullifier",
+        &evidence.pad_seed_nullifier,
+    );
+    append_frame(
+        &mut frame,
         b"deployed_anchor_digest",
         &evidence.deployed_anchor_digest,
     );
@@ -73622,6 +77841,11 @@ pub fn path2_account_creation_accepted_proof_boundary_evidence_v1_frame(
         &mut frame,
         b"deployed_anchor_packed_witness_commitment_bound",
         u64::from(evidence.deployed_anchor_packed_witness_commitment_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"deployed_anchor_pad_seed_nullifier_bound",
+        u64::from(evidence.deployed_anchor_pad_seed_nullifier_bound),
     );
     append_u64(
         &mut frame,
@@ -74038,6 +78262,26 @@ pub fn path2_direct_accepted_composition_evidence_v1_frame(
     );
     append_u64(
         &mut frame,
+        b"qrom_action_budget_bridge_imported",
+        u64::from(evidence.qrom_action_budget_bridge_imported),
+    );
+    append_u64(
+        &mut frame,
+        b"qrom_action_theorem_linkage_reduction_imported",
+        u64::from(evidence.qrom_action_theorem_linkage_reduction_imported),
+    );
+    append_u64(
+        &mut frame,
+        b"qrom_action_review_hypothesis_explicit",
+        u64::from(evidence.qrom_action_review_hypothesis_explicit),
+    );
+    append_u64(
+        &mut frame,
+        b"qrom_action_external_review_still_open",
+        u64::from(evidence.qrom_action_external_review_still_open),
+    );
+    append_u64(
+        &mut frame,
         b"lifecycle_digest_matches_direct_theorem",
         u64::from(evidence.lifecycle_digest_matches_direct_theorem),
     );
@@ -74194,6 +78438,11 @@ fn path2_direct_theorem_boundary_report_v1_frame(
         &mut frame,
         b"direct_lifecycle_boundary_report_digest",
         &report.direct_lifecycle_boundary_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"direct_admission_boundary_report_digest",
+        &report.direct_admission_boundary_report_digest,
     );
     append_frame(
         &mut frame,
@@ -74491,6 +78740,33 @@ fn path2_direct_theorem_boundary_report_v1_frame(
         b"named_break_classes_pinned",
         u64::from(report.named_break_classes_pinned),
     );
+    append_frame(
+        &mut frame,
+        b"composition_theorem_reduction_lean_theorem",
+        report.composition_theorem_reduction_lean_theorem.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"composition_theorem_reduction_imported",
+        u64::from(report.composition_theorem_reduction_imported),
+    );
+    append_u64(
+        &mut frame,
+        b"composition_external_hypotheses_explicit",
+        u64::from(report.composition_external_hypotheses_explicit),
+    );
+    append_frame(
+        &mut frame,
+        b"composition_capstone_under_explicit_named_assumptions_lean_theorem",
+        report
+            .composition_capstone_under_explicit_named_assumptions_lean_theorem
+            .as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"composition_capstone_under_explicit_named_assumptions_imported",
+        u64::from(report.composition_capstone_under_explicit_named_assumptions_imported),
+    );
     append_u64(
         &mut frame,
         b"composition_theorem_instantiated",
@@ -74500,6 +78776,26 @@ fn path2_direct_theorem_boundary_report_v1_frame(
         &mut frame,
         b"account_creation_proof_boundary_verified",
         u64::from(report.account_creation_proof_boundary_verified),
+    );
+    append_frame(
+        &mut frame,
+        b"direct_leaf_canonical_live_lean_theorem",
+        report.direct_leaf_canonical_live_lean_theorem.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_leaf_canonical_live_imported",
+        u64::from(report.direct_leaf_canonical_live_imported),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_leaf_canonical_live_lifecycle_and_kat_hypothesis_explicit",
+        u64::from(report.direct_leaf_canonical_live_lifecycle_and_kat_hypothesis_explicit),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle",
+        u64::from(report.direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle),
     );
     append_u64(
         &mut frame,
@@ -74511,10 +78807,138 @@ fn path2_direct_theorem_boundary_report_v1_frame(
         b"slot_authorization_digest_imported",
         u64::from(report.slot_authorization_digest_imported),
     );
+    append_frame(
+        &mut frame,
+        b"direct_evidence_leaf_binding_lean_theorem",
+        report.direct_evidence_leaf_binding_lean_theorem.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_evidence_leaf_binding_imported",
+        u64::from(report.direct_evidence_leaf_binding_imported),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_evidence_leaf_binding_proof_boundary_hypothesis_explicit",
+        u64::from(report.direct_evidence_leaf_binding_proof_boundary_hypothesis_explicit),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_evidence_leaf_binding_closed_by_frozen_kat",
+        u64::from(report.direct_evidence_leaf_binding_closed_by_frozen_kat),
+    );
+    append_frame(
+        &mut frame,
+        b"direct_admission_namespace_membership_lean_theorem",
+        report
+            .direct_admission_namespace_membership_lean_theorem
+            .as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_admission_namespace_membership_imported",
+        u64::from(report.direct_admission_namespace_membership_imported),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_admission_namespace_data_availability_hypothesis_explicit",
+        u64::from(report.direct_admission_namespace_data_availability_hypothesis_explicit),
+    );
+    append_frame(
+        &mut frame,
+        b"direct_admission_namespace_and_data_availability_lean_theorem",
+        report
+            .direct_admission_namespace_and_data_availability_lean_theorem
+            .as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_admission_namespace_and_data_availability_imported",
+        u64::from(report.direct_admission_namespace_and_data_availability_imported),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_admission_namespace_closed_by_sovereign_state",
+        u64::from(report.direct_admission_namespace_closed_by_sovereign_state),
+    );
+    append_frame(
+        &mut frame,
+        b"direct_public_rejection_state_preserving_lean_theorem",
+        report
+            .direct_public_rejection_state_preserving_lean_theorem
+            .as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_public_rejection_state_preserving_imported",
+        u64::from(report.direct_public_rejection_state_preserving_imported),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_public_rejection_classifier_total",
+        u64::from(report.direct_public_rejection_classifier_total),
+    );
+    append_frame(
+        &mut frame,
+        b"direct_public_rejection_class_kat_test",
+        report.direct_public_rejection_class_kat_test.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_public_rejection_all_classes_kat_covered",
+        u64::from(report.direct_public_rejection_all_classes_kat_covered),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_public_rejection_panic_fail_closed_kat_covered",
+        u64::from(report.direct_public_rejection_panic_fail_closed_kat_covered),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_public_rejection_all_public_objects_kat_covered",
+        u64::from(report.direct_public_rejection_all_public_objects_kat_covered),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_public_rejection_target_client_mapping_complete",
+        u64::from(report.direct_public_rejection_target_client_mapping_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_public_rejection_consensus_kat_hypothesis_explicit",
+        u64::from(report.direct_public_rejection_consensus_kat_hypothesis_explicit),
+    );
     append_u64(
         &mut frame,
         b"lifecycle_transition_profile_verified",
         u64::from(report.lifecycle_transition_profile_verified),
+    );
+    append_frame(
+        &mut frame,
+        b"qrom_action_budget_bridge_lean_theorem",
+        report.qrom_action_budget_bridge_lean_theorem.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"qrom_action_budget_bridge_imported",
+        u64::from(report.qrom_action_budget_bridge_imported),
+    );
+    append_frame(
+        &mut frame,
+        b"qrom_action_theorem_linkage_reduction_lean_theorem",
+        report
+            .qrom_action_theorem_linkage_reduction_lean_theorem
+            .as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"qrom_action_theorem_linkage_reduction_imported",
+        u64::from(report.qrom_action_theorem_linkage_reduction_imported),
+    );
+    append_u64(
+        &mut frame,
+        b"qrom_action_review_hypothesis_explicit",
+        u64::from(report.qrom_action_review_hypothesis_explicit),
     );
     append_u64(
         &mut frame,
@@ -75871,11 +80295,7 @@ fn sub_mod(lhs: u16, rhs: u16) -> u16 {
 }
 
 fn negate_mod(value: u16) -> u16 {
-    if value == 0 {
-        0
-    } else {
-        Q - value
-    }
+    if value == 0 { 0 } else { Q - value }
 }
 
 fn challenge_mul(coeff: i8, value: u16) -> Result<u16, String> {
@@ -78147,9 +82567,11 @@ mod tests {
 
         let mut bad_response = signature.clone();
         bad_response[response_start] = (2 * RESPONSE_BOUND) as u8 + 1;
-        assert!(decode_production_signature(&bad_response)
-            .unwrap_err()
-            .contains("active response coordinate 0 in round 0 is non-canonical"));
+        assert!(
+            decode_production_signature(&bad_response)
+                .unwrap_err()
+                .contains("active response coordinate 0 in round 0 is non-canonical")
+        );
 
         let mut bad_opening = signature;
         bad_opening[opening_start..opening_start + 2].copy_from_slice(&Q.to_le_bytes());
@@ -80572,27 +84994,35 @@ mod tests {
         let base = path2_native_checked_core_frame_fixture();
         let mut frame = base;
         frame.native_boundary_version += 1;
-        assert!(validate_path2_native_checked_core_frame_v1(&frame)
-            .unwrap_err()
-            .contains("version mismatch"));
+        assert!(
+            validate_path2_native_checked_core_frame_v1(&frame)
+                .unwrap_err()
+                .contains("version mismatch")
+        );
 
         let mut frame = base;
         frame.parameter_set_id += 1;
-        assert!(validate_path2_native_checked_core_frame_v1(&frame)
-            .unwrap_err()
-            .contains("parameter set mismatch"));
+        assert!(
+            validate_path2_native_checked_core_frame_v1(&frame)
+                .unwrap_err()
+                .contains("parameter set mismatch")
+        );
 
         let mut frame = base;
         frame.verifier_family_id += 1;
-        assert!(validate_path2_native_checked_core_frame_v1(&frame)
-            .unwrap_err()
-            .contains("verifier family mismatch"));
+        assert!(
+            validate_path2_native_checked_core_frame_v1(&frame)
+                .unwrap_err()
+                .contains("verifier family mismatch")
+        );
 
         let mut frame = base;
         frame.aggregation_mode = 2;
-        assert!(validate_path2_native_checked_core_frame_v1(&frame)
-            .unwrap_err()
-            .contains("reserved"));
+        assert!(
+            validate_path2_native_checked_core_frame_v1(&frame)
+                .unwrap_err()
+                .contains("reserved")
+        );
 
         let mut bytes = path2_native_checked_core_frame_v1_bytes(&base).unwrap();
         bytes[0] ^= 1;
@@ -80697,24 +85127,26 @@ mod tests {
         }
         assert_no_active_native_private_material(&serialized);
 
-        assert!(public_native_account_view_v1(
-            PATH2_NATIVE_CHECKED_CORE_FRAME_VERSION + 1,
-            PATH2_NATIVE_CHECKED_CORE_PARAMETER_SET_Q12289,
-            PATH2_NATIVE_CHECKED_CORE_VERIFIER_FAMILY_FQ12,
-            PATH2_NATIVE_AGGREGATION_MODE_DIRECT,
-            repeated_digest(0x21),
-            repeated_digest(0x20),
-            repeated_digest(0x22),
-            repeated_digest(0x23),
-            repeated_digest(0x24),
-            repeated_digest(0x25),
-            repeated_digest(0x26),
-            1,
-            repeated_digest(0x32),
-            repeated_digest(0x40),
-        )
-        .unwrap_err()
-        .contains("version mismatch"));
+        assert!(
+            public_native_account_view_v1(
+                PATH2_NATIVE_CHECKED_CORE_FRAME_VERSION + 1,
+                PATH2_NATIVE_CHECKED_CORE_PARAMETER_SET_Q12289,
+                PATH2_NATIVE_CHECKED_CORE_VERIFIER_FAMILY_FQ12,
+                PATH2_NATIVE_AGGREGATION_MODE_DIRECT,
+                repeated_digest(0x21),
+                repeated_digest(0x20),
+                repeated_digest(0x22),
+                repeated_digest(0x23),
+                repeated_digest(0x24),
+                repeated_digest(0x25),
+                repeated_digest(0x26),
+                1,
+                repeated_digest(0x32),
+                repeated_digest(0x40),
+            )
+            .unwrap_err()
+            .contains("version mismatch")
+        );
     }
 
     #[test]
@@ -80759,14 +85191,18 @@ mod tests {
 
         let mut bad_frame = frame;
         bad_frame.aggregation_mode = 9;
-        assert!(public_native_spend_view_v1(&bad_frame, &proof_bytes)
-            .unwrap_err()
-            .contains("reserved"));
+        assert!(
+            public_native_spend_view_v1(&bad_frame, &proof_bytes)
+                .unwrap_err()
+                .contains("reserved")
+        );
 
         let bad_len_proof = [0xa1_u8; PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES + 1];
-        assert!(public_native_spend_view_v1(&frame, &bad_len_proof)
-            .unwrap_err()
-            .contains("checked-core proof has"));
+        assert!(
+            public_native_spend_view_v1(&frame, &bad_len_proof)
+                .unwrap_err()
+                .contains("checked-core proof has")
+        );
     }
 
     #[test]
@@ -81501,9 +85937,11 @@ mod tests {
 
         let spend_bytes = path2_native_spend_projection_v1_bytes(&spend).unwrap();
         assert!(spend_bytes.starts_with(PATH2_NATIVE_PROJECTION_SPEND_DOMAIN.as_bytes()));
-        assert!(spend_bytes
-            .windows(DIGEST_BYTES)
-            .any(|w| w == spend.spend_authorization_class_digest));
+        assert!(
+            spend_bytes
+                .windows(DIGEST_BYTES)
+                .any(|w| w == spend.spend_authorization_class_digest)
+        );
         let expected_spend_digest: [u8; DIGEST_BYTES] = Sha256::digest(&spend_bytes).into();
         assert_eq!(
             path2_native_spend_projection_v1_digest(&spend).unwrap(),
@@ -81581,14 +86019,18 @@ mod tests {
 
         let mut bad_context = context;
         bad_context.aggregation_mode = 9;
-        assert!(path2_native_context_projection_v1_digest(&bad_context)
-            .unwrap_err()
-            .contains("reserved"));
+        assert!(
+            path2_native_context_projection_v1_digest(&bad_context)
+                .unwrap_err()
+                .contains("reserved")
+        );
         let mut bad_spend = spend;
         bad_spend.spend_verifier_family_id = 9;
-        assert!(path2_native_spend_projection_v1_digest(&bad_spend)
-            .unwrap_err()
-            .contains("verifier family mismatch"));
+        assert!(
+            path2_native_spend_projection_v1_digest(&bad_spend)
+                .unwrap_err()
+                .contains("verifier family mismatch")
+        );
     }
 
     #[test]
@@ -81913,9 +86355,11 @@ mod tests {
         let mut bad = bundle;
         bad.spend.allowed_authorization_local_mode =
             PATH2_NATIVE_AUTHORIZATION_LOCAL_MODE_DIRECT + 1;
-        assert!(assemble_path2_native_boundary_v1(&bad, &proof_bytes)
-            .unwrap_err()
-            .contains("authorization-local mode mismatch"));
+        assert!(
+            assemble_path2_native_boundary_v1(&bad, &proof_bytes)
+                .unwrap_err()
+                .contains("authorization-local mode mismatch")
+        );
 
         let mut bad = bundle;
         bad.spend.spend_authorization_class_digest[0] ^= 1;
@@ -82168,15 +86612,19 @@ mod tests {
 
         let mut bad = carrier;
         bad.carrier_version += 1;
-        assert!(validate_path2_native_consensus_carrier_v1(&bad)
-            .unwrap_err()
-            .contains("carrier version mismatch"));
+        assert!(
+            validate_path2_native_consensus_carrier_v1(&bad)
+                .unwrap_err()
+                .contains("carrier version mismatch")
+        );
 
         let mut bad = carrier;
         bad.aggregation_mode = 9;
-        assert!(validate_path2_native_consensus_carrier_v1(&bad)
-            .unwrap_err()
-            .contains("reserved"));
+        assert!(
+            validate_path2_native_consensus_carrier_v1(&bad)
+                .unwrap_err()
+                .contains("reserved")
+        );
 
         let mut bytes = path2_native_consensus_carrier_v1_bytes(&carrier).unwrap();
         bytes[0] ^= 1;
@@ -84981,9 +89429,11 @@ mod tests {
             binding.digest,
             path2_creation_proof_binding_v1_digest(&binding)
         );
-        assert!(path2_creation_proof_binding_v1_frame(&binding)
-            .windows(PATH2_CREATION_PROOF_BINDING_SCHEMA.len())
-            .any(|window| window == PATH2_CREATION_PROOF_BINDING_SCHEMA.as_bytes()));
+        assert!(
+            path2_creation_proof_binding_v1_frame(&binding)
+                .windows(PATH2_CREATION_PROOF_BINDING_SCHEMA.len())
+                .any(|window| window == PATH2_CREATION_PROOF_BINDING_SCHEMA.as_bytes())
+        );
 
         let mut mutations: Vec<(&str, Path2CreationProofBindingV1)> = Vec::new();
 
@@ -85415,6 +89865,39 @@ mod tests {
             &payload,
         )
         .expect("honest STARK payload must verify");
+        let verified_candidate = verify_path2_direct_creation_account_stark_admission_candidate_v1(
+            &leaf,
+            &evidence,
+            &certificate,
+            &binding,
+            &payload,
+        )
+        .expect("verified STARK payload must produce an admission candidate");
+        assert_eq!(
+            verified_candidate.pad_seed_nullifier(),
+            payload.pad_seed_nullifier
+        );
+        let mut admission_state = Path2SovereignDirectAdmissionStateV1::new();
+        verify_and_admit_path2_direct_creation_account_stark_block_v1(
+            &mut admission_state,
+            1,
+            &[Path2AccountStarkCreationAdmissionInputV1 {
+                leaf: &leaf,
+                evidence: &evidence,
+                certificate: &certificate,
+                binding: &binding,
+                payload: &payload,
+            }],
+        )
+        .expect("verified STARK payload must register its proof-bound nullifier");
+        assert_eq!(admission_state.nullifier_count(), 1);
+        assert_eq!(
+            admission_state
+                .require_available_record(&leaf, &evidence, &certificate)
+                .unwrap()
+                .pad_seed_nullifier,
+            payload.pad_seed_nullifier
+        );
         assert!(
             !path2_account_stark_production_verification_enabled(),
             "account-STARK production gate must stay closed until external review"
@@ -85478,6 +89961,14 @@ mod tests {
         bad.masked_projection[0] ^= 1;
         public_field_mutations.push((
             "masked_projection",
+            bad,
+            "account-creation STARK: payload digest mismatch",
+        ));
+
+        let mut bad = payload.clone();
+        bad.pad_seed_nullifier[0] ^= 1;
+        public_field_mutations.push((
+            "pad_seed_nullifier",
             bad,
             "account-creation STARK: payload digest mismatch",
         ));
@@ -85567,6 +90058,51 @@ mod tests {
             "{rebound_error}"
         );
 
+        let mut bad_nullifier = payload.clone();
+        bad_nullifier.pad_seed_nullifier[0] ^= 1;
+        let (rebound_leaf, rebound_evidence, rebound_certificate) =
+            rebind_account_stark_payload_context(&leaf, &evidence, &certificate, &bad_nullifier);
+        let rebound_error = verify_path2_direct_creation_account_stark_payload_boundary(
+            &rebound_leaf,
+            &rebound_evidence,
+            &rebound_certificate,
+            &binding,
+            &bad_nullifier,
+        )
+        .unwrap_err();
+        assert!(
+            rebound_error.contains("deployed anchor mismatch: pad_seed_nullifier"),
+            "{rebound_error}"
+        );
+        let admission_before = admission_state.state_digest();
+        let block_error = verify_and_admit_path2_direct_creation_account_stark_block_v1(
+            &mut admission_state,
+            2,
+            &[
+                Path2AccountStarkCreationAdmissionInputV1 {
+                    leaf: &leaf,
+                    evidence: &evidence,
+                    certificate: &certificate,
+                    binding: &binding,
+                    payload: &payload,
+                },
+                Path2AccountStarkCreationAdmissionInputV1 {
+                    leaf: &rebound_leaf,
+                    evidence: &rebound_evidence,
+                    certificate: &rebound_certificate,
+                    binding: &binding,
+                    payload: &bad_nullifier,
+                },
+            ],
+        )
+        .unwrap_err();
+        assert!(
+            block_error.contains("deployed anchor mismatch: pad_seed_nullifier"),
+            "{block_error}"
+        );
+        assert_eq!(admission_state.state_digest(), admission_before);
+        assert_eq!(admission_state.head(), 1);
+
         let mut bad_bundle = payload.clone();
         bad_bundle.account_stark_bundle[0] ^= 1;
         let (rebound_leaf, rebound_evidence, rebound_certificate) =
@@ -85610,14 +90146,16 @@ mod tests {
         // Verify against a DIFFERENT leaf (slot mismatch) -> reject.
         let mut other_leaf = leaf;
         other_leaf.slot_id ^= 1;
-        assert!(verify_path2_direct_creation_account_stark_payload_boundary(
-            &other_leaf,
-            &evidence,
-            &certificate,
-            &binding,
-            &payload
-        )
-        .is_err());
+        assert!(
+            verify_path2_direct_creation_account_stark_payload_boundary(
+                &other_leaf,
+                &evidence,
+                &certificate,
+                &binding,
+                &payload
+            )
+            .is_err()
+        );
     }
 
     #[cfg(feature = "account-creation-stark-verifier")]
@@ -85691,6 +90229,8 @@ mod tests {
         assert!(evidence.deployed_anchor_masked_projection_bound);
         assert!(evidence.deployed_anchor_role_root_export_bridge_bound);
         assert!(evidence.deployed_anchor_packed_witness_commitment_bound);
+        assert!(evidence.deployed_anchor_pad_seed_nullifier_bound);
+        assert_ne!(evidence.pad_seed_nullifier, [0_u8; DIGEST_BYTES]);
         assert!(evidence.deployed_anchor_fields_match_report);
         assert!(evidence.account_stark_bundle_nonempty);
         assert!(evidence.proof_family_obligations_still_open);
@@ -85798,6 +90338,10 @@ mod tests {
         assert!(evidence.creation_evidence_matches_direct_tuple);
         assert!(evidence.proof_boundary_digest_matches_direct_theorem);
         assert!(evidence.qrom_action_digest_matches_direct_theorem);
+        assert!(evidence.qrom_action_budget_bridge_imported);
+        assert!(evidence.qrom_action_theorem_linkage_reduction_imported);
+        assert!(evidence.qrom_action_review_hypothesis_explicit);
+        assert!(evidence.qrom_action_external_review_still_open);
         assert!(evidence.lifecycle_digest_matches_direct_theorem);
         assert!(evidence.direct_admission_namespace_matches_authorization);
         assert!(evidence.consume_once_transition_matches_tuple);
@@ -87801,12 +92345,14 @@ mod tests {
             &split_body,
         )
         .unwrap();
-        assert!(path2_transparent_descent_verify_zk_opening_v1(
-            view,
-            &out.query_opening_manifest,
-            &rewrapped,
-        )
-        .is_err());
+        assert!(
+            path2_transparent_descent_verify_zk_opening_v1(
+                view,
+                &out.query_opening_manifest,
+                &rewrapped,
+            )
+            .is_err()
+        );
     }
 
     #[test]
@@ -88457,9 +93003,11 @@ mod tests {
         let preflight = production_deployment_preflight();
         assert!(!preflight.deployment_ready);
         assert!(!preflight.blockers.is_empty());
-        assert!(preflight
-            .blockers
-            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS));
+        assert!(
+            preflight
+                .blockers
+                .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS)
+        );
         let direct_theorem_blockers = production_deployment_direct_theorem_blockers();
         assert_eq!(
             &preflight.blockers[1..1 + direct_theorem_blockers.len()],
@@ -88492,9 +93040,11 @@ mod tests {
         for &blocker in account_stark_residual_blockers {
             assert!(preflight.blockers.contains(&blocker));
         }
-        assert!(preflight
-            .blockers
-            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_EXTERNAL_REVIEW));
+        assert!(
+            preflight
+                .blockers
+                .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_EXTERNAL_REVIEW)
+        );
     }
 
     #[test]
@@ -88524,33 +93074,49 @@ mod tests {
         assert!(budget.active_query_symbols.contains(&"q_leaf"));
         assert!(budget.active_query_symbols.contains(&"q_auth"));
         assert!(budget.active_query_symbols.contains(&"q_chal"));
-        assert!(budget
-            .active_query_symbols
-            .contains(&"q_transparent_trace_commit"));
-        assert!(budget
-            .active_query_symbols
-            .contains(&"q_transparent_query_row"));
-        assert!(budget
-            .active_query_symbols
-            .contains(&"q_transparent_merkle_open"));
-        assert!(budget
-            .active_query_symbols
-            .contains(&"q_transparent_consistency"));
-        assert!(budget
-            .active_query_symbols
-            .contains(&"q_transparent_extractor"));
-        assert!(budget
-            .active_query_symbols
-            .contains(&"q_transparent_simulator"));
+        assert!(
+            budget
+                .active_query_symbols
+                .contains(&"q_transparent_trace_commit")
+        );
+        assert!(
+            budget
+                .active_query_symbols
+                .contains(&"q_transparent_query_row")
+        );
+        assert!(
+            budget
+                .active_query_symbols
+                .contains(&"q_transparent_merkle_open")
+        );
+        assert!(
+            budget
+                .active_query_symbols
+                .contains(&"q_transparent_consistency")
+        );
+        assert!(
+            budget
+                .active_query_symbols
+                .contains(&"q_transparent_extractor")
+        );
+        assert!(
+            budget
+                .active_query_symbols
+                .contains(&"q_transparent_simulator")
+        );
         assert_eq!(budget.inactive_query_symbols, ["q_batch"]);
-        assert!(budget
-            .direct_advantage_terms
-            .iter()
-            .all(|term| !term.contains("optional_aggregation")));
-        assert!(budget
-            .optional_aggregation_terms
-            .iter()
-            .all(|term| term.contains("q_batch")));
+        assert!(
+            budget
+                .direct_advantage_terms
+                .iter()
+                .all(|term| !term.contains("optional_aggregation"))
+        );
+        assert!(
+            budget
+                .optional_aggregation_terms
+                .iter()
+                .all(|term| term.contains("q_batch"))
+        );
         let serialized = serde_json::to_string(&budget).unwrap();
         assert!(serialized.contains(PATH2_DIRECT_QUERY_BUDGET_SCHEMA));
         assert!(serialized.contains("q_transparent_trace_commit"));
@@ -88756,29 +93322,43 @@ def marker :=
             review.consensus_carrier_body_bytes as usize,
             PATH2_NATIVE_CONSENSUS_CARRIER_BODY_BYTES
         );
-        assert!(review
-            .active_native_query_symbols
-            .contains(&"q_native_public_key_identity"));
-        assert!(review
-            .active_native_query_symbols
-            .contains(&"q_native_authorization_class"));
-        assert!(review
-            .active_native_query_symbols
-            .contains(&"q_native_no_obstruction_flags"));
-        assert!(review
-            .active_native_query_symbols
-            .contains(&"q_native_consensus_carrier"));
-        assert!(review
-            .active_native_query_symbols
-            .contains(&"q_native_projection_preimage_da"));
-        assert!(review
-            .ordinary_hash_assumptions
-            .iter()
-            .all(|assumption| !assumption.contains("witness")));
-        assert!(review
-            .hidden_witness_obligations_not_discharged_by_hash
-            .iter()
-            .any(|obligation| obligation.contains("checked-core")));
+        assert!(
+            review
+                .active_native_query_symbols
+                .contains(&"q_native_public_key_identity")
+        );
+        assert!(
+            review
+                .active_native_query_symbols
+                .contains(&"q_native_authorization_class")
+        );
+        assert!(
+            review
+                .active_native_query_symbols
+                .contains(&"q_native_no_obstruction_flags")
+        );
+        assert!(
+            review
+                .active_native_query_symbols
+                .contains(&"q_native_consensus_carrier")
+        );
+        assert!(
+            review
+                .active_native_query_symbols
+                .contains(&"q_native_projection_preimage_da")
+        );
+        assert!(
+            review
+                .ordinary_hash_assumptions
+                .iter()
+                .all(|assumption| !assumption.contains("witness"))
+        );
+        assert!(
+            review
+                .hidden_witness_obligations_not_discharged_by_hash
+                .iter()
+                .any(|obligation| obligation.contains("checked-core"))
+        );
         let rendered = serde_json::to_string(&review).unwrap();
         assert_no_active_native_private_material(&rendered);
         assert!(rendered.contains(PATH2_NATIVE_HASH_QROM_REVIEW_SCHEMA));
@@ -89406,12 +93986,11 @@ def selectedRustProductionCheckedCoreAcceptorAccepts := fun _ _ _ _ => False
                 &suffixed_full_execution_boundary_source
             )
         );
-        let suffixed_proof_family_closure_input_card =
-            full_spend_concrete_source.replacen(
-                "theorem deployableProofFamilyClosureInputs_card",
-                "theorem deployableProofFamilyClosureInputs_cardSpoof",
-                1,
-            );
+        let suffixed_proof_family_closure_input_card = full_spend_concrete_source.replacen(
+            "theorem deployableProofFamilyClosureInputs_card",
+            "theorem deployableProofFamilyClosureInputs_cardSpoof",
+            1,
+        );
         assert!(
             !path2_full_signature_execution_source_boundary_present_in_source_v1(
                 &suffixed_proof_family_closure_input_card
@@ -90466,12 +95045,8 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_2pow_neg133
   let _fullReductionRemainingBreakPackageBreakProbActiveTarget :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_active128BitTarget
-  let _fullReductionRemainingBreakPackageQromBreakZero :=
-    SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_eq_zero
   let _fullReductionRemainingBreakPackageQromBreakComponent :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_le_2pow_neg133
-  let _fullReductionRemainingBreakPackageLiveSlotBreakZero :=
-    SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_eq_zero
   let _fullReductionRemainingBreakPackageLiveSlotBreakComponent :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_le_2pow_neg133
   let _fullReductionRemainingBreakPackageUnionTarget :=
@@ -91107,16 +95682,6 @@ namespace NativeFullSignatureSecurityBoundary
                 &suffixed_full_signature_remaining_break_package_break_prob_active_target
             )
         );
-        let suffixed_full_signature_remaining_break_package_qrom_break_zero =
-            full_signature_reduction_instantiation_shape.replace(
-                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_eq_zero",
-                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_eq_zeroSpoof",
-            );
-        assert!(
-            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
-                &suffixed_full_signature_remaining_break_package_qrom_break_zero
-            )
-        );
         let suffixed_full_signature_remaining_break_package_qrom_break_component =
             full_signature_reduction_instantiation_shape.replace(
                 "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_le_2pow_neg133",
@@ -91125,16 +95690,6 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_remaining_break_package_qrom_break_component
-            )
-        );
-        let suffixed_full_signature_remaining_break_package_live_slot_break_zero =
-            full_signature_reduction_instantiation_shape.replace(
-                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_eq_zero",
-                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_eq_zeroSpoof",
-            );
-        assert!(
-            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
-                &suffixed_full_signature_remaining_break_package_live_slot_break_zero
             )
         );
         let suffixed_full_signature_remaining_break_package_live_slot_break_component =
@@ -91575,11 +96130,11 @@ namespace NativeFullSignatureSecurityBoundary
                 &suffixed_full_signature_active_query_symbols_priced
             )
         );
-        let suffixed_full_signature_trace_witness =
-            full_signature_reduction_instantiation_shape.replace(
-                "selectedRustFullSignatureReductionProductionWitness_of_remaining_break_bounds\n",
-                "selectedRustFullSignatureReductionProductionWitness_of_remaining_break_boundsSpoof\n",
-            );
+        let suffixed_full_signature_trace_witness = full_signature_reduction_instantiation_shape
+            .replace(
+            "selectedRustFullSignatureReductionProductionWitness_of_remaining_break_bounds\n",
+            "selectedRustFullSignatureReductionProductionWitness_of_remaining_break_boundsSpoof\n",
+        );
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 &suffixed_full_signature_trace_witness
@@ -91595,8 +96150,8 @@ namespace NativeFullSignatureSecurityBoundary
                 &suffixed_full_signature_trace_certificate
             )
         );
-        let suffixed_full_signature_trace_boundary =
-            full_signature_reduction_instantiation_shape.replace(
+        let suffixed_full_signature_trace_boundary = full_signature_reduction_instantiation_shape
+            .replace(
                 "selectedRustNativeFullSignatureSecurityBoundary_of_remaining_break_bounds\n",
                 "selectedRustNativeFullSignatureSecurityBoundary_of_remaining_break_boundsSpoof\n",
             );
@@ -94219,12 +98774,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_remaining_break_bounds
   let _acceptedSpendTracePricingWitnessUnionActiveTargetEndpoint :=
     selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_remaining_break_bounds
-  let _acceptedSpendTracePricingWitnessQromBreakZero :=
-    selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds
   let _acceptedSpendTracePricingWitnessQromBreakComponent :=
     selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds
-  let _acceptedSpendTracePricingWitnessLiveSlotBreakZero :=
-    selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds
   let _acceptedSpendTracePricingWitnessLiveSlotBreakComponent :=
     selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds
   let _acceptedSpendHardPricingFactSurface :=
@@ -94267,12 +98818,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustConcreteAcceptedSpendPricingWitness_componentBudget_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _acceptedSpendTracePricingWitnessHardPricingUnionTarget :=
     selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128BitTarget_of_remaining_break_bounds_and_current_hard_pricing_facts
-  let _acceptedSpendTracePricingWitnessHardPricingQromBreakZero :=
-    selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _acceptedSpendTracePricingWitnessHardPricingQromBreakComponent :=
     selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts
-  let _acceptedSpendTracePricingWitnessHardPricingLiveSlotBreakZero :=
-    selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _acceptedSpendTracePricingWitnessHardPricingLiveSlotBreakComponent :=
     selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts
   let _acceptedSpendHardTraceNumericSourceEndpoint :=
@@ -94325,12 +98872,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_2pow_neg133
   let _acceptedSpendRemainingBreakPackageBreakProbActiveTarget :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.remainingBreakProb_le_active128BitTarget
-  let _acceptedSpendRemainingBreakPackageQromBreakZero :=
-    SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_eq_zero
   let _acceptedSpendRemainingBreakPackageQromBreakComponent :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_le_2pow_neg133
-  let _acceptedSpendRemainingBreakPackageLiveSlotBreakZero :=
-    SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_eq_zero
   let _acceptedSpendRemainingBreakPackageLiveSlotBreakComponent :=
     SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_le_2pow_neg133
   let _acceptedSpendRemainingBreakPackageUnionComponent :=
@@ -94576,8 +99119,8 @@ end Path2NativeAccountDesign
                 &missing_trace_endpoint_component_budget
             )
         );
-        let suffixed_remaining_break_event_set_cardinality =
-            accepted_spend_instantiation_shape.replace(
+        let suffixed_remaining_break_event_set_cardinality = accepted_spend_instantiation_shape
+            .replace(
                 "remainingCryptographicBreakEvents_card",
                 "remainingCryptographicBreakEvents_cardSpoof",
             );
@@ -94586,8 +99129,8 @@ end Path2NativeAccountDesign
                 &suffixed_remaining_break_event_set_cardinality
             )
         );
-        let suffixed_ws7_remaining_closure_obligations_card =
-            accepted_spend_instantiation_shape.replace(
+        let suffixed_ws7_remaining_closure_obligations_card = accepted_spend_instantiation_shape
+            .replace(
                 "ws7RemainingClosureObligations_card",
                 "ws7RemainingClosureObligations_cardSpoof",
             );
@@ -94596,8 +99139,8 @@ end Path2NativeAccountDesign
                 &suffixed_ws7_remaining_closure_obligations_card
             )
         );
-        let suffixed_ws7_evidence_selected_constructor =
-            accepted_spend_instantiation_shape.replace(
+        let suffixed_ws7_evidence_selected_constructor = accepted_spend_instantiation_shape
+            .replace(
                 "selectedRustWS7RemainingClosureEvidence_of_remaining_break_bounds",
                 "selectedRustWS7RemainingClosureEvidence_of_remaining_break_boundsSpoof",
             );
@@ -94625,38 +99168,36 @@ end Path2NativeAccountDesign
                 &suffixed_ws7_numeric_closure
             )
         );
-        let suffixed_ws7_numeric_closure_active_target =
-            accepted_spend_instantiation_shape.replace(
-                "concreteNumericClosure_of_ws7_remaining_closure_evidence_le_active128BitTarget",
-                "concreteNumericClosure_of_ws7_remaining_closure_evidence_le_active128BitTargetSpoof",
-            );
+        let suffixed_ws7_numeric_closure_active_target = accepted_spend_instantiation_shape
+            .replace(
+            "concreteNumericClosure_of_ws7_remaining_closure_evidence_le_active128BitTarget",
+            "concreteNumericClosure_of_ws7_remaining_closure_evidence_le_active128BitTargetSpoof",
+        );
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_ws7_numeric_closure_active_target
             )
         );
-        let suffixed_ws7_component_budget_target =
-            accepted_spend_instantiation_shape.replace(
-                "ws7RemainingClosureEvidence_componentBudget_le_active128BitTarget",
-                "ws7RemainingClosureEvidence_componentBudget_le_active128BitTargetSpoof",
-            );
+        let suffixed_ws7_component_budget_target = accepted_spend_instantiation_shape.replace(
+            "ws7RemainingClosureEvidence_componentBudget_le_active128BitTarget",
+            "ws7RemainingClosureEvidence_componentBudget_le_active128BitTargetSpoof",
+        );
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_ws7_component_budget_target
             )
         );
-        let suffixed_ws7_break_pricing_certificate =
-            accepted_spend_instantiation_shape.replace(
-                "concreteBreakPricingCertificate_of_ws7_remaining_closure_evidence",
-                "concreteBreakPricingCertificate_of_ws7_remaining_closure_evidenceSpoof",
-            );
+        let suffixed_ws7_break_pricing_certificate = accepted_spend_instantiation_shape.replace(
+            "concreteBreakPricingCertificate_of_ws7_remaining_closure_evidence",
+            "concreteBreakPricingCertificate_of_ws7_remaining_closure_evidenceSpoof",
+        );
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_ws7_break_pricing_certificate
             )
         );
-        let suffixed_ws7_break_pricing_certificate_nonempty =
-            accepted_spend_instantiation_shape.replace(
+        let suffixed_ws7_break_pricing_certificate_nonempty = accepted_spend_instantiation_shape
+            .replace(
                 "concreteBreakPricingCertificate_nonempty_of_ws7_remaining_closure_evidence",
                 "concreteBreakPricingCertificate_nonempty_of_ws7_remaining_closure_evidenceSpoof",
             );
@@ -94675,11 +99216,10 @@ end Path2NativeAccountDesign
                 &suffixed_ws7_break_pricing_certificate_constructed_eq
             )
         );
-        let suffixed_ws7_priced_numeric_certificate =
-            accepted_spend_instantiation_shape.replace(
-                "concretePricedAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence",
-                "concretePricedAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidenceSpoof",
-            );
+        let suffixed_ws7_priced_numeric_certificate = accepted_spend_instantiation_shape.replace(
+            "concretePricedAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidence",
+            "concretePricedAcceptedSpendNumericCertificate_of_ws7_remaining_closure_evidenceSpoof",
+        );
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_ws7_priced_numeric_certificate
@@ -94913,16 +99453,6 @@ end Path2NativeAccountDesign
                 &suffixed_trace_endpoint_remaining_break_prob_active_target
             )
         );
-        let suffixed_trace_endpoint_qrom_break_zero =
-            accepted_spend_instantiation_shape.replace(
-                "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds",
-                "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_boundsSpoof",
-            );
-        assert!(
-            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
-                &suffixed_trace_endpoint_qrom_break_zero
-            )
-        );
         let suffixed_trace_endpoint_qrom_break_component =
             accepted_spend_instantiation_shape.replace(
                 "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds",
@@ -94931,16 +99461,6 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_trace_endpoint_qrom_break_component
-            )
-        );
-        let suffixed_trace_endpoint_live_slot_break_zero =
-            accepted_spend_instantiation_shape.replace(
-                "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds",
-                "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_boundsSpoof",
-            );
-        assert!(
-            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
-                &suffixed_trace_endpoint_live_slot_break_zero
             )
         );
         let suffixed_trace_endpoint_live_slot_break_component =
@@ -95033,16 +99553,6 @@ end Path2NativeAccountDesign
                 &suffixed_trace_endpoint_hard_pricing_component_target
             )
         );
-        let suffixed_trace_endpoint_hard_pricing_qrom_break_zero =
-            accepted_spend_instantiation_shape.replace(
-                "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_facts",
-                "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_factsSpoof",
-            );
-        assert!(
-            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
-                &suffixed_trace_endpoint_hard_pricing_qrom_break_zero
-            )
-        );
         let suffixed_trace_endpoint_hard_pricing_qrom_break_component =
             accepted_spend_instantiation_shape.replace(
                 "selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts",
@@ -95051,16 +99561,6 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_trace_endpoint_hard_pricing_qrom_break_component
-            )
-        );
-        let suffixed_trace_endpoint_hard_pricing_live_slot_break_zero =
-            accepted_spend_instantiation_shape.replace(
-                "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_facts",
-                "selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_factsSpoof",
-            );
-        assert!(
-            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
-                &suffixed_trace_endpoint_hard_pricing_live_slot_break_zero
             )
         );
         let suffixed_trace_endpoint_hard_pricing_live_slot_break_component =
@@ -95181,8 +99681,8 @@ end Path2NativeAccountDesign
                 &suffixed_remaining_break_package_hard_pricing_constructor
             )
         );
-        let suffixed_pricing_witness_hard_pricing_projection =
-            accepted_spend_instantiation_shape.replace(
+        let suffixed_pricing_witness_hard_pricing_projection = accepted_spend_instantiation_shape
+            .replace(
                 "SelectedRustConcreteAcceptedSpendPricingWitness.hardPricingFactsComplete",
                 "SelectedRustConcreteAcceptedSpendPricingWitness.hardPricingFactsCompleteSpoof",
             );
@@ -95251,11 +99751,10 @@ end Path2NativeAccountDesign
                 &suffixed_remaining_break_package_hard_impossible
             )
         );
-        let suffixed_remaining_break_package_witness =
-            accepted_spend_instantiation_shape.replace(
-                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toPricingWitness",
-                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toPricingWitnessSpoof",
-            );
+        let suffixed_remaining_break_package_witness = accepted_spend_instantiation_shape.replace(
+            "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toPricingWitness",
+            "SelectedRustAcceptedSpendRemainingBreakPricingPackage.toPricingWitnessSpoof",
+        );
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_remaining_break_package_witness
@@ -95311,16 +99810,6 @@ end Path2NativeAccountDesign
                 &suffixed_remaining_break_package_break_prob_bound
             )
         );
-        let suffixed_remaining_break_package_qrom_break_zero =
-            accepted_spend_instantiation_shape.replace(
-                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_eq_zero",
-                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_eq_zeroSpoof",
-            );
-        assert!(
-            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
-                &suffixed_remaining_break_package_qrom_break_zero
-            )
-        );
         let suffixed_remaining_break_package_qrom_break_component =
             accepted_spend_instantiation_shape.replace(
                 "SelectedRustAcceptedSpendRemainingBreakPricingPackage.qromBreakProb_le_2pow_neg133",
@@ -95329,16 +99818,6 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &suffixed_remaining_break_package_qrom_break_component
-            )
-        );
-        let suffixed_remaining_break_package_live_slot_break_zero =
-            accepted_spend_instantiation_shape.replace(
-                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_eq_zero",
-                "SelectedRustAcceptedSpendRemainingBreakPricingPackage.liveSlotLeakageBreakProb_eq_zeroSpoof",
-            );
-        assert!(
-            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
-                &suffixed_remaining_break_package_live_slot_break_zero
             )
         );
         let suffixed_remaining_break_package_live_slot_break_component =
@@ -95491,8 +99970,8 @@ end Path2NativeAccountDesign
                 &suffixed_accepted_spend_four_bit_hard_pricing
             )
         );
-        let suffixed_accepted_spend_missing_pricing_card =
-            accepted_spend_instantiation_shape.replace(
+        let suffixed_accepted_spend_missing_pricing_card = accepted_spend_instantiation_shape
+            .replace(
                 "currentMissingAcceptedSpendPricingFacts_card",
                 "currentMissingAcceptedSpendPricingFacts_cardSpoof",
             );
@@ -95501,8 +99980,8 @@ end Path2NativeAccountDesign
                 &suffixed_accepted_spend_missing_pricing_card
             )
         );
-        let suffixed_accepted_spend_missing_pricing_blocker =
-            accepted_spend_instantiation_shape.replace(
+        let suffixed_accepted_spend_missing_pricing_blocker = accepted_spend_instantiation_shape
+            .replace(
                 "currentMissingAcceptedSpendPricingFact_blocksPricingFactsComplete",
                 "currentMissingAcceptedSpendPricingFact_blocksPricingFactsCompleteSpoof",
             );
@@ -96006,9 +100485,11 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE,
             ]
         );
-        assert!(!preflight
-            .internal_blockers
-            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_EXTERNAL_REVIEW));
+        assert!(
+            !preflight
+                .internal_blockers
+                .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_EXTERNAL_REVIEW)
+        );
         assert_ne!(
             path2_native_deployment_preflight_v1_digest(&preflight).unwrap(),
             [0_u8; DIGEST_BYTES]
@@ -96025,7 +100506,9 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         assert!(!rendered.contains("QROM multi-target horizon"));
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS));
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION));
-        assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE));
+        assert!(
+            !rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE)
+        );
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND));
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS));
         assert!(rendered.contains("active native signer/verifier pipeline"));
@@ -96171,18 +100654,24 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             output.signer_pipeline_ready,
             output.deployment_preflight.internal_deployment_ready
         );
-        assert!(!output
-            .deployment_preflight
-            .internal_blockers
-            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION));
-        assert!(!output
-            .deployment_preflight
-            .internal_blockers
-            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE));
-        assert!(output
-            .deployment_preflight
-            .internal_blockers
-            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND));
+        assert!(
+            !output
+                .deployment_preflight
+                .internal_blockers
+                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION)
+        );
+        assert!(
+            !output
+                .deployment_preflight
+                .internal_blockers
+                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE)
+        );
+        assert!(
+            output
+                .deployment_preflight
+                .internal_blockers
+                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND)
+        );
         assert_eq!(
             output.native_boundary_digest,
             assembly.native_boundary_digest
@@ -96351,21 +100840,25 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         let (_, checked_core_frame) = path2_native_derive_boundary_frame_v1(&bundle).unwrap();
 
         assert_eq!(proof_bytes.len(), PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES);
-        assert!(path2_native_checked_core_accept_v1(
-            &checked_core_frame,
-            &bundle.spend.checked_core_verifier_handle_digest,
-            &proof_bytes,
-        )
-        .is_ok());
+        assert!(
+            path2_native_checked_core_accept_v1(
+                &checked_core_frame,
+                &bundle.spend.checked_core_verifier_handle_digest,
+                &proof_bytes,
+            )
+            .is_ok()
+        );
 
         let short_proof = &proof_bytes[..PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES - 1];
-        assert!(path2_native_checked_core_accept_v1(
-            &checked_core_frame,
-            &bundle.spend.checked_core_verifier_handle_digest,
-            short_proof,
-        )
-        .unwrap_err()
-        .contains("Path 2 native checked-core proof has"));
+        assert!(
+            path2_native_checked_core_accept_v1(
+                &checked_core_frame,
+                &bundle.spend.checked_core_verifier_handle_digest,
+                short_proof,
+            )
+            .unwrap_err()
+            .contains("Path 2 native checked-core proof has")
+        );
 
         let mut noncanonical_proof = proof_bytes;
         noncanonical_proof[PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES - 1] |= 0xc0;
@@ -96440,11 +100933,13 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         let (_, checked_core_frame) = path2_native_derive_boundary_frame_v1(&bundle).unwrap();
         let checked_core_frame_bytes =
             path2_native_checked_core_frame_v1_bytes(&checked_core_frame).unwrap();
-        assert!(checked_core_frame_bytes.starts_with(
-            hash_byte_domain_evidence
-                .checked_core_frame_domain
-                .as_bytes()
-        ));
+        assert!(
+            checked_core_frame_bytes.starts_with(
+                hash_byte_domain_evidence
+                    .checked_core_frame_domain
+                    .as_bytes()
+            )
+        );
         assert_eq!(
             evidence.checked_core_challenge,
             hash_frame_to_challenge_bytes_poseidon2(&checked_core_frame_bytes)
@@ -96740,10 +101235,14 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         assert!(zeroize_source.contains("ptr::write_volatile(word, 0)"));
         assert!(zeroize_source.contains("fn path2_native_zeroize_signer_digest_frame_v1"));
         assert!(zeroize_source.contains("compiler_fence(Ordering::SeqCst);"));
-        assert!(path2_native_signer_entropy_digest_source_window_v1()
-            .contains("Path2NativeSignerDigestFrameV1::new();"));
-        assert!(path2_native_secret_component_digest_source_window_v1()
-            .contains("Path2NativeSignerDigestFrameV1::new();"));
+        assert!(
+            path2_native_signer_entropy_digest_source_window_v1()
+                .contains("Path2NativeSignerDigestFrameV1::new();")
+        );
+        assert!(
+            path2_native_secret_component_digest_source_window_v1()
+                .contains("Path2NativeSignerDigestFrameV1::new();")
+        );
         assert!(path2_native_signer_entropy_digest_source_window_v1().contains("frame.zeroize();"));
         assert!(
             path2_native_secret_component_digest_source_window_v1().contains("frame.zeroize();")
@@ -96819,14 +101318,18 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         assert_ne!(secret.authorization_local_seed, secret.gauge_seed);
         assert_ne!(secret.authorization_local_seed, secret.randomizer_seed);
         assert_ne!(secret.gauge_seed, secret.wallet_recovery_seed);
-        assert!(secret
-            .proof_randomizer_syndrome
-            .iter()
-            .all(|value| *value < Q));
-        assert!(secret
-            .proof_randomizer_syndrome
-            .iter()
-            .any(|value| *value != 0));
+        assert!(
+            secret
+                .proof_randomizer_syndrome
+                .iter()
+                .all(|value| *value < Q)
+        );
+        assert!(
+            secret
+                .proof_randomizer_syndrome
+                .iter()
+                .any(|value| *value != 0)
+        );
         bundle.proof_commitment =
             pack_reviewed_fq12_account_carried_syndrome_digest(&secret.proof_randomizer_syndrome)
                 .unwrap();
@@ -96882,10 +101385,12 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         let secret = path2_native_secret_material_from_entropy_root_v1(root, &bundle).unwrap();
         assert_ne!(secret.authorization_local_seed, [0_u8; DIGEST_BYTES]);
         assert_ne!(secret.authorization_local_seed, secret.gauge_seed);
-        assert!(secret
-            .proof_randomizer_syndrome
-            .iter()
-            .all(|value| *value < Q));
+        assert!(
+            secret
+                .proof_randomizer_syndrome
+                .iter()
+                .all(|value| *value < Q)
+        );
     }
 
     #[test]
@@ -97340,36 +101845,56 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             evidence.smallest_remaining_productization_gate,
             PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE
         );
-        assert!(!evidence
-            .deployment_blockers
-            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS));
-        assert!(!evidence
-            .deployment_blockers
-            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION));
-        assert!(evidence
-            .deployment_blockers
-            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE));
-        assert!(!evidence
-            .deployment_blockers
-            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE));
-        assert!(evidence
-            .deployment_blockers
-            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND));
-        assert!(!evidence
-            .deployment_blockers
-            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS));
-        assert!(evidence
-            .deployment_blockers
-            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME));
-        assert!(evidence
-            .deployment_blockers
-            .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE));
-        assert!(evidence
-            .explicit_non_claims
-            .contains(&"no constant-time claim for private signing or keygen"));
-        assert!(evidence
-            .explicit_non_claims
-            .contains(&"no target-chain storage lifecycle hardening claim"));
+        assert!(
+            !evidence
+                .deployment_blockers
+                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS)
+        );
+        assert!(
+            !evidence
+                .deployment_blockers
+                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION)
+        );
+        assert!(
+            evidence
+                .deployment_blockers
+                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE)
+        );
+        assert!(
+            !evidence
+                .deployment_blockers
+                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE)
+        );
+        assert!(
+            evidence
+                .deployment_blockers
+                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND)
+        );
+        assert!(
+            !evidence
+                .deployment_blockers
+                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS)
+        );
+        assert!(
+            evidence
+                .deployment_blockers
+                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME)
+        );
+        assert!(
+            evidence
+                .deployment_blockers
+                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE)
+        );
+        assert!(
+            evidence
+                .explicit_non_claims
+                .contains(&"no constant-time claim for private signing or keygen")
+        );
+        assert!(
+            evidence
+                .explicit_non_claims
+                .contains(&"no target-chain storage lifecycle hardening claim")
+        );
         let evidence_frame = path2_native_signer_verifier_pipeline_evidence_v1_frame(&evidence);
         assert!(!evidence_frame.is_empty());
         let evidence_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&evidence_frame).into();
@@ -97381,7 +101906,9 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON));
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS));
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION));
-        assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE));
+        assert!(
+            !rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE)
+        );
         assert!(
             rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE)
         );
@@ -97768,8 +102295,10 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         assert!(digest_source.contains("Path2NativeSignerDigestFrameV1::new()"));
         assert!(digest_source.contains("frame.append_frame(b\"label\", label)"));
         assert!(digest_source.contains("frame.append_frame(b\"public_binding\", public_binding)"));
-        assert!(digest_source
-            .contains("path2_native_private_sha256_digest_v1(frame.as_slice(), &mut digest)"));
+        assert!(
+            digest_source
+                .contains("path2_native_private_sha256_digest_v1(frame.as_slice(), &mut digest)")
+        );
         assert!(digest_source.contains("frame.zeroize();"));
         let derivation_source = path2_native_secret_material_derivation_source_window_v1();
         assert_eq!(
@@ -97964,12 +102493,16 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         }
 
         let scope = path2_native_constant_time_audit_scope_v1();
-        assert!(scope
-            .required_artifacts
-            .contains(&"sampler_no_runtime_modulo_or_division"));
-        assert!(scope
-            .required_artifacts
-            .contains(&"sampler_constant_schedule_with_deterministic_fallback"));
+        assert!(
+            scope
+                .required_artifacts
+                .contains(&"sampler_no_runtime_modulo_or_division")
+        );
+        assert!(
+            scope
+                .required_artifacts
+                .contains(&"sampler_constant_schedule_with_deterministic_fallback")
+        );
     }
 
     #[test]
@@ -98039,35 +102572,53 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             scope.blocker,
             PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE
         );
-        assert!(scope
-            .private_fiber_components
-            .contains(&"AuthorizationLocal_c(q)"));
+        assert!(
+            scope
+                .private_fiber_components
+                .contains(&"AuthorizationLocal_c(q)")
+        );
         assert!(scope.private_fiber_components.contains(&"Gauge_c(q)"));
-        assert!(scope
-            .public_boundary_outputs
-            .contains(&"Path2NativeProjectionBundleV1"));
-        assert!(scope
-            .public_boundary_outputs
-            .contains(&"Path2NativeBoundaryAssemblyV1"));
-        assert!(scope
-            .meaning_invariance_laws
-            .contains(&"authorization_local_class_equals_p_spend"));
-        assert!(scope
-            .meaning_invariance_laws
-            .contains(&"gauge_changes_no_public_projection_digest"));
-        assert!(scope
-            .required_artifacts
-            .contains(&"honest_create_q_h_constructor_spec"));
-        assert!(scope
-            .required_harnesses
-            .contains(&"same_q_randomizer_invariance_harness"));
-        assert!(scope
-            .required_harnesses
-            .contains(&"honest_constructor_verifier_compatibility_harness"));
-        assert!(scope
-            .explicit_non_claims
-            .iter()
-            .any(|claim| claim.contains("consensus extracts private fiber")));
+        assert!(
+            scope
+                .public_boundary_outputs
+                .contains(&"Path2NativeProjectionBundleV1")
+        );
+        assert!(
+            scope
+                .public_boundary_outputs
+                .contains(&"Path2NativeBoundaryAssemblyV1")
+        );
+        assert!(
+            scope
+                .meaning_invariance_laws
+                .contains(&"authorization_local_class_equals_p_spend")
+        );
+        assert!(
+            scope
+                .meaning_invariance_laws
+                .contains(&"gauge_changes_no_public_projection_digest")
+        );
+        assert!(
+            scope
+                .required_artifacts
+                .contains(&"honest_create_q_h_constructor_spec")
+        );
+        assert!(
+            scope
+                .required_harnesses
+                .contains(&"same_q_randomizer_invariance_harness")
+        );
+        assert!(
+            scope
+                .required_harnesses
+                .contains(&"honest_constructor_verifier_compatibility_harness")
+        );
+        assert!(
+            scope
+                .explicit_non_claims
+                .iter()
+                .any(|claim| claim.contains("consensus extracts private fiber"))
+        );
         assert_ne!(
             path2_native_honest_constructor_scope_v1_digest(&scope).unwrap(),
             [0_u8; DIGEST_BYTES]
@@ -98099,28 +102650,42 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             scope.blocker,
             PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE
         );
-        assert!(scope
-            .entropy_sources
-            .contains(&"domain_separated_account_keygen_stream"));
-        assert!(scope
-            .secret_ownership_rules
-            .contains(&"no_debug_or_serialize_for_secret_material"));
-        assert!(scope
-            .constructor_contracts
-            .contains(&"generate_checked_core_proof_from_shared_native_frame_derivation"));
-        assert!(scope
-            .constructor_contracts
-            .contains(&"construct_from_os_entropy_root_without_public_secret_export"));
-        assert!(scope
-            .zeroization_requirements
-            .contains(&"proof_randomizer_syndrome_zeroized_or_consumed"));
-        assert!(scope
-            .required_harnesses
-            .contains(&"generated_proof_assembly_frame_equality_harness"));
-        assert!(scope
-            .explicit_non_claims
-            .iter()
-            .any(|claim| claim.contains("fixture secret material")));
+        assert!(
+            scope
+                .entropy_sources
+                .contains(&"domain_separated_account_keygen_stream")
+        );
+        assert!(
+            scope
+                .secret_ownership_rules
+                .contains(&"no_debug_or_serialize_for_secret_material")
+        );
+        assert!(
+            scope
+                .constructor_contracts
+                .contains(&"generate_checked_core_proof_from_shared_native_frame_derivation")
+        );
+        assert!(
+            scope
+                .constructor_contracts
+                .contains(&"construct_from_os_entropy_root_without_public_secret_export")
+        );
+        assert!(
+            scope
+                .zeroization_requirements
+                .contains(&"proof_randomizer_syndrome_zeroized_or_consumed")
+        );
+        assert!(
+            scope
+                .required_harnesses
+                .contains(&"generated_proof_assembly_frame_equality_harness")
+        );
+        assert!(
+            scope
+                .explicit_non_claims
+                .iter()
+                .any(|claim| claim.contains("fixture secret material"))
+        );
         assert_ne!(
             path2_native_signer_keygen_productization_scope_v1_digest(&scope).unwrap(),
             [0_u8; DIGEST_BYTES]
@@ -98145,31 +102710,47 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         assert_eq!(scope.schema, PATH2_NATIVE_CONSTANT_TIME_AUDIT_SCOPE_SCHEMA);
         assert!(!scope.audit_complete);
         assert_eq!(scope.blocker, PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME);
-        assert!(scope
-            .secret_dependent_operations
-            .contains(&"active_native_keygen_secret_sampling"));
-        assert!(scope
-            .secret_dependent_operations
-            .contains(&"active_native_checked_core_proof_generation"));
-        assert!(scope
-            .public_variable_length_operations
-            .contains(&"public_message_digesting"));
-        assert!(scope
-            .required_artifacts
-            .contains(&"secret_independent_memory_access_audit"));
-        assert!(scope
-            .required_artifacts
-            .contains(&"sampler_constant_schedule_with_deterministic_fallback"));
-        assert!(scope
-            .required_artifacts
-            .contains(&"sampler_no_runtime_modulo_or_division"));
-        assert!(scope
-            .required_artifacts
-            .contains(&"verifier_rejection_equivalence_harness"));
-        assert!(scope
-            .explicit_non_claims
-            .iter()
-            .any(|claim| claim.contains("public message length")));
+        assert!(
+            scope
+                .secret_dependent_operations
+                .contains(&"active_native_keygen_secret_sampling")
+        );
+        assert!(
+            scope
+                .secret_dependent_operations
+                .contains(&"active_native_checked_core_proof_generation")
+        );
+        assert!(
+            scope
+                .public_variable_length_operations
+                .contains(&"public_message_digesting")
+        );
+        assert!(
+            scope
+                .required_artifacts
+                .contains(&"secret_independent_memory_access_audit")
+        );
+        assert!(
+            scope
+                .required_artifacts
+                .contains(&"sampler_constant_schedule_with_deterministic_fallback")
+        );
+        assert!(
+            scope
+                .required_artifacts
+                .contains(&"sampler_no_runtime_modulo_or_division")
+        );
+        assert!(
+            scope
+                .required_artifacts
+                .contains(&"verifier_rejection_equivalence_harness")
+        );
+        assert!(
+            scope
+                .explicit_non_claims
+                .iter()
+                .any(|claim| claim.contains("public message length"))
+        );
         assert_ne!(
             path2_native_constant_time_audit_scope_v1_digest(&scope).unwrap(),
             [0_u8; DIGEST_BYTES]
@@ -98262,25 +102843,37 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         );
         assert!(!scope.hardening_complete);
         assert_eq!(scope.blocker, PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE);
-        assert!(scope
-            .target_chain_storage_artifacts
-            .contains(&"single_transaction_state_transition"));
-        assert!(scope
-            .lifecycle_safety_artifacts
-            .contains(&"consume_once_spent_slot_write"));
-        assert!(scope
-            .data_availability_artifacts
-            .contains(&"projection_preimage_da_bytes_retrieval"));
-        assert!(scope
-            .restore_reorg_artifacts
-            .contains(&"fork_epoch_scope_revalidation"));
-        assert!(scope
-            .required_harnesses
-            .contains(&"atomic_consume_once_replay_harness"));
-        assert!(scope
-            .explicit_non_claims
-            .iter()
-            .any(|claim| claim.contains("in-memory stores")));
+        assert!(
+            scope
+                .target_chain_storage_artifacts
+                .contains(&"single_transaction_state_transition")
+        );
+        assert!(
+            scope
+                .lifecycle_safety_artifacts
+                .contains(&"consume_once_spent_slot_write")
+        );
+        assert!(
+            scope
+                .data_availability_artifacts
+                .contains(&"projection_preimage_da_bytes_retrieval")
+        );
+        assert!(
+            scope
+                .restore_reorg_artifacts
+                .contains(&"fork_epoch_scope_revalidation")
+        );
+        assert!(
+            scope
+                .required_harnesses
+                .contains(&"atomic_consume_once_replay_harness")
+        );
+        assert!(
+            scope
+                .explicit_non_claims
+                .iter()
+                .any(|claim| claim.contains("in-memory stores"))
+        );
         assert_ne!(
             path2_native_storage_lifecycle_hardening_scope_v1_digest(&scope).unwrap(),
             [0_u8; DIGEST_BYTES]
@@ -98311,9 +102904,11 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         validate_production_target_chain_database_adapter_profile(&profile).unwrap();
         let frame = production_target_chain_database_adapter_profile_frame(&profile);
         assert!(!frame.is_empty());
-        assert!(frame
-            .windows(b"schema".len())
-            .any(|window| window == b"schema"));
+        assert!(
+            frame
+                .windows(b"schema".len())
+                .any(|window| window == b"schema")
+        );
         let expected_digest: [u8; DIGEST_BYTES] = Sha256::digest(&frame).into();
         assert_eq!(
             production_target_chain_database_adapter_profile_digest(&profile),
@@ -98759,11 +103354,13 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         blinding_overflow[pad_layout.semantic_columns] =
             path2_descent_sis_centered_to_residue(-(PATH2_DESCENT_SIS_BLINDING_CENTERED_BOUND + 1))
                 .unwrap();
-        assert!(verify_path2_descent_sis_opening_norm_range(
-            PATH2_DESCENT_SIS_ROLE_PAD_SOURCE,
-            &blinding_overflow,
-        )
-        .is_err());
+        assert!(
+            verify_path2_descent_sis_opening_norm_range(
+                PATH2_DESCENT_SIS_ROLE_PAD_SOURCE,
+                &blinding_overflow,
+            )
+            .is_err()
+        );
 
         let mut noncanonical = pad_opening.clone();
         noncanonical[0] = Q;
@@ -99013,60 +103610,66 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
 
         let mut wrong_projection = masked_projection;
         wrong_projection[0] = Q;
-        assert!(path2_transparent_descent_transcript_digest(
-            &proof_system_id,
-            256,
-            16,
-            PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
-            &leaf_context_digest,
-            &creation_proof_binding_digest,
-            slot_id,
-            &hidden_source_statement_digest,
-            &native_role_root_commitment,
-            &matrix_domain_transcript_digest,
-            &wrong_projection,
-            &aggregation_context_digest,
-            &trace_commitment_root,
-            &constraint_commitment_root,
-            0,
-        )
-        .is_err());
-        assert!(path2_transparent_descent_transcript_digest(
-            &proof_system_id,
-            255,
-            16,
-            PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
-            &leaf_context_digest,
-            &creation_proof_binding_digest,
-            slot_id,
-            &hidden_source_statement_digest,
-            &native_role_root_commitment,
-            &matrix_domain_transcript_digest,
-            &masked_projection,
-            &aggregation_context_digest,
-            &trace_commitment_root,
-            &constraint_commitment_root,
-            0,
-        )
-        .is_err());
-        assert!(path2_transparent_descent_transcript_digest(
-            &proof_system_id,
-            256,
-            0,
-            PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
-            &leaf_context_digest,
-            &creation_proof_binding_digest,
-            slot_id,
-            &hidden_source_statement_digest,
-            &native_role_root_commitment,
-            &matrix_domain_transcript_digest,
-            &masked_projection,
-            &aggregation_context_digest,
-            &trace_commitment_root,
-            &constraint_commitment_root,
-            0,
-        )
-        .is_err());
+        assert!(
+            path2_transparent_descent_transcript_digest(
+                &proof_system_id,
+                256,
+                16,
+                PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+                &leaf_context_digest,
+                &creation_proof_binding_digest,
+                slot_id,
+                &hidden_source_statement_digest,
+                &native_role_root_commitment,
+                &matrix_domain_transcript_digest,
+                &wrong_projection,
+                &aggregation_context_digest,
+                &trace_commitment_root,
+                &constraint_commitment_root,
+                0,
+            )
+            .is_err()
+        );
+        assert!(
+            path2_transparent_descent_transcript_digest(
+                &proof_system_id,
+                255,
+                16,
+                PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+                &leaf_context_digest,
+                &creation_proof_binding_digest,
+                slot_id,
+                &hidden_source_statement_digest,
+                &native_role_root_commitment,
+                &matrix_domain_transcript_digest,
+                &masked_projection,
+                &aggregation_context_digest,
+                &trace_commitment_root,
+                &constraint_commitment_root,
+                0,
+            )
+            .is_err()
+        );
+        assert!(
+            path2_transparent_descent_transcript_digest(
+                &proof_system_id,
+                256,
+                0,
+                PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+                &leaf_context_digest,
+                &creation_proof_binding_digest,
+                slot_id,
+                &hidden_source_statement_digest,
+                &native_role_root_commitment,
+                &matrix_domain_transcript_digest,
+                &masked_projection,
+                &aggregation_context_digest,
+                &trace_commitment_root,
+                &constraint_commitment_root,
+                0,
+            )
+            .is_err()
+        );
         assert_eq!(
             path2_transparent_descent_transcript_digest(
                 &proof_system_id,
@@ -99516,10 +104119,12 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         assert_eq!(schedule.entries[1].query_count, 20);
         assert_eq!(schedule.entries[2].trace_rows, 1024);
         assert_eq!(schedule.entries[2].query_count, 24);
-        assert!(schedule
-            .entries
-            .iter()
-            .all(|entry| entry.native_stress_floor_bytes < schedule.fallback_threshold_bytes));
+        assert!(
+            schedule
+                .entries
+                .iter()
+                .all(|entry| entry.native_stress_floor_bytes < schedule.fallback_threshold_bytes)
+        );
         assert_ne!(
             path2_transparent_query_schedule_v1_digest().unwrap(),
             [0_u8; DIGEST_BYTES]
@@ -108595,6 +113200,392 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
     }
 
     #[test]
+    fn path2_sovereign_direct_admission_state_binds_available_record_and_spend() {
+        let (fixture, leaf, evidence, certificate) = path2_creation_relation_replay_fixture();
+        let authorization = path2_slot_authorization_digest(&leaf).unwrap();
+        let mut admission_state = Path2SovereignDirectAdmissionStateV1::new();
+        let verified_admission = path2_test_verified_sovereign_creation_admission_v1(
+            &leaf,
+            &evidence,
+            &certificate,
+            test_digest("sovereign-admission-nullifier"),
+        )
+        .unwrap();
+        let namespace_digest = admission_state
+            .admit_verified_creation(7, verified_admission.clone())
+            .unwrap();
+        assert_eq!(
+            namespace_digest,
+            path2_direct_admission_namespace_record_digest(
+                &leaf.account_id,
+                &leaf.account_state_root_before,
+                &authorization,
+            )
+        );
+        let record = admission_state
+            .require_available_record(&leaf, &evidence, &certificate)
+            .unwrap();
+        assert_eq!(record.namespace_key().2, authorization);
+        assert_eq!(
+            record.canonical_leaf_bytes,
+            path2_prevalidated_slot_leaf_v1_bytes(&leaf).unwrap()
+        );
+        assert_ne!(admission_state.state_digest(), [0_u8; DIGEST_BYTES]);
+        assert_eq!(admission_state.nullifier_count(), 1);
+        let before_duplicate = admission_state.state_digest();
+        assert_eq!(
+            admission_state
+                .admit_verified_creation(8, verified_admission)
+                .unwrap_err(),
+            "Path 2 duplicate sovereign slot admission"
+        );
+        assert_eq!(admission_state.state_digest(), before_duplicate);
+        assert_eq!(admission_state.head(), 7);
+
+        let responses = ProductionCompactResponses {
+            active_free: [[0_i16; LOCAL_FREE]; REPS],
+        };
+        let signature = sign_path2_reviewed_fq12_authorization_checked_core(
+            &fixture.public_key,
+            fixture.message,
+            &fixture.account,
+            &leaf.account_id,
+            &leaf.account_state_root_before,
+            &authorization,
+            leaf.slot_id as u32,
+            &fixture.pad_seed,
+            &responses,
+        )
+        .unwrap();
+        let mut consumed = BTreeSet::new();
+        let parts = verify_path2_direct_single_slot_spend_authorization_from_sovereign_state_v1(
+            &leaf,
+            &evidence,
+            &certificate,
+            &fixture.public_key,
+            fixture.message,
+            &fixture.account,
+            &signature,
+            &admission_state,
+            &mut consumed,
+        )
+        .unwrap();
+        assert_eq!(parts.slot_id, leaf.slot_id as u32);
+        assert_eq!(consumed, BTreeSet::from([authorization]));
+    }
+
+    #[test]
+    fn path2_sovereign_direct_admission_state_rejects_missing_mismatched_and_corrupt_records() {
+        let (fixture, leaf, evidence, certificate) = path2_creation_relation_replay_fixture();
+        let authorization = path2_slot_authorization_digest(&leaf).unwrap();
+        let responses = ProductionCompactResponses {
+            active_free: [[0_i16; LOCAL_FREE]; REPS],
+        };
+        let signature = sign_path2_reviewed_fq12_authorization_checked_core(
+            &fixture.public_key,
+            fixture.message,
+            &fixture.account,
+            &leaf.account_id,
+            &leaf.account_state_root_before,
+            &authorization,
+            leaf.slot_id as u32,
+            &fixture.pad_seed,
+            &responses,
+        )
+        .unwrap();
+
+        let empty_state = Path2SovereignDirectAdmissionStateV1::new();
+        let mut consumed = BTreeSet::new();
+        let missing = verify_path2_direct_single_slot_spend_authorization_from_sovereign_state_v1(
+            &leaf,
+            &evidence,
+            &certificate,
+            &fixture.public_key,
+            fixture.message,
+            &fixture.account,
+            &signature,
+            &empty_state,
+            &mut consumed,
+        )
+        .unwrap_err();
+        assert_eq!(
+            missing.reason(),
+            "Path 2 slot authorization not admitted in state namespace"
+        );
+        assert_eq!(
+            path2_direct_account_binding_public_result_class(&missing),
+            Path2PublicResultClassV1::RejectCreationEvidence
+        );
+        assert!(consumed.is_empty());
+
+        let mut corrupt_state = Path2SovereignDirectAdmissionStateV1::new();
+        let verified_admission = path2_test_verified_sovereign_creation_admission_v1(
+            &leaf,
+            &evidence,
+            &certificate,
+            test_digest("sovereign-corrupt-nullifier"),
+        )
+        .unwrap();
+        corrupt_state
+            .admit_verified_creation(9, verified_admission)
+            .unwrap();
+        let key = (
+            leaf.account_id,
+            leaf.account_state_root_before,
+            authorization,
+        );
+        corrupt_state
+            .records
+            .get_mut(&key)
+            .unwrap()
+            .canonical_leaf_bytes[0] ^= 1;
+        let corrupt = verify_path2_direct_single_slot_spend_authorization_from_sovereign_state_v1(
+            &leaf,
+            &evidence,
+            &certificate,
+            &fixture.public_key,
+            fixture.message,
+            &fixture.account,
+            &signature,
+            &corrupt_state,
+            &mut consumed,
+        )
+        .unwrap_err();
+        assert_eq!(
+            corrupt.reason(),
+            "Path 2 internal sovereign admission state record unavailable or corrupt"
+        );
+        assert_eq!(
+            path2_direct_account_binding_public_result_class(&corrupt),
+            Path2PublicResultClassV1::InternalErrorFailClosed
+        );
+        assert!(consumed.is_empty());
+
+        let mut mismatched_leaf = leaf.clone();
+        mismatched_leaf.account_state_root_before[0] ^= 1;
+        assert!(
+            corrupt_state
+                .require_available_record(&mismatched_leaf, &evidence, &certificate)
+                .is_err()
+        );
+    }
+
+    #[test]
+    fn path2_sovereign_direct_admission_state_reorg_respects_d2_finality() {
+        let durable = path2_account_creation_frame_kat_fixture_v1().unwrap();
+        let (_, reorg_leaf, reorg_evidence, reorg_certificate) =
+            path2_creation_relation_replay_fixture();
+        let mut state = Path2SovereignDirectAdmissionStateV1::new();
+        let durable_admission = path2_test_verified_sovereign_creation_admission_v1(
+            &durable.leaf,
+            &durable.evidence,
+            &durable.certificate,
+            test_digest("sovereign-durable-nullifier"),
+        )
+        .unwrap();
+        state.admit_verified_creation(5, durable_admission).unwrap();
+        state.finalize_to(5).unwrap();
+        let reorg_admission = path2_test_verified_sovereign_creation_admission_v1(
+            &reorg_leaf,
+            &reorg_evidence,
+            &reorg_certificate,
+            test_digest("sovereign-reorg-nullifier"),
+        )
+        .unwrap();
+        state
+            .admit_verified_creation(7, reorg_admission.clone())
+            .unwrap();
+        assert_eq!(state.record_count(), 2);
+        assert_eq!(state.nullifier_count(), 2);
+        assert_eq!(state.reorg_to(5).unwrap(), 1);
+        assert_eq!(state.record_count(), 1);
+        assert_eq!(state.nullifier_count(), 1);
+        state
+            .admit_verified_creation(6, reorg_admission)
+            .expect("orphaned nullifier must be re-admittable on the replacement fork");
+        assert_eq!(state.nullifier_count(), 2);
+        assert!(
+            state
+                .require_available_record(&durable.leaf, &durable.evidence, &durable.certificate,)
+                .is_ok()
+        );
+        assert!(
+            state
+                .require_available_record(&reorg_leaf, &reorg_evidence, &reorg_certificate)
+                .is_ok()
+        );
+        assert_eq!(
+            state.reorg_to(4).unwrap_err(),
+            "Path 2 sovereign admission state rejects reorg below finalized head"
+        );
+    }
+
+    #[test]
+    fn path2_sovereign_direct_admission_block_is_atomic_and_nullifier_global() {
+        let first = path2_account_creation_frame_kat_fixture_v1().unwrap();
+        let (_, second_leaf, second_evidence, second_certificate) =
+            path2_creation_relation_replay_fixture();
+        let shared_nullifier = test_digest("sovereign-shared-nullifier");
+        let first_candidate = path2_test_verified_sovereign_creation_admission_v1(
+            &first.leaf,
+            &first.evidence,
+            &first.certificate,
+            shared_nullifier,
+        )
+        .unwrap();
+        let second_candidate = path2_test_verified_sovereign_creation_admission_v1(
+            &second_leaf,
+            &second_evidence,
+            &second_certificate,
+            shared_nullifier,
+        )
+        .unwrap();
+        assert_ne!(
+            first_candidate.namespace_key(),
+            second_candidate.namespace_key()
+        );
+
+        let mut committed_state = Path2SovereignDirectAdmissionStateV1::new();
+        committed_state
+            .admit_verified_creation_block(10, &[first_candidate.clone()])
+            .unwrap();
+        let committed_digest = committed_state.state_digest();
+        assert_eq!(
+            committed_state
+                .admit_verified_creation_block(11, &[second_candidate.clone()])
+                .unwrap_err(),
+            "Path 2 duplicate sovereign account-STARK nullifier"
+        );
+        assert_eq!(committed_state.state_digest(), committed_digest);
+        assert_eq!(committed_state.record_count(), 1);
+        assert_eq!(committed_state.nullifier_count(), 1);
+
+        let mut same_account_candidate = first_candidate.clone();
+        same_account_candidate.record.account_state_root_before[0] ^= 1;
+        assert_eq!(
+            same_account_candidate.record.account_id,
+            first_candidate.record.account_id
+        );
+        assert_ne!(
+            same_account_candidate.namespace_key(),
+            first_candidate.namespace_key()
+        );
+        assert_eq!(
+            committed_state
+                .admit_verified_creation_block(11, &[same_account_candidate])
+                .unwrap_err(),
+            "Path 2 duplicate sovereign account-STARK nullifier"
+        );
+        assert_eq!(committed_state.state_digest(), committed_digest);
+        assert_eq!(committed_state.head(), 10);
+
+        let mut state = Path2SovereignDirectAdmissionStateV1::new();
+        let before = state.state_digest();
+        assert_eq!(
+            state
+                .admit_verified_creation_block(
+                    11,
+                    &[first_candidate.clone(), first_candidate.clone()],
+                )
+                .unwrap_err(),
+            "Path 2 duplicate sovereign slot admission"
+        );
+        assert_eq!(state.state_digest(), before);
+        assert_eq!(state.head(), 0);
+        assert_eq!(
+            state
+                .admit_verified_creation_block(
+                    11,
+                    &[first_candidate.clone(), second_candidate.clone(),]
+                )
+                .unwrap_err(),
+            "Path 2 duplicate sovereign account-STARK nullifier"
+        );
+        assert_eq!(state.state_digest(), before);
+        assert_eq!(state.head(), 0);
+        assert_eq!(state.record_count(), 0);
+        assert_eq!(state.nullifier_count(), 0);
+
+        let mut distinct_second = second_candidate;
+        distinct_second.record.pad_seed_nullifier = test_digest("sovereign-second-nullifier");
+        let digests = state
+            .admit_verified_creation_block(11, &[first_candidate, distinct_second])
+            .unwrap();
+        assert_eq!(digests.len(), 2);
+        assert_eq!(state.record_count(), 2);
+        assert_eq!(state.nullifier_count(), 2);
+        assert!(
+            state
+                .records
+                .values()
+                .all(|record| record.admitted_at_height == 11)
+        );
+    }
+
+    #[test]
+    fn path2_sovereign_direct_admission_snapshot_roundtrips_nullifier_registry() {
+        let fixture = path2_account_creation_frame_kat_fixture_v1().unwrap();
+        let candidate = path2_test_verified_sovereign_creation_admission_v1(
+            &fixture.leaf,
+            &fixture.evidence,
+            &fixture.certificate,
+            test_digest("sovereign-snapshot-nullifier"),
+        )
+        .unwrap();
+        let mut state = Path2SovereignDirectAdmissionStateV1::new();
+        state.admit_verified_creation(3, candidate).unwrap();
+        state.finalize_to(3).unwrap();
+        let digest = state.state_digest();
+        let snapshot = state.snapshot();
+        let anchor = state.restore_anchor();
+        let restored =
+            Path2SovereignDirectAdmissionStateV1::restore(snapshot.clone(), &anchor).unwrap();
+        assert_eq!(restored, state);
+        assert_eq!(restored.state_digest(), digest);
+
+        let stale_snapshot = snapshot.clone();
+        state.advance_head(4).unwrap();
+        let current_anchor = state.restore_anchor();
+        assert_eq!(
+            Path2SovereignDirectAdmissionStateV1::restore(stale_snapshot, &current_anchor)
+                .unwrap_err(),
+            "Path 2 sovereign admission restore anchor mismatch"
+        );
+
+        let mut corrupt_snapshot = snapshot;
+        corrupt_snapshot.nullifier_registry.clear();
+        assert_eq!(
+            Path2SovereignDirectAdmissionStateV1::restore(corrupt_snapshot, &anchor).unwrap_err(),
+            "Path 2 sovereign admission snapshot metadata mismatch"
+        );
+    }
+
+    #[test]
+    fn path2_sovereign_direct_admission_rejects_finalized_head_mutation() {
+        let fixture = path2_account_creation_frame_kat_fixture_v1().unwrap();
+        let candidate = path2_test_verified_sovereign_creation_admission_v1(
+            &fixture.leaf,
+            &fixture.evidence,
+            &fixture.certificate,
+            test_digest("sovereign-finalized-head-nullifier"),
+        )
+        .unwrap();
+        let mut state = Path2SovereignDirectAdmissionStateV1::new();
+        state.advance_head(4).unwrap();
+        state.finalize_to(4).unwrap();
+        let before = state.state_digest();
+        assert_eq!(
+            state
+                .admit_verified_creation_block(4, &[candidate])
+                .unwrap_err(),
+            "Path 2 sovereign admission requires an unfinalized candidate head"
+        );
+        assert_eq!(state.state_digest(), before);
+        assert_eq!(state.record_count(), 0);
+        assert_eq!(state.nullifier_count(), 0);
+    }
+
+    #[test]
     fn path2_direct_single_slot_spend_tuple_evidence_pins_accepted_tuple() {
         let (fixture, leaf, evidence, certificate) = path2_creation_relation_replay_fixture();
         let authorization = path2_slot_authorization_digest(&leaf).unwrap();
@@ -109349,6 +114340,236 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
     }
 
     #[test]
+    fn path2_direct_all_consensus_visible_public_object_mutations_are_panic_free() {
+        let registry_objects = PATH2_DIRECT_PUBLIC_OBJECT_MUTATION_KAT_CASES_V1
+            .iter()
+            .map(|case| case.public_object)
+            .collect::<BTreeSet<_>>();
+        let expected_objects = PATH2_DIRECT_CONSENSUS_VISIBLE_PUBLIC_OBJECTS_V1
+            .iter()
+            .copied()
+            .collect::<BTreeSet<_>>();
+        assert_eq!(PATH2_DIRECT_PUBLIC_OBJECT_MUTATION_KAT_CASES_V1.len(), 9);
+        assert_eq!(registry_objects, expected_objects);
+
+        let (fixture, leaf, evidence, certificate) = path2_creation_relation_replay_fixture();
+        let authorization = path2_slot_authorization_digest(&leaf).unwrap();
+        let base_admitted_state_authorizations = BTreeSet::from([(
+            leaf.account_id,
+            leaf.account_state_root_before,
+            authorization,
+        )]);
+        let responses = ProductionCompactResponses {
+            active_free: [[0_i16; LOCAL_FREE]; REPS],
+        };
+        let signature = sign_path2_reviewed_fq12_authorization_checked_core(
+            &fixture.public_key,
+            fixture.message,
+            &fixture.account,
+            &leaf.account_id,
+            &leaf.account_state_root_before,
+            &authorization,
+            leaf.slot_id as u32,
+            &fixture.pad_seed,
+            &responses,
+        )
+        .unwrap();
+
+        for case in PATH2_DIRECT_PUBLIC_OBJECT_MUTATION_KAT_CASES_V1 {
+            let mut test_leaf = leaf;
+            let mut test_evidence = evidence;
+            let mut test_certificate = certificate;
+            let mut test_public_key = fixture.public_key.clone();
+            let mut test_message = fixture.message.to_vec();
+            let mut test_account = fixture.account.clone();
+            let mut test_signature = signature.clone();
+            let mut test_admitted_state_authorizations = base_admitted_state_authorizations.clone();
+            let mut consumed_authorizations = BTreeSet::from([[0x5a_u8; DIGEST_BYTES]]);
+
+            match case.public_object {
+                Path2DirectConsensusVisiblePublicObjectV1::PrevalidatedSlotLeaf => {
+                    test_leaf.frame_version += 1;
+                }
+                Path2DirectConsensusVisiblePublicObjectV1::AccountCreationEvidence => {
+                    test_evidence.evidence_domain = "DESCENDER_BAD_EVIDENCE_DOMAIN_V1";
+                }
+                Path2DirectConsensusVisiblePublicObjectV1::ReplayableRelationCertificate => {
+                    test_certificate.relation_transcript_digest[0] ^= 1;
+                }
+                Path2DirectConsensusVisiblePublicObjectV1::PublicKey => {
+                    let mut bytes = test_public_key.as_bytes().to_vec();
+                    bytes[0] ^= 1;
+                    test_public_key = ProductionPublicKey::from_bytes_unchecked_for_test(bytes);
+                }
+                Path2DirectConsensusVisiblePublicObjectV1::Message => {
+                    test_message.push(0xff);
+                }
+                Path2DirectConsensusVisiblePublicObjectV1::AccountState => {
+                    test_account.mark_consumed(leaf.slot_id as u32).unwrap();
+                }
+                Path2DirectConsensusVisiblePublicObjectV1::Signature => {
+                    test_signature = ProductionSignature::new(Vec::new());
+                }
+                Path2DirectConsensusVisiblePublicObjectV1::AdmittedStateAuthorizations => {
+                    test_admitted_state_authorizations.clear();
+                }
+                Path2DirectConsensusVisiblePublicObjectV1::ConsumedAuthorizations => {
+                    consumed_authorizations.insert(authorization);
+                }
+            }
+
+            let state_before = consumed_authorizations.clone();
+            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                verify_path2_direct_single_slot_spend_authorization_sovereign_client_v1(
+                    &test_leaf,
+                    &test_evidence,
+                    &test_certificate,
+                    &test_public_key,
+                    &test_message,
+                    &test_account,
+                    &test_signature,
+                    &test_admitted_state_authorizations,
+                    &mut consumed_authorizations,
+                )
+            }))
+            .unwrap_or_else(|_| {
+                panic!(
+                    "public-object mutation KAT {} ({}) panicked",
+                    case.case_id,
+                    case.public_object.as_str()
+                )
+            });
+            assert_eq!(
+                result.public_result,
+                Path2DirectSpendPublicResultV1::rejected(case.expected_class),
+                "{} ({})",
+                case.case_id,
+                case.mutation
+            );
+            assert_eq!(
+                result.profile_id, PATH2_SOVEREIGN_DIRECT_CLIENT_PROFILE_ID_V1,
+                "{}",
+                case.case_id
+            );
+            assert!(!result.transaction_valid, "{}", case.case_id);
+            assert_eq!(
+                result.state_effect,
+                Path2SovereignConsensusStateEffectV1::NoMutation,
+                "{}",
+                case.case_id
+            );
+            assert_eq!(
+                consumed_authorizations, state_before,
+                "{} changed consume-once state",
+                case.case_id
+            );
+        }
+    }
+
+    #[test]
+    fn path2_sovereign_direct_client_mapping_is_exhaustive_and_state_preserving() {
+        let mapped_classes = PATH2_SOVEREIGN_DIRECT_CLIENT_MAPPING_ROWS_V1
+            .iter()
+            .map(|row| row.result_class)
+            .collect::<BTreeSet<_>>();
+        let mapped_codes = PATH2_SOVEREIGN_DIRECT_CLIENT_MAPPING_ROWS_V1
+            .iter()
+            .map(|row| row.consensus_code)
+            .collect::<BTreeSet<_>>();
+        let expected_classes = Path2PublicResultClassV1::all()
+            .iter()
+            .copied()
+            .collect::<BTreeSet<_>>();
+        assert_eq!(PATH2_SOVEREIGN_DIRECT_CLIENT_MAPPING_ROWS_V1.len(), 11);
+        assert_eq!(mapped_classes, expected_classes);
+        assert_eq!(mapped_codes.len(), 11);
+
+        for row in PATH2_SOVEREIGN_DIRECT_CLIENT_MAPPING_ROWS_V1 {
+            let public_result = Path2DirectSpendPublicResultV1::new(
+                row.result_class,
+                matches!(row.result_class, Path2PublicResultClassV1::AcceptSpendSlot).then_some(7),
+            );
+            let mapped = path2_sovereign_direct_client_result_v1(public_result);
+            assert_eq!(
+                mapped.profile_id,
+                PATH2_SOVEREIGN_DIRECT_CLIENT_PROFILE_ID_V1
+            );
+            assert_eq!(mapped.public_result, public_result);
+            assert_eq!(mapped.consensus_code, row.consensus_code);
+            assert_eq!(mapped.transaction_valid, row.transaction_valid);
+            assert_eq!(mapped.state_effect, row.state_effect);
+            if matches!(
+                row.result_class,
+                Path2PublicResultClassV1::AcceptAdmitSlot
+                    | Path2PublicResultClassV1::AcceptSpendSlot
+            ) {
+                assert!(row.transaction_valid);
+                assert_ne!(
+                    row.state_effect,
+                    Path2SovereignConsensusStateEffectV1::NoMutation
+                );
+            } else {
+                assert!(!row.transaction_valid);
+                assert_eq!(
+                    row.state_effect,
+                    Path2SovereignConsensusStateEffectV1::NoMutation
+                );
+            }
+        }
+
+        let original_authorization = [0x5a_u8; DIGEST_BYTES];
+        for (case_index, case) in PATH2_DIRECT_PUBLIC_REJECTION_CLASS_KAT_CASES_V1
+            .iter()
+            .enumerate()
+        {
+            let mut consumed = BTreeSet::from([original_authorization]);
+            let state_before = consumed.clone();
+            let mapped =
+                path2_sovereign_direct_client_result_with_rollback_v1(&mut consumed, |state| {
+                    state.insert([(case_index + 1) as u8; DIGEST_BYTES]);
+                    Err(ProductionAccountBindingError::new(
+                        Some(case_index as u32),
+                        case.internal_reason,
+                    ))
+                });
+            assert_eq!(
+                mapped.public_result,
+                Path2DirectSpendPublicResultV1::rejected(case.expected_class),
+                "{}",
+                case.case_id
+            );
+            assert!(!mapped.transaction_valid, "{}", case.case_id);
+            assert_eq!(
+                mapped.state_effect,
+                Path2SovereignConsensusStateEffectV1::NoMutation,
+                "{}",
+                case.case_id
+            );
+            assert_eq!(consumed, state_before, "{}", case.case_id);
+        }
+
+        let mut panic_consumed = BTreeSet::from([original_authorization]);
+        let panic_state_before = panic_consumed.clone();
+        let panic_result = path2_sovereign_direct_client_result_with_rollback_v1(
+            &mut panic_consumed,
+            |state| -> Result<u32, ProductionAccountBindingError> {
+                state.insert([0xff_u8; DIGEST_BYTES]);
+                panic!("injected sovereign direct client verifier panic")
+            },
+        );
+        assert_eq!(
+            panic_result.public_result.result_class,
+            Path2PublicResultClassV1::InternalErrorFailClosed
+        );
+        assert!(!panic_result.transaction_valid);
+        assert_eq!(
+            panic_result.state_effect,
+            Path2SovereignConsensusStateEffectV1::NoMutation
+        );
+        assert_eq!(panic_consumed, panic_state_before);
+    }
+
+    #[test]
     fn path2_direct_single_slot_spend_public_result_wrapper_hides_internal_diagnostics() {
         let (fixture, leaf, evidence, certificate) = path2_creation_relation_replay_fixture();
         let authorization = path2_slot_authorization_digest(&leaf).unwrap();
@@ -109456,6 +114677,87 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         );
         assert_eq!(checked_core.result_class_name, "reject_checked_core");
         assert!(checked_core_consumed.is_empty());
+    }
+
+    #[test]
+    fn path2_direct_public_rejection_classes_are_exhaustive_and_state_preserving() {
+        let expected_rejection_classes = Path2PublicResultClassV1::all()
+            .iter()
+            .copied()
+            .filter(|class| {
+                !matches!(
+                    class,
+                    Path2PublicResultClassV1::AcceptAdmitSlot
+                        | Path2PublicResultClassV1::AcceptSpendSlot
+                )
+            })
+            .collect::<BTreeSet<_>>();
+        let kat_rejection_classes = PATH2_DIRECT_PUBLIC_REJECTION_CLASS_KAT_CASES_V1
+            .iter()
+            .map(|case| case.expected_class)
+            .collect::<BTreeSet<_>>();
+        assert_eq!(PATH2_DIRECT_PUBLIC_REJECTION_CLASS_KAT_CASES_V1.len(), 9);
+        assert_eq!(kat_rejection_classes, expected_rejection_classes);
+
+        let original_authorization = [0x5a_u8; DIGEST_BYTES];
+        for (case_index, case) in PATH2_DIRECT_PUBLIC_REJECTION_CLASS_KAT_CASES_V1
+            .iter()
+            .enumerate()
+        {
+            assert_eq!(
+                path2_direct_account_binding_public_result_class_for_reason(case.internal_reason),
+                case.expected_class,
+                "{}",
+                case.case_id
+            );
+            let mut consumed = BTreeSet::from([original_authorization]);
+            let state_before = consumed.clone();
+            let rejected = path2_direct_public_result_with_rollback_v1(&mut consumed, |state| {
+                state.insert([(case_index + 1) as u8; DIGEST_BYTES]);
+                Err(ProductionAccountBindingError::new(
+                    Some(case_index as u32),
+                    case.internal_reason,
+                ))
+            });
+            assert_eq!(
+                rejected,
+                Path2DirectSpendPublicResultV1::rejected(case.expected_class),
+                "{}",
+                case.case_id
+            );
+            assert_eq!(
+                consumed, state_before,
+                "{} changed consume-once state",
+                case.case_id
+            );
+        }
+
+        let mut panic_consumed = BTreeSet::from([original_authorization]);
+        let panic_state_before = panic_consumed.clone();
+        let panic_rejected = path2_direct_public_result_with_rollback_v1(
+            &mut panic_consumed,
+            |state| -> Result<u32, ProductionAccountBindingError> {
+                state.insert([0xff_u8; DIGEST_BYTES]);
+                panic!("injected direct verifier panic")
+            },
+        );
+        assert_eq!(
+            panic_rejected,
+            Path2DirectSpendPublicResultV1::rejected(
+                Path2PublicResultClassV1::InternalErrorFailClosed
+            )
+        );
+        assert_eq!(panic_consumed, panic_state_before);
+
+        let accepted_authorization = [0xa5_u8; DIGEST_BYTES];
+        let mut accepted_consumed = BTreeSet::from([original_authorization]);
+        let accepted =
+            path2_direct_public_result_with_rollback_v1(&mut accepted_consumed, |state| {
+                state.insert(accepted_authorization);
+                Ok(7)
+            });
+        assert_eq!(accepted, Path2DirectSpendPublicResultV1::accepted_spend(7));
+        assert!(accepted_consumed.contains(&accepted_authorization));
     }
 
     #[test]
@@ -109664,15 +114966,21 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             statement.digest,
             path2_creation_hidden_source_statement_v1_digest(&statement)
         );
-        assert!(frame
-            .windows(PATH2_CREATION_HIDDEN_SOURCE_STATEMENT_DOMAIN.len())
-            .any(|window| window == PATH2_CREATION_HIDDEN_SOURCE_STATEMENT_DOMAIN.as_bytes()));
-        assert!(!frame
-            .windows(b"message_digest".len())
-            .any(|window| window == b"message_digest"));
-        assert!(!frame
-            .windows(b"signature_digest".len())
-            .any(|window| window == b"signature_digest"));
+        assert!(
+            frame
+                .windows(PATH2_CREATION_HIDDEN_SOURCE_STATEMENT_DOMAIN.len())
+                .any(|window| window == PATH2_CREATION_HIDDEN_SOURCE_STATEMENT_DOMAIN.as_bytes())
+        );
+        assert!(
+            !frame
+                .windows(b"message_digest".len())
+                .any(|window| window == b"message_digest")
+        );
+        assert!(
+            !frame
+                .windows(b"signature_digest".len())
+                .any(|window| window == b"signature_digest")
+        );
 
         let mut signature_rebound = fixture.statement;
         signature_rebound.signature_digest[0] ^= 1;
@@ -110001,9 +115309,11 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             certificate.packed_witness_opening.account_projection,
             fixture.account_projection
         );
-        assert!(!certificate
-            .account_witness_projection_opening_frame
-            .is_empty());
+        assert!(
+            !certificate
+                .account_witness_projection_opening_frame
+                .is_empty()
+        );
 
         let mut wrong_pad_seed = fixture.pad_seed;
         wrong_pad_seed[0] ^= 1;
@@ -111133,11 +116443,13 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             assert!(classification.deployment_facing);
         }
         assert!(production_callback_boundary_classification("unknown").is_none());
-        assert!(PRODUCTION_CALLBACK_BOUNDARIES
-            .iter()
-            .filter(|classification| classification.deployment_facing)
-            .all(|classification| classification.error_policy
-                == ProductionCallbackErrorPolicy::SanitizedFixedPublicErrors));
+        assert!(
+            PRODUCTION_CALLBACK_BOUNDARIES
+                .iter()
+                .filter(|classification| classification.deployment_facing)
+                .all(|classification| classification.error_policy
+                    == ProductionCallbackErrorPolicy::SanitizedFixedPublicErrors)
+        );
     }
 
     #[test]
@@ -111329,8 +116641,10 @@ structure ReviewedFq12SelectedRustFieldLocalPackagedSourceRouteInputs where
         assert!(handoff_source.contains(
             "full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_source_inputs"
         ));
-        assert!(!handoff_source
-            .contains("structure ReviewedFq12SelectedRustModelFiveSourceClosureInputs"));
+        assert!(
+            !handoff_source
+                .contains("structure ReviewedFq12SelectedRustModelFiveSourceClosureInputs")
+        );
     }
 
     #[test]
@@ -115216,8 +120530,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                 .hidden_source_proof_domain
                 .as_bytes(),
         );
-        assert!(hidden_source_proof_transcript_frame
-            .starts_with(&hidden_source_proof_expected_domain_field));
+        assert!(
+            hidden_source_proof_transcript_frame
+                .starts_with(&hidden_source_proof_expected_domain_field)
+        );
         let hidden_source_proof_transcript_frame_digest: [u8; DIGEST_BYTES] =
             Sha256::digest(&hidden_source_proof_transcript_frame).into();
         assert_eq!(
@@ -115300,8 +120616,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                 .account_witness_opening_domain
                 .as_bytes(),
         );
-        assert!(account_witness_opening_digest_frame
-            .starts_with(&account_witness_opening_expected_domain_field));
+        assert!(
+            account_witness_opening_digest_frame
+                .starts_with(&account_witness_opening_expected_domain_field)
+        );
         let account_witness_opening_frame_digest: [u8; DIGEST_BYTES] =
             Sha256::digest(&account_witness_opening_digest_frame).into();
         assert_eq!(
@@ -117853,12 +123171,14 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                 &extraction_cert,
             )
         );
-        assert!(path2_reviewed_fq12_field_evidence_is_adapter_only_v1(
-            &field_evidence,
-            &assembly_cert,
-            &compatibility_cert,
-        )
-        .unwrap());
+        assert!(
+            path2_reviewed_fq12_field_evidence_is_adapter_only_v1(
+                &field_evidence,
+                &assembly_cert,
+                &compatibility_cert,
+            )
+            .unwrap()
+        );
         let source_route = path2_reviewed_fq12_full_opening_field_source_route_v1(
             &payload_binding,
             &extraction_cert,
@@ -118811,15 +124131,15 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.field_order,
             PATH2_ACCOUNT_STARK_PAYLOAD_BYTE_MODEL_FIELDS.as_ref()
         );
-        assert_eq!(report.field_count, 11);
+        assert_eq!(report.field_count, 12);
         assert_eq!(
             report.masked_projection_lane_count,
             HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES
         );
         assert_eq!(report.masked_projection_lane_count, 6);
         assert_eq!(report.masked_projection_bytes, 12);
-        assert_eq!(report.fixed_data_bytes_excluding_bundle, 221);
-        assert_eq!(report.fixed_frame_overhead_excluding_bundle, 558);
+        assert_eq!(report.fixed_data_bytes_excluding_bundle, 253);
+        assert_eq!(report.fixed_frame_overhead_excluding_bundle, 618);
         assert!(report.bundle_nonempty_required);
         assert!(report.bundle_variable_length);
         assert!(!report.full_proof_bytes_inlined_in_manifest);
@@ -118880,8 +124200,8 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.rows,
             PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS.as_ref()
         );
-        assert_eq!(report.rows.len(), 13);
-        assert_eq!(report.public_payload_field_mutation_count, 11);
+        assert_eq!(report.rows.len(), 15);
+        assert_eq!(report.public_payload_field_mutation_count, 13);
         assert!(report.current_boundary_mapping_complete);
         assert!(report.every_row_has_public_rejection_class);
         assert!(report.roundtrip_regression_present);
@@ -118896,22 +124216,29 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.blocker,
             PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS
         );
-        assert!(report
-            .rows
-            .iter()
-            .any(|row| row.case_id == "empty_account_stark_bundle"
-                && row.public_rejection_class
-                    == PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT));
-        assert!(report
-            .rows
-            .iter()
-            .any(|row| row.case_id == "rebound_native_role_root_anchor"
-                && row.public_rejection_class == PATH2_PUBLIC_RESULT_REJECT_CREATION_EVIDENCE));
-        assert!(report
-            .rows
-            .iter()
-            .any(|row| row.case_id == "production_gate_closed"
-                && row.public_rejection_class == PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED));
+        assert!(
+            report
+                .rows
+                .iter()
+                .any(|row| row.case_id == "empty_account_stark_bundle"
+                    && row.public_rejection_class
+                        == PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT)
+        );
+        assert!(
+            report
+                .rows
+                .iter()
+                .any(|row| row.case_id == "rebound_native_role_root_anchor"
+                    && row.public_rejection_class == PATH2_PUBLIC_RESULT_REJECT_CREATION_EVIDENCE)
+        );
+        assert!(
+            report
+                .rows
+                .iter()
+                .any(|row| row.case_id == "production_gate_closed"
+                    && row.public_rejection_class
+                        == PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED)
+        );
         for row in report.rows {
             assert!(row.covered_by_roundtrip_test);
             assert!(row.frozen_vector_present);
@@ -118993,26 +124320,30 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.current_boundary_mapping_complete);
         assert!(report.every_row_has_public_rejection_class);
         assert!(report.unit_test_coverage_present);
-        assert!(!report.frozen_corpus_complete);
+        assert!(report.frozen_corpus_complete);
         assert!(!report.deployment_ready);
         assert_eq!(
             report.blocker,
             PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS
         );
-        assert!(report
-            .rows
-            .iter()
-            .any(|row| row.case_id == "leaf_frame_version_mutation"
-                && row.public_rejection_class
-                    == PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT));
-        assert!(report
-            .rows
-            .iter()
-            .any(|row| row.case_id == "slot_leaf_digest_mutation"
-                && row.public_rejection_class == PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH));
+        assert!(
+            report
+                .rows
+                .iter()
+                .any(|row| row.case_id == "leaf_frame_version_mutation"
+                    && row.public_rejection_class
+                        == PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT)
+        );
+        assert!(
+            report
+                .rows
+                .iter()
+                .any(|row| row.case_id == "slot_leaf_digest_mutation"
+                    && row.public_rejection_class == PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH)
+        );
         for row in report.rows {
             assert!(row.covered_by_unit_test);
-            assert!(!row.frozen_vector_present);
+            assert!(row.frozen_vector_present);
             assert_eq!(
                 path2_account_creation_frame_public_rejection_class(row.internal_error_match),
                 row.public_rejection_class
@@ -119033,7 +124364,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         .unwrap();
 
         let mut malformed = report.clone();
-        malformed.frozen_corpus_complete = true;
+        malformed.frozen_corpus_complete = false;
         malformed.digest = path2_account_creation_frame_kat_boundary_report_v1_digest(&malformed);
         assert_eq!(
             validate_path2_account_creation_frame_kat_boundary_report_v1(&malformed).unwrap_err(),
@@ -119072,6 +124403,104 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert_eq!(report.challenge_extension_degree, 8);
         assert_eq!(report.challenge_field_bits_floor, 247);
         assert_eq!(report.poseidon2_sponge_floor_bits, 139);
+        assert_eq!(report.fs_challenger_rate, 7);
+        assert_eq!(report.fs_challenger_capacity, 9);
+        assert_eq!(report.fs_challenger_capacity_bits_floor, 278);
+        assert_eq!(report.fs_challenger_generic_collision_bits_floor, 139);
+        assert_eq!(report.fs_target_rate, 7);
+        assert_eq!(report.fs_target_capacity, 9);
+        assert_eq!(report.fs_target_generic_collision_bits_floor, 139);
+        assert_eq!(
+            report.fs_c9_reference_source,
+            PATH2_ACCOUNT_STARK_FS_C9_REFERENCE_SOURCE
+        );
+        assert_eq!(
+            report.fs_c9_reference_native_fidelity_test,
+            PATH2_ACCOUNT_STARK_FS_C9_REFERENCE_NATIVE_FIDELITY_TEST
+        );
+        assert!(report.fs_c9_reference_native_fidelity_bound);
+        assert!(!report.fs_c9_production_migration_complete);
+        assert_eq!(
+            report.bcs_rom_error_shape,
+            PATH2_ACCOUNT_STARK_BCS_ROM_ERROR_SHAPE
+        );
+        assert_eq!(
+            report.bcs_qrom_error_shape,
+            PATH2_ACCOUNT_STARK_BCS_QROM_ERROR_SHAPE
+        );
+        assert_eq!(report.bcs_quantum_query_bound_log2, 16);
+        assert_eq!(report.bcs_multi_target_horizon_log2, 32);
+        assert_eq!(report.bcs_candidate_output_bits, 247);
+        assert_eq!(report.bcs_rbr_schedule_label_bits, 256);
+        assert_eq!(report.bcs_qrom_lift_constant_log2_bound, 32);
+        assert_eq!(report.bcs_rbr_term_bound_bits, 130);
+        assert_eq!(report.bcs_oracle_term_bound_bits, 130);
+        assert_eq!(
+            report.bcs_dimensions_lean_theorem,
+            PATH2_ACCOUNT_STARK_BCS_DIMENSIONS_LEAN_THEOREM
+        );
+        assert_eq!(
+            report.bcs_rbr_term_lean_theorem,
+            PATH2_ACCOUNT_STARK_BCS_RBR_TERM_LEAN_THEOREM
+        );
+        assert_eq!(
+            report.bcs_oracle_term_lean_theorem,
+            PATH2_ACCOUNT_STARK_BCS_ORACLE_TERM_LEAN_THEOREM
+        );
+        assert_eq!(
+            report.bcs_normalized_budget_lean_theorem,
+            PATH2_ACCOUNT_STARK_BCS_NORMALIZED_BUDGET_LEAN_THEOREM
+        );
+        assert!(report.bcs_dimensions_bound);
+        assert!(report.bcs_rbr_term_bound);
+        assert!(report.bcs_oracle_term_bound);
+        assert!(report.bcs_normalized_budget_q128_bound);
+        assert_eq!(
+            report.published_rbr_source,
+            PATH2_ACCOUNT_STARK_PUBLISHED_RBR_SOURCE
+        );
+        assert_eq!(
+            report.published_rbr_error_shape,
+            PATH2_ACCOUNT_STARK_PUBLISHED_RBR_ERROR_SHAPE
+        );
+        assert_eq!(report.single_leaf_degree_bits, 2);
+        assert_eq!(report.single_leaf_fri_domain_log2, 6);
+        assert_eq!(report.published_rbr_analysis_m, 3);
+        assert_eq!(report.published_rbr_delta_numerator, 191);
+        assert_eq!(report.published_rbr_delta_denominator, 256);
+        assert_eq!(report.published_rbr_field_term_bound_bits, 218);
+        assert_eq!(report.published_rbr_query_term_bound_bits, 218);
+        assert_eq!(
+            report.published_rbr_dimensions_lean_theorem,
+            PATH2_ACCOUNT_STARK_PUBLISHED_RBR_DIMENSIONS_LEAN_THEOREM
+        );
+        assert_eq!(
+            report.published_rbr_bound_lean_theorem,
+            PATH2_ACCOUNT_STARK_PUBLISHED_RBR_BOUND_LEAN_THEOREM
+        );
+        assert_eq!(report.adaptive_rbr_term_bound_bits, 154);
+        assert_eq!(report.adaptive_oracle_term_bound_bits, 165);
+        assert_eq!(
+            report.adaptive_budget_lean_theorem,
+            PATH2_ACCOUNT_STARK_ADAPTIVE_BUDGET_LEAN_THEOREM
+        );
+        assert!(report.adaptive_budget_q128_bound);
+        assert_eq!(
+            report.adaptive_qrom_policy_adr,
+            PATH2_ACCOUNT_STARK_ADAPTIVE_QROM_POLICY_ADR
+        );
+        assert_eq!(
+            report.adaptive_qrom_policy_lean_theorem,
+            PATH2_ACCOUNT_STARK_ADAPTIVE_QROM_POLICY_LEAN_THEOREM
+        );
+        assert!(report.adaptive_global_query_bound);
+        assert_eq!(report.bcs_account_target_multiplier, 1);
+        assert!(!report.lifetime_union_profile_selected);
+        assert_eq!(
+            report.lifetime_field_budget_not_le_q128_lean_theorem,
+            PATH2_ACCOUNT_STARK_LIFETIME_FIELD_BUDGET_NOT_LE_Q128_LEAN_THEOREM
+        );
+        assert!(!report.lifetime_union_bound_q128_established);
         assert_eq!(
             report.checked_core_qrom_artifacts,
             PATH2_CHECKED_CORE_QROM_ARTIFACTS.as_ref()
@@ -119106,6 +124535,9 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.fri_schedule_pinned);
         assert!(report.challenge_field_pinned);
         assert!(report.checked_core_qrom_budget_pinned);
+        assert!(!report.bcs_challenger_output_mapping_instantiated);
+        assert!(!report.bcs_rbr_error_theorem_instantiated);
+        assert!(!report.bcs_qrom_lift_constant_reviewed);
         assert!(!report.account_stark_transcript_qrom_theorem_instantiated);
         assert!(!report.recursion_pricing_complete);
         assert!(!report.external_fri_review_complete);
@@ -119264,6 +124696,20 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.optional_aggregation_terms_q_batch_only);
         assert!(report.selected_horizon_within_margin);
         assert!(report.negative_control_exceeds_margin);
+        assert_eq!(
+            report.direct_qrom_action_budget_bridge_lean_theorem,
+            PATH2_DIRECT_QROM_ACTION_BUDGET_BRIDGE_LEAN_THEOREM
+        );
+        assert!(report.direct_qrom_action_budget_bridge_bound);
+        assert_eq!(
+            report.direct_qrom_action_theorem_linkage_reduction_lean_theorem,
+            PATH2_DIRECT_QROM_ACTION_THEOREM_LINKAGE_REDUCTION_LEAN_THEOREM
+        );
+        assert!(report.direct_qrom_action_local_linkage_reduction_imported);
+        assert!(report.production_checked_core_acceptance_semantics_bound);
+        assert!(report.qrom_action_valid_or_named_break_theorem_instantiated);
+        assert!(report.qrom_domain_break_coupled_to_direct_game);
+        assert!(!report.qrom_action_assumption_instantiated);
         assert!(!report.theorem_imports_budget);
         assert!(!report.external_qrom_review_complete);
         assert!(!report.qrom_and_action_bounds_linked_to_theorem);
@@ -119453,39 +124899,49 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             PATH2_ACCOUNT_CREATION_SAMPLER_AUTHORIZATION_BRIDGE_HOOKS.as_ref()
         );
         assert_eq!(report.sampler_authorization_bridge_hook_count, 9);
-        assert!(report
-            .sampler_authorization_bridge_hook_ids
-            .contains(&"selectedRustHonestCreate_authorization_over_class"));
-        assert!(report
-            .sampler_authorization_bridge_hook_ids
-            .contains(&"selectedRustHonestCreateSamplerSoundTheoremClosed"));
-        assert!(report
-            .sampler_authorization_bridge_hook_ids
-            .contains(&"selectedRustMeaningProjection_spendAuthorizationClass_eq_pSpend"));
+        assert!(
+            report
+                .sampler_authorization_bridge_hook_ids
+                .contains(&"selectedRustHonestCreate_authorization_over_class")
+        );
+        assert!(
+            report
+                .sampler_authorization_bridge_hook_ids
+                .contains(&"selectedRustHonestCreateSamplerSoundTheoremClosed")
+        );
+        assert!(
+            report
+                .sampler_authorization_bridge_hook_ids
+                .contains(&"selectedRustMeaningProjection_spendAuthorizationClass_eq_pSpend")
+        );
         assert_eq!(
             report.sampler_integration_rows,
             PATH2_ACCOUNT_CREATION_SAMPLER_INTEGRATION_ROWS.as_ref()
         );
         assert_eq!(report.sampler_integration_row_count, 5);
         assert_eq!(report.sampler_integration_open_count, 0);
-        assert!(report
-            .sampler_integration_rows
-            .iter()
-            .any(
-                |row| row.integration_id == "sampler_integration_private_to_public_order"
-                    && row.current_evidence
-                        == "selectedRustHonestCreateSamplerSoundTheoremClosed"
-                    && !row.open
-            ));
-        assert!(report
-            .sampler_integration_rows
-            .iter()
-            .any(
-                |row| row.integration_id == "sampler_integration_authorization_bridge_hooks"
-                    && row.current_evidence
-                        == "selectedRustHonestCreateSamplerSoundTheoremClosed"
-                    && !row.open
-            ));
+        assert!(
+            report
+                .sampler_integration_rows
+                .iter()
+                .any(
+                    |row| row.integration_id == "sampler_integration_private_to_public_order"
+                        && row.current_evidence
+                            == "selectedRustHonestCreateSamplerSoundTheoremClosed"
+                        && !row.open
+                )
+        );
+        assert!(
+            report
+                .sampler_integration_rows
+                .iter()
+                .any(
+                    |row| row.integration_id == "sampler_integration_authorization_bridge_hooks"
+                        && row.current_evidence
+                            == "selectedRustHonestCreateSamplerSoundTheoremClosed"
+                        && !row.open
+                )
+        );
         assert!(report
             .sampler_integration_rows
             .iter()
@@ -119504,13 +124960,14 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                         == "selectedRustFullHonestSamplerIntegrationComplete_of_boundaryAccepted"
                     && !row.open
             ));
-        assert!(report
-            .sampler_integration_rows
-            .iter()
-            .any(
-                |row| row.integration_id == "sampler_integration_no_postchallenge_timing_import"
-                    && !row.open
-            ));
+        assert!(
+            report
+                .sampler_integration_rows
+                .iter()
+                .any(|row| row.integration_id
+                    == "sampler_integration_no_postchallenge_timing_import"
+                    && !row.open)
+        );
         assert!(report.creation_statement_excludes_spend_message);
         assert!(report.creation_statement_excludes_signature_bytes);
         assert!(report.checked_core_challenge_binds_message);
@@ -119606,9 +125063,26 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS.as_ref()
         );
         assert_eq!(report.simulator_public_input_fields.len(), 14);
-        assert!(report
-            .simulator_public_input_fields
-            .contains(&"account_stark_bundle_bytes_or_digest"));
+        assert!(
+            report
+                .simulator_public_input_fields
+                .contains(&"account_stark_public_statement_bytes_or_digest")
+        );
+        assert!(
+            report
+                .simulator_public_input_fields
+                .contains(&"pad_seed_nullifier")
+        );
+        assert!(
+            !report
+                .simulator_public_input_fields
+                .contains(&"account_stark_bundle_bytes_or_digest")
+        );
+        assert!(
+            !report
+                .simulator_public_input_fields
+                .contains(&"public_replay_payload_digest")
+        );
         assert_eq!(
             report.no_export_private_material_fields,
             PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS.as_ref()
@@ -119619,17 +125093,42 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         );
         assert_eq!(report.no_export_private_material_fields.len(), 7);
         assert_eq!(
+            report.account_stark_public_statement_fields,
+            PATH2_ACCOUNT_STARK_PUBLIC_STATEMENT_FIELDS.as_ref()
+        );
+        assert_eq!(report.account_stark_public_statement_fields.len(), 14);
+        assert!(
+            report
+                .account_stark_public_statement_fields
+                .contains(&"syndrome")
+        );
+        assert!(
+            !report
+                .no_export_private_material_fields
+                .contains(&"syndrome")
+        );
+        assert!(
+            report
+                .no_export_private_material_fields
+                .contains(&"authorization_witness")
+        );
+        assert_eq!(
             report.no_export_vector_case_count,
             PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES.len()
         );
-        assert!(report
-            .no_export_private_material_fields
-            .contains(&"private_trace_material"));
-        assert_eq!(report.payload_public_field_count, 11);
-        assert_eq!(report.public_payload_field_mutation_count, 11);
+        assert!(
+            report
+                .no_export_private_material_fields
+                .contains(&"private_trace_material")
+        );
+        assert_eq!(report.payload_public_field_count, 12);
+        assert_eq!(report.public_payload_field_mutation_count, 13);
         assert!(!report.public_payload_exports_private_material);
+        assert!(!report.public_statement_exports_private_material);
         assert!(report.no_export_field_denylist_pinned);
         assert!(report.simulator_input_allowlist_pinned);
+        assert!(report.nested_public_statement_audit_pinned);
+        assert!(report.public_syndrome_classified_as_allowed);
         assert!(report.byte_model_public_payload_only);
         assert!(report.boundary_mapping_complete);
         assert!(report.roundtrip_regression_present);
@@ -119675,6 +125174,72 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             PATH2_ACCOUNT_CREATION_ACCEPTED_BOUNDARY_SIMULATOR_NO_EXPORT_REDUCTION_LEAN_THEOREM
         );
         assert!(report.accepted_boundary_simulator_no_export_reduction_bound);
+        assert_eq!(
+            report.simulator_hybrid_lean_theorem,
+            PATH2_ACCOUNT_CREATION_SIMULATOR_HYBRID_LEAN_THEOREM
+        );
+        assert!(report.simulator_hybrid_reduction_bound);
+        assert_eq!(
+            report.mask_translation_bijective_lean_theorem,
+            PATH2_ACCOUNT_CREATION_MASK_TRANSLATION_BIJECTIVE_LEAN_THEOREM
+        );
+        assert!(report.mask_translation_bijective_bound);
+        assert_eq!(report.mask_prf_domain_lane, 0x4D41_534B);
+        assert_eq!(report.mask_prf_input_lanes, 41);
+        assert_eq!(report.mask_prf_reduction_digits, 6);
+        assert_eq!(report.mask_prf_squeezed_lanes, 36);
+        assert_eq!(report.mask_prf_target_horizon_log2, 32);
+        assert_eq!(
+            report.mask_prf_domain_separation_lean_theorem,
+            PATH2_ACCOUNT_CREATION_MASK_PRF_DOMAIN_SEPARATION_LEAN_THEOREM
+        );
+        assert!(report.mask_prf_domain_separation_bound);
+        assert_eq!(
+            report.mask_prf_squeeze_index_injective_lean_theorem,
+            PATH2_ACCOUNT_CREATION_MASK_PRF_SQUEEZE_INDEX_INJECTIVE_LEAN_THEOREM
+        );
+        assert!(report.mask_prf_squeeze_index_injective_bound);
+        assert_eq!(
+            report.mask_prf_wide_reduction_q128_lean_theorem,
+            PATH2_ACCOUNT_CREATION_MASK_PRF_WIDE_REDUCTION_Q128_LEAN_THEOREM
+        );
+        assert!(report.mask_prf_wide_reduction_q128_bound);
+        assert_eq!(
+            report.mask_prf_freshness_lean_theorem,
+            PATH2_ACCOUNT_CREATION_MASK_PRF_FRESHNESS_LEAN_THEOREM
+        );
+        assert!(report.mask_prf_freshness_bound);
+        assert!(!report.poseidon_mask_prf_theorem_instantiated);
+        assert_eq!(report.pad_commitment_domain_lane, 0x5041_4453);
+        assert_eq!(report.opening_commitment_domain_lane, 0x4F50_454E);
+        assert_eq!(report.commitment_nonce_bytes, 40);
+        assert_eq!(report.commitment_nonce_bits, 320);
+        assert_eq!(report.pad_commitment_input_lanes, 73);
+        assert_eq!(report.opening_commitment_input_lanes, 111);
+        assert_eq!(report.hiding_commitments_per_account, 2);
+        assert_eq!(report.commitment_target_horizon_log2, 32);
+        assert_eq!(report.commitment_qrom_query_log2, 54);
+        assert_eq!(
+            report.commitment_domain_separation_lean_theorem,
+            PATH2_ACCOUNT_CREATION_COMMITMENT_DOMAIN_SEPARATION_LEAN_THEOREM
+        );
+        assert!(report.commitment_domain_separation_bound);
+        assert_eq!(
+            report.commitment_frame_dimensions_lean_theorem,
+            PATH2_ACCOUNT_CREATION_COMMITMENT_FRAME_DIMENSIONS_LEAN_THEOREM
+        );
+        assert!(report.commitment_frame_dimensions_bound);
+        assert_eq!(
+            report.commitment_qrom_search_q128_lean_theorem,
+            PATH2_ACCOUNT_CREATION_COMMITMENT_QROM_SEARCH_Q128_LEAN_THEOREM
+        );
+        assert!(report.commitment_qrom_search_q128_bound);
+        assert!(report.deployment_commitment_nonce_csprng_bound);
+        assert!(!report.poseidon_commitment_hiding_theorem_instantiated);
+        assert_eq!(report.hiding_rng_type, "ZkCryptoRng(ChaCha20Rng)");
+        assert_eq!(report.hiding_rng_seed_bits, 256);
+        assert!(report.hiding_rng_csprng_bound);
+        assert!(report.hiding_rng_substreams_domain_separated);
         assert!(!report.simulator_theorem_instantiated);
         assert!(!report.no_export_theorem_instantiated);
         assert!(!report.accepted_bundle_simulatable_from_public_anchors);
@@ -119802,8 +125367,8 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert_eq!(report.leaf_evidence_binding_fields.len(), 15);
         assert_eq!(report.certificate_evidence_binding_fields.len(), 11);
         assert_eq!(report.binding_leaf_context_fields.len(), 9);
-        assert_eq!(report.payload_binding_fields.len(), 6);
-        assert_eq!(report.deployed_anchor_fields.len(), 8);
+        assert_eq!(report.payload_binding_fields.len(), 7);
+        assert_eq!(report.deployed_anchor_fields.len(), 9);
         assert_eq!(report.no_export_private_material_fields.len(), 7);
         assert_eq!(
             report.requirement_coverage_rows,
@@ -119820,33 +125385,51 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.every_current_vector_case_is_known_kat_row);
         assert!(report.every_requirement_public_rejection_class_is_known);
         assert!(report.requirement_coverage_matrix_pinned);
-        assert!(report
-            .accepting_requirements
-            .contains(&"packed_account_stark_bundle_verifies"));
-        assert!(report
-            .accepting_requirements
-            .contains(&"zero_knowledge_no_export_semantics"));
-        assert!(report
-            .leaf_evidence_binding_fields
-            .contains(&"prevalidation_transcript_digest"));
-        assert!(report
-            .certificate_evidence_binding_fields
-            .contains(&"certificate_digest_to_evidence_payload_digest"));
-        assert!(report
-            .binding_leaf_context_fields
-            .contains(&"opening_tuple_commitment"));
-        assert!(report
-            .payload_binding_fields
-            .contains(&"public_replay_payload_digest"));
-        assert!(report
-            .deployed_anchor_fields
-            .contains(&"packed_witness_commitment"));
-        assert!(report
-            .deployed_anchor_fields
-            .contains(&"role_root_export_bridge"));
-        assert!(report
-            .no_export_private_material_fields
-            .contains(&"private_trace_material"));
+        assert!(
+            report
+                .accepting_requirements
+                .contains(&"packed_account_stark_bundle_verifies")
+        );
+        assert!(
+            report
+                .accepting_requirements
+                .contains(&"zero_knowledge_no_export_semantics")
+        );
+        assert!(
+            report
+                .leaf_evidence_binding_fields
+                .contains(&"prevalidation_transcript_digest")
+        );
+        assert!(
+            report
+                .certificate_evidence_binding_fields
+                .contains(&"certificate_digest_to_evidence_payload_digest")
+        );
+        assert!(
+            report
+                .binding_leaf_context_fields
+                .contains(&"opening_tuple_commitment")
+        );
+        assert!(
+            report
+                .payload_binding_fields
+                .contains(&"public_replay_payload_digest")
+        );
+        assert!(
+            report
+                .deployed_anchor_fields
+                .contains(&"packed_witness_commitment")
+        );
+        assert!(
+            report
+                .deployed_anchor_fields
+                .contains(&"role_root_export_bridge")
+        );
+        assert!(
+            report
+                .no_export_private_material_fields
+                .contains(&"private_trace_material")
+        );
         assert_eq!(
             report.requirement_coverage_rows[0].requirement,
             "canonical_leaf_and_evidence_framing"
@@ -119883,9 +125466,11 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.requirement_coverage_rows[7].current_vector_case_ids,
             PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES.as_ref()
         );
-        assert!(report.requirement_coverage_rows[7]
-            .public_rejection_classes
-            .is_empty());
+        assert!(
+            report.requirement_coverage_rows[7]
+                .public_rejection_classes
+                .is_empty()
+        );
         assert_eq!(
             report.requirement_coverage_rows[8].vector_evidence_kind,
             PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_AUDIT
@@ -119895,16 +125480,20 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.requirement_coverage_rows[8].current_vector_case_ids,
             PATH2_ACCOUNT_STARK_FRI_QROM_DOMAIN_CASES.as_ref()
         );
-        assert!(report.requirement_coverage_rows[8]
-            .public_rejection_classes
-            .is_empty());
+        assert!(
+            report.requirement_coverage_rows[8]
+                .public_rejection_classes
+                .is_empty()
+        );
         assert_eq!(
             report.requirement_coverage_rows[9].current_vector_case_ids,
             PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_ALL_CURRENT_PAYLOAD_KAT_CASES.as_ref()
         );
-        assert!(report.requirement_coverage_rows[9]
-            .public_rejection_classes
-            .contains(&PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED));
+        assert!(
+            report.requirement_coverage_rows[9]
+                .public_rejection_classes
+                .contains(&PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED)
+        );
         assert_eq!(
             report.proof_obligation_named_break_classes,
             PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NAMED_BREAK_CLASSES.as_ref()
@@ -120130,24 +125719,36 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             7
         );
         assert!(report.target_chain_lifecycle_profile_verification_pinned);
-        assert!(report
-            .executable_tests
-            .contains(&"path2_prevalidated_slot_consume_once_rejects_reauthorization"));
-        assert!(report
-            .executable_tests
-            .contains(&"chain_state_file_stores_verify_record_and_persist_together"));
-        assert!(report
-            .executable_tests
-            .contains(&"lifecycle_manager_recovery_burns_reserved_slots"));
-        assert!(report
-            .executable_tests
-            .contains(&"lifecycle_snapshot_roundtrips_and_recovers_by_burning_reservations"));
-        assert!(report
-            .executable_tests
-            .contains(&"lifecycle_file_store_roundtrips_and_recovers_reserved_slots"));
-        assert!(report
-            .executable_tests
-            .contains(&"path2_d2_finality_profile_reorg_frees_window_but_preserves_finalized"));
+        assert!(
+            report
+                .executable_tests
+                .contains(&"path2_prevalidated_slot_consume_once_rejects_reauthorization")
+        );
+        assert!(
+            report
+                .executable_tests
+                .contains(&"chain_state_file_stores_verify_record_and_persist_together")
+        );
+        assert!(
+            report
+                .executable_tests
+                .contains(&"lifecycle_manager_recovery_burns_reserved_slots")
+        );
+        assert!(
+            report
+                .executable_tests
+                .contains(&"lifecycle_snapshot_roundtrips_and_recovers_by_burning_reservations")
+        );
+        assert!(
+            report
+                .executable_tests
+                .contains(&"lifecycle_file_store_roundtrips_and_recovers_reserved_slots")
+        );
+        assert!(
+            report
+                .executable_tests
+                .contains(&"path2_d2_finality_profile_reorg_frees_window_but_preserves_finalized")
+        );
         assert!(report.local_successor_state_model_pinned);
         assert!(report.consume_once_insert_after_public_checks);
         assert!(report.replay_rejected_by_consume_set);
@@ -120195,6 +125796,64 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert_eq!(
             validate_path2_direct_lifecycle_boundary_report_v1(&malformed).unwrap_err(),
             "Path 2 direct lifecycle boundary report mismatch"
+        );
+    }
+
+    #[test]
+    fn path2_direct_admission_boundary_report_pins_sovereign_state_and_da_closure() {
+        let report = path2_direct_admission_boundary_report_v1();
+        assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
+        assert_eq!(
+            report.domain,
+            PATH2_DIRECT_ADMISSION_BOUNDARY_REPORT_DOMAIN_V1
+        );
+        assert_eq!(
+            report.profile_id,
+            PATH2_SOVEREIGN_DIRECT_CLIENT_PROFILE_ID_V1
+        );
+        assert_eq!(
+            report.storage_class,
+            PATH2_SOVEREIGN_DIRECT_ADMISSION_STORAGE_CLASS_V1
+        );
+        assert_eq!(
+            report.namespace_key_fields,
+            PATH2_DIRECT_ADMISSION_NAMESPACE_KEY_FIELDS_V1.as_ref()
+        );
+        assert_eq!(
+            report.record_value_fields,
+            PATH2_DIRECT_ADMISSION_RECORD_VALUE_FIELDS_V1.as_ref()
+        );
+        assert!(report.exact_namespace_tuple_key_pinned);
+        assert!(report.canonical_leaf_bytes_stored_directly);
+        assert!(report.leaf_and_evidence_digests_rechecked);
+        assert!(report.spend_reads_canonical_consensus_record);
+        assert!(report.missing_record_rejected);
+        assert!(report.corrupt_record_fails_closed);
+        assert!(report.duplicate_admission_rejected);
+        assert!(report.d2_finalized_head_reorg_semantics);
+        assert!(report.verified_creation_nullifier_anchor_bound);
+        assert!(report.sovereign_nullifier_registry_consensus_wired);
+        assert!(report.sovereign_nullifier_block_atomic);
+        assert!(report.sovereign_nullifier_d2_reorg_index_rebuild_verified);
+        assert!(report.pad_seed_reorg_safe_uniqueness_selected_state_reduction_imported);
+        assert!(report.snapshot_restores_nullifier_registry);
+        assert!(report.snapshot_restore_anchor_bound);
+        assert!(report.target_chain_data_availability_instantiated);
+        assert!(report.admission_closure_lean_imported);
+        assert!(!report.external_storage_review_complete);
+        assert!(!report.deployment_ready);
+        assert_eq!(
+            path2_direct_admission_boundary_report_v1_digest(&report),
+            report.digest
+        );
+        validate_path2_direct_admission_boundary_report_v1(&report).unwrap();
+
+        let mut malformed = report.clone();
+        malformed.canonical_leaf_bytes_stored_directly = false;
+        malformed.digest = path2_direct_admission_boundary_report_v1_digest(&malformed);
+        assert_eq!(
+            validate_path2_direct_admission_boundary_report_v1(&malformed).unwrap_err(),
+            "Path 2 direct admission boundary report mismatch"
         );
     }
 
@@ -120264,6 +125923,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
     fn path2_direct_theorem_boundary_report_pins_shape_and_blocks_deployment() {
         let qrom_action_boundary_report = path2_direct_qrom_action_boundary_report_v1();
         let lifecycle_boundary_report = path2_direct_lifecycle_boundary_report_v1();
+        let admission_boundary_report = path2_direct_admission_boundary_report_v1();
         let proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
         let report = path2_direct_theorem_boundary_report_v1();
         assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
@@ -120275,6 +125935,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert_eq!(
             report.direct_lifecycle_boundary_report_digest,
             lifecycle_boundary_report.digest
+        );
+        assert_eq!(
+            report.direct_admission_boundary_report_digest,
+            admission_boundary_report.digest
         );
         assert_eq!(
             report.account_creation_proof_boundary_report_digest,
@@ -120294,7 +125958,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         );
         assert_eq!(
             report.accepted_tuple_evidence_endpoint,
-            "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1"
+            "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_from_sovereign_state_v1"
         );
         assert_eq!(
             report.accepted_composition_evidence_schema,
@@ -120328,18 +125992,26 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.every_hypothesis_has_obligation);
         assert!(report.every_obligation_has_named_break);
         assert!(report.every_open_obligation_blocks_deployment);
-        assert!(report
-            .accepted_tuple_fields
-            .contains(&"direct_admission_namespace_record"));
-        assert!(report
-            .acceptance_hypotheses
-            .contains(&"selected_creation_verifier_accepted_before_spend_challenge"));
-        assert!(report
-            .named_break_classes
-            .contains(&"selected_account_creation_payload_proof_family_break"));
-        assert!(report
-            .named_break_classes
-            .contains(&"consensus_rejection_or_state_mutation_break"));
+        assert!(
+            report
+                .accepted_tuple_fields
+                .contains(&"direct_admission_namespace_record")
+        );
+        assert!(
+            report
+                .acceptance_hypotheses
+                .contains(&"selected_creation_verifier_accepted_before_spend_challenge")
+        );
+        assert!(
+            report
+                .named_break_classes
+                .contains(&"selected_account_creation_payload_proof_family_break")
+        );
+        assert!(
+            report
+                .named_break_classes
+                .contains(&"consensus_rejection_or_state_mutation_break")
+        );
         assert_eq!(
             report.obligation_rows[0].acceptance_hypothesis,
             "leaf_is_canonical_and_live"
@@ -120368,9 +126040,13 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                 row.open,
                 !matches!(
                     row.obligation_id,
-                    "direct_obligation_consume_once"
+                    "direct_obligation_leaf_canonical_live"
+                        | "direct_obligation_evidence_leaf_bindings"
+                        | "direct_obligation_admission_namespace"
+                        | "direct_obligation_consume_once"
                         | "direct_obligation_checked_core_frame_binding"
                         | "direct_obligation_slot_authorization_digest"
+                        | "direct_obligation_public_rejection"
                 )
             );
             assert_eq!(
@@ -120387,11 +126063,74 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.accepted_composition_evidence_present);
         assert!(report.acceptance_hypotheses_pinned);
         assert!(report.named_break_classes_pinned);
+        assert_eq!(
+            report.composition_theorem_reduction_lean_theorem,
+            PATH2_DIRECT_COMPOSITION_THEOREM_REDUCTION_LEAN_THEOREM
+        );
+        assert!(report.composition_theorem_reduction_imported);
+        assert!(report.composition_external_hypotheses_explicit);
+        assert_eq!(
+            report.composition_capstone_under_explicit_named_assumptions_lean_theorem,
+            PATH2_DIRECT_COMPOSITION_EXPLICIT_ASSUMPTIONS_CAPSTONE_LEAN_THEOREM
+        );
+        assert!(report.composition_capstone_under_explicit_named_assumptions_imported);
         assert!(!report.composition_theorem_instantiated);
         assert!(!report.account_creation_proof_boundary_verified);
+        assert_eq!(
+            report.direct_leaf_canonical_live_lean_theorem,
+            PATH2_DIRECT_LEAF_CANONICAL_LIVE_LEAN_THEOREM
+        );
+        assert!(report.direct_leaf_canonical_live_imported);
+        assert!(report.direct_leaf_canonical_live_lifecycle_and_kat_hypothesis_explicit);
+        assert!(report.direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle);
         assert!(report.checked_core_frame_binding_imported);
         assert!(report.slot_authorization_digest_imported);
+        assert_eq!(
+            report.direct_evidence_leaf_binding_lean_theorem,
+            PATH2_DIRECT_EVIDENCE_LEAF_BINDING_LEAN_THEOREM
+        );
+        assert!(report.direct_evidence_leaf_binding_imported);
+        assert!(report.direct_evidence_leaf_binding_proof_boundary_hypothesis_explicit);
+        assert!(report.direct_evidence_leaf_binding_closed_by_frozen_kat);
+        assert_eq!(
+            report.direct_admission_namespace_membership_lean_theorem,
+            PATH2_DIRECT_ADMISSION_NAMESPACE_MEMBERSHIP_LEAN_THEOREM
+        );
+        assert!(report.direct_admission_namespace_membership_imported);
+        assert!(report.direct_admission_namespace_data_availability_hypothesis_explicit);
+        assert_eq!(
+            report.direct_admission_namespace_and_data_availability_lean_theorem,
+            PATH2_DIRECT_ADMISSION_NAMESPACE_AND_DATA_AVAILABILITY_LEAN_THEOREM
+        );
+        assert!(report.direct_admission_namespace_and_data_availability_imported);
+        assert!(report.direct_admission_namespace_closed_by_sovereign_state);
+        assert_eq!(
+            report.direct_public_rejection_state_preserving_lean_theorem,
+            PATH2_DIRECT_PUBLIC_REJECTION_STATE_PRESERVING_LEAN_THEOREM
+        );
+        assert!(report.direct_public_rejection_state_preserving_imported);
+        assert!(report.direct_public_rejection_classifier_total);
+        assert_eq!(
+            report.direct_public_rejection_class_kat_test,
+            PATH2_DIRECT_PUBLIC_REJECTION_CLASS_KAT_TEST
+        );
+        assert!(report.direct_public_rejection_all_classes_kat_covered);
+        assert!(report.direct_public_rejection_panic_fail_closed_kat_covered);
+        assert!(report.direct_public_rejection_all_public_objects_kat_covered);
+        assert!(report.direct_public_rejection_target_client_mapping_complete);
+        assert!(report.direct_public_rejection_consensus_kat_hypothesis_explicit);
         assert!(report.lifecycle_transition_profile_verified);
+        assert_eq!(
+            report.qrom_action_budget_bridge_lean_theorem,
+            PATH2_DIRECT_QROM_ACTION_BUDGET_BRIDGE_LEAN_THEOREM
+        );
+        assert!(report.qrom_action_budget_bridge_imported);
+        assert_eq!(
+            report.qrom_action_theorem_linkage_reduction_lean_theorem,
+            PATH2_DIRECT_QROM_ACTION_THEOREM_LINKAGE_REDUCTION_LEAN_THEOREM
+        );
+        assert!(report.qrom_action_theorem_linkage_reduction_imported);
+        assert!(report.qrom_action_review_hypothesis_explicit);
         assert!(!report.qrom_and_action_bounds_linked_to_theorem);
         assert!(!report.deployment_ready);
         assert_eq!(
@@ -120496,18 +126235,26 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         ));
         assert!(!preflight.executable_matches_reviewed_target);
         assert!(!preflight.deployment_ready);
-        assert!(!preflight
-            .blockers
-            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_CALLBACK_BOUNDARIES));
-        assert!(!preflight
-            .blockers
-            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_FINAL_VERIFIER));
-        assert!(!preflight
-            .blockers
-            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_PAD_OPENING_BINDING));
-        assert!(preflight
-            .blockers
-            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS));
+        assert!(
+            !preflight
+                .blockers
+                .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_CALLBACK_BOUNDARIES)
+        );
+        assert!(
+            !preflight
+                .blockers
+                .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_FINAL_VERIFIER)
+        );
+        assert!(
+            !preflight
+                .blockers
+                .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_PAD_OPENING_BINDING)
+        );
+        assert!(
+            preflight
+                .blockers
+                .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS)
+        );
         let direct_theorem_blockers = production_deployment_direct_theorem_blockers();
         assert_eq!(
             &preflight.blockers[1..1 + direct_theorem_blockers.len()],
@@ -120540,15 +126287,21 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         for &blocker in account_stark_residual_blockers {
             assert!(preflight.blockers.contains(&blocker));
         }
-        assert!(preflight
-            .blockers
-            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_CONSTANT_TIME));
-        assert!(preflight
-            .blockers
-            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_STORAGE));
-        assert!(preflight
-            .blockers
-            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_EXTERNAL_REVIEW));
+        assert!(
+            preflight
+                .blockers
+                .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_CONSTANT_TIME)
+        );
+        assert!(
+            preflight
+                .blockers
+                .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_STORAGE)
+        );
+        assert!(
+            preflight
+                .blockers
+                .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_EXTERNAL_REVIEW)
+        );
         let report = production_deployment_preflight_report();
         assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
         assert_eq!(report.preflight, preflight);
@@ -121375,12 +127128,14 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         let mut restored = store.load_manager().unwrap().unwrap();
         assert!(restored.is_reserved(0));
         assert_eq!(restored.snapshot_sequence(), 1);
-        assert!(store
-            .load_manager_with_restore_anchor(ProductionLifecycleRestoreAnchor {
-                minimum_snapshot_sequence: 1,
-            })
-            .unwrap()
-            .is_some());
+        assert!(
+            store
+                .load_manager_with_restore_anchor(ProductionLifecycleRestoreAnchor {
+                    minimum_snapshot_sequence: 1,
+                })
+                .unwrap()
+                .is_some()
+        );
         assert_eq!(
             store
                 .load_manager_with_restore_anchor(ProductionLifecycleRestoreAnchor {
@@ -121517,15 +127272,21 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         let frame = challenge_hash_frame(&public_key, message, 3, &digest, &proof_commitment);
         let legacy = legacy_stateful_challenge_hash_frame(&public_key, message, 3, &digest);
         assert!(frame.len() > legacy.len());
-        assert!(frame
-            .windows(CHALLENGE_HASH_DOMAIN.len())
-            .any(|window| { window == CHALLENGE_HASH_DOMAIN.as_bytes() }));
-        assert!(frame
-            .windows(PROFILE.len())
-            .any(|window| window == PROFILE.as_bytes()));
-        assert!(frame
-            .windows("proof_commitment".len())
-            .any(|window| window == b"proof_commitment"));
+        assert!(
+            frame
+                .windows(CHALLENGE_HASH_DOMAIN.len())
+                .any(|window| { window == CHALLENGE_HASH_DOMAIN.as_bytes() })
+        );
+        assert!(
+            frame
+                .windows(PROFILE.len())
+                .any(|window| window == PROFILE.as_bytes())
+        );
+        assert!(
+            frame
+                .windows("proof_commitment".len())
+                .any(|window| window == b"proof_commitment")
+        );
 
         // Full spend FS Poseidon2 re-host (2026-06-18): the transaction challenge now
         // derives via the TXN-domain Poseidon2 sponge, not the archived SHA-256 body.

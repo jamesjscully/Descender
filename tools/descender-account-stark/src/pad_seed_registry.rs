@@ -28,7 +28,10 @@ pub type BlockHeight = u64;
 pub enum AdmitError {
     /// The pad-seed is already admitted on the canonical chain (to some leaf). Reuse is the exact
     /// mask-PRF hiding-reuse precondition F2 excludes.
-    PadSeedReused { existing_leaf: LeafId, existing_height: BlockHeight },
+    PadSeedReused {
+        existing_leaf: LeafId,
+        existing_height: BlockHeight,
+    },
     /// The admission height is not strictly above the current canonical head (admissions are append-
     /// only in height; a non-monotone height would corrupt the reorg-freeing model).
     NonMonotoneHeight { head: BlockHeight, got: BlockHeight },
@@ -45,7 +48,10 @@ pub struct PadSeedRegistry {
 
 impl PadSeedRegistry {
     pub fn new() -> Self {
-        Self { admitted: BTreeMap::new(), head: 0 }
+        Self {
+            admitted: BTreeMap::new(),
+            head: 0,
+        }
     }
 
     /// Current canonical head height.
@@ -81,10 +87,16 @@ impl PadSeedRegistry {
         height: BlockHeight,
     ) -> Result<(), AdmitError> {
         if height <= self.head {
-            return Err(AdmitError::NonMonotoneHeight { head: self.head, got: height });
+            return Err(AdmitError::NonMonotoneHeight {
+                head: self.head,
+                got: height,
+            });
         }
         if let Some(&(existing_leaf, existing_height)) = self.admitted.get(&pad_seed) {
-            return Err(AdmitError::PadSeedReused { existing_leaf, existing_height });
+            return Err(AdmitError::PadSeedReused {
+                existing_leaf,
+                existing_height,
+            });
         }
         self.admitted.insert(pad_seed, (leaf, height));
         self.head = height;
@@ -123,7 +135,13 @@ mod tests {
         assert_eq!(r.admitted_for(&seed(1)), Some(100));
         // same pad-seed, different leaf, later block ⇒ rejected.
         let e = r.admit(seed(1), 200, 2).unwrap_err();
-        assert_eq!(e, AdmitError::PadSeedReused { existing_leaf: 100, existing_height: 1 });
+        assert_eq!(
+            e,
+            AdmitError::PadSeedReused {
+                existing_leaf: 100,
+                existing_height: 1
+            }
+        );
         // distinct pad-seeds are fine.
         r.admit(seed(2), 200, 2).unwrap();
         assert_eq!(r.len(), 2);
@@ -134,8 +152,14 @@ mod tests {
     fn rejects_non_monotone_height() {
         let mut r = PadSeedRegistry::new();
         r.admit(seed(1), 1, 5).unwrap();
-        assert_eq!(r.admit(seed(2), 2, 5).unwrap_err(), AdmitError::NonMonotoneHeight { head: 5, got: 5 });
-        assert_eq!(r.admit(seed(3), 3, 4).unwrap_err(), AdmitError::NonMonotoneHeight { head: 5, got: 4 });
+        assert_eq!(
+            r.admit(seed(2), 2, 5).unwrap_err(),
+            AdmitError::NonMonotoneHeight { head: 5, got: 5 }
+        );
+        assert_eq!(
+            r.admit(seed(3), 3, 4).unwrap_err(),
+            AdmitError::NonMonotoneHeight { head: 5, got: 4 }
+        );
         r.admit(seed(2), 2, 6).unwrap(); // strictly above head ⇒ ok
     }
 
@@ -155,8 +179,13 @@ mod tests {
 
         // survivor stays blocked.
         assert!(r.contains(&seed(1)));
-        assert_eq!(r.admit(seed(1), 10, 2).unwrap_err(),
-            AdmitError::PadSeedReused { existing_leaf: 10, existing_height: 1 });
+        assert_eq!(
+            r.admit(seed(1), 10, 2).unwrap_err(),
+            AdmitError::PadSeedReused {
+                existing_leaf: 10,
+                existing_height: 1
+            }
+        );
         // orphaned seeds are freed — re-admittable on the new fork (even to a different leaf).
         assert!(!r.contains(&seed(2)));
         r.admit(seed(2), 999, 2).unwrap();
@@ -204,6 +233,10 @@ mod tests {
         let mut keys: std::vec::Vec<PadSeed> = r.admitted.keys().copied().collect();
         keys.sort();
         keys.dedup();
-        assert_eq!(keys.len(), r.len(), "canonical admittedFor must be injective");
+        assert_eq!(
+            keys.len(),
+            r.len(),
+            "canonical admittedFor must be injective"
+        );
     }
 }

@@ -1,10 +1,11 @@
-//! The projection-mask PRF: the C2 sponge over `(pad_seed[32] ‖ slot[8])` byte
-//! lanes, squeezed to 30 field lanes, then the wide-then-reduce gadget to 6
-//! q12289 masks.
+//! The projection-mask PRF: the C2 sponge over
+//! `(MASK_DOMAIN ‖ pad_seed[32] ‖ slot[8])`, squeezed to 36 field lanes, then
+//! the wide-then-reduce gadget to 6 q12289 masks.
 //!
 //! This mirrors EXACTLY the in-proof derivation in
 //! `../descender-account-stark/src/air.rs`:
-//!   * data lanes  = pad_seed bytes (32) ‖ slot_id.to_le_bytes() (8)   = 40 lanes
+//!   * data lanes  = MASK domain (1) ‖ pad_seed bytes (32) ‖
+//!     slot_id.to_le_bytes() (8) = 41 lanes
 //!   * `SpongePlan::new`: padded len = round_up(n_input + 1, RATE); a single ONE
 //!     padding element is placed at index `n_input` (`build_elems`).
 //!   * `run_sponge`: capacity-preserving absorb (first perm seeds rate lanes,
@@ -12,7 +13,7 @@
 //!     `NUM_SQUEEZE` outputs from the post-states starting at the last absorb perm
 //!     (`output_source`).
 //!   * `wide_reduce_masks`: `mask_j = (Σ_i lane_{j,i} * p^i) mod q12289` via Horner
-//!     over the 5 lanes per mask, most-significant digit first.
+//!     over the 6 lanes per mask, most-significant digit first.
 
 use crate::field::{F, P};
 use crate::poseidon2::{permute, WIDTH};
@@ -24,11 +25,13 @@ pub const Q12289: u32 = 12289;
 /// Number of projection-mask lanes (outputs).
 pub const NUM_OUTPUTS: usize = 6;
 /// Squeezed field lanes per mask (base-`p` digits of the wide value).
-pub const LANES_PER_MASK: usize = 5;
-/// Total squeezed field lanes = 6 masks * 5 lanes = 30.
+pub const LANES_PER_MASK: usize = 6;
+/// Total squeezed field lanes = 6 masks * 6 lanes = 36.
 pub const NUM_SQUEEZE: usize = NUM_OUTPUTS * LANES_PER_MASK;
-/// C2 input byte-lanes: pad_seed[32] ‖ slot_id[8].
-pub const C2_INPUT_LANES: usize = 32 + 8;
+/// C2 domain-separation lane: "MASK" as a canonical KoalaBear field element.
+pub const MASK_PRF_DOMAIN: u32 = 0x4D41_534B;
+/// C2 input lanes: MASK_DOMAIN[1] ‖ pad_seed[32] ‖ slot_id[8].
+pub const C2_INPUT_LANES: usize = 1 + 32 + 8;
 
 /// Static sponge plan (mirrors `air.rs::SpongePlan`).
 struct SpongePlan {
@@ -184,14 +187,15 @@ fn wide_reduce_masks(lanes: &[u32; NUM_SQUEEZE]) -> [u32; NUM_OUTPUTS] {
     masks
 }
 
-/// Build the 40-lane C2 input data: `pad_seed[32] ‖ slot_id.to_le_bytes()[8]`.
+/// Build the 41-lane C2 frame: `MASK_DOMAIN ‖ pad_seed[32] ‖ slot_id LE[8]`.
 fn c2_data(pad_seed: &[u8; 32], slot_id: u64) -> Vec<u32> {
-    let mut data: Vec<u32> = pad_seed.iter().map(|&b| b as u32).collect();
+    let mut data: Vec<u32> = vec![MASK_PRF_DOMAIN];
+    data.extend(pad_seed.iter().map(|&b| b as u32));
     data.extend(slot_id.to_le_bytes().iter().map(|&b| b as u32));
     data
 }
 
-/// The 30 squeezed field lanes of the C2 sponge (intermediate; exposed for the
+/// The 36 squeezed field lanes of the C2 sponge (intermediate; exposed for the
 /// equivalence test). Each is a canonical KoalaBear residue.
 pub fn squeezed_lanes(pad_seed: &[u8; 32], slot_id: u64) -> [u32; NUM_SQUEEZE] {
     let data = c2_data(pad_seed, slot_id);

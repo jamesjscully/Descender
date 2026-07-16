@@ -16,11 +16,9 @@
 //!   * FRI (quantum-128 CONSERVATIVE / Johnson-bound, NOT capacity-regime):
 //!     `log_blowup = 4` (rate rho = 1/16; ZK requires >= 2),
 //!     `num_queries = 120`, `query_proof_of_work_bits = 16`.
-//!     See [`PROD_SOUNDNESS_BITS`] for the exact soundness calculation: the
-//!     conservative Johnson figure is `120*(0.5*4) + 16 = 256` classical, so the
-//!     Grover-halved non-interactive FS-grind floor is ~128 quantum. (Raised from the
-//!     56-query digest-8 profile, whose ~64-bit quantum FS-grind floor was the binding
-//!     quantum-128 blocker.)
+//!     [`PROD_SOUNDNESS_BITS`] records the 256-bit conservative schedule label used
+//!     by ADR-0008. It is an input to the open FRI/Fiat-Shamir reduction, not an
+//!     established QROM theorem or a deployment security claim.
 //!   * ZK ON: `HidingFriPcs` (doubled domain + random codewords + ethSTARK R(X))
 //!     over a salted-leaf `MerkleTreeHidingMmcs`.
 
@@ -32,7 +30,9 @@ use p3_fri::HidingFriPcs;
 use p3_merkle_tree::MerkleTreeHidingMmcs;
 use p3_symmetric::PaddingFreeSponge;
 use p3_uni_stark::StarkConfig;
-use rand::rngs::SmallRng;
+use rand::{SeedableRng, TryCryptoRng, TryRng};
+
+use chacha20::ChaCha20Rng;
 
 use p3_koala_bear::{
     GenericPoseidon2LinearLayersKoalaBear, KoalaBear, Poseidon2KoalaBear,
@@ -50,8 +50,9 @@ pub const WIDTH: usize = 16;
 /// PINNED FRI: blowup exponent. Rate `rho = 1/2^PROD_LOG_BLOWUP = 1/16`.
 /// Chosen at 4 (not 2) so each query contributes `0.5*log_blowup = 2` conservative
 /// Johnson bits; at the quantum-128 profile's 120 queries that is `120*2 + 16 = 256`
-/// classical ⇒ ~128 quantum after Grover-halving the FS-grind (see `PROD_SOUNDNESS_BITS`).
-/// ZK requires `log_blowup >= 2`; 4 satisfies that.
+/// as a schedule-sizing label (see `PROD_SOUNDNESS_BITS`). The account-STARK QROM
+/// theorem remains open; this arithmetic alone does not justify halving the exponent
+/// or claiming 128 quantum bits. ZK requires `log_blowup >= 2`; 4 satisfies that.
 pub const PROD_LOG_BLOWUP: usize = 4;
 /// PINNED FRI: query count.
 pub const PROD_NUM_QUERIES: usize = 120;
@@ -59,6 +60,8 @@ pub const PROD_NUM_QUERIES: usize = 120;
 pub const PROD_QUERY_POW_BITS: usize = 16;
 /// PINNED FRI: commit-phase proof-of-work bits.
 pub const PROD_COMMIT_POW_BITS: usize = 0;
+/// Single-account trace rows before `HidingFriPcs` doubles the committed degree.
+pub const SINGLE_PROOF_TRACE_ROWS: usize = 2;
 
 /// FRI soundness bits at the pinned config under the CONSERVATIVE Johnson-bound
 /// estimate (NOT the optimistic up-to-capacity / proximity-gap-conjecture regime,
@@ -75,11 +78,14 @@ pub const PROD_COMMIT_POW_BITS: usize = 0;
 ///                     = 120 * 2             + 16
 ///                     = 256.
 ///
-/// This 256 classical figure is the quantum-128 sizing: the non-interactive FS query
-/// grind is Grover-able, halving the effective budget to ~128 quantum (ADR-0008). (For
-/// contrast the OPTIMISTIC capacity formula would read `num_queries*log_blowup +
-/// query_pow = 120*4 + 16 = 496` bits — we do NOT claim that.) Expressed as an
-/// integer-bits const, `0.5*log_blowup` is exact here because `log_blowup` is even.
+/// This 256 figure is the ADR-0008 schedule-sizing input. It is not an exact composed
+/// security theorem: the selected FRI round-by-round term, Fiat-Shamir compilation
+/// loss, bounded classical/quantum oracle-query budget, and sponge-QRO replacement
+/// still need one instantiated reduction. In particular, generic "Grover halves the
+/// whole exponent" arithmetic is not used here as theorem evidence. (For contrast the
+/// OPTIMISTIC capacity formula would read `num_queries*log_blowup + query_pow =
+/// 120*4 + 16 = 496` bits — we do NOT claim that.) Expressed as an integer-bits const,
+/// `0.5*log_blowup` is exact here because `log_blowup` is even.
 ///
 /// IMPORTANT (2026-06-19): this is the QUERY-PHASE figure ONLY. The COMPOSED
 /// knowledge-soundness error also carries the FRI commit/fold + DEEP ADDITIVE term
@@ -88,6 +94,13 @@ pub const PROD_COMMIT_POW_BITS: usize = 0;
 /// ~2^-104..-106 (large batches) — below this 128. The degree-8 `Challenge`
 /// (see its doc) restores the composed figure to ~2^-228..-230. See
 /// research/cryptanalysis/fri_aok_extractor_instantiation.md.
+///
+/// The separate published-RBR candidate in `Descender/Path2HashBudget.lean`
+/// substitutes the exact single-leaf dimensions (`degree_bits = 2`, FRI LDE
+/// domain `2^6`) and obtains a `2^-218` bound. That arithmetic clears q128 in
+/// the theorem-native adaptive-one-forgery game but not after an additional
+/// `2^32` lifetime union factor; neither result turns this schedule label into
+/// an instantiated transcript theorem.
 pub const PROD_SOUNDNESS_BITS: usize =
     PROD_NUM_QUERIES * (PROD_LOG_BLOWUP / 2) + PROD_QUERY_POW_BITS;
 
@@ -97,6 +110,49 @@ pub const NUM_RANDOM_CODEWORDS: usize = 4;
 pub const SALT_ELEMS: usize = 4;
 /// Poseidon2-Merkle digest width (field elements).
 pub const DIGEST_ELEMS: usize = 13;
+
+/// Cloneable ChaCha20 CSPRNG used by every hiding PCS/MMCS randomness surface.
+///
+/// Plonky3 requires its hiding MMCS RNG to be cloneable. `rand::rngs::StdRng`
+/// is cryptographic but deliberately not `Clone`, so this wrapper clones the
+/// complete ChaCha stream state instead of falling back to `SmallRng`.
+#[derive(Debug, PartialEq, Eq)]
+pub struct ZkCryptoRng(ChaCha20Rng);
+
+impl Clone for ZkCryptoRng {
+    fn clone(&self) -> Self {
+        let mut clone = ChaCha20Rng::from_seed(self.0.get_seed());
+        clone.set_stream(self.0.get_stream());
+        clone.set_word_pos(self.0.get_word_pos());
+        Self(clone)
+    }
+}
+
+impl SeedableRng for ZkCryptoRng {
+    type Seed = [u8; 32];
+
+    fn from_seed(seed: Self::Seed) -> Self {
+        Self(ChaCha20Rng::from_seed(seed))
+    }
+}
+
+impl TryRng for ZkCryptoRng {
+    type Error = core::convert::Infallible;
+
+    fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
+        self.0.try_next_u32()
+    }
+
+    fn try_next_u64(&mut self) -> Result<u64, Self::Error> {
+        self.0.try_next_u64()
+    }
+
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Self::Error> {
+        self.0.try_fill_bytes(dest)
+    }
+}
+
+impl TryCryptoRng for ZkCryptoRng {}
 
 // ---------------------------------------------------------------------------
 // KoalaBear Poseidon2 const-generic parameters (the pinned instance's shape).
@@ -128,9 +184,10 @@ pub type Val = KoalaBear;
 /// NOTE: the Poseidon2-sponge indifferentiability floor (c/2, capacity-bound) is
 /// INDEPENDENT of this field. At the quantum-128 profile the leaf/Merkle sponge uses
 /// capacity c = WIDTH - RATE = 16 - 7 = 9, so that floor is c/2 ≈ 139 bits (raised from
-/// the digest-8 profile's c=8 ⇒ ~124). The FS `Challenger` below retains rate 8 / c=8;
-/// whether it must also move to c=9 for the headline is tracked in
-/// research/path2_quantum128_parameterization_v1.md (config assumption-boundary note).
+/// the digest-8 profile's c=8 ⇒ ~124). `ADR-0011` also moves the FS
+/// `Challenger` below to rate 7 / c=9. Since the extension degree is 8, each
+/// extension challenge spans two output blocks; the recursion mirror must
+/// constrain the eighth limb's squeeze-only permutation explicitly.
 pub type Challenge = BinomialExtensionField<Val, 8>;
 /// The pinned Poseidon2 permutation.
 pub type Perm = Poseidon2KoalaBear<16>;
@@ -147,18 +204,36 @@ pub type HidingValMmcs = MerkleTreeHidingMmcs<
     <Val as Field>::Packing,
     MyHash,
     MyCompress,
-    SmallRng,
+    ZkCryptoRng,
     2,
     DIGEST_ELEMS,
     SALT_ELEMS,
 >;
 /// Extension-field MMCS over the hiding base MMCS.
 pub type HidingChallengeMmcs = ExtensionMmcs<Val, Challenge, HidingValMmcs>;
-/// Fiat–Shamir challenger (duplex sponge over the pinned Poseidon2).
-pub type Challenger = DuplexChallenger<Val, Perm, 16, 8>;
+/// Fiat-Shamir challenger (ADR-0011 rate 7 / capacity 9 profile).
+pub type Challenger = DuplexChallenger<Val, Perm, 16, 7>;
 /// FFT backend.
 pub type Dft = p3_dft::Radix2DitParallel<Val>;
 /// The ZK polynomial-commitment scheme (HidingFriPcs).
-pub type ZkPcs = HidingFriPcs<Val, Dft, HidingValMmcs, HidingChallengeMmcs, SmallRng>;
+pub type ZkPcs = HidingFriPcs<Val, Dft, HidingValMmcs, HidingChallengeMmcs, ZkCryptoRng>;
 /// The full STARK config.
 pub type ZkConfig = StarkConfig<ZkPcs, Challenge, Challenger>;
+
+#[cfg(test)]
+mod tests {
+    use super::ZkCryptoRng;
+    use rand::{Rng, SeedableRng, TryCryptoRng};
+
+    fn assert_crypto_rng<R: TryCryptoRng>() {}
+
+    #[test]
+    fn zk_rng_is_crypto_and_clone_preserves_stream_position() {
+        assert_crypto_rng::<ZkCryptoRng>();
+        let mut original = ZkCryptoRng::from_seed([0x5a; 32]);
+        let _ = original.next_u64();
+        let mut clone = original.clone();
+        assert_eq!(original.next_u64(), clone.next_u64());
+        assert_eq!(original.next_u64(), clone.next_u64());
+    }
+}

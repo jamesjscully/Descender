@@ -99,6 +99,13 @@ The current fail-closed direct-mode draft is
 review-candidate manifest only: it hashes the current authority snapshot and
 boundary artifacts, names the included and omitted review lanes, and records the
 open residual assumptions that still block deployment or whole-system approval.
+The reviewer-facing replay entrypoint is
+`scripts/check_path2_review_replay.sh`; it uses a low-memory default cargo
+profile, regenerates and diffs the frozen account-creation frame corpus and the
+package's proof-boundary artifacts, including the selected sovereign direct
+admission-state boundary, and runs
+the focused consistency, preflight, leakage, tracker, traceability, and review
+package gates without replacing the full local gate.
 
 ## Acceptance Rules
 
@@ -132,6 +139,7 @@ Tracker ownership: `SPEC-REVIEW-001`, `DIR-REVIEW-001`, `DIR-SEC-001`,
 Before external-review readiness can be marked `verified`, the repo needs:
 
 - current review package manifest and verifier;
+- reviewer-facing replay script for the generated artifacts and focused gates;
 - canonical spec/ADR/tracker snapshot used by the package;
 - direct-mode KAT and negative-control corpus linked from the package;
 - proof, QROM, lifecycle, verifier, signer, and deployment-profile evidence

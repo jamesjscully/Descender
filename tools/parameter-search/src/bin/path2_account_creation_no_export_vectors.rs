@@ -1,3 +1,5 @@
+#![recursion_limit = "256"]
+
 use descender_parameter_search::production_reference::{
     PROFILE, path2_account_creation_no_export_boundary_report_v1,
     path2_account_stark_payload_byte_model_report_v1,
@@ -44,6 +46,7 @@ fn manifest_body() -> Result<Value, String> {
         .collect();
     let simulator_public_input_fields: Vec<&str> = report.simulator_public_input_fields.to_vec();
     let private_material_fields: Vec<&str> = report.no_export_private_material_fields.to_vec();
+    let public_statement_fields: Vec<&str> = report.account_stark_public_statement_fields.to_vec();
 
     let payload_denylist_absent = denylist_absent(
         public_payload_fields.iter().copied(),
@@ -53,7 +56,17 @@ fn manifest_body() -> Result<Value, String> {
         simulator_public_input_fields.iter().copied(),
         &private_material_fields,
     );
-    let all_private_material_absent = payload_denylist_absent && simulator_denylist_absent;
+    let public_statement_denylist_absent = denylist_absent(
+        public_statement_fields.iter().copied(),
+        &private_material_fields,
+    );
+    let simulator_input_output_separated = simulator_public_input_fields
+        .contains(&"account_stark_public_statement_bytes_or_digest")
+        && simulator_public_input_fields.contains(&"pad_seed_nullifier")
+        && !simulator_public_input_fields.contains(&"account_stark_bundle_bytes_or_digest")
+        && !simulator_public_input_fields.contains(&"public_replay_payload_digest");
+    let all_private_material_absent =
+        payload_denylist_absent && simulator_denylist_absent && public_statement_denylist_absent;
     if !all_private_material_absent {
         return Err(
             "no-export vector generator found denylisted private material in public fields"
@@ -66,6 +79,18 @@ fn manifest_body() -> Result<Value, String> {
     if byte_model.public_payload_exports_private_material {
         return Err("no-export vector generator found private payload export".to_string());
     }
+    if !simulator_input_output_separated {
+        return Err("no-export vector generator found circular simulator inputs".to_string());
+    }
+    if !public_statement_fields.contains(&"syndrome")
+        || private_material_fields.contains(&"syndrome")
+        || !report.public_syndrome_classified_as_allowed
+        || report.public_statement_exports_private_material
+    {
+        return Err(
+            "no-export vector generator misclassifies the public checked-core syndrome".to_string(),
+        );
+    }
 
     let cases = vec![
         json!({
@@ -74,8 +99,14 @@ fn manifest_body() -> Result<Value, String> {
             "surface": "Path2AccountStarkPayloadByteModelReportV1.field_order",
             "requirement": report.no_export_requirement,
             "public_payload_fields": public_payload_fields.clone(),
+            "account_stark_public_statement_fields": public_statement_fields.clone(),
+            "nested_public_statement_audit_pinned":
+                report.nested_public_statement_audit_pinned,
+            "public_syndrome_classified_as_allowed":
+                report.public_syndrome_classified_as_allowed,
             "private_material_denylist": private_material_fields.clone(),
-            "all_private_material_absent": payload_denylist_absent
+            "all_private_material_absent":
+                payload_denylist_absent && public_statement_denylist_absent
         }),
         json!({
             "case_id": "no_export_simulator_public_input_allowlist",
@@ -84,6 +115,9 @@ fn manifest_body() -> Result<Value, String> {
             "requirement": report.no_export_requirement,
             "simulator_public_input_fields": simulator_public_input_fields.clone(),
             "private_material_denylist": private_material_fields.clone(),
+            "simulator_input_excludes_proof_output": simulator_input_output_separated,
+            "simulator_input_independence_lean_theorem":
+                "selectedRustSimulatorInputIndependentOfProofOutput_v1",
             "all_private_material_absent": simulator_denylist_absent
         }),
         json!({
@@ -95,6 +129,59 @@ fn manifest_body() -> Result<Value, String> {
                 report.simulator_input_allowlist_lean_theorem,
             "simulator_input_allowlist_predicate_instantiated":
                 report.simulator_input_allowlist_predicate_instantiated,
+            "simulator_hybrid_lean_theorem": report.simulator_hybrid_lean_theorem,
+            "simulator_hybrid_reduction_bound": report.simulator_hybrid_reduction_bound,
+            "mask_translation_bijective_lean_theorem":
+                report.mask_translation_bijective_lean_theorem,
+            "mask_translation_bijective_bound": report.mask_translation_bijective_bound,
+            "mask_prf_domain_lane": report.mask_prf_domain_lane,
+            "mask_prf_input_lanes": report.mask_prf_input_lanes,
+            "mask_prf_reduction_digits": report.mask_prf_reduction_digits,
+            "mask_prf_squeezed_lanes": report.mask_prf_squeezed_lanes,
+            "mask_prf_target_horizon_log2": report.mask_prf_target_horizon_log2,
+            "mask_prf_domain_separation_lean_theorem":
+                report.mask_prf_domain_separation_lean_theorem,
+            "mask_prf_domain_separation_bound": report.mask_prf_domain_separation_bound,
+            "mask_prf_squeeze_index_injective_lean_theorem":
+                report.mask_prf_squeeze_index_injective_lean_theorem,
+            "mask_prf_squeeze_index_injective_bound":
+                report.mask_prf_squeeze_index_injective_bound,
+            "mask_prf_wide_reduction_q128_lean_theorem":
+                report.mask_prf_wide_reduction_q128_lean_theorem,
+            "mask_prf_wide_reduction_q128_bound":
+                report.mask_prf_wide_reduction_q128_bound,
+            "mask_prf_freshness_lean_theorem": report.mask_prf_freshness_lean_theorem,
+            "mask_prf_freshness_bound": report.mask_prf_freshness_bound,
+            "poseidon_mask_prf_theorem_instantiated":
+                report.poseidon_mask_prf_theorem_instantiated,
+            "pad_commitment_domain_lane": report.pad_commitment_domain_lane,
+            "opening_commitment_domain_lane": report.opening_commitment_domain_lane,
+            "commitment_nonce_bytes": report.commitment_nonce_bytes,
+            "commitment_nonce_bits": report.commitment_nonce_bits,
+            "pad_commitment_input_lanes": report.pad_commitment_input_lanes,
+            "opening_commitment_input_lanes": report.opening_commitment_input_lanes,
+            "hiding_commitments_per_account": report.hiding_commitments_per_account,
+            "commitment_target_horizon_log2": report.commitment_target_horizon_log2,
+            "commitment_qrom_query_log2": report.commitment_qrom_query_log2,
+            "commitment_domain_separation_lean_theorem":
+                report.commitment_domain_separation_lean_theorem,
+            "commitment_domain_separation_bound":
+                report.commitment_domain_separation_bound,
+            "commitment_frame_dimensions_lean_theorem":
+                report.commitment_frame_dimensions_lean_theorem,
+            "commitment_frame_dimensions_bound": report.commitment_frame_dimensions_bound,
+            "commitment_qrom_search_q128_lean_theorem":
+                report.commitment_qrom_search_q128_lean_theorem,
+            "commitment_qrom_search_q128_bound": report.commitment_qrom_search_q128_bound,
+            "deployment_commitment_nonce_csprng_bound":
+                report.deployment_commitment_nonce_csprng_bound,
+            "poseidon_commitment_hiding_theorem_instantiated":
+                report.poseidon_commitment_hiding_theorem_instantiated,
+            "hiding_rng_type": report.hiding_rng_type,
+            "hiding_rng_seed_bits": report.hiding_rng_seed_bits,
+            "hiding_rng_csprng_bound": report.hiding_rng_csprng_bound,
+            "hiding_rng_substreams_domain_separated":
+                report.hiding_rng_substreams_domain_separated,
             "all_private_material_absent": true
         }),
         json!({
@@ -166,6 +253,8 @@ fn manifest_body() -> Result<Value, String> {
                 report.accepted_bundle_simulatable_from_public_anchors,
             "simulator_theorem_instantiated": report.simulator_theorem_instantiated,
             "no_export_theorem_instantiated": report.no_export_theorem_instantiated,
+            "public_statement_exports_private_material":
+                report.public_statement_exports_private_material,
             "all_private_material_absent": true
         }),
         json!({
@@ -265,6 +354,59 @@ fn manifest_body() -> Result<Value, String> {
                 report.accepted_boundary_simulator_no_export_reduction_lean_theorem,
             "accepted_boundary_simulator_no_export_reduction_bound":
                 report.accepted_boundary_simulator_no_export_reduction_bound,
+            "simulator_hybrid_lean_theorem": report.simulator_hybrid_lean_theorem,
+            "simulator_hybrid_reduction_bound": report.simulator_hybrid_reduction_bound,
+            "mask_translation_bijective_lean_theorem":
+                report.mask_translation_bijective_lean_theorem,
+            "mask_translation_bijective_bound": report.mask_translation_bijective_bound,
+            "mask_prf_domain_lane": report.mask_prf_domain_lane,
+            "mask_prf_input_lanes": report.mask_prf_input_lanes,
+            "mask_prf_reduction_digits": report.mask_prf_reduction_digits,
+            "mask_prf_squeezed_lanes": report.mask_prf_squeezed_lanes,
+            "mask_prf_target_horizon_log2": report.mask_prf_target_horizon_log2,
+            "mask_prf_domain_separation_lean_theorem":
+                report.mask_prf_domain_separation_lean_theorem,
+            "mask_prf_domain_separation_bound": report.mask_prf_domain_separation_bound,
+            "mask_prf_squeeze_index_injective_lean_theorem":
+                report.mask_prf_squeeze_index_injective_lean_theorem,
+            "mask_prf_squeeze_index_injective_bound":
+                report.mask_prf_squeeze_index_injective_bound,
+            "mask_prf_wide_reduction_q128_lean_theorem":
+                report.mask_prf_wide_reduction_q128_lean_theorem,
+            "mask_prf_wide_reduction_q128_bound":
+                report.mask_prf_wide_reduction_q128_bound,
+            "mask_prf_freshness_lean_theorem": report.mask_prf_freshness_lean_theorem,
+            "mask_prf_freshness_bound": report.mask_prf_freshness_bound,
+            "poseidon_mask_prf_theorem_instantiated":
+                report.poseidon_mask_prf_theorem_instantiated,
+            "pad_commitment_domain_lane": report.pad_commitment_domain_lane,
+            "opening_commitment_domain_lane": report.opening_commitment_domain_lane,
+            "commitment_nonce_bytes": report.commitment_nonce_bytes,
+            "commitment_nonce_bits": report.commitment_nonce_bits,
+            "pad_commitment_input_lanes": report.pad_commitment_input_lanes,
+            "opening_commitment_input_lanes": report.opening_commitment_input_lanes,
+            "hiding_commitments_per_account": report.hiding_commitments_per_account,
+            "commitment_target_horizon_log2": report.commitment_target_horizon_log2,
+            "commitment_qrom_query_log2": report.commitment_qrom_query_log2,
+            "commitment_domain_separation_lean_theorem":
+                report.commitment_domain_separation_lean_theorem,
+            "commitment_domain_separation_bound":
+                report.commitment_domain_separation_bound,
+            "commitment_frame_dimensions_lean_theorem":
+                report.commitment_frame_dimensions_lean_theorem,
+            "commitment_frame_dimensions_bound": report.commitment_frame_dimensions_bound,
+            "commitment_qrom_search_q128_lean_theorem":
+                report.commitment_qrom_search_q128_lean_theorem,
+            "commitment_qrom_search_q128_bound": report.commitment_qrom_search_q128_bound,
+            "deployment_commitment_nonce_csprng_bound":
+                report.deployment_commitment_nonce_csprng_bound,
+            "poseidon_commitment_hiding_theorem_instantiated":
+                report.poseidon_commitment_hiding_theorem_instantiated,
+            "hiding_rng_type": report.hiding_rng_type,
+            "hiding_rng_seed_bits": report.hiding_rng_seed_bits,
+            "hiding_rng_csprng_bound": report.hiding_rng_csprng_bound,
+            "hiding_rng_substreams_domain_separated":
+                report.hiding_rng_substreams_domain_separated,
             "frozen_no_export_vectors_complete": report.frozen_no_export_vectors_complete,
             "deployment_ready": report.deployment_ready,
             "blocker": report.blocker
@@ -278,9 +420,16 @@ fn manifest_body() -> Result<Value, String> {
             "simulator_public_input_field_count": simulator_public_input_fields.len(),
             "private_material_denylist_count": private_material_fields.len(),
             "payload_denylist_absent": payload_denylist_absent,
+            "public_statement_denylist_absent": public_statement_denylist_absent,
+            "public_statement_field_count": public_statement_fields.len(),
+            "public_syndrome_classified_as_allowed":
+                report.public_syndrome_classified_as_allowed,
             "simulator_denylist_absent": simulator_denylist_absent,
+            "simulator_input_excludes_proof_output": simulator_input_output_separated,
             "public_payload_exports_private_material":
                 byte_model.public_payload_exports_private_material,
+            "public_statement_exports_private_material":
+                report.public_statement_exports_private_material,
             "full_proof_bytes_inlined_in_manifest":
                 byte_model.full_proof_bytes_inlined_in_manifest,
             "deterministic_kat_digest_pins_bundle_bytes":
@@ -292,6 +441,27 @@ fn manifest_body() -> Result<Value, String> {
                 report.public_bundle_no_export_predicate_instantiated,
             "simulator_input_allowlist_predicate_instantiated":
                 report.simulator_input_allowlist_predicate_instantiated,
+            "simulator_hybrid_reduction_bound": report.simulator_hybrid_reduction_bound,
+            "mask_translation_bijective_bound": report.mask_translation_bijective_bound,
+            "mask_prf_domain_separation_bound": report.mask_prf_domain_separation_bound,
+            "mask_prf_squeeze_index_injective_bound":
+                report.mask_prf_squeeze_index_injective_bound,
+            "mask_prf_wide_reduction_q128_bound":
+                report.mask_prf_wide_reduction_q128_bound,
+            "mask_prf_freshness_bound": report.mask_prf_freshness_bound,
+            "poseidon_mask_prf_theorem_instantiated":
+                report.poseidon_mask_prf_theorem_instantiated,
+            "commitment_domain_separation_bound":
+                report.commitment_domain_separation_bound,
+            "commitment_frame_dimensions_bound": report.commitment_frame_dimensions_bound,
+            "commitment_qrom_search_q128_bound": report.commitment_qrom_search_q128_bound,
+            "deployment_commitment_nonce_csprng_bound":
+                report.deployment_commitment_nonce_csprng_bound,
+            "poseidon_commitment_hiding_theorem_instantiated":
+                report.poseidon_commitment_hiding_theorem_instantiated,
+            "hiding_rng_csprng_bound": report.hiding_rng_csprng_bound,
+            "hiding_rng_substreams_domain_separated":
+                report.hiding_rng_substreams_domain_separated,
             "accepted_public_anchor_package_bound":
                 report.accepted_public_anchor_package_bound,
             "accepted_bundle_public_anchor_simulation_boundary_bound":

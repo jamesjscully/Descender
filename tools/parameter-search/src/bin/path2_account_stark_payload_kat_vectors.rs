@@ -9,10 +9,10 @@ fn main() -> Result<(), String> {
 #[cfg(feature = "account-creation-stark-verifier")]
 mod enabled {
     use descender_parameter_search::production_reference::{
-        DIGEST_BYTES, PROFILE, Path2AccountCreationEvidenceV1,
-        Path2AccountStarkCreationPayloadV1, Path2AccountStarkPayloadKatFixtureV1,
-        Path2CreationProofBindingV1, Path2DirectReplayableRelationCertificateV1,
-        Path2PrevalidatedSlotLeafV1, path2_account_creation_evidence_transcript_digest,
+        DIGEST_BYTES, PROFILE, Path2AccountCreationEvidenceV1, Path2AccountStarkCreationPayloadV1,
+        Path2AccountStarkPayloadKatFixtureV1, Path2CreationProofBindingV1,
+        Path2DirectReplayableRelationCertificateV1, Path2PrevalidatedSlotLeafV1,
+        path2_account_creation_evidence_transcript_digest,
         path2_account_stark_creation_payload_v1_digest,
         path2_account_stark_creation_payload_v1_frame,
         path2_account_stark_payload_kat_boundary_report_v1,
@@ -134,6 +134,7 @@ mod enabled {
             "aggregation_context_digest": digest_field_hex(&payload.aggregation_context_digest),
             "slot_id": payload.slot_id,
             "masked_projection": payload.masked_projection,
+            "pad_seed_nullifier": digest_field_hex(&payload.pad_seed_nullifier),
             "account_stark_bundle_len": payload.account_stark_bundle.len()
         })
     }
@@ -342,6 +343,18 @@ mod enabled {
         )?);
 
         let mut bad = payload.clone();
+        bad.pad_seed_nullifier[0] ^= 1;
+        cases.push(rejection_case(
+            "pad_seed_nullifier_mutation",
+            "pad_seed_nullifier",
+            "honest_context",
+            &base,
+            &binding,
+            &bad,
+            json!({"op": "xor_u8", "field": "pad_seed_nullifier", "offset": 0, "xor": 1}),
+        )?);
+
+        let mut bad = payload.clone();
         bad.account_stark_bundle[0] ^= 1;
         cases.push(rejection_case(
             "account_stark_bundle_digest_mutation",
@@ -397,6 +410,24 @@ mod enabled {
                 "op": "xor_u16_then_rebind_context_to_mutated_payload_digest",
                 "field": "masked_projection",
                 "index": 0,
+                "xor": 1
+            }),
+        )?);
+
+        let mut bad = payload.clone();
+        bad.pad_seed_nullifier[0] ^= 1;
+        let rebound = rebind_context_to_payload(&base, &bad)?;
+        cases.push(rejection_case(
+            "rebound_pad_seed_nullifier_anchor",
+            "pad_seed_nullifier",
+            "rebound_to_mutated_payload_digest",
+            &rebound,
+            &binding,
+            &bad,
+            json!({
+                "op": "xor_u8_then_rebind_context_to_mutated_payload_digest",
+                "field": "pad_seed_nullifier",
+                "offset": 0,
                 "xor": 1
             }),
         )?);
@@ -462,9 +493,9 @@ mod enabled {
                     row.case_id
                 ));
             }
-            let observed = case["observed_error"]
-                .as_str()
-                .ok_or_else(|| format!("generated KAT case {} missing observed error", row.case_id))?;
+            let observed = case["observed_error"].as_str().ok_or_else(|| {
+                format!("generated KAT case {} missing observed error", row.case_id)
+            })?;
             if !observed.contains(row.internal_error_match) {
                 return Err(format!(
                     "generated KAT observed error mismatch for {}: {:?}",

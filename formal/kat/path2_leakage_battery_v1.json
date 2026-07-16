@@ -30,7 +30,7 @@
           "secret_entropy"
         ],
         "required_evidence": "static secret-flow review, entropy-source review, zeroization/secure-storage review, leakage or reviewed substitute",
-        "current_evidence": "No target-specific keygen leakage harness or reviewed substitute is checked in yet.",
+        "current_evidence": "The software OS entropy boundary audit pins zeroization and fixed public entropy-failure reporting; no target-specific keygen leakage harness or reviewed substitute is checked in yet.",
         "status": "not_ready",
         "deployment_ready": false,
         "blocker": "Add keygen static review, entropy review, zeroization/storage review, and leakage harness or reviewed substitute."
@@ -43,7 +43,7 @@
           "secret_witness"
         ],
         "required_evidence": "bounded public shape, secret-independent externally visible retry behavior, fixed public failure class",
-        "current_evidence": "Sampler/timing manifests and no-postchallenge timing hooks exist, but no leakage harness or retry-shape battery is checked in.",
+        "current_evidence": "Sampler/timing manifests, no-postchallenge timing hooks, and OS entropy boundary failure evidence exist, but no leakage harness or retry-shape battery is checked in.",
         "status": "partial",
         "deployment_ready": false,
         "blocker": "Add executable sampler retry-shape leakage tests or reviewed substitute for the target profile."
@@ -56,7 +56,7 @@
           "secret_witness"
         ],
         "required_evidence": "domain/stream review, CT arithmetic review, signer/proof drift KATs, leakage or reviewed substitute",
-        "current_evidence": "Mask-PRF KAT/equivalence gates, active secret-float scan, and a manual desktop-reference empirical hiding mask-channel harness exist; target leakage harnesses, CT arithmetic review, and injected-leak controls remain open.",
+        "current_evidence": "Mask-PRF KAT/equivalence gates, active secret-float scan, OS entropy boundary failure evidence, and a manual desktop-reference empirical hiding mask-channel harness exist; target leakage harnesses, CT arithmetic review, and injected-leak controls remain open.",
         "status": "partial",
         "deployment_ready": false,
         "blocker": "Add CT arithmetic review, target leakage harness or reviewed substitute, and injected-leak negative controls for pad expansion and mask PRF."
@@ -476,6 +476,55 @@
         ],
         "negative_control_status": "post-ledger lifecycle snapshot write-failure evidence only; ledger-write, target database, dependency/resource, and target-profile leakage failures remain open",
         "deployment_ready": false
+      },
+      {
+        "id": "os_entropy_failure_boundary_fixed_shape",
+        "surface_ids": [
+          "keygen",
+          "sampler_rejection_loop",
+          "pad_expansion_mask_prf",
+          "proof_generation",
+          "spend_authorization",
+          "signer_api"
+        ],
+        "source_path": "tools/parameter-search/src/production_reference.rs",
+        "fast_gate_path": "scripts/check_active_rust_fast_tests.sh",
+        "reproducibility_commands": [
+          "RUSTFLAGS=\"-D warnings\" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib path2_native_os_entropy_boundary_audit_pins_sanitized_source_boundary"
+        ],
+        "required_test_functions": [
+          "path2_native_os_entropy_boundary_audit_pins_sanitized_source_boundary"
+        ],
+        "required_public_result_classes": [],
+        "covered_failure_cases": [
+          "OS entropy root acquisition is zero-initialized before backend calls",
+          "OS entropy root and nonce acquisition use exactly two backend calls in fixed order",
+          "root and nonce entropy failures zeroize partial entropy before returning",
+          "backend entropy error detail is not exported through the public boundary",
+          "entropy failure maps to the fixed public rejection code reject_active_native_signer_entropy_failed",
+          "entropy boundary audit JSON excludes root entropy, account nonce, and derived secret material"
+        ],
+        "open_failure_cases": [
+          "entropy-source failure under target hardware wallet, secure-element, or HSM profiles",
+          "storage write failure before releasing an authorization",
+          "resource-limit failure under target profile",
+          "OS RNG backend health proof",
+          "external hardware entropy validation"
+        ],
+        "required_source_markers": [
+          "path2_native_os_entropy_boundary_audit_pins_sanitized_source_boundary",
+          "Path 2 native OS entropy root failure",
+          "Path 2 native OS entropy nonce failure",
+          "reject_active_native_signer_entropy_failed",
+          "zeroizes_after_first_failure",
+          "zeroizes_after_second_failure",
+          "no_backend_error_detail_exported",
+          "audit.source_boundary_complete",
+          "assert_no_active_native_private_material(&rendered)",
+          "source_window.matches(\"getrandom::getrandom\").count()"
+        ],
+        "negative_control_status": "software OS entropy boundary fixed-shape evidence only; target hardware/HSM entropy, OS RNG health, resource, and target-profile leakage failures remain open",
+        "deployment_ready": false
       }
     ],
     "manual_empirical_harnesses": [
@@ -511,7 +560,8 @@
         ],
         "required_source_markers": [
           "They are NOT a ZK",
-          "bias <= q/2^31 ~ 2^-141",
+          "selected 2^32-account horizon",
+          "below 2^-137",
           "The fixed-seed path is NOT decorrelated",
           "DEFAULT PATH NOT HIDING ACROSS PROOFS",
           "INJECTED LEAK NOT DETECTED"
@@ -551,7 +601,7 @@
       "raw_dependency_error"
     ],
     "test_only_deterministic_seed_field": "proof_mask_seed",
-    "negative_control_status": "accepted/rejected transcript-shape, direct-spend transcript redaction, direct-spend fixed-shape public-result evidence, deployment callback-boundary fixed-shape evidence, post-ledger storage failure fail-closed evidence, plus manual empirical mask-channel harness scan only; target leakage traces, signer-side ledger-write/target-database/resource failures, and injected-leak controls remain open",
+    "negative_control_status": "accepted/rejected transcript-shape, direct-spend transcript redaction, direct-spend fixed-shape public-result evidence, deployment callback-boundary fixed-shape evidence, post-ledger storage failure fail-closed evidence, OS entropy failure boundary evidence, plus manual empirical mask-channel harness scan only; target leakage traces, signer-side ledger-write/target-database/resource failures, hardware/HSM entropy validation, and injected-leak controls remain open",
     "deployment_ready": false
   }
 }

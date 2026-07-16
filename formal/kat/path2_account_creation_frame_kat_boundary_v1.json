@@ -21,16 +21,16 @@
       "deployment_ready": false,
       "every_row_has_public_rejection_class": true,
       "frame_requirement_case_count": 5,
-      "frozen_corpus_complete": false,
+      "frozen_corpus_complete": true,
       "leaf_evidence_binding_field_count": 15,
       "row_count": 17,
       "unit_test_coverage_present": true
     },
     "digests": {
-      "frame_kat_boundary_report_digest": "71a12775b526e364aa332e0de7fa52831dc63c662372170bfdad677d9d87ec38",
-      "frame_kat_boundary_report_recomputed_digest": "71a12775b526e364aa332e0de7fa52831dc63c662372170bfdad677d9d87ec38"
+      "frame_kat_boundary_report_digest": "2d6b187244f10c2241b5d68b91e3d1ec7bbcfd3531d6e238f49be9a0493c18db",
+      "frame_kat_boundary_report_recomputed_digest": "2d6b187244f10c2241b5d68b91e3d1ec7bbcfd3531d6e238f49be9a0493c18db"
     },
-    "frozen_status": "draft_boundary_manifest",
+    "frozen_status": "frozen_boundary_manifest",
     "generator": {
       "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_frame_kat_manifest",
       "source": "tools/parameter-search/src/bin/path2_account_creation_frame_kat_manifest.rs"
@@ -40,7 +40,7 @@
       {
         "case_id": "leaf_frame_version_mutation",
         "covered_by_unit_test": true,
-        "frozen_vector_present": false,
+        "frozen_vector_present": true,
         "internal_error_match": "Path 2 slot leaf frame version mismatch",
         "mutated_surface": "leaf.frame_version",
         "public_rejection_class": "reject_malformed_public_input",
@@ -50,7 +50,7 @@
       {
         "case_id": "leaf_live_status_marker_mutation",
         "covered_by_unit_test": true,
-        "frozen_vector_present": false,
+        "frozen_vector_present": true,
         "internal_error_match": "Path 2 slot leaf is not live",
         "mutated_surface": "leaf.live_status_marker",
         "public_rejection_class": "reject_malformed_public_input",
@@ -60,7 +60,7 @@
       {
         "case_id": "evidence_domain_mutation",
         "covered_by_unit_test": true,
-        "frozen_vector_present": false,
+        "frozen_vector_present": true,
         "internal_error_match": "Path 2 evidence domain mismatch",
         "mutated_surface": "evidence.evidence_domain",
         "public_rejection_class": "reject_malformed_public_input",
@@ -70,7 +70,7 @@
       {
         "case_id": "evidence_version_mutation",
         "covered_by_unit_test": true,
-        "frozen_vector_present": false,
+        "frozen_vector_present": true,
         "internal_error_match": "Path 2 evidence version mismatch",
         "mutated_surface": "evidence.evidence_version",
         "public_rejection_class": "reject_malformed_public_input",
@@ -80,7 +80,7 @@
       {
         "case_id": "evidence_kind_mutation",
         "covered_by_unit_test": true,
-        "frozen_vector_present": false,
+        "frozen_vector_present": true,
         "internal_error_match": "Path 2 unsupported evidence kind",
         "mutated_surface": "evidence.evidence_kind",
         "public_rejection_class": "reject_malformed_public_input",
@@ -90,7 +90,7 @@
       {
         "case_id": "slot_leaf_digest_mutation",
         "covered_by_unit_test": true,
-        "frozen_vector_present": false,
+        "frozen_vector_present": true,
         "internal_error_match": "Path 2 slot leaf digest mismatch",
         "mutated_surface": "evidence.slot_leaf_digest",
         "public_rejection_class": "reject_binding_mismatch",
@@ -100,7 +100,7 @@
       {
         "case_id": "slot_authorization_digest_mutation",
         "covered_by_unit_test": true,
-        "frozen_vector_present": false,
+        "frozen_vector_present": true,
         "internal_error_match": "Path 2 slot authorization digest mismatch",
         "mutated_surface": "evidence.slot_authorization_digest",
         "public_rejection_class": "reject_binding_mismatch",
@@ -110,7 +110,7 @@
       {
         "case_id": "creation_verifier_version_digest_mutation",
         "covered_by_unit_test": true,
-        "frozen_vector_present": false,
+        "frozen_vector_present": true,
         "internal_error_match": "Path 2 creation verifier version mismatch",
         "mutated_surface": "evidence.creation_verifier_version_digest",
         "public_rejection_class": "reject_binding_mismatch",
@@ -120,7 +120,7 @@
       {
         "case_id": "hidden_source_statement_digest_mutation",
         "covered_by_unit_test": true,
-        "frozen_vector_present": false,
+        "frozen_vector_present": true,
         "internal_error_match": "Path 2 hidden-source statement digest mismatch",
         "mutated_surface": "evidence.hidden_source_statement_digest",
         "public_rejection_class": "reject_binding_mismatch",
@@ -130,7 +130,7 @@
       {
         "case_id": "opening_commitment_mutation",
         "covered_by_unit_test": true,
-        "frozen_vector_present": false,
+        "frozen_vector_present": true,
         "internal_error_match": "Path 2 opening commitment mismatch",
         "mutated_surface": "evidence.opening_commitment",
         "public_rejection_class": "reject_binding_mismatch",
@@ -140,7 +140,7 @@
       {
         "case_id": "pad_seed_digest_mutation",
         "covered_by_unit_test": true,
-        "frozen_vector_present": false,
+        "frozen_vector_present": true,
         "internal_error_match": "Path 2 pad-seed digest mismatch",
         "mutated_surface": "evidence.pad_seed_digest",
         "public_rejection_class": "reject_binding_mismatch",
@@ -150,7 +150,7 @@
       {
         "case_id": "account_identity_digest_mutation",
         "covered_by_unit_test": true,
-        "frozen_vector_present": false,
+        "frozen_vector_present": true,
         "internal_error_match": "Path 2 account id mismatch",
         "mutated_surface": "evidence.account_identity_digest",
         "public_rejection_class": "reject_binding_mismatch",
@@ -160,7 +160,7 @@
       {
         "case_id": "public_key_identity_mutation",
         "covered_by_unit_test": true,
-        "frozen_vector_present": false,
+        "frozen_vector_present": true,
         "internal_error_match": "Path 2 public-key identity mismatch",
         "mutated_surface": "evidence.public_key_identity",
         "public_rejection_class": "reject_binding_mismatch",
@@ -170,7 +170,7 @@
       {
         "case_id": "slot_id_mutation",
         "covered_by_unit_test": true,
-        "frozen_vector_present": false,
+        "frozen_vector_present": true,
         "internal_error_match": "Path 2 slot id mismatch",
         "mutated_surface": "evidence.slot_id",
         "public_rejection_class": "reject_binding_mismatch",
@@ -180,7 +180,7 @@
       {
         "case_id": "state_root_before_mutation",
         "covered_by_unit_test": true,
-        "frozen_vector_present": false,
+        "frozen_vector_present": true,
         "internal_error_match": "Path 2 account state root mismatch",
         "mutated_surface": "evidence.state_root_before",
         "public_rejection_class": "reject_binding_mismatch",
@@ -190,7 +190,7 @@
       {
         "case_id": "lifecycle_anchor_mutation",
         "covered_by_unit_test": true,
-        "frozen_vector_present": false,
+        "frozen_vector_present": true,
         "internal_error_match": "Path 2 lifecycle anchor mismatch",
         "mutated_surface": "evidence.lifecycle_anchor",
         "public_rejection_class": "reject_binding_mismatch",
@@ -200,7 +200,7 @@
       {
         "case_id": "prevalidation_transcript_digest_mutation",
         "covered_by_unit_test": true,
-        "frozen_vector_present": false,
+        "frozen_vector_present": true,
         "internal_error_match": "Path 2 prevalidation transcript digest mismatch",
         "mutated_surface": "leaf.prevalidation_transcript_digest",
         "public_rejection_class": "reject_binding_mismatch",
@@ -210,5 +210,5 @@
     ],
     "schema": "Descender.Path2.AccountCreationFrameKatBoundaryManifest.v1"
   },
-  "manifest_digest": "2073e85f2a7870c2ca5dfb7691be14c9b07c04b5554e3a2f20de30b38377212b"
+  "manifest_digest": "e4bdd841f71b9ddf68a070378fb4b143eced67ac4a3cae049c0a1d8828e4c886"
 }

@@ -24,6 +24,7 @@ p3-matrix = "0.6.1"
 p3-air = "0.6.1"
 p3-maybe-rayon = { version = "0.6.1", features = ["parallel"] }
 rand = "0.10"
+chacha20 = { version = "0.10", default-features = false, features = ["rng"] }
 serde = { version = "1", features = ["derive"] }
 # Derives the fixed SIS checked-core matrix H (12×22) by SHA256 rejection sampling, byte-identical to
 # the checked-core `domain_matrix_entry` reference used by the spend leaf's signature constraint.

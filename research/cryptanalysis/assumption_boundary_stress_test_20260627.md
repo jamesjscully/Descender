@@ -101,12 +101,12 @@ floor — and the dossier's quantum section addressed only indifferentiability/G
 
 ## Hardening / honesty items (no break, fix before external review)
 
-- **H1 — mask PRF has no domain tag.** `c2_data` absorbs bare `pad_seed‖slot_id`
-  (40 lanes), no separator. Separation from the FS challenger is *length-incidental*
-  (FS inputs are `domain‖frame` > 40 lanes), not capacity-IV based. Add an explicit
-  mask domain prefix; length-prefix the FS domains (prefix-freeness is currently
-  unenforced — `production_domain_schema_registry_is_globally_disjoint` checks only
-  string uniqueness, not frame injectivity).
+- **H1 — FIXED: mask PRF now has an in-AIR domain tag.** C2 absorbs the canonical
+  `MASK = 0x4D41534B` field lane before `pad_seed‖slot_id`, constrains that lane
+  in AIR, and the standalone signer/prover equivalence test pins the same frame.
+  `selectedAccountMaskPrfDomainsSeparated_v1` proves it differs from the `NULL`
+  nullifier domain. Generic FS byte-frame prefix-freeness remains separately
+  owned by the hash-domain/QROM ledger.
 - **H2 — loaded gun in-tree (risk DOWNGRADED 2026-06-27 after verification).**
   `tools/parameter-search/src/poseidon2_q12289.rs` is a q12289 Poseidon2 with a
   **self-chosen, unvetted internal diagonal** ("deep security DEFERRED"), used by a

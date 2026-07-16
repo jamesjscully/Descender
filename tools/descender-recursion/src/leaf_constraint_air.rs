@@ -51,7 +51,7 @@
 //!     matching the leaf `SpongePlan` (rate-8 absorb with the ONE padding marker at stream pos
 //!     `n_input` + zero-fill, capacity-preserving across 7 absorb perms + 1 squeeze perm), with the
 //!     committed `pad_source_commitment[10]` digest constrained == the squeezed sponge output. Added
-//!     as the `N_C1` residual class (input/capacity bindings ‖ 8 Poseidon2 perm blocks ‖
+//!     as the `N_C1` residual class (input/capacity bindings ‖ 11 Poseidon2 perm blocks ‖
 //!     squeeze-output equalities). Fidelity-PINned against the deployed byte-pinned Val permutation
 //!     (`c1_honest_sponge_all_residuals_zero`, `c1_squeeze_matches_deployed_perm_output`) and tamper-
 //!     rejected end-to-end through DEEP (`leaf_wired_tampered_c1_sponge_cell_rejects_end_to_end`).
@@ -61,8 +61,9 @@
 //!   * **C6 — `opening_tuple_commitment` squeeze** (air.rs:740-756, `eval_sponge` C6 plan):
 //!     RE-COMPUTED in-circuit via [`crate::inlined_perm_octic`] over the absorbed leaf cells,
 //!     matching the leaf `SpongePlan` (rate-8 absorb of account_projection[6] FIELD lanes ‖
-//!     lifecycle[32] ‖ nonce_c6[16] ‖ account_id[32] byte-lanes = 86 input lanes, ONE padding marker
-//!     at stream pos `n_input`(=86) + zero-fill, capacity-preserving across 11 absorb perms + 1
+//!     OPEN domain[1] ‖ projection[6] ‖ lifecycle[32] ‖ nonce_c6[40] ‖ account_id[32] = 111 input
+//!     lanes, ONE padding marker at stream pos `n_input`(=111) + zero-fill, capacity-preserving across
+//!     14 absorb perms + 1
 //!     squeeze perm = 12 perms), with the committed `opening_tuple_commitment[10]` digest constrained
 //!     == the squeezed sponge output. Added as the `N_C6` residual class. The 6 FIELD absorb lanes
 //!     are the EXISTING `O_C6_FIELD` SeamOpeningAcc cells (reused). Fidelity-PINned against the
@@ -70,7 +71,7 @@
 //!     `c6_squeeze_matches_deployed_perm_output`) and tamper-rejected end-to-end through DEEP
 //!     (`leaf_wired_tampered_c6_sponge_cell_rejects_end_to_end`). The per-lane BYTE-RANGE
 //!     decomposition of the 80 C6 byte-lanes (air.rs:1278-1289) is now MIRRORED in the `N_BYTERANGE`
-//!     class (the 6 FIELD lanes are NOT byte-ranged), binding the SAME `c6_byte_cell` lanes.
+//!     class (the domain + 6 FIELD lanes are NOT byte-ranged), binding the SAME `c6_byte_cell` lanes.
 //!
 //!   * **role-root sponge — `role_root` squeeze** (CLASS A, air.rs:908-954, plan air.rs:441):
 //!     RE-COMPUTED in-circuit via [`crate::inlined_perm_octic`] over the 26 ALL-FIELD role-handle
@@ -89,11 +90,12 @@
 //!
 //!   * **C2 — mask-PRF sponge + WIDE-THEN-REDUCE + carrier** (air.rs:728-737, 856-906;
 //!     reduce_gadget.rs): the LARGEST mirrored sponge. RE-COMPUTED in-circuit via
-//!     [`crate::inlined_perm_octic`] over the 40 absorb lanes (pad_seed[32] REUSED from the C2
-//!     SeamPadSeed cells ‖ slot_id[8] NEW), ONE padding marker at stream pos n_input(=40) + zero-fill,
-//!     capacity-preserving across 6 absorb perms + 3 squeeze perms = 9 perms; the 30 squeezed lanes
+//!     [`crate::inlined_perm_octic`] over the 41 absorb lanes (MASK domain[1] ‖ pad_seed[32] REUSED
+//!     from the C2 SeamPadSeed cells ‖ slot_id[8] NEW), ONE padding marker at stream pos
+//!     n_input(=41) + zero-fill, capacity-preserving across 6 absorb perms + 4 squeeze perms = 10
+//!     perms; the 36 squeezed lanes
 //!     are read from the squeeze-source perms' OUTPUT cells (NO public digest, so no squeeze-output
-//!     equality sub-class). Added as the `N_C2` residual class. The 30 squeezed lanes then feed the
+//!     equality sub-class). Added as the `N_C2` residual class. The 36 squeezed lanes then feed the
 //!     genuinely-NEW WIDE-THEN-REDUCE gadget (mirror of `reduce_gadget::eval_reduce_gadget`: per-mask
 //!     base-2^16 limb/carry wrap-free Horner reduction `mask_j = (Σ_i lane_{j,i}·p^i) mod q`) + the
 //!     C4 carrier mod-q reduction (`masked_projection[j] == account_projection[j] + mask[j] mod q`),
@@ -102,11 +104,14 @@
 //!     `reduce_honest_all_residuals_zero`) and tamper-rejected end-to-end through DEEP
 //!     (`leaf_wired_tampered_c2_reduce_cell_rejects_end_to_end`): forged squeezed lane / forged mask /
 //!     tampered limb-carry / forged masked_projection / tampered carrier mod-q witness all reject.
-//!     The per-lane BYTE-RANGE decomposition of the 40 C2 input lanes (air.rs:1278-1289) is now
+//!     The per-lane BYTE-RANGE decomposition of the 40 byte-valued C2 input lanes
+//!     (air.rs:1278-1289) is now
 //!     MIRRORED in the `N_BYTERANGE` class, binding the SAME `c2_pad_cell`/`c2_slot_cell` lanes.
 //!
 //!   * **PER-LANE BYTE-RANGE / canonicality** (air.rs:1278-1289): for EVERY byte-ranged input lane
-//!     of the C1/C2/C6 sponges (C1 all 48 ‖ C2 all 40 ‖ C6 the 80 byte-lanes; role has none), the
+//!     of the C1/C2/C6 sponges (C1 its 72 byte lanes ‖ C2 its 40 byte lanes ‖ C6 its 104 byte lanes;
+//!     role has
+//!     none), the
 //!     degree-2 gadget `BYTE_BITS bit-bools bit·(bit−1) + recompose eq lane − Σ bit·2^b`. The
 //!     decomposed lane is the ACTUAL already-absorbed sponge input cell
 //!     (`byterange_absorbed_cell`), NOT a fresh column — so this is the canonicality (each absorbed
@@ -147,9 +152,12 @@ use crate::fri_fold_air::{limbs, D, W};
 use crate::inlined_perm::{C_INPUTS, C_OUTPUT, PERM_COLS};
 use crate::inlined_perm_octic::{self, OcticPermCells};
 use descender_account_stark::{
-    Challenge, Val, CHAIN_DIGEST_ELEMS, N_COMMIT_LANES, N_LANES, NULLIFIER_ELEMS,
-    PACKED_WITNESS_COMMITMENT_BYTES, PUBIO_ROLE_ROOT_OFF, RELATION_ID, RELATION_ID_ELEMS,
-    ROLE_ROOT_ELEMS, SYNDROME_LANES, WIDTH,
+    Challenge, Val, C1_BYTE_LANES as LEAF_C1_BYTE_LANES, C1_INPUT_LANES as LEAF_C1_INPUT_LANES,
+    C6_BYTE_LANES as LEAF_C6_BYTE_LANES, C6_FIELD_LANES as LEAF_C6_FIELD_LANES,
+    C6_INPUT_LANES as LEAF_C6_INPUT_LANES, CHAIN_DIGEST_ELEMS, COMMITMENT_NONCE_BYTES,
+    NULLIFIER_ELEMS, N_COMMIT_LANES, N_LANES, OPENING_COMMITMENT_DOMAIN,
+    PACKED_WITNESS_COMMITMENT_BYTES, PAD_COMMITMENT_DOMAIN, PUBIO_ROLE_ROOT_OFF, RELATION_ID,
+    RELATION_ID_ELEMS, ROLE_ROOT_ELEMS, SYNDROME_LANES, WIDTH,
 };
 use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
 use p3_field::{BasedVectorSpace, PrimeCharacteristicRing};
@@ -193,6 +201,9 @@ const I_INV: usize = 25;
 pub const PAD_SEED_BYTES: usize = 32;
 /// Number of constraint residuals contributed by each mirrored class.
 pub const N_C4_ACC: usize = C4_LANES; // carry_acc[j] == v_j (air.rs:762)
+pub const N_C1_DOMAIN: usize = 1; // C1 PADS domain lane == 0x50414453
+pub const N_C2_DOMAIN: usize = 1; // C2 MASK domain lane == 0x4D41534B
+pub const N_C6_DOMAIN: usize = 1; // C6 OPEN domain lane == 0x4F50454E
 pub const N_SEAM_PAD: usize = PAD_SEED_BYTES; // SeamPadSeed
 pub const N_SEAM_ACC: usize = N_LANES; // SeamOpeningAcc (air.rs:773-779)
 pub const N_RELATION_ID: usize = RELATION_ID_ELEMS; // relation_id pinning (air.rs:957-967)
@@ -200,31 +211,33 @@ pub const N_RELATION_ID: usize = RELATION_ID_ELEMS; // relation_id pinning (air.
 // ----- C1 sponge (pad_source_commitment squeeze) — the FIRST mirrored leaf sponge -----
 //
 // Mirrors `descender_account_stark::air::FullRelationAir::eval_sponge` for the C1 SpongePlan:
-//   * C1 input lanes: pad_seed[32] ‖ blinding_nonce_c1[16]  ⇒ C1_INPUT_LANES = 48.
-//   * RATE-8 absorb with the ONE padding marker at stream position `n_input` (=48) and zero-fill;
+//   * C1 input lanes: PADS[1] ‖ pad_seed[32] ‖ blinding_nonce_c1[40] ⇒ C1_INPUT_LANES = 73.
+//   * RATE-8 absorb with the ONE padding marker at stream position `n_input` (=73) and zero-fill;
 //     capacity-preserving (slots RATE..WIDTH carried from the previous perm's output).
-//   * 7 absorb perms + 1 squeeze perm = 8 Poseidon2 perms.
+//   * 10 absorb perms + 1 squeeze perm = 11 Poseidon2 perms.
 //   * squeeze: `pad_source_commitment[0..7]` from the LAST absorb perm's output, `[8..9]` from the
 //     squeeze perm's output (matches `SpongePlan::output_source`).
 // The committed `pad_source_commitment[10]` digest is the leaf's PUBLIC C1 output (air.rs:712-726);
 // the mirror constrains it == the squeezed sponge output.
 //
-// DEFERRED for the C1 sponge: the per-lane BYTE-RANGE decomposition of the 48 input lanes
+// The C1 byte-range class decomposes the 72 byte lanes; the PADS domain is a pinned field constant.
 // (air.rs:1278-1289 — `assert_bool` over 8 bits/lane + lane==Σ bit·2^b). That is a degree-2
 // algebraic gadget (not the Poseidon2 sponge per se); it rides with the other byte-range / reduce
 // gadgets in a later chunk. The C1 sponge mirror here constrains the absorb/capacity wiring, the
 // Poseidon2 perm rounds, and the squeeze-output equality.
 
-/// C1 input byte-lanes count: pad_seed[32] ‖ blinding_nonce_c1[16]. Mirrors air.rs `C1_INPUT_LANES`.
-pub const C1_INPUT_LANES: usize = 32 + 16; // 48
+/// C1 byte lanes: pad_seed[32] ‖ blinding_nonce_c1[40].
+pub const C1_BYTE_LANES: usize = 32 + COMMITMENT_NONCE_BYTES; // 72
+/// C1 inputs: PADS domain[1] ‖ byte lanes[72].
+pub const C1_INPUT_LANES: usize = 1 + C1_BYTE_LANES; // 73
 /// Sponge rate (RATE elements absorbed per permutation). Mirrors air.rs `RATE`.
 pub const C1_RATE: usize = 8;
-/// Number of absorb permutations for the C1 sponge: `ceil((n_input + 1)/RATE)` = `ceil(49/8)` = 7.
-pub const C1_N_ABSORB: usize = 7;
-/// Total C1 sponge permutations (absorb + squeeze). `n_out = 10` ⇒ 1 squeeze perm ⇒ 8.
-pub const C1_N_PERMS: usize = 8;
+/// Number of absorb permutations: `ceil((73 + 1)/8)` = 10.
+pub const C1_N_ABSORB: usize = 10;
+/// Total C1 sponge permutations: 10 absorb + 1 squeeze = 11.
+pub const C1_N_PERMS: usize = 11;
 /// Padded absorb-stream length (`C1_N_ABSORB · RATE`).
-pub const C1_PADDED_LEN: usize = C1_N_ABSORB * C1_RATE; // 56
+pub const C1_PADDED_LEN: usize = C1_N_ABSORB * C1_RATE; // 80
 /// pad_source_commitment output lanes. Mirrors air.rs `N_COMMIT_LANES`.
 pub const C1_N_OUT: usize = N_COMMIT_LANES; // 10
 
@@ -241,37 +254,47 @@ pub const N_C1: usize = N_C1_INPUT_BIND + N_C1_PERM + N_C1_OUT;
 // (air.rs:740-756, plan built at air.rs:436-438). C6 has the SAME absorb/capacity/squeeze shape
 // as C1 (rate-8 absorb with the ONE padding marker at stream position `n_input` + zero-fill,
 // capacity-preserving across the absorb perms + 1 squeeze perm), only with a LARGER input:
-//   * C6 input lanes: account_projection[6] (FIELD lanes) ‖ lifecycle_anchor[32] ‖
-//     blinding_nonce_c6[16] ‖ account_id[32] (byte-lanes)  ⇒ C6_INPUT_LANES = 6 + 80 = 86.
-//   * RATE-8 absorb, padding marker at pos n_input(=86), zero-fill ⇒ padded = ceil(87/8)·8 = 88
-//     ⇒ C6_N_ABSORB = 11.  n_out = 10 ⇒ 1 squeeze perm ⇒ C6_N_PERMS = 12.
+//   * C6 input lanes: OPEN[1] ‖ account_projection[6] (FIELD lanes) ‖ lifecycle_anchor[32] ‖
+//     blinding_nonce_c6[40] ‖ account_id[32] (byte-lanes) ⇒ C6_INPUT_LANES = 7 + 104 = 111.
+//   * RATE-8 absorb, padding marker at pos n_input(=111), zero-fill ⇒ padded = 112
+//     ⇒ C6_N_ABSORB = 14. n_out = 10 ⇒ 1 squeeze perm ⇒ C6_N_PERMS = 15.
 //   * squeeze: `opening_tuple_commitment[0..7]` from the LAST absorb perm's output, `[8..9]` from
 //     the squeeze perm's output (same `SpongePlan::output_source` mapping as C1, since n_out=10).
 // The committed `opening_tuple_commitment[10]` digest is the leaf's PUBLIC C6 output (air.rs:747-756);
 // the mirror constrains it == the squeezed sponge output.
 //
-// The FIRST 6 C6 absorb lanes are the `account_projection` FIELD lanes, which are ALREADY present in
+// The first C6 lane is the OPEN domain and the next 6 are `account_projection` FIELD lanes, all
+// ALREADY present in
 // the mirror as the `O_C6_FIELD` cells (the SeamOpeningAcc lanes — `local[c6_off + c6.lanes + i]`,
-// i<6, air.rs:777). They are REUSED as absorb positions 0..6. The remaining 80 byte-lanes
+// the `O_C6_FIELD` block. The remaining 104 byte lanes
 // (lifecycle ‖ nonce ‖ account_id) are added as new opened cells here.
 //
-// DEFERRED for the C6 sponge (same as C1): the per-lane BYTE-RANGE decomposition of the 80
+// The C6 byte-range class decomposes the 104
 // byte-lanes (air.rs:1278-1289) — a degree-2 algebraic gadget, not the sponge; rides with the
-// byte/reduce gadgets in a later chunk. (The 6 FIELD lanes are NOT byte-ranged in air.rs.)
+// byte lanes. The domain + 6 projection FIELD lanes are not byte-ranged.
 
-/// C6 input lanes count: account_projection[6] ‖ lifecycle[32] ‖ nonce_c6[16] ‖ account_id[32].
+/// C6 input lanes: OPEN domain[1] ‖ account_projection[6] ‖ lifecycle[32] ‖ nonce_c6[40] ‖
+/// account_id[32].
 /// Mirrors air.rs `C6_INPUT_LANES = C6_FIELD_LANES + C6_BYTE_LANES`.
-pub const C6_FIELD_LANES: usize = N_LANES; // 6 (the account_projection field lanes)
-pub const C6_BYTE_LANES: usize = 32 + 16 + 32; // 80 (lifecycle ‖ nonce_c6 ‖ account_id)
-pub const C6_INPUT_LANES: usize = C6_FIELD_LANES + C6_BYTE_LANES; // 86
+pub const C6_DOMAIN_LANES: usize = 1;
+pub const C6_FIELD_LANES: usize = C6_DOMAIN_LANES + N_LANES; // domain + projection
+pub const C6_BYTE_LANES: usize = 32 + COMMITMENT_NONCE_BYTES + 32; // 104
+pub const C6_INPUT_LANES: usize = C6_FIELD_LANES + C6_BYTE_LANES; // 111
+const _: () = {
+    assert!(C1_BYTE_LANES == LEAF_C1_BYTE_LANES);
+    assert!(C1_INPUT_LANES == LEAF_C1_INPUT_LANES);
+    assert!(C6_BYTE_LANES == LEAF_C6_BYTE_LANES);
+    assert!(C6_FIELD_LANES == LEAF_C6_FIELD_LANES);
+    assert!(C6_INPUT_LANES == LEAF_C6_INPUT_LANES);
+};
 /// Sponge rate (shared with C1). Mirrors air.rs `RATE`.
 pub const C6_RATE: usize = 8;
-/// Number of absorb permutations: `ceil((n_input + 1)/RATE)` = `ceil(87/8)` = 11.
-pub const C6_N_ABSORB: usize = 11;
-/// Total C6 sponge permutations (absorb + squeeze). `n_out = 10` ⇒ 1 squeeze perm ⇒ 12.
-pub const C6_N_PERMS: usize = 12;
+/// Number of absorb permutations: `ceil((111 + 1)/8)` = 14.
+pub const C6_N_ABSORB: usize = 14;
+/// Total C6 sponge permutations: 14 absorb + 1 squeeze = 15.
+pub const C6_N_PERMS: usize = 15;
 /// Padded absorb-stream length (`C6_N_ABSORB · RATE`).
-pub const C6_PADDED_LEN: usize = C6_N_ABSORB * C6_RATE; // 88
+pub const C6_PADDED_LEN: usize = C6_N_ABSORB * C6_RATE; // 112
 /// opening_tuple_commitment output lanes. Mirrors air.rs `N_COMMIT_LANES`.
 pub const C6_N_OUT: usize = N_COMMIT_LANES; // 10
 
@@ -333,33 +356,35 @@ pub const N_ROLE: usize = N_ROLE_INPUT_BIND + N_ROLE_PERM + N_ROLE_OUT;
 // (air.rs:728-737, plan built at air.rs:435 `c2_plan = SpongePlan::new(vec![true; C2_INPUT_LANES],
 // NUM_SQUEEZE)`). C2 has the SAME absorb/capacity/squeeze shape as C1/C6 (rate-8 absorb with the ONE
 // padding marker at stream position `n_input` + zero-fill, capacity-preserving across the absorb
-// perms + the squeeze perms), but it SQUEEZES 30 lanes (not 10) and its output feeds the
+// perms + the squeeze perms), but it SQUEEZES 36 lanes (not 10) and its output feeds the
 // WIDE-THEN-REDUCE gadget + carrier (not a public commitment):
-//   * C2 input lanes: pad_seed[32] ‖ slot_id[8]  ⇒ C2_INPUT_LANES = 40. The 32 pad_seed lanes are
-//     the EXISTING `O_C2_PAD` cells (the SeamPadSeed C2 lanes, reused as absorb positions 0..32);
-//     the 8 slot_id lanes are NEW opened cells.
-//   * RATE-8 absorb, padding marker at pos n_input(=40), zero-fill ⇒ padded = ceil(41/8)·8 = 48
-//     ⇒ C2_N_ABSORB = 6.  n_out = 30 ⇒ ceil over RATE: outputs 0..8 from the LAST absorb perm
-//     (perm 5), 8..16 from squeeze perm 6, 16..24 from squeeze perm 7, 24..30 from squeeze perm 8
-//     ⇒ 3 squeeze perms ⇒ C2_N_PERMS = 9 (matches `SpongePlan::output_source` for n_out=30).
-// The 30 squeezed lanes are then reduced to 6 masks by the wide-then-reduce gadget (the
+//   * C2 input lanes: MASK_DOMAIN[1] ‖ pad_seed[32] ‖ slot_id[8] ⇒ C2_INPUT_LANES = 41.
+//     The domain is an opened, constant-bound field lane; the 32 pad_seed lanes reuse `O_C2_PAD`,
+//     and the 8 slot_id lanes are opened cells.
+//   * RATE-8 absorb, padding marker at pos n_input(=41), zero-fill ⇒ padded = 48
+//     ⇒ C2_N_ABSORB = 6. n_out = 36 uses the last absorb output plus four squeeze perms,
+//     ⇒ C2_N_PERMS = 10.
+// The 36 squeezed lanes are then reduced to 6 masks by the wide-then-reduce gadget (the
 // `N_REDUCE` class below); they are NOT a public digest, so the C2 sponge class has NO
 // squeeze-output equality sub-class (unlike C1/C6/role). Instead the reduce gadget reads the
 // squeezed OUTPUT cells directly (`c2_squeeze_output_cell`), and the squeeze soundness is enforced
 // by the per-perm round residuals binding those output cells to the recomputed permutation.
 
-/// C2 input lanes count: pad_seed[32] ‖ slot_id[8]. Mirrors air.rs `C2_INPUT_LANES`.
+/// C2 domain lane: "MASK" as a canonical KoalaBear field element.
+pub const C2_MASK_DOMAIN: u32 = 0x4D41_534B;
+pub const C2_DOMAIN_LANES: usize = 1;
+/// C2 input lanes: MASK_DOMAIN[1] ‖ pad_seed[32] ‖ slot_id[8].
 pub const C2_PAD_LANES: usize = PAD_SEED_BYTES; // 32 (the SeamPadSeed C2 pad_seed cells, reused)
 pub const C2_SLOT_LANES: usize = 8; // slot_id[8] (NEW absorb cells)
-pub const C2_INPUT_LANES: usize = C2_PAD_LANES + C2_SLOT_LANES; // 40
+pub const C2_INPUT_LANES: usize = C2_DOMAIN_LANES + C2_PAD_LANES + C2_SLOT_LANES; // 41
 /// Sponge rate (shared with C1/C6/role). Mirrors air.rs `RATE`.
 pub const C2_RATE: usize = 8;
 /// Number of absorb permutations: `ceil((n_input + 1)/RATE)` = `ceil(41/8)` = 6.
 pub const C2_N_ABSORB: usize = 6;
 /// Squeezed output lanes. Mirrors `reduce_gadget::NUM_SQUEEZE`.
-pub const C2_N_OUT: usize = 30;
-/// Total C2 sponge permutations (absorb + squeeze). n_out=30 ⇒ 3 squeeze perms ⇒ 9.
-pub const C2_N_PERMS: usize = 9;
+pub const C2_N_OUT: usize = 36;
+/// Total C2 sponge permutations (absorb + squeeze). n_out=36 ⇒ 4 squeeze perms ⇒ 10.
+pub const C2_N_PERMS: usize = 10;
 /// Padded absorb-stream length (`C2_N_ABSORB · RATE`).
 pub const C2_PADDED_LEN: usize = C2_N_ABSORB * C2_RATE; // 48
 
@@ -372,7 +397,7 @@ pub const N_C2: usize = N_C2_INPUT_BIND + N_C2_PERM;
 
 // ----- WIDE-THEN-REDUCE + carrier gadget (the genuinely-NEW constraint shape) -----
 //
-// Mirrors `descender_account_stark::reduce_gadget::eval_reduce_gadget` EXACTLY (the 30 squeezed
+// Mirrors `descender_account_stark::reduce_gadget::eval_reduce_gadget` EXACTLY (the 36 squeezed
 // lanes → 6 q12289 masks via a base-2^16 limb/carry wrap-free Horner reduction `mask_j =
 // (Σ_i lane_{j,i}·p^i) mod q`), PLUS the C4 carrier mod-q reduction (air.rs:856-906,
 // `masked_projection[j] == account_projection[j] + mask[j] mod q12289`). The reduce gadget is the
@@ -457,9 +482,9 @@ pub const N_CHAIN: usize = N_CHAIN_ENABLE
     + N_CHAIN_CARRY
     + N_CHAIN_COUNT;
 
-/// C2 sponge cells: ONLY the 8 NEW slot_id input lanes (pad_seed reused from `O_C2_PAD`) + perm
-/// blocks. NO output digest cells (the 30 squeezed lanes are read from the perm OUTPUT cells).
-pub const C2_CELLS: usize = C2_SLOT_LANES + C2_N_PERMS * PERM_COLS;
+/// C2 sponge cells: MASK domain + 8 slot lanes (pad seed reused) + perm blocks.
+/// NO output digest cells; the 36 squeezed lanes are read from perm outputs.
+pub const C2_CELLS: usize = C2_DOMAIN_LANES + C2_SLOT_LANES + C2_N_PERMS * PERM_COLS;
 
 /// Reduce-gadget + carrier cells: the gadget's own witness columns (`REDUCE_CELLS`) + the 6
 /// masked_projection carrier values + the 6 carrier mod-q witness blocks (`MODQ_CELLS` each).
@@ -479,7 +504,7 @@ pub const CHAIN_CELLS: usize = CHAIN_W // prev_chain_out
     + CHAIN_PUBIO; // absorbed pubio lanes
 
 /// N_REDUCE residual count. Mirrors `eval_reduce_gadget` assertion count per mask + the carrier:
-///   per mask: 5 lane-bind + per step [11 value-recompose + 11·(bit-bool over their widths) +
+///   per mask: 6 lane-bind + per step [11 value-recompose + 11·(bit-bool over their widths) +
 ///   r_t-recompose + slack-recompose + (r+slack==q-1) + digit-split + 6 limb/carry eqs] ; then the
 ///   carrier per lane [masked-recompose + slack-recompose + (m+slack==q-1) + wrap-bool + carrier eq].
 /// Encoded structurally in `reduce_residual` (we count it there); exposed as a const via the same
@@ -494,32 +519,32 @@ pub const N_REDUCE: usize = NUM_OUTPUTS * N_REDUCE_PER_MASK + N_LANES * N_CARRIE
 //   * BYTE_BITS bit-boolean residuals `bit·(bit−1)` over the lane's 8 bit witnesses, then
 //   * 1 recompose equality `lane − Σ_b bit_b·2^b == 0`.
 // The decomposed bits constrain the ACTUAL absorbed lane cells the sponges already consume (NOT
-// fresh free columns): C1 reads `c1_input_cell(i)` (all 48 lanes byte-ranged), C2 reads
-// `c2_pad_cell(i)`/`c2_slot_cell(i−32)` (all 40 lanes), C6 reads `c6_byte_cell(b)` (the 80 byte-
-// lanes; the 6 leading FIELD lanes are NOT byte-ranged, matching air.rs `c6_br`). So this class is
+// fresh free columns): C1 reads `c1_input_cell(1+i)` (72 byte lanes; domain skipped), C2 reads
+// `c2_pad_cell(i)`/`c2_slot_cell(i−32)` (40 byte lanes), and C6 reads `c6_byte_cell(b)` (104 byte
+// lanes; domain + projection fields skipped). So this class is
 // the canonicality (each absorbed input lane is a valid byte `< 256`) of the genuine sponge preimage.
 //
 // air.rs byte-range counts (from `FullLayout::new`):
-//   * C1: `vec![true; C1_INPUT_LANES]` ⇒ ALL 48 lanes (pad_seed[32] ‖ nonce_c1[16]).
-//   * C2: `vec![true; C2_INPUT_LANES]` ⇒ ALL 40 lanes (pad_seed[32] ‖ slot_id[8]).
-//   * C6: `false`×C6_FIELD_LANES(6) ‖ `true`×C6_BYTE_LANES(80) ⇒ the 80 byte-lanes only.
+//   * C1: `false`×1 PADS ‖ `true`×72 (pad_seed[32] ‖ nonce_c1[40]).
+//   * C2: `false`×1 DOMAIN ‖ `true`×40 (pad_seed[32] ‖ slot_id[8]).
+//   * C6: `false`×C6_FIELD_LANES(7) ‖ `true`×C6_BYTE_LANES(104).
 // The role-root sponge has `vec![false; 26]` (no byte-range — already noted CLASS A), so it
 // contributes ZERO byte-range residuals.
 
 /// Bits per byte-ranged input lane. Mirrors air.rs `BYTE_BITS`.
 pub const BYTE_BITS: usize = 8;
-/// C1 byte-ranged input lanes (ALL 48). Mirrors `vec![true; C1_INPUT_LANES]`.
-pub const C1_BR_LANES: usize = C1_INPUT_LANES; // 48
-/// C2 byte-ranged input lanes (ALL 40). Mirrors `vec![true; C2_INPUT_LANES]`.
-pub const C2_BR_LANES: usize = C2_INPUT_LANES; // 40
-/// C6 byte-ranged input lanes (the 80 byte-lanes; the 6 FIELD lanes are NOT byte-ranged).
-pub const C6_BR_LANES: usize = C6_BYTE_LANES; // 80
+/// C1 byte-ranged input lanes: pad_seed[32] ‖ nonce[40]; domain is a field constant.
+pub const C1_BR_LANES: usize = C1_BYTE_LANES; // 72
+/// C2 byte-ranged input lanes: pad_seed[32] ‖ slot_id[8]; DOMAIN is a field constant.
+pub const C2_BR_LANES: usize = C2_PAD_LANES + C2_SLOT_LANES; // 40
+/// C6 byte-ranged input lanes (104; domain and projection field lanes are not byte-ranged).
+pub const C6_BR_LANES: usize = C6_BYTE_LANES; // 104
 /// Total byte-ranged lanes across C1 ‖ C2 ‖ C6 (the global byte-range index space).
-pub const N_BR_LANES: usize = C1_BR_LANES + C2_BR_LANES + C6_BR_LANES; // 168
+pub const N_BR_LANES: usize = C1_BR_LANES + C2_BR_LANES + C6_BR_LANES; // 216
 /// Byte-range residuals PER lane: BYTE_BITS bit-bools + 1 recompose eq. Mirrors air.rs:1278-1289.
 pub const N_BR_PER_LANE: usize = BYTE_BITS + 1; // 9
 /// Total byte-range residuals batched into `C_partial`.
-pub const N_BYTERANGE: usize = N_BR_LANES * N_BR_PER_LANE; // 1512
+pub const N_BYTERANGE: usize = N_BR_LANES * N_BR_PER_LANE; // 1944
 
 // ----- SPONGE-OUTPUT → PUBLIC-VALUE binding (the per-instance commitment equalities) -----
 //
@@ -574,8 +599,8 @@ pub const N_PUBIO_BIND: usize = N_PUBIO_C1 + N_PUBIO_C6 + N_PUBIO_MASKED + N_PUB
 // Within the pubio block, the context region starts at `PUBIO_CONTEXT_OFF`; the per-field byte offsets
 // (account_id[32] ‖ slot[8] ‖ verifier_version[4] ‖ state_root[32] ‖ lifecycle[32]) MIRROR air.rs
 // `CTX_*_OFF`. The C2 slot absorb lanes are `c2_slot_cell(0..8)`; the C6 byte-lanes (lifecycle ‖
-// nonce_c6 ‖ account_id) are `c6_byte_cell(0..80)` so lifecycle = `c6_byte_cell(0..32)` and account_id
-// = `c6_byte_cell(48..80)` (after lifecycle[32] ‖ nonce_c6[16]).
+// nonce_c6 ‖ account_id) are `c6_byte_cell(0..104)` so lifecycle = `c6_byte_cell(0..32)` and
+// account_id = `c6_byte_cell(72..104)` (after lifecycle[32] ‖ nonce_c6[40]).
 pub const PUBIO_CONTEXT_OFF: usize = 2 * N_COMMIT_LANES + N_LANES; // 26 (mirror air.rs ctx region)
 pub const CTX_ACCOUNT_ID_OFF: usize = 0;
 pub const CTX_SLOT_OFF: usize = CTX_ACCOUNT_ID_OFF + 32; // after account_id[32]
@@ -585,8 +610,8 @@ pub const CTX_LIFECYCLE_OFF: usize = CTX_STATE_ROOT_OFF + 32; // after state_roo
 pub const CTX_SLOT_BYTES: usize = 8;
 pub const CTX_LIFECYCLE_BYTES: usize = 32;
 pub const CTX_ACCOUNT_ID_BYTES: usize = 32;
-/// C6 byte-lane offset of the account_id block (after lifecycle[32] ‖ nonce_c6[16]).
-pub const C6_BYTE_ACCOUNT_ID_OFF: usize = 32 + 16; // 48
+/// C6 byte-lane offset of account_id (after lifecycle[32] ‖ nonce_c6[40]).
+pub const C6_BYTE_ACCOUNT_ID_OFF: usize = 32 + COMMITMENT_NONCE_BYTES; // 72
 pub const N_CTXBIND: usize = CTX_SLOT_BYTES + CTX_LIFECYCLE_BYTES + CTX_ACCOUNT_ID_BYTES; // 72
 
 // ----- CLASS C — checked-core syndrome + packed_witness_commitment binding -----
@@ -623,6 +648,9 @@ pub const PACKED_STREAM_BITS: usize = (SYNDROME_LANES + N_LANES) * MODQ_BITS; //
 /// Total residuals batched into `C_partial`.
 pub const N_CONSTRAINTS: usize = C4_LANES * C4_N_PER_LANE
     + N_C4_ACC
+    + N_C1_DOMAIN
+    + N_C2_DOMAIN
+    + N_C6_DOMAIN
     + N_SEAM_PAD
     + N_SEAM_ACC
     + N_RELATION_ID
@@ -645,16 +673,16 @@ pub const N_CONSTRAINTS: usize = C4_LANES * C4_N_PER_LANE
 // blocks of `D` limbs in the following order:
 //   * `C4_LANES` C4 lane blocks, each `C4_CELLS` cells           [C4_LANES*C4_CELLS cells]
 //   * `carry_acc[N_LANES]`                                       [N_LANES cells]
-//   * C1 `pad_seed[32]`                                          [PAD_SEED_BYTES cells]
 //   * C2 `pad_seed[32]`                                          [PAD_SEED_BYTES cells]
-//   * C6 `field_lanes[N_LANES]`                                  [N_LANES cells]
+//   * C6 `field_lanes[domain + N_LANES]`                         [C6_FIELD_LANES cells]
 //   * `relation_id[RELATION_ID_ELEMS]`                           [RELATION_ID_ELEMS cells]
 // then `alpha` (1 extension elem) and the committed `C_partial` (1 extension elem).
 
 /// Number of opened OOD cells in the C1 sponge block: input lanes + perm blocks + output digest.
 pub const C1_CELLS: usize = C1_INPUT_LANES + C1_N_PERMS * PERM_COLS + C1_N_OUT;
 
-/// Number of opened OOD cells in the C6 sponge block: byte-lanes (the 6 FIELD lanes are REUSED from
+/// Number of opened OOD cells in the C6 sponge block: byte-lanes (the domain + 6 FIELD lanes are
+/// REUSED from
 /// `O_C6_FIELD`) + perm blocks + output digest.
 pub const C6_CELLS: usize = C6_BYTE_LANES + C6_N_PERMS * PERM_COLS + C6_N_OUT;
 
@@ -666,17 +694,16 @@ pub const ROLE_CELLS: usize = ROLE_MASKED_LANES + ROLE_N_PERMS * PERM_COLS + ROL
 /// Number of opened OOD cells fed to the mirror.
 pub const N_OPENED_CELLS: usize = C4_LANES * C4_CELLS // C4 lanes
     + N_LANES // carry_acc
-    + PAD_SEED_BYTES // C1 pad_seed
     + PAD_SEED_BYTES // C2 pad_seed
-    + N_LANES // C6 field lanes (also the C6 sponge absorb positions 0..6)
+    + C6_FIELD_LANES // C6 domain + projection field lanes
     + RELATION_ID_ELEMS // relation_id
     + C1_CELLS // C1 sponge (input lanes ‖ perm blocks ‖ pad_source_commitment)
     + C6_CELLS // C6 sponge (byte-lanes ‖ perm blocks ‖ opening_tuple_commitment)
     + ROLE_CELLS // role-root sponge (masked[6] ‖ perm blocks ‖ role_root[8]); inputs 0..20 CHAINED
-    + C2_CELLS // C2 mask-PRF sponge (slot_id[8] ‖ perm blocks); pad_seed[32] reused from O_C2_PAD
+    + C2_CELLS // C2 mask-PRF sponge (MASK domain ‖ slot_id[8] ‖ perms); pad_seed reused
     + REDUCE_BLOCK_CELLS // wide-then-reduce gadget cells + carrier (masked[6] ‖ mod-q blocks)
     + CHAIN_CELLS // batch digest chain (prev_state ‖ chain_in ‖ perms ‖ chain_out ‖ acc ‖ pubio)
-    + N_BYTERANGE_BITS // per-lane byte-range bit witnesses (C1[48]‖C2[40]‖C6[80] × BYTE_BITS)
+    + N_BYTERANGE_BITS // per-lane byte-range witnesses (C1[72]‖C2[40]‖C6[104] × BYTE_BITS)
     + SYNDROME_BLOCK_CELLS; // CLASS-C syndrome witness cells (12 lanes × SYNDROME_CELLS)
 
 /// CLASS-C syndrome witness cells: SYNDROME_CELLS per lane (value ‖ 14 bits ‖ slack ‖ 14 slack-bits).
@@ -692,16 +719,15 @@ pub const N_BYTERANGE_BITS: usize = N_BR_LANES * BYTE_BITS;
 // Cell-block offsets (in units of cells, each `D` limbs).
 const O_C4: usize = 0;
 const O_ACC: usize = O_C4 + C4_LANES * C4_CELLS;
-const O_C1_PAD: usize = O_ACC + N_LANES;
-const O_C2_PAD: usize = O_C1_PAD + PAD_SEED_BYTES;
+const O_C2_PAD: usize = O_ACC + N_LANES;
 const O_C6_FIELD: usize = O_C2_PAD + PAD_SEED_BYTES;
-const O_RELATION_ID: usize = O_C6_FIELD + N_LANES;
-// C1 sponge block: input lanes, then 8 perm blocks, then the 10-lane pad_source_commitment.
+const O_RELATION_ID: usize = O_C6_FIELD + C6_FIELD_LANES;
+// C1 sponge block: input lanes, then 11 perm blocks, then the 10-lane pad_source_commitment.
 const O_C1_INPUT: usize = O_RELATION_ID + RELATION_ID_ELEMS;
 const O_C1_PERMS: usize = O_C1_INPUT + C1_INPUT_LANES;
 const O_C1_OUT: usize = O_C1_PERMS + C1_N_PERMS * PERM_COLS;
-// C6 sponge block: byte-lanes, then 12 perm blocks, then the 10-lane opening_tuple_commitment.
-// (The 6 FIELD absorb lanes live at `O_C6_FIELD`, reused.)
+// C6 sponge block: byte lanes, then 15 perm blocks, then the 10-lane opening commitment.
+// (The OPEN domain + 6 projection FIELD lanes live at `O_C6_FIELD`, reused.)
 const O_C6_BYTE: usize = O_C1_OUT + C1_N_OUT;
 const O_C6_PERMS: usize = O_C6_BYTE + C6_BYTE_LANES;
 const O_C6_OUT: usize = O_C6_PERMS + C6_N_PERMS * PERM_COLS;
@@ -710,10 +736,11 @@ const O_C6_OUT: usize = O_C6_PERMS + C6_N_PERMS * PERM_COLS;
 const O_ROLE_MASKED: usize = O_C6_OUT + C6_N_OUT;
 const O_ROLE_PERMS: usize = O_ROLE_MASKED + ROLE_MASKED_LANES;
 const O_ROLE_OUT: usize = O_ROLE_PERMS + ROLE_N_PERMS * PERM_COLS;
-// C2 mask-PRF sponge block: slot_id[8] input lanes (pad_seed[32] reused from O_C2_PAD), then 9 perm
-// blocks. NO output digest cells — the 30 squeezed lanes are read from the perm OUTPUT cells of the
+// C2 mask-PRF sponge block: MASK domain + slot_id[8] (pad seed reused), then 10 perm
+// blocks. NO output digest cells — the 36 squeezed lanes are read from the perm OUTPUT cells of the
 // squeeze source perms (`c2_squeeze_output_cell`), and feed the reduce gadget.
-const O_C2_SLOT: usize = O_ROLE_OUT + ROLE_N_OUT;
+const O_C2_DOMAIN: usize = O_ROLE_OUT + ROLE_N_OUT;
+const O_C2_SLOT: usize = O_C2_DOMAIN + C2_DOMAIN_LANES;
 const O_C2_PERMS: usize = O_C2_SLOT + C2_SLOT_LANES;
 // Reduce-gadget block: REDUCE_CELLS gadget witness cells, then the carrier (6 masked_projection
 // values, then 6 mod-q witness blocks of MODQ_CELLS each). account_projection (carrier `acc`) is the
@@ -732,7 +759,9 @@ const O_CHAIN_PREV_COUNT: usize = O_CHAIN_ENABLE + 1;
 const O_CHAIN_COUNT: usize = O_CHAIN_PREV_COUNT + 1;
 const O_CHAIN_PUBIO: usize = O_CHAIN_COUNT + 1;
 // Byte-range bit-witness block: BYTE_BITS bits per byte-ranged lane, global byte-range index order
-// (C1 48 lanes ‖ C2 40 lanes ‖ C6 80 lanes). Placed near-LAST so it does not perturb prior offsets.
+// (C1 72 byte lanes ‖ C2 40 byte lanes ‖ C6 104 byte lanes). Placed near-LAST so it does not perturb
+// prior
+// offsets.
 const O_BYTERANGE_BITS: usize = O_CHAIN_PUBIO + CHAIN_PUBIO;
 // CLASS-C syndrome witness block: SYNDROME_CELLS per lane (value ‖ bits14 ‖ slack ‖ slack_bits14).
 // Placed LAST so it does not perturb any prior cell offset.
@@ -763,7 +792,7 @@ const fn acc_cell(j: usize) -> usize {
     O_ACC + j
 }
 const fn c1_pad_cell(b: usize) -> usize {
-    O_C1_PAD + b
+    O_C1_INPUT + 1 + b
 }
 const fn c2_pad_cell(b: usize) -> usize {
     O_C2_PAD + b
@@ -787,7 +816,7 @@ const fn c1_out_cell(j: usize) -> usize {
     O_C1_OUT + j
 }
 /// C6 byte-lane `b` (`b < C6_BYTE_LANES`) — the absorbed lifecycle/nonce/account_id field element.
-/// (Absorb positions 6..86; positions 0..6 are the FIELD lanes at `O_C6_FIELD`.)
+/// (Absorb positions 7..111; positions 0..7 are the domain/projection fields at `O_C6_FIELD`.)
 const fn c6_byte_cell(b: usize) -> usize {
     O_C6_BYTE + b
 }
@@ -811,7 +840,11 @@ const fn role_perm_base(p: usize) -> usize {
 const fn role_out_cell(j: usize) -> usize {
     O_ROLE_OUT + j
 }
-/// C2 slot_id input lane `i` (`i < C2_SLOT_LANES`) — absorb positions 32..40 (NEW cells).
+/// C2 MASK domain input lane at absorb position 0.
+const fn c2_domain_cell() -> usize {
+    O_C2_DOMAIN
+}
+/// C2 slot_id input lane `i` (`i < C2_SLOT_LANES`) — absorb positions 33..41.
 const fn c2_slot_cell(i: usize) -> usize {
     O_C2_SLOT + i
 }
@@ -820,7 +853,7 @@ const fn c2_perm_base(p: usize) -> usize {
     O_C2_PERMS + p * PERM_COLS
 }
 /// The OOD cell holding squeezed C2 output lane `o` (`o < C2_N_OUT`): the OUTPUT (C_OUTPUT) cell of
-/// the squeeze source perm. Mirrors `SpongePlan::output_source` (n_out=30): the source perm's
+/// the squeeze source perm. Mirrors `SpongePlan::output_source` (n_out=36): the source perm's
 /// `pcols.post[lane]` cell. This is the value fed to the reduce gadget (`squeezed[o]`).
 const fn c2_squeeze_output_cell(o: usize) -> usize {
     let (sp, lane) = c2_output_source(o);
@@ -912,12 +945,12 @@ const fn packed_stream_bit_cell(pos: usize) -> usize {
 // ----- byte-range cell accessors -----
 /// The ALREADY-ABSORBED sponge input lane cell that global byte-range index `g` (`g < N_BR_LANES`)
 /// decomposes. The decomposition binds the REAL consumed lane (NOT a fresh column), so it is not
-/// vacuous: C1 indices 0..48 → `c1_input_cell`; C2 indices 48..88 → `c2_pad_cell`(<32) /
-/// `c2_slot_cell`(≥32); C6 indices 88..168 → `c6_byte_cell`. Mirrors air.rs `lane(i)` =
+/// vacuous: C1 indices 0..72 → `c1_input_cell(1+g)` (domain skipped); the next 40 indices map to
+/// C2 pad/slot cells; the final 104 map to C6 byte cells. Mirrors air.rs `lane(i)` =
 /// `local[off + slay.lanes + i]` for the byte-ranged positions of each sponge's `byte_ranged` mask.
 const fn byterange_absorbed_cell(g: usize) -> usize {
     if g < C1_BR_LANES {
-        c1_input_cell(g)
+        c1_input_cell(1 + g)
     } else if g < C1_BR_LANES + C2_BR_LANES {
         let i = g - C1_BR_LANES;
         if i < C2_PAD_LANES {
@@ -926,7 +959,7 @@ const fn byterange_absorbed_cell(g: usize) -> usize {
             c2_slot_cell(i - C2_PAD_LANES)
         }
     } else {
-        // C6: only the 80 byte-lanes are byte-ranged (the 6 FIELD lanes are skipped, as in air.rs).
+        // C6: only the 104 byte lanes are byte-ranged (domain + projection fields are skipped).
         let b = g - C1_BR_LANES - C2_BR_LANES;
         c6_byte_cell(b)
     }
@@ -956,13 +989,15 @@ fn chain_absorb_source(pos: usize) -> ChainAbsorb {
 }
 
 /// The absorbed C2 stream element at position `pos` (`pos < C2_PADDED_LEN`), as a cell index OR a
-/// constant marker. Mirrors `absorb_elem_expr`: `pos < 32` → pad_seed cell (REUSED `O_C2_PAD`);
-/// `pos ∈ 32..40` → slot_id cell; `pos == n_input(=40)` → the ONE padding marker; else → ZERO.
+/// constant marker. Layout: pos 0 → MASK domain; 1..33 → pad seed; 33..41 → slot;
+/// pos 41 → ONE padding marker; else → ZERO.
 fn c2_absorb_source(pos: usize) -> C1Absorb {
-    if pos < C2_PAD_LANES {
-        C1Absorb::Cell(c2_pad_cell(pos))
+    if pos == 0 {
+        C1Absorb::Cell(c2_domain_cell())
+    } else if pos < C2_DOMAIN_LANES + C2_PAD_LANES {
+        C1Absorb::Cell(c2_pad_cell(pos - C2_DOMAIN_LANES))
     } else if pos < C2_INPUT_LANES {
-        C1Absorb::Cell(c2_slot_cell(pos - C2_PAD_LANES))
+        C1Absorb::Cell(c2_slot_cell(pos - C2_DOMAIN_LANES - C2_PAD_LANES))
     } else if pos == C2_INPUT_LANES {
         C1Absorb::One
     } else {
@@ -971,11 +1006,10 @@ fn c2_absorb_source(pos: usize) -> C1Absorb {
 }
 
 /// `(perm_index, lane)` the C2 squeeze reads output `o` from (`o < C2_N_OUT`). Mirrors
-/// `SpongePlan::output_source` for n_out=30: outputs 0..8 from the LAST absorb perm
-/// (`C2_N_ABSORB-1`), 8..16 from squeeze perm `C2_N_ABSORB`, 16..24 from `C2_N_ABSORB+1`, 24..30
-/// from `C2_N_ABSORB+2`.
+/// `SpongePlan::output_source` for n_out=36: eight outputs from the last absorb
+/// permutation and four subsequent squeeze permutations.
 const fn c2_output_source(o: usize) -> (usize, usize) {
-    let blk = o / C2_RATE; // 0,1,2,3
+    let blk = o / C2_RATE; // 0..4
     let lane = o % C2_RATE;
     if blk == 0 {
         (C2_N_ABSORB - 1, lane)
@@ -1042,8 +1076,8 @@ const fn c1_output_source(o: usize) -> (usize, usize) {
 }
 
 /// The absorbed C6 stream element at position `pos` (`pos < C6_PADDED_LEN`), as a cell index OR a
-/// constant marker. Mirrors `absorb_elem_expr` (air.rs:1360): `pos < n_input(=86)` → input lane cell
-/// (the 6 FIELD lanes for pos<6, else a byte-lane); `pos == n_input` → the ONE padding marker; else
+/// constant marker. Mirrors `absorb_elem_expr`: `pos < n_input(=111)` → input lane cell
+/// (domain/projection fields for pos<7, else a byte lane); `pos == n_input` → the ONE marker; else
 /// → ZERO. The FIELD lanes are the `O_C6_FIELD` cells, the byte-lanes the `O_C6_BYTE` cells.
 fn c6_absorb_source(pos: usize) -> C1Absorb {
     if pos < C6_FIELD_LANES {
@@ -1201,7 +1235,11 @@ fn c1_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
         if lane < C1_RATE {
             if is_absorb {
                 let pos = p * C1_RATE + lane;
-                let elem = if pos < C1_PADDED_LEN { absorb(pos) } else { Challenge::ZERO };
+                let elem = if pos < C1_PADDED_LEN {
+                    absorb(pos)
+                } else {
+                    Challenge::ZERO
+                };
                 return perm_input(p, lane) - (prev + elem);
             }
             // squeeze perm: rate lanes carried unchanged.
@@ -1243,7 +1281,7 @@ fn c1_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
 
 /// The `k`-th NATIVE C6-sponge residual over the opened cells, `k ∈ [0, N_C6)`. STRUCTURALLY
 /// identical to [`c1_residual`] (the absorb/capacity/squeeze pattern is shared by `eval_sponge`),
-/// differing only in the C6 constants (`C6_*`), the absorb source (6 FIELD lanes ‖ 80 byte-lanes),
+/// differing only in the C6 constants (`C6_*`), the absorb source (7 field lanes ‖ 104 byte lanes),
 /// the perm/output cells, and the squeezed digest target (`opening_tuple_commitment`).
 fn c6_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
     let perm_input = |p: usize, i: usize| cells[c6_perm_base(p) + C_INPUTS + i];
@@ -1271,7 +1309,11 @@ fn c6_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
         if lane < C6_RATE {
             if is_absorb {
                 let pos = p * C6_RATE + lane;
-                let elem = if pos < C6_PADDED_LEN { absorb(pos) } else { Challenge::ZERO };
+                let elem = if pos < C6_PADDED_LEN {
+                    absorb(pos)
+                } else {
+                    Challenge::ZERO
+                };
                 return perm_input(p, lane) - (prev + elem);
             }
             return perm_input(p, lane) - prev;
@@ -1333,7 +1375,11 @@ fn role_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
         if lane < ROLE_RATE {
             if is_absorb {
                 let pos = p * ROLE_RATE + lane;
-                let elem = if pos < ROLE_PADDED_LEN { absorb(pos) } else { Challenge::ZERO };
+                let elem = if pos < ROLE_PADDED_LEN {
+                    absorb(pos)
+                } else {
+                    Challenge::ZERO
+                };
                 return perm_input(p, lane) - (prev + elem);
             }
             return perm_input(p, lane) - prev;
@@ -1367,7 +1413,7 @@ fn role_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
 /// identical to [`c1_residual`] / [`c6_residual`] (the absorb/capacity/squeeze pattern is shared by
 /// `eval_sponge`), differing only in the C2 constants (`C2_*`), the absorb source (32 pad_seed lanes
 /// REUSED from `O_C2_PAD` ‖ 8 slot_id lanes), and the perm cells. The C2 sponge has NO squeeze-output
-/// equality sub-class: the 30 squeezed lanes are NOT a public digest; they feed the reduce gadget,
+/// equality sub-class: the 36 squeezed lanes are NOT a public digest; they feed the reduce gadget,
 /// which reads the perm OUTPUT cells directly, and their soundness is the per-perm round residuals.
 fn c2_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
     let perm_input = |p: usize, i: usize| cells[c2_perm_base(p) + C_INPUTS + i];
@@ -1395,7 +1441,11 @@ fn c2_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
         if lane < C2_RATE {
             if is_absorb {
                 let pos = p * C2_RATE + lane;
-                let elem = if pos < C2_PADDED_LEN { absorb(pos) } else { Challenge::ZERO };
+                let elem = if pos < C2_PADDED_LEN {
+                    absorb(pos)
+                } else {
+                    Challenge::ZERO
+                };
                 return perm_input(p, lane) - (prev + elem);
             }
             return perm_input(p, lane) - prev;
@@ -1420,7 +1470,11 @@ fn c2_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
 /// Native recompose of `nbits` bit cells starting at cell `start` into `Σ bit_b · 2^b` (over
 /// `Challenge`). Mirrors `reduce_gadget::eval_reduce_gadget`'s `recompose` closure (the ACCUMULATION;
 /// the bit-boolean residuals are emitted separately by [`reduce_residual`]).
-fn native_recompose_n(cells: &[Challenge; N_OPENED_CELLS], start: usize, nbits: usize) -> Challenge {
+fn native_recompose_n(
+    cells: &[Challenge; N_OPENED_CELLS],
+    start: usize,
+    nbits: usize,
+) -> Challenge {
     let mut acc = Challenge::ZERO;
     for b in 0..nbits {
         acc += cells[start + b] * Challenge::from(Val::from_u64(1u64 << b));
@@ -1730,7 +1784,7 @@ fn chain_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
 
 /// The `k`-th NATIVE byte-range residual over the opened cells, `k ∈ [0, N_BYTERANGE)`. Mirrors
 /// `eval_sponge`'s per-lane byte-range gadget (air.rs:1278-1289) EXACTLY, lane-major over the global
-/// byte-range index `g = k / N_BR_PER_LANE` (C1 48 ‖ C2 40 ‖ C6 80):
+/// byte-range index `g = k / N_BR_PER_LANE` (C1 72 ‖ C2 40 ‖ C6 104 byte lanes):
 ///   * within-lane index `0..BYTE_BITS` : bit-boolean residual `bit·(bit−1)`.
 ///   * within-lane index `BYTE_BITS`    : recompose eq `lane − Σ_b bit_b·2^b`, where `lane` is the
 ///     ACTUAL already-absorbed sponge input cell (`byterange_absorbed_cell(g)`) — NOT a free column.
@@ -1755,14 +1809,20 @@ fn byterange_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challeng
 /// Map the `k`-th context-field binding (`k ∈ [0, N_CTXBIND)`) to the `(absorb_cell, pubio_cell)`
 /// pair it equates: the C2/C6 sponge absorb lane EQUAL to the pubio context byte the chain absorbs.
 /// Layout: `0..8` slot (C2 slot lanes), `8..40` lifecycle (C6 byte-lanes 0..32), `40..72` account_id
-/// (C6 byte-lanes 48..80). Mirrors air.rs:806-831 composed with the batch ctx==pubio (798-803).
+/// (C6 byte lanes 72..104). Mirrors the leaf context equality composed with batch ctx==pubio.
 const fn ctxbind_pair(k: usize) -> (usize, usize) {
     if k < CTX_SLOT_BYTES {
         let b = k;
-        (c2_slot_cell(b), chain_pubio_cell(PUBIO_CONTEXT_OFF + CTX_SLOT_OFF + b))
+        (
+            c2_slot_cell(b),
+            chain_pubio_cell(PUBIO_CONTEXT_OFF + CTX_SLOT_OFF + b),
+        )
     } else if k < CTX_SLOT_BYTES + CTX_LIFECYCLE_BYTES {
         let b = k - CTX_SLOT_BYTES;
-        (c6_byte_cell(b), chain_pubio_cell(PUBIO_CONTEXT_OFF + CTX_LIFECYCLE_OFF + b))
+        (
+            c6_byte_cell(b),
+            chain_pubio_cell(PUBIO_CONTEXT_OFF + CTX_LIFECYCLE_OFF + b),
+        )
     } else {
         let b = k - CTX_SLOT_BYTES - CTX_LIFECYCLE_BYTES;
         (
@@ -1853,7 +1913,10 @@ const fn pubio_bind_pair(k: usize) -> (usize, usize) {
         (c6_out_cell(j), chain_pubio_cell(N_COMMIT_LANES + j))
     } else if k < N_PUBIO_C1 + N_PUBIO_C6 + N_PUBIO_MASKED {
         let j = k - N_PUBIO_C1 - N_PUBIO_C6;
-        (carrier_masked_cell(j), chain_pubio_cell(2 * N_COMMIT_LANES + j))
+        (
+            carrier_masked_cell(j),
+            chain_pubio_cell(2 * N_COMMIT_LANES + j),
+        )
     } else {
         let j = k - N_PUBIO_C1 - N_PUBIO_C6 - N_PUBIO_MASKED;
         (role_out_cell(j), chain_pubio_cell(PUBIO_ROLE_ROOT_OFF + j))
@@ -1891,6 +1954,9 @@ fn c1_post_cell_offset(ri: usize) -> usize {
 /// The `r`-th leaf constraint residual over the opened cells, `r ∈ [0, N_CONSTRAINTS)`. Ordering:
 ///   * `0 .. C4_LANES*C4_N_PER_LANE`            : C4 lane residuals (lane-major).
 ///   * next `N_C4_ACC`                          : `carry_acc[j] − v_j` (C4-acc binding).
+///   * next `N_C1_DOMAIN`                       : C1 domain lane − `PADS`.
+///   * next `N_C2_DOMAIN`                       : C2 domain lane − `MASK`.
+///   * next `N_C6_DOMAIN`                       : C6 domain lane − `OPEN`.
 ///   * next `N_SEAM_PAD`                        : `c1_pad_seed[b] − c2_pad_seed[b]` (SeamPadSeed).
 ///   * next `N_SEAM_ACC`                        : `carry_acc[i] − c6_field[i]` (SeamOpeningAcc).
 ///   * next `N_RELATION_ID`                     : `relation_id[j] − RELATION_ID[j]` (pinning).
@@ -1912,6 +1978,18 @@ pub fn constraint_residual(cells: &[Challenge; N_OPENED_CELLS], r: usize) -> Cha
         return cells[acc_cell(j)] - cells[c4_cell(j, I_V)];
     }
     r -= N_C4_ACC;
+    if r < N_C1_DOMAIN {
+        return cells[c1_input_cell(0)] - Challenge::from(Val::from_u32(PAD_COMMITMENT_DOMAIN));
+    }
+    r -= N_C1_DOMAIN;
+    if r < N_C2_DOMAIN {
+        return cells[c2_domain_cell()] - Challenge::from(Val::from_u32(C2_MASK_DOMAIN));
+    }
+    r -= N_C2_DOMAIN;
+    if r < N_C6_DOMAIN {
+        return cells[c6_field_cell(0)] - Challenge::from(Val::from_u32(OPENING_COMMITMENT_DOMAIN));
+    }
+    r -= N_C6_DOMAIN;
     if r < N_SEAM_PAD {
         // SeamPadSeed: c1_pad_seed[b] − c2_pad_seed[b].
         let b = r;
@@ -1921,7 +1999,7 @@ pub fn constraint_residual(cells: &[Challenge; N_OPENED_CELLS], r: usize) -> Cha
     if r < N_SEAM_ACC {
         // SeamOpeningAcc: carry_acc[i] − c6_field[i].
         let i = r;
-        return cells[acc_cell(i)] - cells[c6_field_cell(i)];
+        return cells[acc_cell(i)] - cells[c6_field_cell(C6_DOMAIN_LANES + i)];
     }
     r -= N_SEAM_ACC;
     if r < N_RELATION_ID {
@@ -1946,12 +2024,12 @@ pub fn constraint_residual(cells: &[Challenge; N_OPENED_CELLS], r: usize) -> Cha
     }
     r -= N_ROLE;
     if r < N_C2 {
-        // C2 mask-PRF sponge residuals (the largest sponge; 30 squeezed lanes feed the reduce gadget).
+        // C2 mask-PRF sponge residuals (36 squeezed lanes feed the reduce gadget).
         return c2_residual(cells, r);
     }
     r -= N_C2;
     if r < N_REDUCE {
-        // wide-then-reduce + carrier residuals (30 squeezed lanes -> 6 masks -> masked_projection mod q).
+        // wide-then-reduce + carrier residuals (36 squeezed lanes -> 6 masks -> masked projection).
         return reduce_residual(cells, r);
     }
     r -= N_REDUCE;
@@ -2041,7 +2119,7 @@ pub fn c6_byte_cell_idx(b: usize) -> usize {
 }
 #[cfg(test)]
 pub fn c6_field_cell_idx(i: usize) -> usize {
-    c6_field_cell(i)
+    c6_field_cell(C6_DOMAIN_LANES + i)
 }
 #[cfg(test)]
 pub fn c6_out_cell_idx(j: usize) -> usize {
@@ -2161,10 +2239,11 @@ pub fn row_c_partial(row: &[Val]) -> Challenge {
 
 /// Push the PER-LANE BYTE-RANGE / canonicality residuals (air.rs:1278-1289) onto `residuals`, in the
 /// SAME order as the native [`byterange_residual`]: lane-major over the global byte-range index
-/// (C1 48 ‖ C2 40 ‖ C6 80), each lane emitting BYTE_BITS bit-bool residuals `bit·(bit−1)` then 1
+/// (C1 72 ‖ C2 40 ‖ C6 104 byte lanes), each lane emitting BYTE_BITS bit-bool residuals
+/// `bit·(bit−1)` then 1
 /// recompose eq `lane − Σ_b bit_b·2^b` binding the ACTUAL absorbed sponge input cell (NOT a free
 /// column). EXTRACTED into its own (`#[inline(never)]`) frame to keep `recompute_c_partial`'s frame
-/// small (1512 octic residuals), matching the existing per-class extraction pattern.
+/// small (1944 octic residuals), matching the existing per-class extraction pattern.
 #[inline(never)]
 fn push_byterange_residuals<AB, FCell>(cell: &FCell, residuals: &mut Vec<[AB::Expr; D]>)
 where
@@ -2214,7 +2293,10 @@ where
             (self.cell)(idx)
         }
     }
-    let adapter = CellAdapter::<AB, FCell> { cell, _ab: core::marker::PhantomData };
+    let adapter = CellAdapter::<AB, FCell> {
+        cell,
+        _ab: core::marker::PhantomData,
+    };
     let one = octic_scalar::<AB>(1);
 
     let perm_input = |p: usize, i: usize| cell(chain_perm_base(p) + C_INPUTS + i);
@@ -2357,7 +2439,10 @@ where
             residuals.push(octic_mul::<AB>(&bit, &octic_sub::<AB>(&bit, &one)));
         }
         // value == recompose(value bits).
-        residuals.push(octic_sub::<AB>(&value, &recompose(syndrome_bit_cell(lane, 0))));
+        residuals.push(octic_sub::<AB>(
+            &value,
+            &recompose(syndrome_bit_cell(lane, 0)),
+        ));
         // slack-bit bools.
         for b in 0..MODQ_BITS {
             let bit = cell(syndrome_slack_bit_cell(lane, b));
@@ -2370,7 +2455,10 @@ where
         ));
         // value + slack == q-1.
         let sum = octic_add::<AB>(&value, &cell(syndrome_slack_cell(lane)));
-        residuals.push(octic_sub::<AB>(&sum, &octic_scalar::<AB>((Q12289 - 1) as u64)));
+        residuals.push(octic_sub::<AB>(
+            &sum,
+            &octic_scalar::<AB>((Q12289 - 1) as u64),
+        ));
     }
     // ----- packed_witness_commitment bytes -----
     for kp in 0..PACKED_WITNESS_COMMITMENT_BYTES {
@@ -2472,21 +2560,36 @@ where
         residuals.push(octic_sub::<AB>(&acc, &v));
     }
 
-    // (3) SeamPadSeed: c1_pad_seed[b] − c2_pad_seed[b].
+    // (3) C1 PADS domain pin.
+    let c1_domain = cell(c1_input_cell(0));
+    let c1_domain_constant = octic_scalar::<AB>(PAD_COMMITMENT_DOMAIN as u64);
+    residuals.push(octic_sub::<AB>(&c1_domain, &c1_domain_constant));
+
+    // (4) C2 MASK domain pin.
+    let c2_domain = cell(c2_domain_cell());
+    let c2_domain_constant = octic_scalar::<AB>(C2_MASK_DOMAIN as u64);
+    residuals.push(octic_sub::<AB>(&c2_domain, &c2_domain_constant));
+
+    // (5) C6 OPEN domain pin.
+    let c6_domain = cell(c6_field_cell(0));
+    let c6_domain_constant = octic_scalar::<AB>(OPENING_COMMITMENT_DOMAIN as u64);
+    residuals.push(octic_sub::<AB>(&c6_domain, &c6_domain_constant));
+
+    // (6) SeamPadSeed: c1_pad_seed[b] − c2_pad_seed[b].
     for b in 0..N_SEAM_PAD {
         let c1b = cell(c1_pad_cell(b));
         let c2b = cell(c2_pad_cell(b));
         residuals.push(octic_sub::<AB>(&c1b, &c2b));
     }
 
-    // (4) SeamOpeningAcc: carry_acc[i] − c6_field[i].
+    // (7) SeamOpeningAcc: carry_acc[i] − c6 projection field[i].
     for i in 0..N_SEAM_ACC {
         let acc = cell(acc_cell(i));
-        let c6 = cell(c6_field_cell(i));
+        let c6 = cell(c6_field_cell(C6_DOMAIN_LANES + i));
         residuals.push(octic_sub::<AB>(&acc, &c6));
     }
 
-    // (5) relation_id pinning: relation_id[j] − RELATION_ID[j].
+    // (8) relation_id pinning: relation_id[j] − RELATION_ID[j].
     for j in 0..N_RELATION_ID {
         let rid = cell(relation_id_cell(j));
         let pinned = octic_scalar::<AB>(RELATION_ID[j] as u64);
@@ -2500,16 +2603,43 @@ where
     // Poseidon2 round residuals, squeeze-output equalities) — same order, same constants. The role
     // sponge's `role_absorb_source` reads the ALREADY-MIRRORED C1/C6 output cells (the chaining).
     push_squeeze_sponge_residuals::<AB, FCell>(
-        cell, &mut residuals, C1_N_PERMS, C1_N_ABSORB, C1_RATE, C1_PADDED_LEN, N_C1_OUT,
-        c1_perm_base, c1_absorb_source, c1_output_source, c1_out_cell,
+        cell,
+        &mut residuals,
+        C1_N_PERMS,
+        C1_N_ABSORB,
+        C1_RATE,
+        C1_PADDED_LEN,
+        N_C1_OUT,
+        c1_perm_base,
+        c1_absorb_source,
+        c1_output_source,
+        c1_out_cell,
     );
     push_squeeze_sponge_residuals::<AB, FCell>(
-        cell, &mut residuals, C6_N_PERMS, C6_N_ABSORB, C6_RATE, C6_PADDED_LEN, N_C6_OUT,
-        c6_perm_base, c6_absorb_source, c6_output_source, c6_out_cell,
+        cell,
+        &mut residuals,
+        C6_N_PERMS,
+        C6_N_ABSORB,
+        C6_RATE,
+        C6_PADDED_LEN,
+        N_C6_OUT,
+        c6_perm_base,
+        c6_absorb_source,
+        c6_output_source,
+        c6_out_cell,
     );
     push_squeeze_sponge_residuals::<AB, FCell>(
-        cell, &mut residuals, ROLE_N_PERMS, ROLE_N_ABSORB, ROLE_RATE, ROLE_PADDED_LEN, N_ROLE_OUT,
-        role_perm_base, role_absorb_source, role_output_source, role_out_cell,
+        cell,
+        &mut residuals,
+        ROLE_N_PERMS,
+        ROLE_N_ABSORB,
+        ROLE_RATE,
+        ROLE_PADDED_LEN,
+        N_ROLE_OUT,
+        role_perm_base,
+        role_absorb_source,
+        role_output_source,
+        role_out_cell,
     );
 
     // (9) C2 mask-PRF sponge — the LARGEST mirrored leaf sponge. EXTRACTED into
@@ -2534,7 +2664,8 @@ where
     // (12) PER-LANE BYTE-RANGE / canonicality of the C1/C2/C6 sponge INPUT lanes (air.rs:1278-1289).
     // EXTRACTED into `push_byterange_residuals` (its own `#[inline(never)]` frame) to keep this
     // folder frame small. Order MUST match the native `byterange_residual`: lane-major over the
-    // global byte-range index (C1 48 ‖ C2 40 ‖ C6 80), each lane = BYTE_BITS bit-bools then 1
+    // global byte-range index (C1 72 ‖ C2 40 ‖ C6 104 byte lanes), each lane = BYTE_BITS bit-bools
+    // then 1
     // recompose eq binding the ACTUAL absorbed sponge input cell.
     push_byterange_residuals::<AB, FCell>(cell, &mut residuals);
 
@@ -2596,7 +2727,9 @@ where
     // Delegate to the GENERIC re-arithmetization primitive (the committed-accumulator fold), shared
     // with the future spend C(zeta) mirror.
     let residuals = leaf_residuals::<AB, FCell>(cell);
-    crate::alpha_fold::assert_committed_fold::<AB, FApow, FAcc>(builder, &residuals, apow, acc, alpha)
+    crate::alpha_fold::assert_committed_fold::<AB, FApow, FAcc>(
+        builder, &residuals, apow, acc, alpha,
+    )
 }
 
 /// Native witness fill for [`assert_c_partial_committed`]: returns `(a_pow[K], acc[K])`, the committed
@@ -2605,8 +2738,9 @@ pub fn c_partial_accumulator_values(
     cells: &[Challenge; N_OPENED_CELLS],
     alpha: Challenge,
 ) -> (Vec<Challenge>, Vec<Challenge>) {
-    let residual_values: Vec<Challenge> =
-        (0..N_CONSTRAINTS).map(|r| constraint_residual(cells, r)).collect();
+    let residual_values: Vec<Challenge> = (0..N_CONSTRAINTS)
+        .map(|r| constraint_residual(cells, r))
+        .collect();
     crate::alpha_fold::committed_fold_values(alpha, &residual_values)
 }
 
@@ -2645,7 +2779,10 @@ fn push_squeeze_sponge_residuals<AB, FCell>(
             (self.cell)(idx)
         }
     }
-    let adapter = CellAdapter::<AB, FCell> { cell, _ab: core::marker::PhantomData };
+    let adapter = CellAdapter::<AB, FCell> {
+        cell,
+        _ab: core::marker::PhantomData,
+    };
 
     let perm_input = |p: usize, i: usize| cell(perm_base(p) + C_INPUTS + i);
     let perm_output = |p: usize, i: usize| cell(perm_base(p) + C_OUTPUT + i);
@@ -2673,7 +2810,11 @@ fn push_squeeze_sponge_residuals<AB, FCell>(
                 if lane < rate {
                     if is_absorb {
                         let pos = p * rate + lane;
-                        let elem = if pos < padded_len { absorb(pos) } else { octic_scalar::<AB>(0) };
+                        let elem = if pos < padded_len {
+                            absorb(pos)
+                        } else {
+                            octic_scalar::<AB>(0)
+                        };
                         octic_add::<AB>(&prev, &elem)
                     } else {
                         prev
@@ -2722,7 +2863,10 @@ where
             (self.cell)(idx)
         }
     }
-    let adapter = CellAdapter::<AB, FCell> { cell, _ab: core::marker::PhantomData };
+    let adapter = CellAdapter::<AB, FCell> {
+        cell,
+        _ab: core::marker::PhantomData,
+    };
 
     let perm_input = |p: usize, i: usize| cell(c2_perm_base(p) + C_INPUTS + i);
     let perm_output = |p: usize, i: usize| cell(c2_perm_base(p) + C_OUTPUT + i);
@@ -2809,7 +2953,8 @@ where
             let mask_base = j * PER_MASK_CELLS;
             // (i) lane-bind eqs.
             for i in 0..LANES_PER_MASK {
-                let bound = octic_sub::<AB>(&rcell(mask_base + i), &squeezed(j * LANES_PER_MASK + i));
+                let bound =
+                    octic_sub::<AB>(&rcell(mask_base + i), &squeezed(j * LANES_PER_MASK + i));
                 residuals.push(bound);
             }
             let step0 = mask_base + LANES_PER_MASK;
@@ -3152,11 +3297,17 @@ impl<AB: AirBuilder<F = Val>> crate::inlined_perm::PermCells<AB> for McRowCells<
 
 impl<AB: AirBuilder<F = Val>> Air<AB> for LeafChainMirrorAir {
     fn eval(&self, builder: &mut AB) {
-        use crate::inlined_perm::{eval_perm, ConstantsExpr, C_INPUTS as IP_INPUTS, C_OUTPUT as IP_OUTPUT};
+        use crate::inlined_perm::{
+            eval_perm, ConstantsExpr, C_INPUTS as IP_INPUTS, C_OUTPUT as IP_OUTPUT,
+        };
         let main = builder.main();
         let local: Vec<AB::Var> = main.current_slice().to_vec();
         let next: Vec<AB::Var> = main.next_slice().to_vec();
-        let pubs: Vec<AB::Expr> = builder.public_values().iter().map(|p| (*p).into()).collect();
+        let pubs: Vec<AB::Expr> = builder
+            .public_values()
+            .iter()
+            .map(|p| (*p).into())
+            .collect();
         let l = |i: usize| -> AB::Expr { local[i].into() };
         let n = |i: usize| -> AB::Expr { next[i].into() };
         let one = AB::Expr::ONE;
@@ -3277,9 +3428,8 @@ mod tests {
         } else {
             (Val::from_u32(d_hi) - Val::from_u32(C4_MAX_HI)).inverse()
         };
-        let bits = |x: u32| -> [Challenge; C4_DIGIT_BITS] {
-            core::array::from_fn(|k| ext((x >> k) & 1))
-        };
+        let bits =
+            |x: u32| -> [Challenge; C4_DIGIT_BITS] { core::array::from_fn(|k| ext((x >> k) & 1)) };
         let mut cells = [Challenge::ZERO; C4_CELLS];
         cells[I_V] = ext(v);
         cells[I_DLO] = ext(d_lo);
@@ -3287,7 +3437,11 @@ mod tests {
         cells[I_LO_BITS..I_LO_BITS + 7].copy_from_slice(&bits(d_lo));
         cells[I_HI_BITS..I_HI_BITS + 7].copy_from_slice(&bits(d_hi));
         cells[I_SLACK_BITS..I_SLACK_BITS + 7].copy_from_slice(&bits(slack));
-        cells[I_IS96] = if is96 { Challenge::ONE } else { Challenge::ZERO };
+        cells[I_IS96] = if is96 {
+            Challenge::ONE
+        } else {
+            Challenge::ZERO
+        };
         cells[I_INV] = Challenge::from(inv);
         cells
     }
@@ -3295,7 +3449,10 @@ mod tests {
     /// A fully-honest opened-cell vector: 6 canonical C4 lanes, carry_acc = each lane's v,
     /// C6 field = carry_acc, C1 pad_seed == C2 pad_seed, relation_id = RELATION_ID. All residuals
     /// vanish (matches an on-domain leaf row); the OOD off-domain case is exercised separately.
-    pub(crate) fn honest_cells(vals: [u32; C4_LANES], pad_seed_seed: u32) -> [Challenge; N_OPENED_CELLS] {
+    pub(crate) fn honest_cells(
+        vals: [u32; C4_LANES],
+        pad_seed_seed: u32,
+    ) -> [Challenge; N_OPENED_CELLS] {
         let mut cells = [Challenge::ZERO; N_OPENED_CELLS];
         for lane in 0..C4_LANES {
             let lc = c4_lane_cells(vals[lane]);
@@ -3304,9 +3461,10 @@ mod tests {
             }
             // carry_acc[lane] == v_lane (C4-acc binding).
             cells[acc_cell(lane)] = ext(vals[lane]);
-            // SeamOpeningAcc: c6_field == carry_acc.
-            cells[c6_field_cell(lane)] = ext(vals[lane]);
+            // SeamOpeningAcc: C6 projection field == carry_acc (field 0 is OPEN domain).
+            cells[c6_field_cell(C6_DOMAIN_LANES + lane)] = ext(vals[lane]);
         }
+        cells[c6_field_cell(0)] = ext(OPENING_COMMITMENT_DOMAIN);
         // SeamPadSeed: c1 == c2 (arbitrary byte values, equal).
         for b in 0..PAD_SEED_BYTES {
             let pb = ext(pad_seed_seed.wrapping_add(b as u32) % 256);
@@ -3320,8 +3478,8 @@ mod tests {
         // C1 sponge: honest absorb/perm/squeeze over byte-valued input lanes (built from the real
         // byte-pinned Val sponge, lifted to the extension — the fidelity authority).
         fill_honest_c1(&mut cells, pad_seed_seed);
-        // C6 sponge: honest absorb/perm/squeeze over the 6 FIELD lanes (already = vals[..], set
-        // above) ‖ 80 byte-valued lanes (built from the real byte-pinned Val sponge).
+        // C6 sponge: honest absorb/perm/squeeze over OPEN + 6 projection fields (set above) and 104
+        // byte-valued lanes.
         fill_honest_c6(&mut cells, pad_seed_seed);
         // role-root sponge: honest absorb/perm/squeeze over the CHAINED C1/C6 squeeze outputs (set
         // by the two fills above) ‖ 6 masked_projection lanes. MUST run after fill_honest_c1/c6.
@@ -3340,8 +3498,9 @@ mod tests {
         cells
     }
 
-    /// Fill the byte-range bit-witness cells: for each byte-ranged sponge input lane (C1 48 ‖ C2 40 ‖
-    /// C6 80), read the ALREADY-SET absorbed lane cell (a byte-valued base element) and write its 8
+    /// Fill byte-range bits for each byte-ranged sponge input (C1 72 ‖ C2 40 ‖ C6 104), reading the
+    /// ALREADY-SET absorbed lane cell and
+    /// write its 8
     /// little-endian bits. This is the byte-range fidelity AUTHORITY (honest decomposition of the
     /// genuine consumed lanes). PRECONDITION: the C1/C2/C6 sponge fills have run, so the absorbed
     /// input cells hold byte-valued base elements.
@@ -3352,7 +3511,8 @@ mod tests {
                 Challenge::as_basis_coefficients_slice(&cells[byterange_absorbed_cell(g)])[0];
             let v = lane.as_canonical_u32();
             for b in 0..BYTE_BITS {
-                cells[byterange_bit_cell(g, b)] = Challenge::from(Val::from_u64(((v >> b) & 1) as u64));
+                cells[byterange_bit_cell(g, b)] =
+                    Challenge::from(Val::from_u64(((v >> b) & 1) as u64));
             }
         }
     }
@@ -3429,7 +3589,7 @@ mod tests {
         for b in 0..CTX_LIFECYCLE_BYTES {
             pubio[PUBIO_CONTEXT_OFF + CTX_LIFECYCLE_OFF + b] = out_val(cells, c6_byte_cell(b));
         }
-        // account_id (C6 byte-lanes 48..80) → pubio context account_id region.
+        // account_id (C6 byte lanes 72..104) → pubio context account_id region.
         for b in 0..CTX_ACCOUNT_ID_BYTES {
             pubio[PUBIO_CONTEXT_OFF + CTX_ACCOUNT_ID_OFF + b] =
                 out_val(cells, c6_byte_cell(C6_BYTE_ACCOUNT_ID_OFF + b));
@@ -3517,7 +3677,7 @@ mod tests {
         }
     }
 
-    /// Fill the C1 sponge cells (input lanes ‖ 8 perm blocks ‖ pad_source_commitment) with an
+    /// Fill the C1 sponge cells (input lanes ‖ 11 perm blocks ‖ pad_source_commitment) with an
     /// HONEST sponge over byte-valued input lanes derived from `seed`. Runs the deployed Val
     /// permutation (`inlined_perm::generate_perm_cols`, byte-pinned to default_koalabear_poseidon2_16)
     /// for each absorb/squeeze perm, exactly mirroring the leaf `eval_sponge` absorb/capacity wiring,
@@ -3526,12 +3686,18 @@ mod tests {
         use crate::inlined_perm::{self, generate_perm_cols, C_OUTPUT as IP_OUTPUT, PERM_COLS};
         let consts = inlined_perm::Constants::pinned();
 
-        // input lanes: byte-valued (0..255), as the leaf's byte-ranged C1 lanes.
+        // input lanes: PADS field domain, seam-bound pad seed, then fresh byte-valued nonce.
         let mut input_lane = [Val::ZERO; C1_INPUT_LANES];
-        for i in 0..C1_INPUT_LANES {
+        input_lane[0] = Val::from_u32(PAD_COMMITMENT_DOMAIN);
+        cells[c1_input_cell(0)] = Challenge::from(input_lane[0]);
+        for b in 0..PAD_SEED_BYTES {
+            input_lane[1 + b] = Challenge::as_basis_coefficients_slice(&cells[c1_pad_cell(b)])[0];
+        }
+        for i in 0..COMMITMENT_NONCE_BYTES {
             let b = (seed.wrapping_mul(31).wrapping_add(i as u32)) % 256;
-            input_lane[i] = Val::from_u32(b);
-            cells[c1_input_cell(i)] = Challenge::from(input_lane[i]);
+            input_lane[1 + PAD_SEED_BYTES + i] = Val::from_u32(b);
+            cells[c1_input_cell(1 + PAD_SEED_BYTES + i)] =
+                Challenge::from(input_lane[1 + PAD_SEED_BYTES + i]);
         }
 
         // absorbed stream (padded): lanes, ONE marker at n_input, zero-fill.
@@ -3560,7 +3726,11 @@ mod tests {
                     for r in 0..C1_RATE {
                         if is_absorb {
                             let pos = p * C1_RATE + r;
-                            let elem = if pos < C1_PADDED_LEN { absorb(pos) } else { Val::ZERO };
+                            let elem = if pos < C1_PADDED_LEN {
+                                absorb(pos)
+                            } else {
+                                Val::ZERO
+                            };
                             perm_in[r] = prev[r] + elem;
                         } else {
                             perm_in[r] = prev[r];
@@ -3589,12 +3759,11 @@ mod tests {
         }
     }
 
-    /// Fill the C6 sponge cells (byte-lanes ‖ 12 perm blocks ‖ opening_tuple_commitment) with an
-    /// HONEST sponge over: the 6 FIELD lanes already set in `cells[c6_field_cell(..)]` (the
-    /// account_projection lanes, NOT byte-ranged) ‖ 80 byte-valued lanes derived from `seed`. Runs
+    /// Fill the C6 sponge cells (byte lanes ‖ 15 perm blocks ‖ opening_tuple_commitment) with an
+    /// HONEST sponge over the OPEN domain + 6 projection fields and 104 byte lanes derived from seed.
     /// the deployed Val permutation for each absorb/squeeze perm, exactly mirroring the leaf
     /// `eval_sponge` absorb/capacity wiring, then lifts every cell into the extension. This is the
-    /// C6 fidelity AUTHORITY. PRECONDITION: the 6 FIELD lanes must already be base-field elements
+    /// C6 fidelity AUTHORITY. PRECONDITION: the 7 field lanes must already be base-field elements
     /// (one limb) so they round-trip to `Val`; `honest_cells` sets them to `ext(vals[..])`.
     fn fill_honest_c6(cells: &mut [Challenge; N_OPENED_CELLS], seed: u32) {
         use crate::inlined_perm::{self, generate_perm_cols, C_OUTPUT as IP_OUTPUT, PERM_COLS};
@@ -3635,7 +3804,11 @@ mod tests {
                     for r in 0..C6_RATE {
                         if is_absorb {
                             let pos = p * C6_RATE + r;
-                            let elem = if pos < C6_PADDED_LEN { absorb(pos) } else { Val::ZERO };
+                            let elem = if pos < C6_PADDED_LEN {
+                                absorb(pos)
+                            } else {
+                                Val::ZERO
+                            };
                             perm_in[r] = prev[r] + elem;
                         } else {
                             perm_in[r] = prev[r];
@@ -3717,7 +3890,11 @@ mod tests {
                     for r in 0..ROLE_RATE {
                         if is_absorb {
                             let pos = p * ROLE_RATE + r;
-                            let elem = if pos < ROLE_PADDED_LEN { absorb(pos) } else { Val::ZERO };
+                            let elem = if pos < ROLE_PADDED_LEN {
+                                absorb(pos)
+                            } else {
+                                Val::ZERO
+                            };
                             perm_in[r] = prev[r] + elem;
                         } else {
                             perm_in[r] = prev[r];
@@ -3746,9 +3923,8 @@ mod tests {
         }
     }
 
-    /// Fill the C2 mask-PRF sponge cells (slot_id[8] ‖ 9 perm blocks) with an HONEST sponge over the
-    /// pad_seed[32] cells (the `c2_pad` cells, already set) ‖ 8 fresh byte-valued slot_id lanes, then
-    /// the WIDE-THEN-REDUCE gadget (the 30 squeezed lanes -> 6 masks via the leaf's `fill_reduce_gadget`)
+    /// Fill C2 (`MASK` ‖ pad_seed[32] ‖ slot[8] ‖ 10 perm blocks), then
+    /// the WIDE-THEN-REDUCE gadget (36 squeezed lanes -> 6 masks)
     /// + the carrier mod-q reduction (masked = (acc + mask) mod q12289). Runs the deployed Val
     /// permutation for each absorb/squeeze perm, then lifts every cell into the extension. This is the
     /// C2-sponge + reduce-gadget + carrier fidelity AUTHORITY. PRECONDITION: the `c2_pad` cells and the
@@ -3763,15 +3939,19 @@ mod tests {
         use p3_field::PrimeField32;
         let consts = inlined_perm::Constants::pinned();
 
-        // input lanes (as Val): pad_seed[32] from the existing c2_pad cells, slot_id[8] fresh bytes.
+        // input lanes: MASK domain, reused pad_seed[32], and fresh slot_id[8].
         let mut input_lane = [Val::ZERO; C2_INPUT_LANES];
+        input_lane[0] = Val::from_u32(C2_MASK_DOMAIN);
+        cells[c2_domain_cell()] = Challenge::from(input_lane[0]);
         for b in 0..C2_PAD_LANES {
-            input_lane[b] = Challenge::as_basis_coefficients_slice(&cells[c2_pad_cell(b)])[0];
+            input_lane[C2_DOMAIN_LANES + b] =
+                Challenge::as_basis_coefficients_slice(&cells[c2_pad_cell(b)])[0];
         }
         for i in 0..C2_SLOT_LANES {
             let v = (seed.wrapping_mul(71).wrapping_add(i as u32 + 1)) % 256;
-            input_lane[C2_PAD_LANES + i] = Val::from_u32(v);
-            cells[c2_slot_cell(i)] = Challenge::from(input_lane[C2_PAD_LANES + i]);
+            input_lane[C2_DOMAIN_LANES + C2_PAD_LANES + i] = Val::from_u32(v);
+            cells[c2_slot_cell(i)] =
+                Challenge::from(input_lane[C2_DOMAIN_LANES + C2_PAD_LANES + i]);
         }
 
         let absorb = |pos: usize| -> Val {
@@ -3799,7 +3979,11 @@ mod tests {
                     for r in 0..C2_RATE {
                         if is_absorb {
                             let pos = p * C2_RATE + r;
-                            let elem = if pos < C2_PADDED_LEN { absorb(pos) } else { Val::ZERO };
+                            let elem = if pos < C2_PADDED_LEN {
+                                absorb(pos)
+                            } else {
+                                Val::ZERO
+                            };
                             perm_in[r] = prev[r] + elem;
                         } else {
                             perm_in[r] = prev[r];
@@ -3821,7 +4005,7 @@ mod tests {
             prev_out = Some(out);
         }
 
-        // 30 squeezed lanes (as Val) from the squeeze source perms (= what the reduce gadget reads).
+        // 36 squeezed lanes from the source permutations.
         let mut lanes = [0u32; RG_NSQ];
         for o in 0..C2_N_OUT {
             let (sp, lane) = c2_output_source(o);
@@ -3884,7 +4068,11 @@ mod tests {
             );
         }
         let cp = partial_constraint_eval(&cells, ext_multi(9));
-        assert_eq!(cp, Challenge::ZERO, "honest on-domain row should give zero residual sum");
+        assert_eq!(
+            cp,
+            Challenge::ZERO,
+            "honest on-domain row should give zero residual sum"
+        );
     }
 
     /// GOLDEN (positive): honest mirror rows ACCEPT via the real `check_all_constraints` — both
@@ -3938,9 +4126,10 @@ mod tests {
             targets.push(c4_cell(lane, I_INV));
         }
         // acc / seam / relation_id cells.
+        targets.push(c6_field_cell(0));
         for j in 0..N_LANES {
             targets.push(acc_cell(j));
-            targets.push(c6_field_cell(j));
+            targets.push(c6_field_cell(C6_DOMAIN_LANES + j));
         }
         for b in 0..PAD_SEED_BYTES {
             targets.push(c1_pad_cell(b));
@@ -3988,8 +4177,16 @@ mod tests {
         // Corrupt v on lane 2 ⇒ v-recompose residual (28) nonzero; lo-recompose (21) still zero.
         let mut bad = cells;
         bad[c4_cell(2, I_V)] += Challenge::ONE;
-        assert_ne!(c4_lane_residual(&bad, 2, 28), Challenge::ZERO, "v-recompose blind to v");
-        assert_eq!(c4_lane_residual(&bad, 2, 21), Challenge::ZERO, "lo-recompose should not read v");
+        assert_ne!(
+            c4_lane_residual(&bad, 2, 28),
+            Challenge::ZERO,
+            "v-recompose blind to v"
+        );
+        assert_eq!(
+            c4_lane_residual(&bad, 2, 21),
+            Challenge::ZERO,
+            "lo-recompose should not read v"
+        );
         // and OTHER lanes unaffected.
         assert_eq!(c4_lane_residual(&bad, 0, 28), Challenge::ZERO, "lane bleed");
 
@@ -4015,7 +4212,11 @@ mod tests {
         let c4_total = C4_LANES * C4_N_PER_LANE;
         // honest: all non-C4 residuals zero.
         for r in c4_total..N_CONSTRAINTS {
-            assert_eq!(constraint_residual(&cells, r), Challenge::ZERO, "honest residual {r} nonzero");
+            assert_eq!(
+                constraint_residual(&cells, r),
+                Challenge::ZERO,
+                "honest residual {r} nonzero"
+            );
         }
         // C4-acc: corrupt carry_acc[3] ⇒ both the acc-binding residual AND SeamOpeningAcc[3] react.
         let mut bad_acc = cells;
@@ -4025,26 +4226,66 @@ mod tests {
             Challenge::ZERO,
             "C4-acc binding (air.rs:762) blind to carry_acc"
         );
-        // SeamPadSeed: corrupt c2_pad_seed[10] ⇒ residual c4_total+N_C4_ACC+10 nonzero.
+        // C1 domain: corrupt PADS lane ⇒ the domain-pin residual reacts.
+        let mut bad_c1_domain = cells;
+        bad_c1_domain[c1_input_cell(0)] += Challenge::ONE;
+        assert_ne!(
+            constraint_residual(&bad_c1_domain, c4_total + N_C4_ACC),
+            Challenge::ZERO,
+            "C1 PADS domain pin is blind to the opened domain lane"
+        );
+        // C2 domain: corrupt MASK lane ⇒ the domain-pin residual reacts.
+        let mut bad_domain = cells;
+        bad_domain[c2_domain_cell()] += Challenge::ONE;
+        assert_ne!(
+            constraint_residual(&bad_domain, c4_total + N_C4_ACC + N_C1_DOMAIN),
+            Challenge::ZERO,
+            "C2 MASK domain pin is blind to the opened domain lane"
+        );
+        // C6 domain: corrupt OPEN lane ⇒ the domain-pin residual reacts.
+        let mut bad_c6_domain = cells;
+        bad_c6_domain[c6_field_cell(0)] += Challenge::ONE;
+        assert_ne!(
+            constraint_residual(
+                &bad_c6_domain,
+                c4_total + N_C4_ACC + N_C1_DOMAIN + N_C2_DOMAIN,
+            ),
+            Challenge::ZERO,
+            "C6 OPEN domain pin is blind to the opened domain lane"
+        );
+        let seam_pad_base = c4_total + N_C4_ACC + N_C1_DOMAIN + N_C2_DOMAIN + N_C6_DOMAIN;
+        // SeamPadSeed: corrupt the ACTUAL C1-absorbed pad_seed[10].
+        let mut bad_c1_pad = cells;
+        bad_c1_pad[c1_pad_cell(10)] += Challenge::ONE;
+        assert_ne!(
+            constraint_residual(&bad_c1_pad, seam_pad_base + 10),
+            Challenge::ZERO,
+            "SeamPadSeed is blind to the actual C1 sponge input"
+        );
+        // SeamPadSeed: corrupt c2_pad_seed[10].
         let mut bad_pad = cells;
         bad_pad[c2_pad_cell(10)] += Challenge::ONE;
         assert_ne!(
-            constraint_residual(&bad_pad, c4_total + N_C4_ACC + 10),
+            constraint_residual(&bad_pad, seam_pad_base + 10),
             Challenge::ZERO,
             "SeamPadSeed (air.rs:765) blind to c2 pad_seed"
         );
         // SeamOpeningAcc: corrupt c6_field[4] ⇒ residual c4_total+N_C4_ACC+N_SEAM_PAD+4 nonzero.
         let mut bad_c6 = cells;
-        bad_c6[c6_field_cell(4)] += Challenge::ONE;
+        bad_c6[c6_field_cell(C6_DOMAIN_LANES + 4)] += Challenge::ONE;
         assert_ne!(
-            constraint_residual(&bad_c6, c4_total + N_C4_ACC + N_SEAM_PAD + 4),
+            constraint_residual(
+                &bad_c6,
+                c4_total + N_C4_ACC + N_C1_DOMAIN + N_C2_DOMAIN + N_C6_DOMAIN + N_SEAM_PAD + 4,
+            ),
             Challenge::ZERO,
             "SeamOpeningAcc (air.rs:773) blind to c6 field lane"
         );
         // relation_id: corrupt relation_id[1] ⇒ residual at the relation-id base nonzero.
         let mut bad_rid = cells;
         bad_rid[relation_id_cell(1)] += Challenge::ONE;
-        let rid_base = c4_total + N_C4_ACC + N_SEAM_PAD + N_SEAM_ACC;
+        let rid_base =
+            c4_total + N_C4_ACC + N_C1_DOMAIN + N_C2_DOMAIN + N_C6_DOMAIN + N_SEAM_PAD + N_SEAM_ACC;
         assert_ne!(
             constraint_residual(&bad_rid, rid_base + 1),
             Challenge::ZERO,
@@ -4063,7 +4304,10 @@ mod tests {
                 check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
                 "AIR recomputation disagrees with native partial eval (seed={seed})"
             );
-            assert_eq!(row_c_partial(m.values.as_slice()), partial_constraint_eval(&cells, alpha));
+            assert_eq!(
+                row_c_partial(m.values.as_slice()),
+                partial_constraint_eval(&cells, alpha)
+            );
         }
     }
 
@@ -4084,12 +4328,18 @@ mod tests {
     // =======================================================================
 
     /// Base residual index of the C1 sponge class within `constraint_residual`.
-    const C1_RESIDUAL_BASE: usize =
-        C4_LANES * C4_N_PER_LANE + N_C4_ACC + N_SEAM_PAD + N_SEAM_ACC + N_RELATION_ID;
+    const C1_RESIDUAL_BASE: usize = C4_LANES * C4_N_PER_LANE
+        + N_C4_ACC
+        + N_C1_DOMAIN
+        + N_C2_DOMAIN
+        + N_C6_DOMAIN
+        + N_SEAM_PAD
+        + N_SEAM_ACC
+        + N_RELATION_ID;
 
     /// FIDELITY PIN (C1) — an HONEST C1 sponge (built from the deployed byte-pinned Val permutation
     /// via `fill_honest_c1`, lifted to the extension) makes EVERY C1 residual zero: the absorb /
-    /// capacity wiring, all 8 Poseidon2 perm blocks, and the squeeze-output equality. A wrong octic
+    /// capacity wiring, all 11 Poseidon2 perm blocks, and the squeeze-output equality. A wrong octic
     /// perm / absorb wiring / output mapping would make some honest residual nonzero — caught here
     /// by attempted equality, not inspection.
     #[test]
@@ -4119,8 +4369,7 @@ mod tests {
         // input lanes as Val.
         let mut input_lane = [Val::ZERO; C1_INPUT_LANES];
         for i in 0..C1_INPUT_LANES {
-            input_lane[i] =
-                Challenge::as_basis_coefficients_slice(&cells[c1_input_cell(i)])[0];
+            input_lane[i] = Challenge::as_basis_coefficients_slice(&cells[c1_input_cell(i)])[0];
         }
         let absorb = |pos: usize| -> Val {
             if pos < C1_INPUT_LANES {
@@ -4146,7 +4395,12 @@ mod tests {
                     for r in 0..C1_RATE {
                         if is_absorb {
                             let pos = p * C1_RATE + r;
-                            pin[r] = pv[r] + if pos < C1_PADDED_LEN { absorb(pos) } else { Val::ZERO };
+                            pin[r] = pv[r]
+                                + if pos < C1_PADDED_LEN {
+                                    absorb(pos)
+                                } else {
+                                    Val::ZERO
+                                };
                         } else {
                             pin[r] = pv[r];
                         }
@@ -4236,12 +4490,19 @@ mod tests {
     // =======================================================================
 
     /// Base residual index of the C6 sponge class within `constraint_residual`.
-    const C6_RESIDUAL_BASE: usize =
-        C4_LANES * C4_N_PER_LANE + N_C4_ACC + N_SEAM_PAD + N_SEAM_ACC + N_RELATION_ID + N_C1;
+    const C6_RESIDUAL_BASE: usize = C4_LANES * C4_N_PER_LANE
+        + N_C4_ACC
+        + N_C1_DOMAIN
+        + N_C2_DOMAIN
+        + N_C6_DOMAIN
+        + N_SEAM_PAD
+        + N_SEAM_ACC
+        + N_RELATION_ID
+        + N_C1;
 
     /// FIDELITY PIN (C6) — an HONEST C6 sponge (built from the deployed byte-pinned Val permutation
-    /// via `fill_honest_c6`, over 6 FIELD lanes ‖ 80 byte-lanes, lifted to the extension) makes EVERY
-    /// C6 residual zero: the absorb / capacity wiring across all 12 perm blocks and the squeeze-output
+    /// via `fill_honest_c6`, over 7 field lanes ‖ 104 byte lanes, lifted to the extension) makes EVERY
+    /// C6 residual zero across all 15 perm blocks and the squeeze-output
     /// equality. A wrong octic perm / absorb wiring / output mapping would make some honest residual
     /// nonzero — caught here by attempted equality, not inspection.
     #[test]
@@ -4260,7 +4521,7 @@ mod tests {
 
     /// FIDELITY PIN (C6) — the squeezed opening_tuple_commitment cells equal the source-perm OUTPUT
     /// cells (the leaf's `pcols.post[lane]`, air.rs:1355), AND those outputs are the deployed
-    /// permutation applied to the absorbed stream (6 FIELD lanes ‖ 80 byte-lanes ‖ ONE-pad ‖
+    /// permutation applied to the absorbed stream (7 field lanes ‖ 104 byte lanes ‖ ONE-pad ‖
     /// zero-fill). We re-derive the source perms' outputs independently from the real Val perm and
     /// check the committed digest matches — pins the C6 sponge against the leaf AIR's own sponge.
     #[test]
@@ -4268,7 +4529,7 @@ mod tests {
         use crate::inlined_perm::{self, generate_perm_cols, C_OUTPUT as IP_OUTPUT};
         let cells = honest_cells([7000, 0, 12288, 128, 5000, 96], 9);
         let consts = inlined_perm::Constants::pinned();
-        // input lanes as Val: 6 FIELD lanes ‖ 80 byte-lanes.
+        // input lanes as Val: OPEN domain + 6 projection fields + 104 byte lanes.
         let mut input_lane = [Val::ZERO; C6_INPUT_LANES];
         for i in 0..C6_FIELD_LANES {
             input_lane[i] = Challenge::as_basis_coefficients_slice(&cells[c6_field_cell(i)])[0];
@@ -4301,7 +4562,12 @@ mod tests {
                     for r in 0..C6_RATE {
                         if is_absorb {
                             let pos = p * C6_RATE + r;
-                            pin[r] = pv[r] + if pos < C6_PADDED_LEN { absorb(pos) } else { Val::ZERO };
+                            pin[r] = pv[r]
+                                + if pos < C6_PADDED_LEN {
+                                    absorb(pos)
+                                } else {
+                                    Val::ZERO
+                                };
                         } else {
                             pin[r] = pv[r];
                         }
@@ -4350,8 +4616,8 @@ mod tests {
     #[test]
     fn c6_air_rejects_tampered_absorbed_lane() {
         let cells = honest_cells([10, 20, 30, 40, 50, 60], 3);
-        // a representative byte-lane in each block: lifecycle[0], nonce[0]=byte 32, account_id[0]=byte 48.
-        for &b in &[0usize, 32, 48, C6_BYTE_LANES - 1] {
+        // A representative byte lane in each block: lifecycle[0], nonce[0], account_id[0], final.
+        for &b in &[0usize, 32, C6_BYTE_ACCOUNT_ID_OFF, C6_BYTE_LANES - 1] {
             let mut m = matrix(&cells, ext_multi(21));
             m.values[cell_base(c6_byte_cell(b))] += Val::ONE;
             assert!(
@@ -4361,7 +4627,7 @@ mod tests {
         }
         // a FIELD absorb lane (account_projection lane 3).
         let mut m = matrix(&cells, ext_multi(22));
-        m.values[cell_base(c6_field_cell(3))] += Val::ONE;
+        m.values[cell_base(c6_field_cell(C6_DOMAIN_LANES + 3))] += Val::ONE;
         assert!(
             !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
             "tampered C6 FIELD absorb lane NOT rejected"
@@ -4400,6 +4666,9 @@ mod tests {
     /// Base residual index of the role-root sponge class within `constraint_residual`.
     const ROLE_RESIDUAL_BASE: usize = C4_LANES * C4_N_PER_LANE
         + N_C4_ACC
+        + N_C1_DOMAIN
+        + N_C2_DOMAIN
+        + N_C6_DOMAIN
         + N_SEAM_PAD
         + N_SEAM_ACC
         + N_RELATION_ID
@@ -4484,7 +4753,12 @@ mod tests {
                     for r in 0..ROLE_RATE {
                         if is_absorb {
                             let pos = p * ROLE_RATE + r;
-                            pin[r] = pv[r] + if pos < ROLE_PADDED_LEN { absorb(pos) } else { Val::ZERO };
+                            pin[r] = pv[r]
+                                + if pos < ROLE_PADDED_LEN {
+                                    absorb(pos)
+                                } else {
+                                    Val::ZERO
+                                };
                         } else {
                             pin[r] = pv[r];
                         }
@@ -4577,7 +4851,12 @@ mod tests {
     fn role_air_rejects_tampered_chained_c1_c6_output() {
         let cells = honest_cells([3, 14, 159, 26, 53, 58], 7);
         // a C1 output lane and a C6 output lane (both feed the role absorb input lanes 0..20).
-        let targets = [c1_out_cell(0), c1_out_cell(9), c6_out_cell(0), c6_out_cell(9)];
+        let targets = [
+            c1_out_cell(0),
+            c1_out_cell(9),
+            c6_out_cell(0),
+            c6_out_cell(9),
+        ];
         for &cell_idx in &targets {
             let mut m = matrix(&cells, ext_multi(44));
             m.values[cell_base(cell_idx)] += Val::ONE;
@@ -4597,13 +4876,16 @@ mod tests {
         let cells = honest_cells([1, 2, 3, 4, 5, 6], 17);
         // honest: all role residuals zero.
         for k in 0..N_ROLE {
-            assert_eq!(constraint_residual(&cells, ROLE_RESIDUAL_BASE + k), Challenge::ZERO);
+            assert_eq!(
+                constraint_residual(&cells, ROLE_RESIDUAL_BASE + k),
+                Challenge::ZERO
+            );
         }
         // tamper C1 output lane 0 (a role absorb input at pos 0).
         let mut bad = cells;
         bad[c1_out_cell(0)] += Challenge::ONE;
-        let any_role_nonzero =
-            (0..N_ROLE).any(|k| constraint_residual(&bad, ROLE_RESIDUAL_BASE + k) != Challenge::ZERO);
+        let any_role_nonzero = (0..N_ROLE)
+            .any(|k| constraint_residual(&bad, ROLE_RESIDUAL_BASE + k) != Challenge::ZERO);
         assert!(
             any_role_nonzero,
             "role-root residual class is BLIND to a tampered chained C1 output — chaining underconstrained"
@@ -4617,6 +4899,9 @@ mod tests {
     /// Base residual index of the C2 sponge class within `constraint_residual`.
     const C2_RESIDUAL_BASE: usize = C4_LANES * C4_N_PER_LANE
         + N_C4_ACC
+        + N_C1_DOMAIN
+        + N_C2_DOMAIN
+        + N_C6_DOMAIN
         + N_SEAM_PAD
         + N_SEAM_ACC
         + N_RELATION_ID
@@ -4630,10 +4915,22 @@ mod tests {
     /// the in-AIR loop cover EXACTLY the same residuals).
     #[test]
     fn c2_reduce_residual_counts_consistent() {
+        assert_eq!(C2_MASK_DOMAIN, descender_account_stark::MASK_PRF_DOMAIN);
+        assert_eq!(C2_INPUT_LANES, descender_account_stark::C2_INPUT_LANES);
+        assert_eq!(
+            C2_N_OUT,
+            descender_account_stark::reduce_gadget::NUM_SQUEEZE
+        );
         // C2 sponge: input-binds + perm residuals, NO output sub-class.
-        assert_eq!(N_C2, C2_N_PERMS * WIDTH + C2_N_PERMS * inlined_perm_octic::PERM_RESIDUALS);
+        assert_eq!(
+            N_C2,
+            C2_N_PERMS * WIDTH + C2_N_PERMS * inlined_perm_octic::PERM_RESIDUALS
+        );
         // reduce + carrier total.
-        assert_eq!(N_REDUCE, NUM_OUTPUTS * N_REDUCE_PER_MASK + N_LANES * N_CARRIER_PER_LANE);
+        assert_eq!(
+            N_REDUCE,
+            NUM_OUTPUTS * N_REDUCE_PER_MASK + N_LANES * N_CARRIER_PER_LANE
+        );
         // the chain class follows reduce; reduce+chain+byterange+pubio-bind+ctxbind+classc cover up
         // to N_CONSTRAINTS.
         assert_eq!(
@@ -4649,8 +4946,9 @@ mod tests {
     }
 
     /// FIDELITY PIN (C2) — an HONEST C2 sponge (built from the deployed byte-pinned Val permutation
-    /// via `fill_honest_c2_and_reduce`, over pad_seed[32] ‖ slot_id[8], lifted to the extension) makes
-    /// EVERY C2 residual zero: the absorb / capacity wiring across all 9 perm blocks. A wrong octic
+    /// via `fill_honest_c2_and_reduce`, over MASK domain[1] ‖ pad_seed[32] ‖ slot_id[8], lifted to the
+    /// extension) makes EVERY C2 residual zero: the absorb / capacity wiring across all 10 perm
+    /// blocks. A wrong octic
     /// perm / absorb wiring would make some honest residual nonzero — caught by attempted equality.
     #[test]
     fn c2_honest_sponge_all_residuals_zero() {
@@ -4685,7 +4983,7 @@ mod tests {
     }
 
     /// FIDELITY PIN (reduce) — the 6 masks read from the opened reduce cells equal the LEAF's own
-    /// `wide_reduce_masks` reference over the SAME 30 squeezed lanes, AND the carrier masked equals
+    /// `wide_reduce_masks` reference over the SAME 36 squeezed lanes, AND the carrier masked equals
     /// `(account_projection + mask) mod q12289`. This pins the WHOLE gadget against the deployed leaf
     /// reduce gadget + carrier semantics on a real honest row — a wrong gadget is caught by equality.
     #[test]
@@ -4694,7 +4992,7 @@ mod tests {
         use p3_field::PrimeField32;
         let vals = [7000u32, 0, 12288, 128, 5000, 96];
         let cells = honest_cells(vals, 9);
-        // recover the 30 squeezed lanes from the opened C2 squeeze output cells.
+        // recover the 36 squeezed lanes from the opened C2 squeeze output cells.
         let mut lanes = [0u32; RG_NSQ];
         for o in 0..C2_N_OUT {
             let limb0: Val =
@@ -4716,7 +5014,10 @@ mod tests {
                 Challenge::as_basis_coefficients_slice(&cells[carrier_masked_cell(j)])[0];
             let masked = masked_limb0.as_canonical_u32() as u64;
             let expected = (vals[j] as u64 + leaf_masks[j] as u64) % q;
-            assert_eq!(masked, expected, "carrier masked_projection lane {j} != (acc+mask) mod q");
+            assert_eq!(
+                masked, expected,
+                "carrier masked_projection lane {j} != (acc+mask) mod q"
+            );
         }
     }
 
@@ -4822,11 +5123,11 @@ mod tests {
         let cells = honest_cells([1, 2, 3, 4, 5, 6], 11);
         // representative limb/carry value + bit cells across masks/steps.
         let targets: [(usize, usize, usize); 6] = [
-            (0, 0, StepOff::QT_LO),       // mask0 step0 qt_lo value
-            (1, 2, StepOff::C0),          // mask1 step2 c0 carry value
-            (2, 4, StepOff::S0),          // mask2 step4 s0 limb value
-            (3, 1, StepOff::D1),          // mask3 step1 d1 carry value
-            (4, 3, StepOff::C0_BITS),     // mask4 step3 c0 bit 0
+            (0, 0, StepOff::QT_LO),        // mask0 step0 qt_lo value
+            (1, 2, StepOff::C0),           // mask1 step2 c0 carry value
+            (2, 4, StepOff::S0),           // mask2 step4 s0 limb value
+            (3, 1, StepOff::D1),           // mask3 step1 d1 carry value
+            (4, 3, StepOff::C0_BITS),      // mask4 step3 c0 bit 0
             (5, 0, StepOff::LANE_HI_BITS), // mask5 step0 lane_hi bit 0
         ];
         for &(j, t, off) in &targets {
@@ -4852,7 +5153,11 @@ mod tests {
         let slack_off = 1 + MODQ_BITS;
         let wrap_off = slack_off + 1 + MODQ_BITS;
         for j in 0..N_LANES {
-            for &within in &[1usize /*masked bit0*/, slack_off /*slack value*/, wrap_off /*wrap*/] {
+            for &within in &[
+                1usize,    /*masked bit0*/
+                slack_off, /*slack value*/
+                wrap_off,  /*wrap*/
+            ] {
                 let mut m = matrix(&cells, ext_multi(13));
                 m.values[cell_base(carrier_modq_base(j) + within)] += Val::ONE;
                 assert!(
@@ -4971,7 +5276,10 @@ mod tests {
         // chain_out (enable=1) must equal the re-derived absorbed state lane-for-lane.
         for c in 0..CHAIN_W {
             let opened: Val = Challenge::as_basis_coefficients_slice(&cells[chain_out_cell(c)])[0];
-            assert_eq!(opened, prev_out[c], "chain_out lane {c} != deployed-perm fold");
+            assert_eq!(
+                opened, prev_out[c],
+                "chain_out lane {c} != deployed-perm fold"
+            );
         }
     }
 
@@ -5012,16 +5320,16 @@ mod tests {
         use crate::inlined_perm::{C_BEGIN_POST, C_OUTPUT as IP_OUTPUT};
         let cells = honest_cells([10, 20, 30, 40, 50, 60], 3);
         let targets = [
-            chain_enable_cell(),                       // enable (boolean + fold + count)
-            chain_pubio_cell(0),                       // absorbed pubio lane 0
-            chain_pubio_cell(CHAIN_PUBIO - 1),         // absorbed pubio last lane
-            chain_in_cell(0),                          // chain_in lane 0 (absorb + carry)
-            chain_in_cell(CHAIN_W - 1),                // chain_in capacity lane (carry + cap bind)
-            chain_perm_base(0) + C_BEGIN_POST,         // interior perm post (perm 0)
+            chain_enable_cell(),               // enable (boolean + fold + count)
+            chain_pubio_cell(0),               // absorbed pubio lane 0
+            chain_pubio_cell(CHAIN_PUBIO - 1), // absorbed pubio last lane
+            chain_in_cell(0),                  // chain_in lane 0 (absorb + carry)
+            chain_in_cell(CHAIN_W - 1),        // chain_in capacity lane (carry + cap bind)
+            chain_perm_base(0) + C_BEGIN_POST, // interior perm post (perm 0)
             chain_perm_base(CHAIN_NPERMS - 1) + IP_OUTPUT + 1, // last-perm output (the absorbed fold src)
-            chain_out_cell(0),                         // chain_out lane 0 (the running digest)
-            chain_count_cell(),                        // count accumulator
-            chain_prev_count_cell(),                   // prev count (cross-row count carry)
+            chain_out_cell(0),       // chain_out lane 0 (the running digest)
+            chain_count_cell(),      // count accumulator
+            chain_prev_count_cell(), // prev count (cross-row count carry)
         ];
         for &cell_idx in &targets {
             let mut m = matrix(&cells, ext_multi(21));
@@ -5071,11 +5379,11 @@ mod tests {
     /// and the byte-range class is followed by the pubio-bind class (together up to N_CONSTRAINTS).
     #[test]
     fn byterange_shape_matches_leaf() {
-        // C1: all 48 lanes; C2: all 40; C6: only the 80 byte-lanes (6 FIELD lanes excluded).
-        assert_eq!(C1_BR_LANES, 48);
+        // C1: 72 byte lanes; C2: 40 byte lanes; C6: 104 byte lanes.
+        assert_eq!(C1_BR_LANES, 72);
         assert_eq!(C2_BR_LANES, 40);
-        assert_eq!(C6_BR_LANES, 80);
-        assert_eq!(N_BR_LANES, 168);
+        assert_eq!(C6_BR_LANES, 104);
+        assert_eq!(N_BR_LANES, 216);
         assert_eq!(N_BR_PER_LANE, BYTE_BITS + 1);
         assert_eq!(N_BYTERANGE, N_BR_LANES * N_BR_PER_LANE);
         assert_eq!(N_BYTERANGE_BITS, N_BR_LANES * BYTE_BITS);
@@ -5086,16 +5394,22 @@ mod tests {
         // the recompose eq for EVERY lane targets the REAL already-absorbed sponge input cell,
         // matching the sponge's own absorb source — NOT a fresh free column (the vacuity guard).
         for g in 0..C1_BR_LANES {
-            assert_eq!(byterange_absorbed_cell(g), c1_input_cell(g));
+            assert_eq!(byterange_absorbed_cell(g), c1_input_cell(1 + g));
         }
         for i in 0..C2_PAD_LANES {
             assert_eq!(byterange_absorbed_cell(C1_BR_LANES + i), c2_pad_cell(i));
         }
         for i in 0..C2_SLOT_LANES {
-            assert_eq!(byterange_absorbed_cell(C1_BR_LANES + C2_PAD_LANES + i), c2_slot_cell(i));
+            assert_eq!(
+                byterange_absorbed_cell(C1_BR_LANES + C2_PAD_LANES + i),
+                c2_slot_cell(i)
+            );
         }
         for b in 0..C6_BR_LANES {
-            assert_eq!(byterange_absorbed_cell(C1_BR_LANES + C2_BR_LANES + b), c6_byte_cell(b));
+            assert_eq!(
+                byterange_absorbed_cell(C1_BR_LANES + C2_BR_LANES + b),
+                c6_byte_cell(b)
+            );
         }
     }
 
@@ -5122,10 +5436,16 @@ mod tests {
                 let bit_v: Val =
                     Challenge::as_basis_coefficients_slice(&cells[byterange_bit_cell(g, b)])[0];
                 let bit = bit_v.as_canonical_u32();
-                assert!(bit <= 1, "byte-range bit g={g} b={b} not boolean in honest fill");
+                assert!(
+                    bit <= 1,
+                    "byte-range bit g={g} b={b} not boolean in honest fill"
+                );
                 acc |= bit << b;
             }
-            assert_eq!(acc, lane, "byte-range bits don't reconstruct absorbed lane g={g}");
+            assert_eq!(
+                acc, lane,
+                "byte-range bits don't reconstruct absorbed lane g={g}"
+            );
             assert!(lane < 256, "absorbed lane g={g} is not a byte ({lane})");
         }
     }
@@ -5136,9 +5456,9 @@ mod tests {
     #[test]
     fn byterange_recompose_binds_real_absorbed_lane() {
         let probes = [
-            0usize,                                   // C1 lane 0 (pad_seed)
-            C1_BR_LANES + 35,                         // C2 lane 35 (a slot_id lane)
-            C1_BR_LANES + C2_BR_LANES + 40,           // C6 lane 40 (an account_id byte-lane)
+            0usize,                         // C1 lane 0 (pad_seed)
+            C1_BR_LANES + 35,               // C2 lane 35 (a slot_id lane)
+            C1_BR_LANES + C2_BR_LANES + 40, // C6 lane 40 (an account_id byte-lane)
         ];
         for &g in &probes {
             let mut bad = honest_cells([3, 14, 159, 26, 53, 58], 7);
@@ -5162,7 +5482,7 @@ mod tests {
         let g = C1_BR_LANES + C2_BR_LANES + 5; // a C6 byte-lane
         let mut bad = honest_cells([1, 2, 3, 4, 5, 6], 9);
         bad[byterange_bit_cell(g, 3)] += Challenge::ONE; // bit 3: 0->1 or 1->2 (non-boolean if 1)
-        // the bit-bool residual for bit 3 of lane g:
+                                                         // the bit-bool residual for bit 3 of lane g:
         let bk = BYTERANGE_RESIDUAL_BASE + g * N_BR_PER_LANE + 3;
         // EITHER the bit became non-boolean (bit-bool residual nonzero) OR it flipped a valid bit
         // (recompose eq nonzero). At least one residual of this lane must react.
@@ -5170,7 +5490,10 @@ mod tests {
             constraint_residual(&bad, BYTERANGE_RESIDUAL_BASE + g * N_BR_PER_LANE + i)
                 != Challenge::ZERO
         });
-        assert!(any_react, "tampered byte-range bit did not break any residual of its lane");
+        assert!(
+            any_react,
+            "tampered byte-range bit did not break any residual of its lane"
+        );
         // and specifically: if the bit was 1, +1 makes it 2 ⇒ bit-bool 2·1=2 ≠ 0.
         let _ = bk;
     }
@@ -5266,7 +5589,10 @@ mod tests {
         for j in 0..N_LANES {
             assert_eq!(
                 pubio_bind_pair(2 * N_COMMIT_LANES + j),
-                (carrier_masked_cell(j), chain_pubio_cell(2 * N_COMMIT_LANES + j))
+                (
+                    carrier_masked_cell(j),
+                    chain_pubio_cell(2 * N_COMMIT_LANES + j)
+                )
             );
         }
         // role: role_out_cell(j) == chain_pubio_cell(PUBIO_ROLE_ROOT_OFF + j).
@@ -5298,12 +5624,18 @@ mod tests {
         let mut any_nonzero = false;
         for k in 0..N_PUBIO_BIND {
             let (out_cell, pubio_cell) = pubio_bind_pair(k);
-            assert_eq!(cells[out_cell], cells[pubio_cell], "pubio cell != mirrored output at {k}");
+            assert_eq!(
+                cells[out_cell], cells[pubio_cell],
+                "pubio cell != mirrored output at {k}"
+            );
             if cells[out_cell] != Challenge::ZERO {
                 any_nonzero = true;
             }
         }
-        assert!(any_nonzero, "all mirrored outputs zero — pubio-bind fixture is vacuous");
+        assert!(
+            any_nonzero,
+            "all mirrored outputs zero — pubio-bind fixture is vacuous"
+        );
     }
 
     /// FORGERY (pubio-bind, FORGED PUBLIC COMMITMENT) — a public commitment lane (the per-row pubio
@@ -5314,10 +5646,10 @@ mod tests {
     #[test]
     fn pubio_bind_rejects_forged_public_commitment() {
         let probes = [
-            0usize,                                   // C1 pad_source_commitment lane 0
-            N_COMMIT_LANES + 3,                       // C6 opening_tuple_commitment lane 3
-            2 * N_COMMIT_LANES + 2,                   // masked_projection lane 2
-            2 * N_COMMIT_LANES + N_LANES + 5,         // role_root lane 5
+            0usize,                           // C1 pad_source_commitment lane 0
+            N_COMMIT_LANES + 3,               // C6 opening_tuple_commitment lane 3
+            2 * N_COMMIT_LANES + 2,           // masked_projection lane 2
+            2 * N_COMMIT_LANES + N_LANES + 5, // role_root lane 5
         ];
         for &k in &probes {
             let mut bad = honest_cells([3, 14, 159, 26, 53, 58], 7);
@@ -5337,7 +5669,12 @@ mod tests {
     /// reacts to a mismatch from the output side too.)
     #[test]
     fn pubio_bind_rejects_tampered_sponge_output() {
-        let probes = [0usize, N_COMMIT_LANES, 2 * N_COMMIT_LANES, 2 * N_COMMIT_LANES + N_LANES];
+        let probes = [
+            0usize,
+            N_COMMIT_LANES,
+            2 * N_COMMIT_LANES,
+            2 * N_COMMIT_LANES + N_LANES,
+        ];
         for &k in &probes {
             let mut bad = honest_cells([1, 2, 3, 4, 5, 6], 9);
             let (out_cell, _pubio_cell) = pubio_bind_pair(k);
@@ -5397,7 +5734,10 @@ mod tests {
     /// (`chain_pubio_cell`) at the air.rs context offset — one source of truth, no fresh columns.
     #[test]
     fn ctxbind_classc_shape_matches_leaf() {
-        assert_eq!(N_CTXBIND, CTX_SLOT_BYTES + CTX_LIFECYCLE_BYTES + CTX_ACCOUNT_ID_BYTES);
+        assert_eq!(
+            N_CTXBIND,
+            CTX_SLOT_BYTES + CTX_LIFECYCLE_BYTES + CTX_ACCOUNT_ID_BYTES
+        );
         assert_eq!(N_CTXBIND, 8 + 32 + 32);
         assert_eq!(N_CLASSC, N_SYNDROME + N_PACKED);
         assert_eq!(N_SYNDROME, SYNDROME_LANES * N_SYNDROME_PER_LANE);
@@ -5408,13 +5748,19 @@ mod tests {
         for b in 0..CTX_SLOT_BYTES {
             assert_eq!(
                 ctxbind_pair(b),
-                (c2_slot_cell(b), chain_pubio_cell(PUBIO_CONTEXT_OFF + CTX_SLOT_OFF + b))
+                (
+                    c2_slot_cell(b),
+                    chain_pubio_cell(PUBIO_CONTEXT_OFF + CTX_SLOT_OFF + b)
+                )
             );
         }
         for b in 0..CTX_LIFECYCLE_BYTES {
             assert_eq!(
                 ctxbind_pair(CTX_SLOT_BYTES + b),
-                (c6_byte_cell(b), chain_pubio_cell(PUBIO_CONTEXT_OFF + CTX_LIFECYCLE_OFF + b))
+                (
+                    c6_byte_cell(b),
+                    chain_pubio_cell(PUBIO_CONTEXT_OFF + CTX_LIFECYCLE_OFF + b)
+                )
             );
         }
         for b in 0..CTX_ACCOUNT_ID_BYTES {
@@ -5433,7 +5779,10 @@ mod tests {
             PUBIO_CONTEXT_OFF + descender_account_stark::CONTEXT_ELEMS,
             PUBIO_ROLE_ROOT_OFF
         );
-        assert_eq!(CTX_LIFECYCLE_OFF + CTX_LIFECYCLE_BYTES, descender_account_stark::CONTEXT_ELEMS);
+        assert_eq!(
+            CTX_LIFECYCLE_OFF + CTX_LIFECYCLE_BYTES,
+            descender_account_stark::CONTEXT_ELEMS
+        );
         assert_eq!(
             PUBIO_SYNDROME_OFF_LOCAL,
             2 * N_COMMIT_LANES
@@ -5443,10 +5792,17 @@ mod tests {
                 + NULLIFIER_ELEMS
                 + RELATION_ID_ELEMS
         );
-        assert_eq!(PUBIO_PACKED_WITNESS_OFF_LOCAL, PUBIO_SYNDROME_OFF_LOCAL + SYNDROME_LANES);
-        // and the whole pubio block ends exactly at PUBIO_ELEMS (no off-by-one in the layout).
         assert_eq!(
-            PUBIO_PACKED_WITNESS_OFF_LOCAL + PACKED_WITNESS_COMMITMENT_BYTES,
+            PUBIO_PACKED_WITNESS_OFF_LOCAL,
+            PUBIO_SYNDROME_OFF_LOCAL + SYNDROME_LANES
+        );
+        // The registered checked-core key commitment follows CLASS C. It is an unconstrained
+        // creation input by design, but the full pubio digest chain still transcript-binds it.
+        // Pin that tail so a future statement-layout change cannot silently shift the mirror.
+        assert_eq!(
+            PUBIO_PACKED_WITNESS_OFF_LOCAL
+                + PACKED_WITNESS_COMMITMENT_BYTES
+                + descender_account_stark::KEY_COMMITMENT_BYTES,
             descender_account_stark::PUBIO_ELEMS
         );
     }
@@ -5477,12 +5833,18 @@ mod tests {
         let mut any_nonzero = false;
         for k in 0..N_CTXBIND {
             let (absorb_cell, pubio_cell) = ctxbind_pair(k);
-            assert_eq!(cells[absorb_cell], cells[pubio_cell], "ctx pubio != absorb at {k}");
+            assert_eq!(
+                cells[absorb_cell], cells[pubio_cell],
+                "ctx pubio != absorb at {k}"
+            );
             if cells[absorb_cell] != Challenge::ZERO {
                 any_nonzero = true;
             }
         }
-        assert!(any_nonzero, "all context absorb cells zero — ctxbind fixture vacuous");
+        assert!(
+            any_nonzero,
+            "all context absorb cells zero — ctxbind fixture vacuous"
+        );
         // non-vacuity: at least one syndrome value cell is nonzero and equals its pubio lane.
         let mut syn_nonzero = false;
         for lane in 0..SYNDROME_LANES {
@@ -5495,7 +5857,10 @@ mod tests {
                 syn_nonzero = true;
             }
         }
-        assert!(syn_nonzero, "all syndrome values zero — classc fixture vacuous");
+        assert!(
+            syn_nonzero,
+            "all syndrome values zero — classc fixture vacuous"
+        );
     }
 
     /// FORGERY (context substitution) — tampering the re-exposed slot_id / lifecycle_anchor /
@@ -5507,8 +5872,8 @@ mod tests {
     fn ctxbind_rejects_context_substitution() {
         // one probe per in-circuit-bound context field.
         let probes = [
-            0usize,                                  // slot_id byte 0
-            CTX_SLOT_BYTES + 5,                      // lifecycle byte 5
+            0usize,                                   // slot_id byte 0
+            CTX_SLOT_BYTES + 5,                       // lifecycle byte 5
             CTX_SLOT_BYTES + CTX_LIFECYCLE_BYTES + 9, // account_id byte 9
         ];
         for &k in &probes {
@@ -5549,7 +5914,7 @@ mod tests {
             let lane = 2;
             let bit = 3;
             bad[syndrome_bit_cell(lane, bit)] += Challenge::ONE; // no longer a bit / no longer recomposes
-            // value-recompose residual for this lane (index 1 + MODQ_BITS within the lane block).
+                                                                 // value-recompose residual for this lane (index 1 + MODQ_BITS within the lane block).
             let kv = lane * N_SYNDROME_PER_LANE + 1 + MODQ_BITS;
             assert_ne!(
                 constraint_residual(&bad, CLASSC_RESIDUAL_BASE + kv),
@@ -5701,7 +6066,10 @@ mod tests {
         assert_eq!(MC_N_PUBLIC, CHAIN_DIGEST_ELEMS + 1);
         assert_eq!(MC_N_PUBLIC, descender_account_stark::BATCH_PUBLIC_VALUES);
         assert_eq!(IP_PERM_COLS, PERM_COLS);
-        assert_eq!(MC_COLS, CHAIN_W + CHAIN_NPERMS * PERM_COLS + CHAIN_W + 1 + 1 + MCHAIN_PUBIO);
+        assert_eq!(
+            MC_COLS,
+            CHAIN_W + CHAIN_NPERMS * PERM_COLS + CHAIN_W + 1 + 1 + MCHAIN_PUBIO
+        );
     }
 
     /// FIDELITY-PIN (multi-row chain, GENUINE transition) — an HONEST multi-row chain trace (real
@@ -5714,15 +6082,19 @@ mod tests {
         let consts = ip::Constants::pinned();
         // a batch of 6 enabled rows + 2 padding rows (height 8, a prefix of reals).
         let enables = [true, true, true, true, true, true, false, false];
-        let pubios: Vec<[Val; MCHAIN_PUBIO]> =
-            (0..enables.len() as u32).map(|r| mc_pubio(100 + r)).collect();
+        let pubios: Vec<[Val; MCHAIN_PUBIO]> = (0..enables.len() as u32)
+            .map(|r| mc_pubio(100 + r))
+            .collect();
         let (flat, last_out, count) = build_chain_trace(&enables, &pubios, &consts);
         let m = RowMajorMatrix::new(flat, MC_COLS);
 
         // independent authority.
         let (digest, n) = independent_batch_digest(&enables, &pubios);
         for c in 0..CHAIN_DIGEST_ELEMS {
-            assert_eq!(last_out[c], digest[c], "trace chain_out lane {c} != independent batch digest");
+            assert_eq!(
+                last_out[c], digest[c],
+                "trace chain_out lane {c} != independent batch digest"
+            );
         }
         assert_eq!(count, n, "trace count != independent N");
         assert_eq!(n, 6, "expected 6 enabled rows");
@@ -5740,7 +6112,12 @@ mod tests {
             for c in 0..CHAIN_W {
                 let cur_out = m.values[r * MC_COLS + MC_CHAIN_OUT + c];
                 let next_in = m.values[(r + 1) * MC_COLS + MC_CHAIN_IN + c];
-                assert_eq!(cur_out, next_in, "row {r} chain_out lane {c} != row {} chain_in", r + 1);
+                assert_eq!(
+                    cur_out,
+                    next_in,
+                    "row {r} chain_out lane {c} != row {} chain_in",
+                    r + 1
+                );
             }
         }
     }
@@ -5766,8 +6143,9 @@ mod tests {
     fn mchain_rejects_nonzero_first_chain_in() {
         let consts = ip::Constants::pinned();
         let enables = [true, true, true, false];
-        let pubios: Vec<[Val; MCHAIN_PUBIO]> =
-            (0..enables.len() as u32).map(|r| mc_pubio(20 + r)).collect();
+        let pubios: Vec<[Val; MCHAIN_PUBIO]> = (0..enables.len() as u32)
+            .map(|r| mc_pubio(20 + r))
+            .collect();
         let (flat, _out, _count) = build_chain_trace(&enables, &pubios, &consts);
         let (digest, n) = independent_batch_digest(&enables, &pubios);
         let mut m = RowMajorMatrix::new(flat, MC_COLS);
@@ -5786,8 +6164,9 @@ mod tests {
     fn mchain_rejects_wrong_public_digest() {
         let consts = ip::Constants::pinned();
         let enables = [true, true, true, true, false, false];
-        let pubios: Vec<[Val; MCHAIN_PUBIO]> =
-            (0..enables.len() as u32).map(|r| mc_pubio(40 + r)).collect();
+        let pubios: Vec<[Val; MCHAIN_PUBIO]> = (0..enables.len() as u32)
+            .map(|r| mc_pubio(40 + r))
+            .collect();
         let (flat, _out, _count) = build_chain_trace(&enables, &pubios, &consts);
         let (mut digest, n) = independent_batch_digest(&enables, &pubios);
         let m = RowMajorMatrix::new(flat, MC_COLS);
@@ -5804,8 +6183,9 @@ mod tests {
     fn mchain_rejects_wrong_public_n() {
         let consts = ip::Constants::pinned();
         let enables = [true, true, true, false];
-        let pubios: Vec<[Val; MCHAIN_PUBIO]> =
-            (0..enables.len() as u32).map(|r| mc_pubio(60 + r)).collect();
+        let pubios: Vec<[Val; MCHAIN_PUBIO]> = (0..enables.len() as u32)
+            .map(|r| mc_pubio(60 + r))
+            .collect();
         let (flat, _out, count) = build_chain_trace(&enables, &pubios, &consts);
         let (digest, n) = independent_batch_digest(&enables, &pubios);
         let m = RowMajorMatrix::new(flat, MC_COLS);
@@ -5826,8 +6206,9 @@ mod tests {
     fn mchain_rejects_broken_cross_row_transition() {
         let consts = ip::Constants::pinned();
         let enables = [true, true, true, true, false];
-        let pubios: Vec<[Val; MCHAIN_PUBIO]> =
-            (0..enables.len() as u32).map(|r| mc_pubio(80 + r)).collect();
+        let pubios: Vec<[Val; MCHAIN_PUBIO]> = (0..enables.len() as u32)
+            .map(|r| mc_pubio(80 + r))
+            .collect();
         let (flat, _out, _count) = build_chain_trace(&enables, &pubios, &consts);
         let (digest, n) = independent_batch_digest(&enables, &pubios);
         let mut m = RowMajorMatrix::new(flat, MC_COLS);
@@ -5866,8 +6247,9 @@ mod tests {
         let consts = ip::Constants::pinned();
         // 1,1,0,1 — the re-enable at row 3 after the disable at row 2 is the violation.
         let enables = [true, true, false, true];
-        let pubios: Vec<[Val; MCHAIN_PUBIO]> =
-            (0..enables.len() as u32).map(|r| mc_pubio(90 + r)).collect();
+        let pubios: Vec<[Val; MCHAIN_PUBIO]> = (0..enables.len() as u32)
+            .map(|r| mc_pubio(90 + r))
+            .collect();
         // build honestly with this (consistent) pattern, so ONLY the monotone-enable transition fires.
         let (flat, last_out, count) = build_chain_trace(&enables, &pubios, &consts);
         let digest: [Val; CHAIN_DIGEST_ELEMS] = core::array::from_fn(|c| last_out[c]);
@@ -5887,8 +6269,9 @@ mod tests {
     fn mchain_rejects_tampered_pubio_lane() {
         let consts = ip::Constants::pinned();
         let enables = [true, true, true, true, false, false];
-        let pubios: Vec<[Val; MCHAIN_PUBIO]> =
-            (0..enables.len() as u32).map(|r| mc_pubio(110 + r)).collect();
+        let pubios: Vec<[Val; MCHAIN_PUBIO]> = (0..enables.len() as u32)
+            .map(|r| mc_pubio(110 + r))
+            .collect();
         let (flat, _out, _count) = build_chain_trace(&enables, &pubios, &consts);
         let (digest, n) = independent_batch_digest(&enables, &pubios);
         let mut m = RowMajorMatrix::new(flat, MC_COLS);
@@ -5909,8 +6292,9 @@ mod tests {
         use crate::inlined_perm::C_BEGIN_POST;
         let consts = ip::Constants::pinned();
         let enables = [true, true, true, false];
-        let pubios: Vec<[Val; MCHAIN_PUBIO]> =
-            (0..enables.len() as u32).map(|r| mc_pubio(130 + r)).collect();
+        let pubios: Vec<[Val; MCHAIN_PUBIO]> = (0..enables.len() as u32)
+            .map(|r| mc_pubio(130 + r))
+            .collect();
         let (flat, _out, _count) = build_chain_trace(&enables, &pubios, &consts);
         let (digest, n) = independent_batch_digest(&enables, &pubios);
         let mut m = RowMajorMatrix::new(flat, MC_COLS);
@@ -5928,8 +6312,9 @@ mod tests {
     fn mchain_rejects_broken_count_accumulator() {
         let consts = ip::Constants::pinned();
         let enables = [true, true, true, true];
-        let pubios: Vec<[Val; MCHAIN_PUBIO]> =
-            (0..enables.len() as u32).map(|r| mc_pubio(150 + r)).collect();
+        let pubios: Vec<[Val; MCHAIN_PUBIO]> = (0..enables.len() as u32)
+            .map(|r| mc_pubio(150 + r))
+            .collect();
         let (flat, _out, count) = build_chain_trace(&enables, &pubios, &consts);
         let (digest, n) = independent_batch_digest(&enables, &pubios);
         let mut m = RowMajorMatrix::new(flat, MC_COLS);
@@ -5976,9 +6361,8 @@ mod czeta_fold_prove_tests {
             let main = builder.main();
             let local = main.current_slice().to_vec();
             let public = builder.public_values().to_vec();
-            let cell = |c: usize| -> [AB::Expr; D] {
-                core::array::from_fn(|i| local[c * D + i].into())
-            };
+            let cell =
+                |c: usize| -> [AB::Expr; D] { core::array::from_fn(|i| local[c * D + i].into()) };
             let apow = |i: usize| -> [AB::Expr; D] {
                 core::array::from_fn(|j| local[APOW_OFF + i * D + j].into())
             };
@@ -6000,7 +6384,11 @@ mod czeta_fold_prove_tests {
         })
     }
 
-    fn build(c4: [u32; C4_LANES], pad_seed: u32, alpha: Challenge) -> (RowMajorMatrix<Val>, Vec<Val>) {
+    fn build(
+        c4: [u32; C4_LANES],
+        pad_seed: u32,
+        alpha: Challenge,
+    ) -> (RowMajorMatrix<Val>, Vec<Val>) {
         let cells = honest_cells_for_test(c4, pad_seed);
         let (apow, accv) = c_partial_accumulator_values(&cells, alpha);
         let mut row = vec![Val::ZERO; WIDTH_COLS];
@@ -6014,7 +6402,11 @@ mod czeta_fold_prove_tests {
         }
         let result = accv[K - 1];
         // FIDELITY: the committed fold result equals the native partial_constraint_eval.
-        assert_eq!(result, partial_constraint_eval(&cells, alpha), "fold != native C_partial");
+        assert_eq!(
+            result,
+            partial_constraint_eval(&cells, alpha),
+            "fold != native C_partial"
+        );
         let pv = limbs(result).to_vec();
         let mut values = Vec::with_capacity(2 * WIDTH_COLS);
         values.extend_from_slice(&row);
@@ -6041,15 +6433,26 @@ mod czeta_fold_prove_tests {
         use p3_merkle_tree::MerkleTreeMmcs;
         use p3_uni_stark::{prove, verify, StarkConfig};
 
-        type ValMmcs = MerkleTreeMmcs<<Val as Field>::Packing, <Val as Field>::Packing, MyHash, MyCompress, 2, DIGEST_ELEMS>;
+        type ValMmcs = MerkleTreeMmcs<
+            <Val as Field>::Packing,
+            <Val as Field>::Packing,
+            MyHash,
+            MyCompress,
+            2,
+            DIGEST_ELEMS,
+        >;
         type ChallengeMmcs = ExtensionMmcs<Val, Ch, ValMmcs>;
         type DftT = Radix2DitParallel<Val>;
         type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
-        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 7>;
         type OuterConfig = StarkConfig<Pcs, Ch, MyChallenger>;
 
         let perm: Perm = default_koalabear_poseidon2_16();
-        let val_mmcs = ValMmcs::new(MyHash::new(perm.clone()), MyCompress::new(MyHash::new(perm.clone())), 0);
+        let val_mmcs = ValMmcs::new(
+            MyHash::new(perm.clone()),
+            MyCompress::new(MyHash::new(perm.clone())),
+            0,
+        );
         let challenge_mmcs = ChallengeMmcs::new(val_mmcs.clone());
         let fri_params = FriParameters {
             log_blowup: PROD_LOG_BLOWUP,

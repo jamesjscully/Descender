@@ -13,12 +13,14 @@
 //!
 //! Why the mask channel is the real hiding channel: `masked_projection` is PUBLIC
 //! and equals `account_projection[j] + masks[j] (mod q12289)` where
-//! `masks = Poseidon2-PRF(pad_seed ‖ slot) mod q12289`. So `account_projection`
+//! `masks = Poseidon2-PRF(MASK ‖ pad_seed ‖ slot) mod q12289`. So `account_projection`
 //! hiding rests on the MASK being ~uniform over Z_q (a one-time pad mod q), NOT on
 //! FRI opening hiding. If the mask is ~uniform, `masked_projection` is ~uniform and
 //! independent of `account_projection`, so `account_projection` is unrecoverable
 //! from the public statement. The residual non-uniformity is the
-//! folding-to-q12289 of a 31-bit Poseidon2 output: bias <= q/2^31 ~ 2^-141.
+//! six-lane wide reduction from KoalaBear outputs. After charging all six mask
+//! lanes and the selected 2^32-account horizon, that reduction term remains
+//! below 2^-137.
 
 use descender_account_stark::{
     padseed_witness_column, prove_account_creation, prove_account_creation_with_seed,
@@ -165,7 +167,10 @@ fn default_path_decorrelates_proofs_of_same_witness() {
     let (pub_b, proof_b) = prove_account_creation(&s).expect("prove b (fresh rng)");
 
     // Same witness+context -> identical PUBLIC statement.
-    assert_eq!(pub_a, pub_b, "same witness must yield same public statement");
+    assert_eq!(
+        pub_a, pub_b,
+        "same witness must yield same public statement"
+    );
 
     // But the ZK randomness must differ: opened trace values and/or trace
     // commitment must not be byte-identical across the two fresh-randomness proofs.
@@ -188,7 +193,10 @@ fn default_path_decorrelates_proofs_of_same_witness() {
     let rb = proof_b.opened_values.trace_local[col];
     assert_ne!(ra, target, "opened pad_seed byte recovered (proof a)");
     assert_ne!(rb, target, "opened pad_seed byte recovered (proof b)");
-    assert_ne!(ra, rb, "opened pad_seed column identical across fresh proofs (not randomized)");
+    assert_ne!(
+        ra, rb,
+        "opened pad_seed column identical across fresh proofs (not randomized)"
+    );
 }
 
 // ===========================================================================

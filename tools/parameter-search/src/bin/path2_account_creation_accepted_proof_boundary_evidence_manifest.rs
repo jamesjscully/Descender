@@ -1,4 +1,4 @@
-#![recursion_limit = "256"]
+#![recursion_limit = "512"]
 
 #[cfg(not(feature = "account-creation-stark-verifier"))]
 fn main() -> Result<(), String> {
@@ -11,10 +11,10 @@ fn main() -> Result<(), String> {
 #[cfg(feature = "account-creation-stark-verifier")]
 mod enabled {
     use descender_parameter_search::production_reference::{
-        path2_account_creation_accepted_proof_boundary_evidence_v1,
-        path2_account_creation_accepted_proof_boundary_evidence_v1_digest, PROFILE,
+        PROFILE, path2_account_creation_accepted_proof_boundary_evidence_v1,
+        path2_account_creation_accepted_proof_boundary_evidence_v1_digest,
     };
-    use serde_json::{json, Value};
+    use serde_json::{Value, json};
     use sha2::{Digest, Sha256};
 
     fn hex_encode(bytes: &[u8]) -> String {
@@ -229,6 +229,8 @@ mod enabled {
                     evidence.deployed_anchor_role_root_export_bridge_bound,
                 "deployed_anchor_packed_witness_commitment_bound":
                     evidence.deployed_anchor_packed_witness_commitment_bound,
+                "deployed_anchor_pad_seed_nullifier_bound":
+                    evidence.deployed_anchor_pad_seed_nullifier_bound,
                 "deployed_anchor_fields_match_report":
                     evidence.deployed_anchor_fields_match_report,
                 "account_stark_bundle_nonempty": evidence.account_stark_bundle_nonempty,

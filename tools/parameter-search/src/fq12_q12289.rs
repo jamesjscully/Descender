@@ -25,7 +25,7 @@
 //!
 //! Base-field ops are reused from `crate::poseidon2_q12289`.
 
-use crate::poseidon2_q12289::{fq_add, fq_from_u32, fq_mul, fq_sub, Q};
+use crate::poseidon2_q12289::{Q, fq_add, fq_from_u32, fq_mul, fq_sub};
 
 /// Extension degree.
 pub const N: usize = 12;

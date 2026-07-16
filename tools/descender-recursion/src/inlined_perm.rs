@@ -105,22 +105,22 @@ pub fn internal_diag() -> [Val; WIDTH] {
     let inv_2exp = |k: u64| Val::from_u32(2).exp_u64(k).inverse();
     let half = Val::from_u32(2).inverse(); // 1/2
     [
-        -Val::from_u32(2),  // -2
-        Val::ONE,           // 1
-        Val::from_u32(2),   // 2
-        half,               // 1/2
-        Val::from_u32(3),   // 3
-        Val::from_u32(4),   // 4
-        -half,              // -1/2
-        -Val::from_u32(3),  // -3
-        -Val::from_u32(4),  // -4
-        inv_2exp(8),        // 1/2^8
-        inv_2exp(3),        // 1/8
-        inv_2exp(24),       // 1/2^24
-        -inv_2exp(8),       // -1/2^8
-        -inv_2exp(3),       // -1/8
-        -inv_2exp(4),       // -1/16
-        -inv_2exp(24),      // -1/2^24
+        -Val::from_u32(2), // -2
+        Val::ONE,          // 1
+        Val::from_u32(2),  // 2
+        half,              // 1/2
+        Val::from_u32(3),  // 3
+        Val::from_u32(4),  // 4
+        -half,             // -1/2
+        -Val::from_u32(3), // -3
+        -Val::from_u32(4), // -4
+        inv_2exp(8),       // 1/2^8
+        inv_2exp(3),       // 1/8
+        inv_2exp(24),      // 1/2^24
+        -inv_2exp(8),      // -1/2^8
+        -inv_2exp(3),      // -1/8
+        -inv_2exp(4),      // -1/16
+        -inv_2exp(24),     // -1/2^24
     ]
 }
 
@@ -316,8 +316,7 @@ pub fn eval_perm<AB: AirBuilder<F = Val>, C: PermCells<AB>>(
     offset: usize,
     consts: &ConstantsExpr<AB>,
 ) {
-    let mut state: [AB::Expr; WIDTH] =
-        core::array::from_fn(|i| cells.at(offset + C_INPUTS + i));
+    let mut state: [AB::Expr; WIDTH] = core::array::from_fn(|i| cells.at(offset + C_INPUTS + i));
     layers::external_linear_layer(&mut state);
 
     for r in 0..HALF_FULL_ROUNDS {
@@ -421,7 +420,16 @@ mod tests {
     fn byte_pinned_constants_match_deployed_permutation() {
         let c = Constants::pinned();
         let perm = default_koalabear_poseidon2_16();
-        for seed in [0u32, 1, 7, 0xDEAD_BEEF, 0x0123_4567, 0xFFFF_FFFF, 12289, 0x7eff_ffff] {
+        for seed in [
+            0u32,
+            1,
+            7,
+            0xDEAD_BEEF,
+            0x0123_4567,
+            0xFFFF_FFFF,
+            12289,
+            0x7eff_ffff,
+        ] {
             let input = sample_input(seed);
             let cols = generate_perm_cols(input, &c);
             let got = perm_output(&cols);
@@ -438,12 +446,17 @@ mod tests {
     #[test]
     fn air_accepts_honest_perm_trace() {
         let c = Constants::pinned();
-        let rows: alloc::vec::Vec<[Val; PERM_COLS]> =
-            (0..4u32).map(|s| generate_perm_cols(sample_input(s), &c)).collect();
+        let rows: alloc::vec::Vec<[Val; PERM_COLS]> = (0..4u32)
+            .map(|s| generate_perm_cols(sample_input(s), &c))
+            .collect();
         let flat: alloc::vec::Vec<Val> = rows.iter().flat_map(|r| r.iter().copied()).collect();
         let m = RowMajorMatrix::new(flat, PERM_COLS);
         let report = check_all_constraints(&PermAir, &m, &[], None);
-        assert!(report.is_ok(), "honest inlined perm trace failed: {} failures", report.failures.len());
+        assert!(
+            report.is_ok(),
+            "honest inlined perm trace failed: {} failures",
+            report.failures.len()
+        );
     }
 
     /// Tamper an input lane ⇒ rejected (the first beginning-full-round post no longer matches).

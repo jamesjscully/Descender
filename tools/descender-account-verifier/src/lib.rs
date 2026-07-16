@@ -29,6 +29,7 @@
 //! | `masked_projection[6]`    | direct equality (q-residues as u16)                |
 //! | `native_role_root_commitment` | **export bridge** `sha256(DS ‖ role_root)`     |
 //! | `packed_witness_commitment` | direct equality (byte-encoded syndrome/projection commitment) |
+//! | `pad_seed_nullifier`      | direct equality (8 canonical little-endian field limbs) |
 //!
 //! ### The one named seam: the role-root export bridge
 //!
@@ -49,9 +50,9 @@ use sha2::{Digest, Sha256};
 // ---------------------------------------------------------------------------
 pub use descender_account_stark::{
     prove_account_creation, prove_account_creation_with_seed, AccountCreationPublic,
-    AccountCreationSecrets, Error as StarkError, Proof, Val, KEY_COMMITMENT_BYTES, N_COMMIT_LANES,
-    N_LANES, NULLIFIER_ELEMS, PACKED_WITNESS_COMMITMENT_BYTES, RELATION_ID_ELEMS, ROLE_ROOT_ELEMS,
-    SYNDROME_LANES,
+    AccountCreationSecrets, Error as StarkError, Proof, Val, COMMITMENT_NONCE_BYTES,
+    KEY_COMMITMENT_BYTES, NULLIFIER_ELEMS, N_COMMIT_LANES, N_LANES,
+    PACKED_WITNESS_COMMITMENT_BYTES, RELATION_ID_ELEMS, ROLE_ROOT_ELEMS, SYNDROME_LANES,
 };
 pub use descender_account_stark::{
     PROD_LOG_BLOWUP, PROD_NUM_QUERIES, PROD_QUERY_POW_BITS, PROD_SOUNDNESS_BITS,
@@ -76,6 +77,18 @@ pub fn role_root_export_digest(role_root: &[Val]) -> [u8; 32] {
     h.finalize().into()
 }
 
+/// Stable registry-key encoding of the in-circuit CLASS A-2 nullifier.
+///
+/// The encoding intentionally excludes verifier/profile versions. Exact
+/// `(pad_seed, slot)` reuse must remain occupied across software upgrades.
+pub fn creation_nullifier_v1_bytes(public: &AccountCreationPublic) -> [u8; NULLIFIER_ELEMS * 4] {
+    let mut out = [0u8; NULLIFIER_ELEMS * 4];
+    for (index, value) in public.nullifier.iter().enumerate() {
+        out[index * 4..index * 4 + 4].copy_from_slice(&value.as_canonical_u32().to_le_bytes());
+    }
+    out
+}
+
 /// Plain-data (NO Plonky3 types) anchors the deployed admission leaf can supply.
 /// `descender-parameter-search` builds this from its leaf/evidence/view WITHOUT
 /// touching any `p3-*` type, then hands it (plus the opaque bundle bytes) to
@@ -97,6 +110,11 @@ pub struct DeployedCreationAnchors {
     /// the EXACT packed witness the spend's checked-core frame consumes — closing
     /// MED-2 (the syndrome was otherwise an unanchored prover-chosen public input).
     pub packed_witness_commitment: [u8; PACKED_WITNESS_COMMITMENT_BYTES],
+    /// Stable canonical encoding of the in-circuit CLASS A-2 nullifier. The
+    /// registry key is these eight little-endian field limbs without a verifier
+    /// version prefix, so a version change cannot make an occupied nullifier
+    /// reusable.
+    pub pad_seed_nullifier: [u8; NULLIFIER_ELEMS * 4],
 }
 
 /// Plain decoded public anchors from the opaque account-creation bundle.
@@ -114,6 +132,29 @@ pub struct DecodedCreationPublicAnchors {
     pub masked_projection: [u16; 6],
     pub native_role_root_commitment: [u8; 32],
     pub packed_witness_commitment: [u8; PACKED_WITNESS_COMMITMENT_BYTES],
+    pub pad_seed_nullifier: [u8; NULLIFIER_ELEMS * 4],
+}
+
+/// Public anchors whose account-STARK proof and deployed anchor equalities have
+/// both been verified. Construction is intentionally private so consensus code
+/// cannot register a caller-selected nullifier obtained from the decode-only API.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct VerifiedCreationPublicAnchors {
+    decoded: DecodedCreationPublicAnchors,
+}
+
+impl VerifiedCreationPublicAnchors {
+    pub fn decoded(&self) -> &DecodedCreationPublicAnchors {
+        &self.decoded
+    }
+
+    pub fn into_decoded(self) -> DecodedCreationPublicAnchors {
+        self.decoded
+    }
+
+    pub fn pad_seed_nullifier(&self) -> [u8; NULLIFIER_ELEMS * 4] {
+        self.decoded.pad_seed_nullifier
+    }
 }
 
 /// Verification / binding failure.
@@ -184,6 +225,11 @@ fn u32s_to_vals<const N: usize>(xs: &[u32], what: &str) -> Result<[Val; N], Veri
     }
     let mut out = [Val::ZERO; N];
     for (i, &x) in xs.iter().enumerate() {
+        if x >= Val::ORDER_U32 {
+            return Err(VerifyError::Decode(format!(
+                "{what}[{i}] = {x} is not a canonical KoalaBear field element"
+            )));
+        }
         out[i] = Val::from_u32(x);
     }
     Ok(out)
@@ -206,6 +252,31 @@ fn public_to_wire(p: &AccountCreationPublic) -> PublicWire {
         packed_witness_commitment: vals_to_u32(&p.packed_witness_commitment),
         checked_core_key_commitment: vals_to_u32(&p.checked_core_key_commitment),
     }
+}
+
+/// Canonical transport encoding of the public account-creation statement only.
+///
+/// A zero-knowledge simulator consumes this statement surface and produces the
+/// proof portion of a bundle. It must not receive the already-produced proof
+/// bytes (or a digest of the complete replay payload) as an input.
+pub fn pack_public_statement(public: &AccountCreationPublic) -> Result<Vec<u8>, VerifyError> {
+    bincode::serialize(&public_to_wire(public))
+        .map_err(|e| VerifyError::Decode(format!("public statement encode: {e}")))
+}
+
+/// Decode the canonical public-statement transport without any proof bytes.
+pub fn unpack_public_statement(bytes: &[u8]) -> Result<AccountCreationPublic, VerifyError> {
+    let wire: PublicWire = bincode::deserialize(bytes)
+        .map_err(|e| VerifyError::Decode(format!("public statement: {e}")))?;
+    wire_to_public(&wire)
+}
+
+/// Extract and canonically re-encode only the public statement from a bundle.
+pub fn public_statement_bytes_from_bundle(bundle: &[u8]) -> Result<Vec<u8>, VerifyError> {
+    let wire: BundleWire =
+        bincode::deserialize(bundle).map_err(|e| VerifyError::Decode(format!("bundle: {e}")))?;
+    bincode::serialize(&wire.public)
+        .map_err(|e| VerifyError::Decode(format!("public statement encode: {e}")))
 }
 
 fn wire_to_public(w: &PublicWire) -> Result<AccountCreationPublic, VerifyError> {
@@ -286,6 +357,8 @@ fn decoded_creation_public_anchors(
         packed_witness_commitment[index] = byte as u8;
     }
 
+    let pad_seed_nullifier = creation_nullifier_v1_bytes(public);
+
     Ok(DecodedCreationPublicAnchors {
         account_id: public.account_id,
         slot_id: public.slot_id,
@@ -295,6 +368,7 @@ fn decoded_creation_public_anchors(
         masked_projection,
         native_role_root_commitment: role_root_export_digest(&public.role_root),
         packed_witness_commitment,
+        pad_seed_nullifier,
     })
 }
 
@@ -314,10 +388,10 @@ pub fn decode_deployed_account_creation_public_anchors(
 /// (direct equalities + the role-root export bridge). Returns `Ok(())` only if
 /// the proof is valid AND attests THIS account/slot/state/lifecycle/version with
 /// THIS masked projection and role root.
-pub fn verify_deployed_account_creation(
+pub fn verify_and_decode_deployed_account_creation(
     bundle: &[u8],
     anchors: &DeployedCreationAnchors,
-) -> Result<(), VerifyError> {
+) -> Result<VerifiedCreationPublicAnchors, VerifyError> {
     let (public, proof) = unpack_bundle(bundle)?;
 
     // 1. The STARK relation (C1∧C2∧C4∧C6 + 8 classes) must verify.
@@ -383,7 +457,20 @@ pub fn verify_deployed_account_creation(
         }
     }
 
-    Ok(())
+    let decoded = decoded_creation_public_anchors(&public)?;
+    if decoded.pad_seed_nullifier != anchors.pad_seed_nullifier {
+        return Err(VerifyError::AnchorMismatch("pad_seed_nullifier".into()));
+    }
+
+    Ok(VerifiedCreationPublicAnchors { decoded })
+}
+
+/// Verify the deployed account-creation proof and all anchor equalities.
+pub fn verify_deployed_account_creation(
+    bundle: &[u8],
+    anchors: &DeployedCreationAnchors,
+) -> Result<(), VerifyError> {
+    verify_and_decode_deployed_account_creation(bundle, anchors).map(|_| ())
 }
 
 #[cfg(test)]
@@ -418,6 +505,56 @@ mod tests {
             digest,
             role_root_export_digest(&reordered),
             "role-root export bridge must be order-sensitive"
+        );
+    }
+
+    #[test]
+    fn public_wire_field_elements_must_be_canonical() {
+        let error = u32s_to_vals::<1>(&[Val::ORDER_U32], "nullifier").unwrap_err();
+        match error {
+            VerifyError::Decode(message) => assert_eq!(
+                message,
+                format!(
+                    "nullifier[0] = {} is not a canonical KoalaBear field element",
+                    Val::ORDER_U32
+                )
+            ),
+            other => panic!("unexpected canonical-wire error: {other}"),
+        }
+    }
+
+    #[test]
+    fn creation_nullifier_bytes_are_canonical_and_version_independent() {
+        let nullifier = core::array::from_fn(|index| Val::from_u32((index as u32 * 17) + 1));
+        let public = AccountCreationPublic {
+            pad_source_commitment: [Val::ZERO; N_COMMIT_LANES],
+            opening_tuple_commitment: [Val::ZERO; N_COMMIT_LANES],
+            masked_projection: [Val::ZERO; N_LANES],
+            account_id: [0_u8; 32],
+            slot_id: 0,
+            verifier_version: 1,
+            account_state_root: [0_u8; 32],
+            lifecycle_anchor: [0_u8; 32],
+            role_root: [Val::ZERO; ROLE_ROOT_ELEMS],
+            nullifier,
+            relation_id: [Val::ZERO; RELATION_ID_ELEMS],
+            syndrome: [Val::ZERO; SYNDROME_LANES],
+            packed_witness_commitment: [Val::ZERO; PACKED_WITNESS_COMMITMENT_BYTES],
+            checked_core_key_commitment: [Val::ZERO; KEY_COMMITMENT_BYTES],
+        };
+        let mut expected = [0_u8; NULLIFIER_ELEMS * 4];
+        for (index, value) in nullifier.iter().enumerate() {
+            expected[index * 4..(index + 1) * 4]
+                .copy_from_slice(&value.as_canonical_u32().to_le_bytes());
+        }
+        assert_eq!(creation_nullifier_v1_bytes(&public), expected);
+
+        let mut next_version = public;
+        next_version.verifier_version = 2;
+        assert_eq!(
+            creation_nullifier_v1_bytes(&next_version),
+            expected,
+            "verifier version must not partition the global nullifier key"
         );
     }
 }

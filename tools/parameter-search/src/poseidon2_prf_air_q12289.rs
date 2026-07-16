@@ -111,11 +111,11 @@
 //! linking/range constraint is degree <= 2.
 
 use crate::poseidon2_air_q12289::{
-    self as perm_air, generate_trace as gen_perm_trace, Trace as PermTrace,
+    self as perm_air, Trace as PermTrace, generate_trace as gen_perm_trace,
 };
 use crate::poseidon2_q12289::{
-    fq_add, fq_from_u32, fq_mul, fq_sub, init_capacity, Poseidon2Params, CAPACITY,
-    POSEIDON2_PROJECTION_MASK_DOMAIN, PROJECTION_MASK_LANES, RATE, T,
+    CAPACITY, POSEIDON2_PROJECTION_MASK_DOMAIN, PROJECTION_MASK_LANES, Poseidon2Params, RATE, T,
+    fq_add, fq_from_u32, fq_mul, fq_sub, init_capacity,
 };
 
 // -----------------------------------------------------------------------------
@@ -413,7 +413,10 @@ pub fn all_residuals(
             .enumerate()
         {
             out.push(Residual {
-                kind: ResidualKind::Perm { perm: p, index: idx },
+                kind: ResidualKind::Perm {
+                    perm: p,
+                    index: idx,
+                },
                 value: r.value,
             });
         }
@@ -568,7 +571,7 @@ pub const MAX_DEGREE: u32 = 5;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::poseidon2_q12289::{projection_masks_poseidon2, Q};
+    use crate::poseidon2_q12289::{Q, projection_masks_poseidon2};
 
     fn xorshift(s: &mut u64) -> u64 {
         *s ^= *s << 13;
@@ -599,7 +602,10 @@ mod tests {
         let plan = build_plan();
         for (p, role) in plan.roles.iter().enumerate() {
             if p < 9 {
-                assert!(matches!(role, PermRole::Absorb { .. }), "perm {p} not absorb");
+                assert!(
+                    matches!(role, PermRole::Absorb { .. }),
+                    "perm {p} not absorb"
+                );
             } else {
                 assert!(matches!(role, PermRole::Squeeze), "perm {p} not squeeze");
             }
@@ -628,7 +634,11 @@ mod tests {
         let params = Poseidon2Params::new();
         let masks = claimed_masks(&trace);
         let residuals = all_residuals(&params, &trace, &masks);
-        assert_eq!(residuals.len(), n_constraints(), "constraint count mismatch");
+        assert_eq!(
+            residuals.len(),
+            n_constraints(),
+            "constraint count mismatch"
+        );
         assert_eq!(MAX_DEGREE, 5);
     }
 
@@ -690,8 +700,8 @@ mod tests {
         t.input_lanes[5] = fq_add(t.input_lanes[5], 1);
         let res = all_residuals(&params, &t, &masks);
         assert!(
-            res.iter().any(|r| r.value != 0
-                && matches!(r.kind, ResidualKind::BitRecompose { lane: 5 })),
+            res.iter()
+                .any(|r| r.value != 0 && matches!(r.kind, ResidualKind::BitRecompose { lane: 5 })),
             "stale-bits lane mutation not caught by recompose"
         );
 
@@ -720,8 +730,8 @@ mod tests {
         t.subs[4].rows[30][9] = fq_add(t.subs[4].rows[30][9], 1);
         let res = all_residuals(&params, &t, &masks);
         assert!(
-            res.iter().any(|r| r.value != 0
-                && matches!(r.kind, ResidualKind::Perm { perm: 4, .. })),
+            res.iter()
+                .any(|r| r.value != 0 && matches!(r.kind, ResidualKind::Perm { perm: 4, .. })),
             "intermediate permutation cell mutation not caught by per-perm AIR"
         );
     }
@@ -741,8 +751,9 @@ mod tests {
         t.subs[3].rows[0][2] = fq_add(t.subs[3].rows[0][2], 1);
         let res = all_residuals(&params, &t, &masks);
         assert!(
-            res.iter().any(|r| r.value != 0
-                && matches!(r.kind, ResidualKind::AbsorbLink { perm: 3, lane: 2 })),
+            res.iter()
+                .any(|r| r.value != 0
+                    && matches!(r.kind, ResidualKind::AbsorbLink { perm: 3, lane: 2 })),
             "absorb-link cell mutation not caught by the link constraint"
         );
 
@@ -768,8 +779,8 @@ mod tests {
         masks[2] = fq_add(masks[2], 1);
         let res = all_residuals(&params, &trace, &masks);
         assert!(
-            res.iter().any(|r| r.value != 0
-                && matches!(r.kind, ResidualKind::MaskOutput { out: 2 })),
+            res.iter()
+                .any(|r| r.value != 0 && matches!(r.kind, ResidualKind::MaskOutput { out: 2 })),
             "claimed mask mutation (first squeeze) not caught"
         );
         // second-squeeze lane (mask 5)
@@ -777,8 +788,8 @@ mod tests {
         masks2[5] = fq_add(masks2[5], 1);
         let res2 = all_residuals(&params, &trace, &masks2);
         assert!(
-            res2.iter().any(|r| r.value != 0
-                && matches!(r.kind, ResidualKind::MaskOutput { out: 5 })),
+            res2.iter()
+                .any(|r| r.value != 0 && matches!(r.kind, ResidualKind::MaskOutput { out: 5 })),
             "claimed mask mutation (second squeeze) not caught"
         );
     }
@@ -800,8 +811,8 @@ mod tests {
         t.input_bits[0] = [0u32; BITS_PER_LANE];
         let res = all_residuals(&params, &t, &masks);
         assert!(
-            res.iter().any(|r| r.value != 0
-                && matches!(r.kind, ResidualKind::BitRecompose { lane: 0 })),
+            res.iter()
+                .any(|r| r.value != 0 && matches!(r.kind, ResidualKind::BitRecompose { lane: 0 })),
             "out-of-range byte (256, zero bits) not rejected by recompose"
         );
 
@@ -815,8 +826,9 @@ mod tests {
         t2.input_bits[0][0] = 256;
         let res2 = all_residuals(&params, &t2, &masks);
         assert!(
-            res2.iter().any(|r| r.value != 0
-                && matches!(r.kind, ResidualKind::BitBoolean { lane: 0, bit: 0 })),
+            res2.iter()
+                .any(|r| r.value != 0
+                    && matches!(r.kind, ResidualKind::BitBoolean { lane: 0, bit: 0 })),
             "non-boolean bit (256) not rejected by bit-boolean constraint"
         );
     }

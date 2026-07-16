@@ -3,12 +3,15 @@ use descender_parameter_search::{
     production_reference::{
         path2_account_creation_proof_boundary_report_v1,
         path2_account_creation_proof_boundary_report_v1_digest,
+        path2_direct_admission_boundary_report_v1,
+        path2_direct_admission_boundary_report_v1_digest,
         path2_direct_lifecycle_boundary_report_v1,
         path2_direct_lifecycle_boundary_report_v1_digest,
         path2_direct_qrom_action_boundary_report_v1,
         path2_direct_qrom_action_boundary_report_v1_digest,
         path2_direct_theorem_boundary_report_v1, path2_direct_theorem_boundary_report_v1_digest,
         validate_path2_account_creation_proof_boundary_report_v1,
+        validate_path2_direct_admission_boundary_report_v1,
         validate_path2_direct_lifecycle_boundary_report_v1,
         validate_path2_direct_qrom_action_boundary_report_v1,
         validate_path2_direct_theorem_boundary_report_v1,
@@ -225,6 +228,9 @@ fn main() -> Result<(), String> {
     let lifecycle_report = path2_direct_lifecycle_boundary_report_v1();
     validate_path2_direct_lifecycle_boundary_report_v1(&lifecycle_report)?;
     let lifecycle_digest = path2_direct_lifecycle_boundary_report_v1_digest(&lifecycle_report);
+    let admission_report = path2_direct_admission_boundary_report_v1();
+    validate_path2_direct_admission_boundary_report_v1(&admission_report)?;
+    let admission_digest = path2_direct_admission_boundary_report_v1_digest(&admission_report);
     let proof_report = path2_account_creation_proof_boundary_report_v1();
     validate_path2_account_creation_proof_boundary_report_v1(&proof_report)?;
     let proof_digest = path2_account_creation_proof_boundary_report_v1_digest(&proof_report);
@@ -240,6 +246,15 @@ fn main() -> Result<(), String> {
     {
         return Err(
             "direct theorem obligation vector corpus is not bound to direct report".to_string(),
+        );
+    }
+    if str_at(corpus, "/admission_boundary_report/digest")? != hex_encode(&admission_report.digest)
+        || str_at(corpus, "/admission_boundary_report/recomputed_digest")?
+            != hex_encode(&admission_digest)
+        || direct_report.direct_admission_boundary_report_digest != admission_report.digest
+    {
+        return Err(
+            "direct theorem obligation vector corpus is not bound to admission report".to_string(),
         );
     }
     let expected_direct_closure_dependencies =
@@ -604,8 +619,8 @@ fn main() -> Result<(), String> {
     )? || bool_at(corpus, "/audit_summary/all_cases_open")?
         || !bool_at(corpus, "/audit_summary/all_cases_have_named_break")?
         || !bool_at(corpus, "/audit_summary/all_open_cases_block_deployment")?
-        || open_direct_obligation_count != 6
-        || closed_direct_obligation_count != 3
+        || open_direct_obligation_count != 2
+        || closed_direct_obligation_count != 7
     {
         return Err(
             "direct theorem obligation vector corpus lost partial-close row invariants".to_string(),
@@ -637,11 +652,57 @@ fn main() -> Result<(), String> {
         }
     }
     for pointer in [
+        "/direct_theorem_report/composition_theorem_reduction_imported",
+        "/direct_theorem_report/composition_external_hypotheses_explicit",
+        "/direct_theorem_report/composition_capstone_under_explicit_named_assumptions_imported",
+        "/direct_theorem_report/direct_leaf_canonical_live_imported",
+        "/direct_theorem_report/direct_leaf_canonical_live_lifecycle_and_kat_hypothesis_explicit",
+        "/direct_theorem_report/direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle",
         "/direct_theorem_report/checked_core_frame_binding_imported",
         "/direct_theorem_report/slot_authorization_digest_imported",
+        "/direct_theorem_report/direct_evidence_leaf_binding_imported",
+        "/direct_theorem_report/direct_evidence_leaf_binding_proof_boundary_hypothesis_explicit",
+        "/direct_theorem_report/direct_evidence_leaf_binding_closed_by_frozen_kat",
+        "/direct_theorem_report/direct_admission_namespace_membership_imported",
+        "/direct_theorem_report/direct_admission_namespace_data_availability_hypothesis_explicit",
+        "/direct_theorem_report/direct_admission_namespace_and_data_availability_imported",
+        "/direct_theorem_report/direct_admission_namespace_closed_by_sovereign_state",
+        "/direct_theorem_report/direct_public_rejection_state_preserving_imported",
+        "/direct_theorem_report/direct_public_rejection_classifier_total",
+        "/direct_theorem_report/direct_public_rejection_all_classes_kat_covered",
+        "/direct_theorem_report/direct_public_rejection_panic_fail_closed_kat_covered",
+        "/direct_theorem_report/direct_public_rejection_all_public_objects_kat_covered",
+        "/direct_theorem_report/direct_public_rejection_target_client_mapping_complete",
+        "/direct_theorem_report/direct_public_rejection_consensus_kat_hypothesis_explicit",
         "/direct_theorem_report/lifecycle_transition_profile_verified",
+        "/direct_theorem_report/qrom_action_budget_bridge_imported",
+        "/direct_theorem_report/qrom_action_theorem_linkage_reduction_imported",
+        "/direct_theorem_report/qrom_action_review_hypothesis_explicit",
+        "/qrom_action_boundary_report/direct_qrom_action_budget_bridge_bound",
+        "/audit_summary/direct_leaf_canonical_live_imported",
+        "/audit_summary/direct_leaf_canonical_live_lifecycle_and_kat_hypothesis_explicit",
+        "/audit_summary/direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle",
         "/audit_summary/checked_core_frame_binding_imported",
         "/audit_summary/slot_authorization_digest_imported",
+        "/audit_summary/direct_evidence_leaf_binding_imported",
+        "/audit_summary/direct_evidence_leaf_binding_proof_boundary_hypothesis_explicit",
+        "/audit_summary/direct_evidence_leaf_binding_closed_by_frozen_kat",
+        "/audit_summary/direct_admission_namespace_membership_imported",
+        "/audit_summary/direct_admission_namespace_data_availability_hypothesis_explicit",
+        "/audit_summary/direct_admission_namespace_and_data_availability_imported",
+        "/audit_summary/direct_admission_namespace_closed_by_sovereign_state",
+        "/audit_summary/direct_public_rejection_state_preserving_imported",
+        "/audit_summary/direct_public_rejection_classifier_total",
+        "/audit_summary/direct_public_rejection_all_classes_kat_covered",
+        "/audit_summary/direct_public_rejection_panic_fail_closed_kat_covered",
+        "/audit_summary/direct_public_rejection_consensus_kat_hypothesis_explicit",
+        "/audit_summary/qrom_action_theorem_linkage_reduction_imported",
+        "/audit_summary/qrom_action_review_hypothesis_explicit",
+        "/audit_summary/composition_theorem_reduction_imported",
+        "/audit_summary/composition_external_hypotheses_explicit",
+        "/audit_summary/composition_capstone_under_explicit_named_assumptions_imported",
+        "/audit_summary/direct_public_rejection_all_public_objects_kat_covered",
+        "/audit_summary/direct_public_rejection_target_client_mapping_complete",
         "/lifecycle_boundary_report/target_chain_finality_profile_instantiated",
         "/lifecycle_boundary_report/target_chain_lifecycle_profile_review_pinned",
         "/lifecycle_boundary_report/target_chain_lifecycle_profile_verification_pinned",
@@ -831,6 +892,14 @@ fn main() -> Result<(), String> {
     )?;
     require_str(
         direct_manifest,
+        "/digests/direct_admission_boundary_report_digest",
+        str_at(
+            &direct_obligation_corpus_evidence,
+            "/direct_admission_boundary_report_digest",
+        )?,
+    )?;
+    require_str(
+        direct_manifest,
         "/digests/account_creation_proof_boundary_report_digest",
         str_at(
             &direct_obligation_corpus_evidence,
@@ -887,8 +956,12 @@ fn main() -> Result<(), String> {
             && !matches!(
                 case_id,
                 "direct_obligation_consume_once"
+                    | "direct_obligation_leaf_canonical_live"
+                    | "direct_obligation_evidence_leaf_bindings"
+                    | "direct_obligation_admission_namespace"
                     | "direct_obligation_checked_core_frame_binding"
                     | "direct_obligation_slot_authorization_digest"
+                    | "direct_obligation_public_rejection"
             )
         {
             return Err(format!(

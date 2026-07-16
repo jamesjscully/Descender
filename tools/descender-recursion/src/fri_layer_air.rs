@@ -27,9 +27,9 @@
 //! evals[1].limbs(0..8)]` = `2·D = 16` base elems (verified by [`tests::flatten_pair_is_element_major`]).
 //! The hiding MMCS then appends `SALT_ELEMS = 4` salt elems and the leaf digest is
 //! `MyHash(flatten(evals) ‖ salt)` (`hiding_mmcs.rs:174` + `MerkleTreeMmcs` leaf hashing) —
-//! EXACTLY the (b-hash) `PaddingFreeSponge<Perm,16,8,8>` schedule already PINned in
+//! EXACTLY the (b-hash) `PaddingFreeSponge<Perm,16,7,13>` schedule already PINned in
 //! [`crate::recursive_air::leaf_hash_digest`]. The node fold to `comm_r` is `MyCompress`
-//! (`TruncatedPermutation<Perm,2,8,16>`) — the SAME node layer [`crate::merkle_air`] mirrors.
+//! (digest-13 sponge compression) — the SAME node layer [`crate::merkle_air`] mirrors.
 //!
 //! ## What the AIR constrains (one row = one round's layer open)
 //!
@@ -84,7 +84,7 @@ use alloc::vec::Vec;
 /// can never silently re-merge.
 pub const D: usize = crate::fri_fold_air::D;
 /// The leaf-row hash (`MyHash`) sponge rate — `crate::leaf_hash::LEAF_HASH_RATE = 7` at q128,
-/// DISTINCT from the FS challenger rate (8) and the digest width (13).
+/// Kept as a separate constant from the FS challenger rate and digest width.
 pub const RATE: usize = crate::leaf_hash::LEAF_HASH_RATE;
 
 /// The flattened arity-2 leaf row: `[evals[0]; D] ‖ [evals[1]; D]`.
@@ -177,7 +177,11 @@ pub struct LayerInputs<'a> {
 /// The flattened arity-2 leaf row `[evals[0], evals[1]]` placed by parity: `evals[parity] = e_fold`,
 /// the other slot = `e_sib`. Mirrors p3-fri `verify_query` (verifier.rs:508-518).
 pub fn flatten_pair(e_fold: Challenge, e_sib: Challenge, parity: bool) -> [Val; LEAF_ROW_LEN] {
-    let (e0, e1) = if parity { (e_sib, e_fold) } else { (e_fold, e_sib) };
+    let (e0, e1) = if parity {
+        (e_sib, e_fold)
+    } else {
+        (e_fold, e_sib)
+    };
     let mut row = [Val::ZERO; LEAF_ROW_LEN];
     for (i, v) in e0.as_basis_coefficients_slice().iter().enumerate() {
         row[i] = *v;
@@ -189,20 +193,34 @@ pub fn flatten_pair(e_fold: Challenge, e_sib: Challenge, parity: bool) -> [Val; 
 }
 
 /// The salted leaf-hash input `flatten(evals) ‖ salt` for this round's layer leaf.
-pub fn leaf_input(e_fold: Challenge, e_sib: Challenge, parity: bool, salt: &[Val; SALT_ELEMS]) -> Vec<Val> {
+pub fn leaf_input(
+    e_fold: Challenge,
+    e_sib: Challenge,
+    parity: bool,
+    salt: &[Val; SALT_ELEMS],
+) -> Vec<Val> {
     let mut v = flatten_pair(e_fold, e_sib, parity).to_vec();
     v.extend_from_slice(salt);
     v
 }
 
 /// The layer leaf digest `MyHash(flatten(evals) ‖ salt)` — the value the Merkle path authenticates.
-pub fn layer_leaf_digest(e_fold: Challenge, e_sib: Challenge, parity: bool, salt: &[Val; SALT_ELEMS]) -> [Val; DIGEST_ELEMS] {
+pub fn layer_leaf_digest(
+    e_fold: Challenge,
+    e_sib: Challenge,
+    parity: bool,
+    salt: &[Val; SALT_ELEMS],
+) -> [Val; DIGEST_ELEMS] {
     leaf_hash_digest(&leaf_input(e_fold, e_sib, parity, salt))
 }
 
 /// Build one round's layer-open trace row.
 pub fn pack_layer(levels: usize, inp: &LayerInputs) -> Vec<Val> {
-    assert_eq!(inp.merkle_siblings.len(), levels, "merkle_siblings must have `levels` entries");
+    assert_eq!(
+        inp.merkle_siblings.len(),
+        levels,
+        "merkle_siblings must have `levels` entries"
+    );
     let parity = (inp.folded_index & 1) == 1;
     let consts = inlined_perm::Constants::pinned();
     let mut row = vec![Val::ZERO; n_cols(levels)];
@@ -251,7 +269,10 @@ pub fn pack_layer(levels: usize, inp: &LayerInputs) -> Vec<Val> {
         running = digest;
         node_idx >>= 1;
     }
-    debug_assert_eq!(running, inp.layer_commit, "in-AIR fold root != layer_commit (honest build)");
+    debug_assert_eq!(
+        running, inp.layer_commit,
+        "in-AIR fold root != layer_commit (honest build)"
+    );
     row
 }
 
@@ -320,11 +341,11 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for FriLayerOpenAir {
             let esib = l(C_E_SIB + i);
             builder.assert_zero(
                 l(C_EVAL0 + i)
-                    - ((one.clone() - parity.clone()) * efold.clone() + parity.clone() * esib.clone()),
+                    - ((one.clone() - parity.clone()) * efold.clone()
+                        + parity.clone() * esib.clone()),
             );
             builder.assert_zero(
-                l(C_EVAL1 + i)
-                    - ((one.clone() - parity.clone()) * esib + parity.clone() * efold),
+                l(C_EVAL1 + i) - ((one.clone() - parity.clone()) * esib + parity.clone() * efold),
             );
         }
 
@@ -368,15 +389,21 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for FriLayerOpenAir {
             let bit = l(lbase + ML_BIT);
             // combined = a ‖ b ordered by the selector bit: first DIGEST_ELEMS lanes are child a
             // = (1-bit)·running + bit·sibling, next DIGEST_ELEMS are child b = the other.
-            let run_e: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(lbase + ML_RUNNING + i)).collect();
-            let sib_e: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(lbase + ML_SIBLING + i)).collect();
+            let run_e: Vec<AB::Expr> = (0..DIGEST_ELEMS)
+                .map(|i| l(lbase + ML_RUNNING + i))
+                .collect();
+            let sib_e: Vec<AB::Expr> = (0..DIGEST_ELEMS)
+                .map(|i| l(lbase + ML_SIBLING + i))
+                .collect();
             let bit_c = bit.clone();
             let combined = |g: usize| -> AB::Expr {
                 if g < DIGEST_ELEMS {
-                    (one.clone() - bit_c.clone()) * run_e[g].clone() + bit_c.clone() * sib_e[g].clone()
+                    (one.clone() - bit_c.clone()) * run_e[g].clone()
+                        + bit_c.clone() * sib_e[g].clone()
                 } else {
                     let k = g - DIGEST_ELEMS;
-                    (one.clone() - bit_c.clone()) * sib_e[k].clone() + bit_c.clone() * run_e[k].clone()
+                    (one.clone() - bit_c.clone()) * sib_e[k].clone()
+                        + bit_c.clone() * run_e[k].clone()
                 }
             };
             eval_node::<AB, _, _>(builder, &cells, lbase + ML_PERM, combined, &consts);
@@ -533,8 +560,10 @@ mod tests {
             let c = compressor();
             let mut levels = vec![leaves.clone()];
             while leaves.len() > 1 {
-                let next: Vec<Digest> =
-                    leaves.chunks_exact(2).map(|p| c.compress([p[0], p[1]])).collect();
+                let next: Vec<Digest> = leaves
+                    .chunks_exact(2)
+                    .map(|p| c.compress([p[0], p[1]]))
+                    .collect();
                 levels.push(next.clone());
                 leaves = next;
             }
@@ -617,14 +646,19 @@ mod tests {
             })
             .collect();
         let tree = RefTree::new(leaves.clone());
-        let levels = FriLayerOpenAir { levels: node_levels };
+        let levels = FriLayerOpenAir {
+            levels: node_levels,
+        };
 
         // sanity: the real MMCS verifies an opening at some node row (anchors the deployed leaf+node
         // hashing — the salt-0 reference tree above mirrors it through `leaf_hash_digest`).
         for &node in &[0usize, 5] {
             let opening = mmcs.open_batch(node, &prover_data);
             let (opened_values, opening_proof) = opening.unpack();
-            let dims = [Dimensions { width, height: n_nodes }];
+            let dims = [Dimensions {
+                width,
+                height: n_nodes,
+            }];
             mmcs.verify_batch(
                 &commit,
                 &dims,
@@ -642,7 +676,11 @@ mod tests {
             let evals0 = Challenge::from_basis_coefficients_slice(&pair[..D]).unwrap();
             let evals1 = Challenge::from_basis_coefficients_slice(&pair[D..]).unwrap();
             // parity picks which slot is the folded value vs the sibling.
-            let (e_fold, e_sib) = if parity { (evals1, evals0) } else { (evals0, evals1) };
+            let (e_fold, e_sib) = if parity {
+                (evals1, evals0)
+            } else {
+                (evals0, evals1)
+            };
 
             let sibs = tree.auth_path(node);
             let root = tree.root();
@@ -656,18 +694,28 @@ mod tests {
             };
             let row = pack_layer(node_levels, &inp);
             // zero-residual: in-AIR fold root == reference root.
-            assert_eq!(layer_root(node_levels, &row), root, "in-AIR layer root != ref root at start {start_index}");
+            assert_eq!(
+                layer_root(node_levels, &row),
+                root,
+                "in-AIR layer root != ref root at start {start_index}"
+            );
             let m = RowMajorMatrix::new(row, n_cols(node_levels));
             let report = check_all_constraints(&levels, &m, &[], None);
-            assert!(report.is_ok(), "honest layer open rejected at start {start_index}: {} failures", report.failures.len());
+            assert!(
+                report.is_ok(),
+                "honest layer open rejected at start {start_index}: {} failures",
+                report.failures.len()
+            );
         }
         let _ = layer_commit; // real-MMCS root is over the salted-vs-unsalted variant; cross-checked via verify_batch above.
     }
 
     /// GOLDEN: an honest layer open over a reference tree (with a non-zero salt) ACCEPTS.
-    fn honest_layer(node_levels: usize, start_index: usize, salt_seed: u32)
-        -> (RowMajorMatrix<Val>, FriLayerOpenAir, Challenge, Challenge)
-    {
+    fn honest_layer(
+        node_levels: usize,
+        start_index: usize,
+        salt_seed: u32,
+    ) -> (RowMajorMatrix<Val>, FriLayerOpenAir, Challenge, Challenge) {
         let n_nodes = 1usize << node_levels;
         let node = start_index >> 1;
         let parity = (start_index & 1) == 1;
@@ -678,7 +726,13 @@ mod tests {
         // leaves are arbitrary (distinct) digests.
         let leaf = layer_leaf_digest(e_fold, e_sib, parity, &salt);
         let leaves: Vec<Digest> = (0..n_nodes)
-            .map(|r| if r == node { leaf } else { core::array::from_fn(|i| Val::from_u32((r as u32 + 1) * 7919 + i as u32)) })
+            .map(|r| {
+                if r == node {
+                    leaf
+                } else {
+                    core::array::from_fn(|i| Val::from_u32((r as u32 + 1) * 7919 + i as u32))
+                }
+            })
             .collect();
         let tree = RefTree::new(leaves);
         let sibs = tree.auth_path(node);
@@ -692,7 +746,14 @@ mod tests {
         };
         let row = pack_layer(node_levels, &inp);
         let m = RowMajorMatrix::new(row, n_cols(node_levels));
-        (m, FriLayerOpenAir { levels: node_levels }, e_fold, e_sib)
+        (
+            m,
+            FriLayerOpenAir {
+                levels: node_levels,
+            },
+            e_fold,
+            e_sib,
+        )
     }
 
     #[test]
@@ -700,7 +761,11 @@ mod tests {
         for &start in &[0usize, 1, 2, 7, 12, 30] {
             let (m, air, _, _) = honest_layer(5, start, 0x33 + start as u32);
             let report = check_all_constraints(&air, &m, &[], None);
-            assert!(report.is_ok(), "honest salted layer open rejected at start {start}: {} failures", report.failures.len());
+            assert!(
+                report.is_ok(),
+                "honest salted layer open rejected at start {start}: {} failures",
+                report.failures.len()
+            );
         }
     }
 
@@ -715,7 +780,10 @@ mod tests {
         // matching flattened pair lane so PLACEMENT still passes — the leaf hash must catch it.
         m.values[C_E_SIB + 1] += Val::ONE;
         m.values[C_EVAL1 + 1] += Val::ONE;
-        assert!(!check_all_constraints(&air, &m, &[], None).is_ok(), "tampered sibling accepted — layer open not load-bearing");
+        assert!(
+            !check_all_constraints(&air, &m, &[], None).is_ok(),
+            "tampered sibling accepted — layer open not load-bearing"
+        );
     }
 
     /// Forgery — TAMPERED SIBLING, placement left INCONSISTENT: tampering only `e_sib` is caught even
@@ -725,7 +793,10 @@ mod tests {
     fn air_rejects_tampered_sibling_placement_guard() {
         let (mut m, air, _, _) = honest_layer(5, 6, 0x41);
         m.values[C_E_SIB + 1] += Val::ONE; // only the exposed sibling; pair lane left stale.
-        assert!(!check_all_constraints(&air, &m, &[], None).is_ok(), "tampered e_sib (placement) accepted");
+        assert!(
+            !check_all_constraints(&air, &m, &[], None).is_ok(),
+            "tampered e_sib (placement) accepted"
+        );
     }
 
     /// Forgery — WRONG LAYER COMMITMENT: the bound root != the round-r commitment ⇒ rejected by the
@@ -734,7 +805,10 @@ mod tests {
     fn air_rejects_wrong_layer_commit() {
         let (mut m, air, _, _) = honest_layer(5, 6, 0x42);
         m.values[C_LAYER_COMMIT + 2] += Val::ONE;
-        assert!(!check_all_constraints(&air, &m, &[], None).is_ok(), "wrong layer commitment accepted");
+        assert!(
+            !check_all_constraints(&air, &m, &[], None).is_ok(),
+            "wrong layer commitment accepted"
+        );
     }
 
     /// Forgery — LAYER OPEN AT THE WRONG INDEX (non-FS node): present a valid path/leaf but claim a
@@ -746,7 +820,10 @@ mod tests {
         // honest folded_index is 6; claim 7 (flip bit 0 / parity) while leaving the actual parity
         // column + selectors honest ⇒ folded_index != parity + 2·Σ bit·2^j.
         m.values[C_FOLDED_INDEX] += Val::ONE;
-        assert!(!check_all_constraints(&air, &m, &[], None).is_ok(), "layer open at wrong index accepted — index binding vacuous");
+        assert!(
+            !check_all_constraints(&air, &m, &[], None).is_ok(),
+            "layer open at wrong index accepted — index binding vacuous"
+        );
     }
 
     /// Forgery — FLIPPED PATH SELECTOR: flip a level's node-selector bit (re-deriving its perm
@@ -764,13 +841,26 @@ mod tests {
         let leaf = layer_leaf_digest(e_fold, e_sib, parity, &salt);
         let n_nodes = 1usize << node_levels;
         let leaves: Vec<Digest> = (0..n_nodes)
-            .map(|r| if r == node { leaf } else { core::array::from_fn(|i| Val::from_u32((r as u32 + 1) * 104729 + i as u32)) })
+            .map(|r| {
+                if r == node {
+                    leaf
+                } else {
+                    core::array::from_fn(|i| Val::from_u32((r as u32 + 1) * 104729 + i as u32))
+                }
+            })
             .collect();
         let tree = RefTree::new(leaves);
         let sibs = tree.auth_path(node);
         // Build honestly then flip level-0's selector bit AND recompute its perm so the perm
         // constraints still pass — the wrong placement must be caught by the root + index binding.
-        let inp = LayerInputs { e_fold, e_sib, salt, folded_index: start, merkle_siblings: &sibs, layer_commit: tree.root() };
+        let inp = LayerInputs {
+            e_fold,
+            e_sib,
+            salt,
+            folded_index: start,
+            merkle_siblings: &sibs,
+            layer_commit: tree.root(),
+        };
         let mut row = pack_layer(node_levels, &inp);
         let consts = inlined_perm::Constants::pinned();
         let lbase = merkle_level_base(0);
@@ -779,14 +869,29 @@ mod tests {
         let cur_bit = row[lbase + ML_BIT] == Val::ONE;
         let new_bit = !cur_bit;
         row[lbase + ML_BIT] = if new_bit { Val::ONE } else { Val::ZERO };
-        let (a, b) = if new_bit { (sib0, running) } else { (running, sib0) };
+        let (a, b) = if new_bit {
+            (sib0, running)
+        } else {
+            (running, sib0)
+        };
         let mut combined = [Val::ZERO; ABSORB_LEN];
         combined[..DIGEST_ELEMS].copy_from_slice(&a);
         combined[DIGEST_ELEMS..].copy_from_slice(&b);
         let (blocks, _d) = node_blocks(&combined, &consts);
         row[lbase + ML_PERM..lbase + ML_PERM + N_PERM * PERM_COLS].copy_from_slice(&blocks);
         let m = RowMajorMatrix::new(row, n_cols(node_levels));
-        assert!(!check_all_constraints(&FriLayerOpenAir { levels: node_levels }, &m, &[], None).is_ok(), "flipped path selector accepted");
+        assert!(
+            !check_all_constraints(
+                &FriLayerOpenAir {
+                    levels: node_levels
+                },
+                &m,
+                &[],
+                None
+            )
+            .is_ok(),
+            "flipped path selector accepted"
+        );
     }
 
     // ---------------- final-poly check ----------------
@@ -799,8 +904,19 @@ mod tests {
         let folded = final_poly_eval(x, &coeffs);
         let row = pack_final_poly(x, folded, &coeffs);
         let m = RowMajorMatrix::new(row, fp_n_cols(coeffs.len()));
-        let report = check_all_constraints(&FinalPolyAir { fp_len: coeffs.len() }, &m, &[], None);
-        assert!(report.is_ok(), "honest final-poly check rejected: {} failures", report.failures.len());
+        let report = check_all_constraints(
+            &FinalPolyAir {
+                fp_len: coeffs.len(),
+            },
+            &m,
+            &[],
+            None,
+        );
+        assert!(
+            report.is_ok(),
+            "honest final-poly check rejected: {} failures",
+            report.failures.len()
+        );
     }
 
     /// GOLDEN: a constant final poly (`fp_len == 1`) — folded must equal the constant coefficient.
@@ -823,7 +939,18 @@ mod tests {
         let mut row = pack_final_poly(x, folded, &coeffs);
         row[FP_FOLDED + 3] += Val::ONE; // perturb the folded value off the curve.
         let m = RowMajorMatrix::new(row, fp_n_cols(coeffs.len()));
-        assert!(!check_all_constraints(&FinalPolyAir { fp_len: coeffs.len() }, &m, &[], None).is_ok(), "folded != final_poly(x) accepted");
+        assert!(
+            !check_all_constraints(
+                &FinalPolyAir {
+                    fp_len: coeffs.len()
+                },
+                &m,
+                &[],
+                None
+            )
+            .is_ok(),
+            "folded != final_poly(x) accepted"
+        );
     }
 
     /// Forgery — TAMPERED FINAL-POLY COEFFICIENT (the committed final poly): changing a coeff while
@@ -836,6 +963,17 @@ mod tests {
         let mut row = pack_final_poly(x, folded, &coeffs);
         row[fp_coeff_base(2) + 1] += Val::ONE; // tamper a committed coefficient.
         let m = RowMajorMatrix::new(row, fp_n_cols(coeffs.len()));
-        assert!(!check_all_constraints(&FinalPolyAir { fp_len: coeffs.len() }, &m, &[], None).is_ok(), "tampered final-poly coeff accepted");
+        assert!(
+            !check_all_constraints(
+                &FinalPolyAir {
+                    fp_len: coeffs.len()
+                },
+                &m,
+                &[],
+                None
+            )
+            .is_ok(),
+            "tampered final-poly coeff accepted"
+        );
     }
 }

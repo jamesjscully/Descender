@@ -47,7 +47,7 @@ pub fn fold_point(log_height: usize, index: usize) -> Val {
 pub fn fold_pair(e0: Challenge, e1: Challenge, beta: Challenge, s: Val) -> Challenge {
     let two_s = s.double();
     let inv = two_s.inverse(); // Val: 2s != 0 since s != 0 (a root of unity)
-    // [e0·(beta + s) − e1·(beta − s)] · (2s)^{-1}
+                               // [e0·(beta + s) − e1·(beta − s)] · (2s)^{-1}
     (e0 * (beta + s) - e1 * (beta - s)) * inv
 }
 
@@ -99,7 +99,10 @@ mod tests {
             let f_odd = c[1] + c[3] * s2;
             let g_at_s2 = f_even + beta * f_odd;
 
-            assert_eq!(fold, g_at_s2, "FRI fold != folded-polynomial evaluation at index {index}");
+            assert_eq!(
+                fold, g_at_s2,
+                "FRI fold != folded-polynomial evaluation at index {index}"
+            );
         }
     }
 

@@ -7,17 +7,18 @@
 
 Status: economic deployment-architecture options + recommendation.
 
-## The forcing constraint (measured 2026-06-27)
+## The forcing constraint (remeasured 2026-07-10)
 
-The account-creation STARK bundle is **~4.75 MB** (`account_stark_bundle_len =
-4748253`). On Ethereum that is ~76M gas in calldata alone — **>2.5× the ~30M
-block gas limit** — ~36 EIP-4844 blobs, and ~9.5 MB at the quantum-128 query
-count. **Per-account on-chain verification of the creation proof is categorically
+The active 120-query account-creation STARK bundle is **12,144,273 bytes
+(~12.14 MB)** in the frozen production KAT; the historical 56-query baseline was
+~4.75 MB. On Ethereum, nonzero calldata encoding would cost up to ~183M gas —
+**>6× a ~30M block gas limit** — and the bytes occupy roughly 88-90 raw 128-KiB
+blob payloads. **Per-account on-chain verification of the creation proof is categorically
 impossible**, at any security level. The compact spend (~262–318 B) is the only
 artifact that can live on the on-chain hot path.
 
 Therefore the economic question is not "tune parameters" — it is *where does the
-4.75 MB creation proof get verified, trustlessly, with the whole pipeline
+12.14 MB creation proof get verified, trustlessly, with the whole pipeline
 post-quantum?* That choice is the deployable architecture.
 
 ## Options
@@ -27,7 +28,7 @@ post-quantum?* That choice is the deployable architecture.
 | 1. PQ validity rollup | verified off-chain by a prover; a recursive **STARK** validity proof over the batch is posted to L1; L1 verifies one small proof | yes | yes (inner + outer both STARK/Poseidon2) | yes (one succinct proof per batch) | high (needs STARK recursion) |
 | 2. Native STARK recursion | a recursion AIR verifies N inner account-STARK proofs → one proof | yes | yes | only if the aggregate is small enough for L1 (it is, if recursion compresses) | high (the "multi-month" recursion AIR) |
 | 3. Committee prevalidator | an off-chain committee verifies creation proofs and attests to the slot leaf; L1 trusts the attestation | **no** (trust the committee) | yes (committee can be PQ-signed) | yes (only the leaf + attestation on-chain) | low–medium |
-| 4. Descender appchain / L1 | Descender's own validators verify the 4.75 MB proofs off Ethereum; Ethereum used only for bridging | yes (own consensus) | yes | n/a (not "on Ethereum") | medium (own chain) + bridge |
+| 4. Descender appchain / L1 | Descender's own validators verify the 12.14 MB proofs off Ethereum; Ethereum used only for bridging | yes (own consensus) | yes | n/a (not "on Ethereum") | medium (own chain) + bridge |
 
 Key observations:
 - **Option 1 contains Option 2.** A PQ validity rollup *needs* PQ recursion to
@@ -104,7 +105,7 @@ gives:
 
 The aggregate proof grows only ~logarithmically with N (×16 the block ⇒ ×1.49 the proof), so it is
 effectively O(1) per block: ONE proof verified once on-chain attests the whole block, and the
-per-account share falls (≈133 KB → ≈12 KB and shrinking), already ~36×–384× below the ~4.75 MB
+per-account share falls (≈133 KB → ≈12 KB and shrinking), already ~91×–1012× below the ~12.14 MB
 per-account creation proof that made per-account on-chain verification categorically impossible.
 This is the measured economic-viability basis: aggregate, verify once per block, amortize. (The raw
 per-account creation/recursive proof can live in DA / off the hot path; only the single aggregate is

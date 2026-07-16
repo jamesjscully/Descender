@@ -1,0 +1,97 @@
+{
+  "manifest": {
+    "authority_snapshot": {
+      "acceptance_hypothesis": "direct_admission_namespace_contains_exact_tuple",
+      "admission_closure_lean_theorem": "selectedRustDirectAdmissionNamespaceAndDataAvailabilityClosure_of_concreteSpendAccepts",
+      "admission_endpoint": "verify_and_admit_path2_direct_creation_account_stark_block_v1",
+      "admission_record_type": "Path2SovereignDirectAdmissionRecordV1",
+      "admission_state_type": "Path2SovereignDirectAdmissionStateV1",
+      "architecture_authority": "decisions/ADR-0009-native-sovereign-pq-rollup-settlement.md",
+      "available_record_endpoint": "Path2SovereignDirectAdmissionStateV1::require_available_record",
+      "data_availability_named_break": "prevalidation_data_availability_break",
+      "deployment_profile_authority": "spec/deployment_profiles.md",
+      "direct_obligation_id": "direct_obligation_admission_namespace",
+      "lifecycle_authority": "decisions/ADR-0010-registry-lifecycle-consensus-wiring-and-finality.md",
+      "nullifier_block_admission_endpoint": "Path2SovereignDirectAdmissionStateV1::admit_verified_creation_block",
+      "nullifier_encoding": "8 canonical KoalaBear field-value u32 limbs encoded little-endian without verifier-version prefix; noncanonical wire limbs reject",
+      "nullifier_registry_key_type": "Path2AccountStarkNullifierV1",
+      "pad_seed_reorg_safe_uniqueness_lean_theorem": "selectedRustSovereignPadSeedReorgSafeUniqueness_of_verifiedNullifierRegistry_v1",
+      "registry_named_break": "prevalidation_registry_binding_break",
+      "restore_anchor_endpoint": "Path2SovereignDirectAdmissionStateV1::restore_anchor",
+      "restore_anchor_type": "Path2SovereignDirectAdmissionRestoreAnchorV1",
+      "restore_endpoint": "Path2SovereignDirectAdmissionStateV1::restore",
+      "selected_target_profile_id": "Descender.SovereignRollup.DirectModeA.D2.v1",
+      "spend_endpoint": "verify_path2_direct_single_slot_spend_authorization_from_sovereign_state_v1",
+      "storage_class": "canonical_sovereign_consensus_state_direct_full_leaf_record",
+      "verified_admission_candidate_endpoint": "verify_path2_direct_creation_account_stark_admission_candidate_v1",
+      "verified_admission_candidate_type": "Path2VerifiedSovereignCreationAdmissionV1",
+      "verified_nullifier_decode_endpoint": "verify_and_decode_deployed_account_creation",
+      "verified_public_anchors_type": "VerifiedCreationPublicAnchors"
+    },
+    "consensus_state_contract": {
+      "admission_closure_lean_imported": true,
+      "blocker": "target-specific chain database binding, trusted restore-anchor placement review, and external storage review remain open",
+      "canonical_leaf_bytes_stored_directly": true,
+      "corrupt_record_fails_closed": true,
+      "d2_finalized_head_reorg_semantics": true,
+      "deployment_ready": false,
+      "direct_admission_namespace_closed_by_sovereign_state": true,
+      "duplicate_admission_rejected": true,
+      "exact_namespace_tuple_key_pinned": true,
+      "executable_tests": [
+        "path2_sovereign_direct_admission_state_binds_available_record_and_spend",
+        "path2_sovereign_direct_admission_state_rejects_missing_mismatched_and_corrupt_records",
+        "path2_sovereign_direct_admission_state_reorg_respects_d2_finality",
+        "path2_sovereign_direct_admission_block_is_atomic_and_nullifier_global",
+        "path2_sovereign_direct_admission_snapshot_roundtrips_nullifier_registry",
+        "path2_sovereign_direct_admission_rejects_finalized_head_mutation",
+        "path2_account_stark_creation_roundtrip_and_binds"
+      ],
+      "external_storage_review_complete": false,
+      "leaf_and_evidence_digests_rechecked": true,
+      "missing_record_rejected": true,
+      "namespace_key_fields": [
+        "account_id",
+        "account_state_root_before",
+        "slot_authorization_digest"
+      ],
+      "pad_seed_reorg_safe_uniqueness_selected_state_reduction_imported": true,
+      "record_value_fields": [
+        "profile_id",
+        "account_id",
+        "account_state_root_before",
+        "slot_authorization_digest",
+        "canonical_leaf_bytes",
+        "slot_leaf_digest",
+        "evidence_transcript_digest",
+        "pad_seed_nullifier",
+        "admitted_at_height"
+      ],
+      "snapshot_restore_anchor_bound": true,
+      "snapshot_restores_nullifier_registry": true,
+      "sovereign_nullifier_block_atomic": true,
+      "sovereign_nullifier_d2_reorg_index_rebuild_verified": true,
+      "sovereign_nullifier_registry_consensus_wired": true,
+      "spend_reads_canonical_consensus_record": true,
+      "target_chain_data_availability_instantiated": true,
+      "verified_creation_nullifier_anchor_bound": true
+    },
+    "corpus_id": "Descender.Path2.DirectAdmissionBoundary.v1",
+    "corpus_version": 1,
+    "digests": {
+      "direct_admission_boundary_report_digest": "5b1352630fcce69c80f489e73931cccfae6edbb8189a550ab112935eb17e58a0",
+      "direct_admission_boundary_report_recomputed_digest": "5b1352630fcce69c80f489e73931cccfae6edbb8189a550ab112935eb17e58a0",
+      "direct_theorem_boundary_report_digest": "a7ce0800ec71aa0ad17a5033e64458f56f23bf92ec03deb36832601ff6b1f7d9",
+      "direct_theorem_boundary_report_recomputed_digest": "a7ce0800ec71aa0ad17a5033e64458f56f23bf92ec03deb36832601ff6b1f7d9",
+      "direct_theorem_report_admission_digest": "5b1352630fcce69c80f489e73931cccfae6edbb8189a550ab112935eb17e58a0"
+    },
+    "frozen_status": "closed_theorem_scoped_admission_boundary_not_deployment_ready",
+    "generator": {
+      "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_direct_admission_boundary_manifest",
+      "source": "tools/parameter-search/src/bin/path2_direct_admission_boundary_manifest.rs"
+    },
+    "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
+    "schema": "Descender.Path2.DirectAdmissionBoundaryManifest.v1"
+  },
+  "manifest_digest": "d23e5ca68c875e03daec027287d81e664e2f925caf8d716bf9ccb9ffb4ac017b"
+}

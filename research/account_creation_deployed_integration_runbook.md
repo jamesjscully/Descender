@@ -36,7 +36,10 @@ This is the only remaining relation class and the bridge to the spend. Design:
 Retract the stale `path2_stark_route_af_hash_selection.md` q12289-native R_P /
 small-field analysis; record the single authoritative line: mask PRF = native
 KoalaBear Poseidon2 (vetted constants) with q12289 as application modulus +
-wide-then-reduce (5 lanes → mod q, bias 2^-141). Doc-only.
+wide-then-reduce (6 lanes per mask). The explicit `MASK` domain lane and six
+digits are now deployed in both the C2 AIR and standalone signer derivation;
+the loose aggregate reduction term remains below 2^-137 after charging six
+masks and the selected 2^32-account horizon.
 
 ## Step 2 — global pad-seed uniqueness (REVERSIBLE design choice, then code)
 Choose ONE: (a) derive masks from `PRF(pad_seed ‖ account_id ‖ slot)` so reuse is

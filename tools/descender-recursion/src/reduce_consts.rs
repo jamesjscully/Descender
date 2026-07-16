@@ -13,9 +13,9 @@ pub const Q12289: u32 = 12289;
 /// Number of projection-mask lanes. Mirrors `reduce_gadget::NUM_OUTPUTS`.
 pub const NUM_OUTPUTS: usize = 6;
 /// Squeezed field lanes per mask (base-`p` digits of `W`). Mirrors `reduce_gadget::LANES_PER_MASK`.
-pub const LANES_PER_MASK: usize = 5;
-/// Total squeezed field lanes = 6 masks * 5 lanes each. Mirrors `reduce_gadget::NUM_SQUEEZE`.
-pub const NUM_SQUEEZE: usize = NUM_OUTPUTS * LANES_PER_MASK; // 30
+pub const LANES_PER_MASK: usize = 6;
+/// Total squeezed field lanes = 6 masks * 6 lanes each. Mirrors `reduce_gadget::NUM_SQUEEZE`.
+pub const NUM_SQUEEZE: usize = NUM_OUTPUTS * LANES_PER_MASK; // 36
 /// `mask < q12289` (~14-bit). Mirrors `reduce_gadget::MASK_BITS`.
 pub const MASK_BITS: usize = 14;
 
@@ -25,7 +25,7 @@ pub const LO_BITS: usize = 16;
 pub const HI_BITS: usize = 15;
 pub const S_LO_BITS: usize = 16;
 pub const S_TOP_BITS: usize = 14;
-pub const HORNER_STEPS: usize = LANES_PER_MASK; // 5
+pub const HORNER_STEPS: usize = LANES_PER_MASK; // 6
 
 /// Field cells per Horner step (scalar values, NOT counting bit cells). Mirrors
 /// `reduce_gadget::STEP_VALS`.
@@ -46,7 +46,7 @@ pub const STEP_BITS: usize = LO_BITS
 pub const STEP_R: usize = 1 + MASK_BITS + 1 + MASK_BITS;
 /// Total field cells per Horner step. Mirrors `reduce_gadget::STEP_CELLS`.
 pub const STEP_CELLS: usize = STEP_VALS + STEP_BITS + STEP_R;
-/// Per mask lane: 5 squeezed `lane` value copies + 5 Horner steps. Mirrors
+/// Per mask lane: 6 squeezed `lane` value copies + 6 Horner steps. Mirrors
 /// `reduce_gadget::PER_MASK_CELLS`.
 pub const PER_MASK_CELLS: usize = LANES_PER_MASK + HORNER_STEPS * STEP_CELLS;
 /// All 6 mask lanes' reduce-gadget columns. Mirrors `reduce_gadget::REDUCE_CELLS`.
@@ -120,7 +120,7 @@ pub const STEP_VAL_EQS: usize = STEP_VALS + 2;
 pub const STEP_ALG_EQS: usize = 1 + 1 + 6;
 /// Total residuals per Horner step.
 pub const N_STEP_RESIDUALS: usize = STEP_BIT_BOOLS + STEP_VAL_EQS + STEP_ALG_EQS;
-/// Residuals per mask lane: 5 lane-bind equalities + 5 Horner steps.
+/// Residuals per mask lane: 6 lane-bind equalities + 6 Horner steps.
 pub const N_REDUCE_PER_MASK: usize = LANES_PER_MASK + HORNER_STEPS * N_STEP_RESIDUALS;
 
 /// Residuals per carrier lane: masked-recompose(14 bool + 1 eq) + slack-recompose(14 + 1) +

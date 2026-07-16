@@ -79,15 +79,14 @@
 
 use crate::air::{Air, BoundaryConstraint};
 use crate::fq12_q12289::Fq12;
-use crate::poseidon2_air_q12289::{transition_kind, TransitionKind, N_ROWS as PERM_ROWS};
+use crate::poseidon2_air_q12289::{N_ROWS as PERM_ROWS, TransitionKind, transition_kind};
 use crate::poseidon2_prf_air_q12289::{
-    build_plan, n_absorb_perms, n_perms, BlockElem, PermRole, BITS_PER_LANE, N_INPUT_LANES,
-    N_MASK_OUTPUTS,
+    BITS_PER_LANE, BlockElem, N_INPUT_LANES, N_MASK_OUTPUTS, PermRole, build_plan, n_absorb_perms,
+    n_perms,
 };
 use crate::poseidon2_q12289::{
-    apply_internal, apply_matrix, fq_add, fq_from_u32, fq_mul, init_capacity,
-    projection_masks_poseidon2, sbox, Poseidon2Params, POSEIDON2_PROJECTION_MASK_DOMAIN, RATE,
-    R_F_HALF, R_P, T,
+    POSEIDON2_PROJECTION_MASK_DOMAIN, Poseidon2Params, R_F_HALF, R_P, RATE, T, apply_internal,
+    apply_matrix, fq_add, fq_from_u32, fq_mul, init_capacity, projection_masks_poseidon2, sbox,
 };
 
 // Column layout.
@@ -503,8 +502,7 @@ impl Air for C2PrfAir {
                             let plan = build_plan();
                             if let PermRole::Absorb { .. } = &plan.roles[0] {
                                 for i in 0..RATE {
-                                    res[BR_DEPOSIT + i] =
-                                        cur[STATE + i].sub(&cur[LANE_VAL + i]);
+                                    res[BR_DEPOSIT + i] = cur[STATE + i].sub(&cur[LANE_VAL + i]);
                                 }
                             }
                         }
@@ -668,7 +666,10 @@ mod tests {
         assert_eq!(air.n_rows(), 1024, "700 rows padded to 1024");
         assert_eq!(air.max_degree(), 3);
         assert_eq!(d.trace_n, 1024);
-        assert_eq!(d.fri_n, 16384, "degree-3 @ n=1024 needs N/4 > 3068 -> 16384");
+        assert_eq!(
+            d.fri_n, 16384,
+            "degree-3 @ n=1024 needs N/4 > 3068 -> 16384"
+        );
         // rate <= 1/4.
         assert!(d.log2_fri - d.log2_trace >= 2);
         println!(
@@ -700,7 +701,10 @@ mod tests {
             let reference = projection_masks_poseidon2(&pad, slot);
             let masks = air.masks();
             for j in 0..N_MASK_OUTPUTS {
-                assert_eq!(masks[j] as u16, reference[j], "mask lane {j} != reference PRF");
+                assert_eq!(
+                    masks[j] as u16, reference[j],
+                    "mask lane {j} != reference PRF"
+                );
             }
         }
     }
@@ -716,7 +720,11 @@ mod tests {
         let air = C2PrfAir::new(&pad, slot);
         let reference = projection_masks_poseidon2(&pad, slot);
         for j in 0..N_MASK_OUTPUTS {
-            assert_eq!(air.masks()[j] as u16, reference[j], "committed mask != reference");
+            assert_eq!(
+                air.masks()[j] as u16,
+                reference[j],
+                "committed mask != reference"
+            );
         }
         let proof = prove_with_queries(&air, None, 24);
         assert!(verify(&air, &proof), "honest C2 STARK proof must verify");
@@ -749,7 +757,8 @@ mod tests {
         }
         for op in &proof.openings {
             n_fq12 += op.cur.len() + op.nxt.len() + 1;
-            n_pathnode += op.cur_path.siblings.len() + op.nxt_path.siblings.len() + op.h_path.siblings.len();
+            n_pathnode +=
+                op.cur_path.siblings.len() + op.nxt_path.siblings.len() + op.h_path.siblings.len();
         }
         let digest_bytes = proof.trace_root.len() * 2;
         let bytes = n_fq12 * fq12_bytes + n_pathnode * digest_bytes;
@@ -778,16 +787,35 @@ mod tests {
         // (row, col) tampers across the regions.
         let np = n_perms();
         let tampers: &[(usize, usize, &str)] = &[
-            (perm_input_row(0) + 3, STATE + 7, "perm0 initial full-round cell"),
-            (perm_input_row(4) + 30, STATE + 9, "perm4 partial-round cell"),
-            (perm_output_row(2), STATE + 1, "perm2 output (feeds absorb link)"),
-            (perm_input_row(np - 1), STATE + 1, "squeeze perm input (squeeze link)"),
+            (
+                perm_input_row(0) + 3,
+                STATE + 7,
+                "perm0 initial full-round cell",
+            ),
+            (
+                perm_input_row(4) + 30,
+                STATE + 9,
+                "perm4 partial-round cell",
+            ),
+            (
+                perm_output_row(2),
+                STATE + 1,
+                "perm2 output (feeds absorb link)",
+            ),
+            (
+                perm_input_row(np - 1),
+                STATE + 1,
+                "squeeze perm input (squeeze link)",
+            ),
         ];
         for &(row, col, what) in tampers {
             let mut t = honest.clone();
             t[row][col] = fq_add(t[row][col], 1);
             let proof = prove_with_queries(&air, Some(t), 24);
-            assert!(!verify(&air, &proof), "tamper [{what}] at ({row},{col}) not rejected");
+            assert!(
+                !verify(&air, &proof),
+                "tamper [{what}] at ({row},{col}) not rejected"
+            );
         }
 
         // tamper a byte-range bit cell (break boolean / recompose).

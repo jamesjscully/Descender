@@ -268,8 +268,11 @@ mass**. They are not hardness assumptions.
    Poseidon2-over-the-VETTED-31-bit-KoalaBear-field as RO (quantum-indifferentiable,
    arXiv 2504.16887), NAMED-STANDARD. `frame_prf_ro_reduction.ec` re-charged + still
    exit 0; the abstract RO+min-entropy proof is unchanged. ONE honest delta: SHA's
-   rejection sampler was EXACTLY uniform; wide-then-reduce is 2^-141-uniform, adding
-   6*2^-141 << 2^-128 to the advantage — negligible. Mask stays HIDING-ONLY (forgery
+   rejection sampler was EXACTLY uniform. The original five-digit wide reduction
+   was about 2^-141 per mask but failed q128 after charging the selected 2^32
+   account horizon. The active C2 now absorbs an explicit `MASK` domain and uses
+   six KoalaBear digits per mask; the aggregate six-lane, 2^32-target reduction
+   term is below 2^-137. Mask stays HIDING-ONLY (forgery
    reduction untouched). The pre-swap description below is retained for the SHA path.)*
    The per-slot per-lane projection mask was `uniform_mod_from_hash` on a domain
    byte-frame-disjoint from the pad PRF (82 B vs 154 B); empirical

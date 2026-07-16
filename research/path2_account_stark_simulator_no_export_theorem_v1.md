@@ -27,7 +27,8 @@ from — and does not inherit anything from — the retired non-active paths:
   `research/cryptanalysis/high2_zk_inclear_blind_leak_VERDICT.md`).
 
 The active path never serializes `pad_seed`: the private witness (pad seed,
-account projection, masks, opening tuple, syndrome preimage) lives ONLY in the
+account projection, masks, opening-tuple preimage, and authorization response)
+lives ONLY in the
 **salted, hidden zk-FRI trace** committed under `MerkleTreeHidingMmcs`, never on
 the public surface. That is the structural reason the active path discharges
 HIGH-2 rather than patching it.
@@ -41,13 +42,26 @@ inputs the simulator may consume (`simulator_public_input_fields` allowlist,
 ```text
 leaf_context_digest, creation_proof_binding_digest, native_role_root_commitment,
 aggregation_context_digest, slot_id, masked_projection,
-account_stark_bundle_bytes_or_digest, public_replay_payload_digest,
+account_stark_public_statement_bytes_or_digest, pad_seed_nullifier,
 deployed_account_id, deployed_account_state_root, deployed_lifecycle_anchor,
 deployed_verifier_version, deployed_packed_witness_commitment, public_rejection_code
 ```
 
-Forbidden (denylist): `pad_source, projection, syndrome (raw preimage),
-opening_tuple, witness, mask, private_trace_material`.
+The completed account-STARK proof bundle and its outer
+`public_replay_payload_digest` are outputs of simulation and are excluded from
+the input allowlist. The public-statement transport contains the decoded
+`AccountCreationPublic` statement, including its public commitments and
+nullifier, but no proof bytes. This avoids satisfying the theorem by copying the
+real proof into the simulated output.
+
+Forbidden (denylist): `pad_seed, account_projection,
+opening_tuple_preimage, authorization_witness, mask, private_trace_material,
+commitment_nonce`.
+
+The decoded `AccountCreationPublic` statement is public by design and includes
+the checked-core `syndrome`. That syndrome is an authorization/public-key
+anchor, not a private preimage. The nested statement audit covers all 14 fields
+inside the transport bundle instead of treating the bundle as privacy-opaque.
 
 ## ZK Parameters Of The Deployed Proof System
 
@@ -58,11 +72,18 @@ ZkPcs = HidingFriPcs<...>                       (config.rs ZkPcs alias)
 HidingValMmcs = MerkleTreeHidingMmcs<..., SALT_ELEMS=4>   (salted leaves)
 NUM_RANDOM_CODEWORDS = 4                          (config.rs:90)
 PROD_LOG_BLOWUP = 4  (rate 1/16; ZK requires log_blowup >= 2)   (config.rs:51)
+ZkCryptoRng = cloneable ChaCha20 CSPRNG with a 256-bit master seed
 ```
 
-So the deployed PCS is the hiding/ZK FRI: salted Merkle leaves, four random
-codewords mixed into the low-degree-extension batch, and blowup ≥ 2. These are
-exactly the honest-verifier-zero-knowledge parameters for a zk-STARK.
+The deployed PCS therefore activates Plonky3's intended hiding mechanisms:
+salted Merkle leaves, four random codewords mixed into the
+low-degree-extension batch, and blowup ≥ 2. Configuration is not an HVZK proof;
+the concrete A1 theorem and advantage bound remain required.
+The input MMCS, FRI MMCS, and HidingFriPcs randomness are driven by three
+SHA-256 domain-separated sub-seeds (`input-mmcs`, `fri-mmcs`, and
+`hiding-fri-pcs`). The production path obtains a fresh 256-bit master seed from
+the OS-seeded thread CSPRNG. Deterministic `u64` seeds remain confined to the
+explicit test/KAT entry points and are domain-expanded before use.
 
 ## Main Theorem
 
@@ -90,17 +111,47 @@ exactly the honest-verifier-zero-knowledge parameters for a zk-STARK.
   simulator produces proof bytes indistinguishable from real given only the
   public statement. (Named-standard zk-STARK; same primitive family as the #2
   extractor's FRI soundness, opposite direction.)
-- **A2 (Poseidon2 mask-frame-PRF):** `mask[j] = reduce(Poseidon2-sponge(pad_seed
-  ‖ slot_id ‖ MASK_DOMAIN))[j]` is pseudorandom and fresh per (slot, lane), so
+- **A2 (Poseidon2 mask-frame-PRF):** `mask[j] = reduce(Poseidon2-sponge(MASK_DOMAIN
+  ‖ pad_seed ‖ slot_id))[j]` is pseudorandom and fresh per admitted C2 frame, so
   `masked_projection[j] = (account_projection[j] + mask[j]) mod q` is
   computationally indistinguishable from uniform over `[0,q)`. (Active-path
   Poseidon2 analogue of the SHA-256 mask-PRF in
   `research/cryptanalysis/deployable_pad_hiding_VERDICT.md` CLAIM 2; requires
-  pad-seed single-use, A2′.)
-- **A3 (Poseidon2 commitment hiding / RO):** the Poseidon2 commitments
-  (`pad_source_commitment`, `opening_tuple_commitment`, `role_root`,
-  `packed_witness_commitment`) hide their preimages (RO/PRF image), and as
-  deployed anchors they are public-by-design statement digests.
+  proof-bound `(pad_seed, slot_id)` single-use, A2′.) The selected C2 frame now
+  absorbs the explicit `MASK = 0x4D41534B` field lane, then 32 pad-seed bytes and
+  8 little-endian slot bytes. It squeezes 36 disjoint KoalaBear coordinates,
+  six per each of six q12289 masks. Five digits only supplied about 141 bits per
+  mask and fell to about 106 bits after the selected `2^32` target horizon;
+  six digits leave more than 137 bits after that full charge.
+  `selectedAccountMaskPrfDomainsSeparated_v1`,
+  `selectedAccountMaskPrfSqueezeIndexInjective_v1`, and
+  `selectedAccountMaskWideReductionError_le_q128_v1` machine-check the frame,
+  coordinate separation, and aggregate reduction arithmetic. The sovereign
+  verified-nullifier registry supplies admitted-frame freshness through
+  `selectedRustAccountMaskPrfFramesFresh_of_verifiedNullifierRegistry_v1`.
+  Once the mask vector is uniform,
+  `selectedRustUniformMaskTranslationBijective_v1` machine-checks that adding
+  any fixed six-lane account projection in `(ZMod 12289)^6` is a bijection, so
+  the modular masking algebra adds no further loss. The remaining A2 premise is
+  the selected bounded-query Poseidon2 sponge/permutation PRF theorem and review;
+  frame freshness and deployment-scale reduction bias are no longer bundled
+  into that premise.
+- **A3 (Poseidon2 commitment hiding / QROM):** C1 now absorbs `PADS ‖
+  pad_seed[32] ‖ nonce[40]`; C6 absorbs `OPEN ‖ account_projection[6] ‖
+  lifecycle[32] ‖ nonce[40] ‖ account_id[32]`. The deployment single/batch APIs
+  overwrite both nonces with fresh OS-CSPRNG bytes. The former 16-byte nonces
+  could not meet q128 under the selected `2^54` query and `2^32` account budgets.
+  For two commitments per account, the v3 nonce-search term is bounded by
+  `2^(2*54+33-320) = 2^-179`.
+  `selectedAccountCommitmentDomainsSeparated_v1`,
+  `selectedAccountCommitmentFrameDimensions_v1`, and
+  `selectedAccountCommitmentQromSearchError_le_q128_v1` machine-check the local
+  frame and search arithmetic. The remaining premise is a reviewed bounded-query
+  Poseidon2 commitment/QROM replacement theorem. `role_root` is deterministic
+  compression of already-public commitments and `masked_projection`, not a third
+  hiding commitment. `packed_witness_commitment`, the checked-core syndrome,
+  masked projection, and checked-core key commitment are allowed public anchors;
+  the packed witness is reversible framing, not a hiding commitment.
 
 ### Proof (component simulation + hybrid)
 
@@ -108,20 +159,22 @@ exactly the honest-verifier-zero-knowledge parameters for a zk-STARK.
 
 1. **Public statement fields** — `deployed_account_id`, `slot_id`,
    `deployed_account_state_root`, `deployed_verifier_version`,
-   `deployed_lifecycle_anchor`, `public_replay_payload_digest`,
+   `deployed_lifecycle_anchor`, `pad_seed_nullifier`,
    `native_role_root_commitment`, `deployed_packed_witness_commitment`,
-   `*_digest` — copied verbatim from `pub`. These ARE the public statement; no
-   private content (L6/L7/L8 of the arithmetization theorem already showed they
-   bind to public values). Identical distribution.
+   `account_stark_public_statement_bytes_or_digest`, and the remaining
+   statement digests are copied verbatim from `pub`. These ARE the public
+   statement; no private content (L6/L7/L8 of the arithmetization theorem
+   already showed they bind to public values). Identical distribution.
 2. **`masked_projection[6]`** — `S` samples 6 uniform residues in `[0,q)`. By A2,
    indistinguishable from the real masked carrier. This is the only projection
    data on the creation surface; the unmasked `account_projection` is NOT on the
    surface (it is recovered only by the separate post-spend charged opening, out
    of scope here).
-3. **Proof bytes (`account_stark_bundle_bytes_or_digest`)** — `S` runs the A1
-   zk-FRI HVZK simulator on the public statement (fields from steps 1–2) to
-   produce proof bytes; or, if the surface carries only the bundle digest, `S`
-   outputs the digest of the simulated bytes. Indistinguishable by A1.
+3. **Proof bytes (`account_stark_bundle`)** — `S` runs the A1 zk-FRI HVZK
+   simulator on the public statement (fields from steps 1–2) to produce proof
+   bytes, constructs the completed payload, and then derives the outer
+   `public_replay_payload_digest`. Indistinguishable by A1; neither output is an
+   input to `S`.
 4. **Commitments** — taken as the public deployed anchors (step 1) by A3; `S`
    does not need preimages.
 
@@ -130,22 +183,37 @@ Hybridize: `H0 = Real`; `H1` replaces real proof bytes with the A1 simulation
 (indistinguishable by A2); `H2 = S(pub)`. Each hop is computationally
 indistinguishable, so `Real ≈_c S(pub)`. ∎
 
+The additive composition of these hops is machine-checked in Lean by
+`SelectedAccountStarkSimulatorHybridBounds.advantage_le_totalError`, and
+`selectedRustAcceptedBundleSimulatorNoExportFromHybrid_v1` imports concrete
+per-package A1/A2/A3 certificates into the accepted-bundle no-export theorem.
+The A2 frame, squeeze-coordinate separation, `2^32`-target wide-reduction budget,
+verified-nullifier freshness reduction, and uniform-mask translation are
+separately discharged by the named Lean theorems above. The A3 PADS/OPEN frame,
+320-bit deployment nonces, and `2^-179` search term are likewise discharged
+locally. These theorems do not
+manufacture the cryptographic hop bounds: the selected HidingFriPcs HVZK,
+bounded-query Poseidon2 sponge/permutation PRF, and Poseidon2 commitment/QROM
+replacement bounds plus external review remain open.
+
 ### No-export corollary
 
 `S(pub)` is computed from public data alone, yet `≈_c Real(pub, wit)`. Hence any
 PPT distinguisher extracting a private fiber field from the real bundle would
 distinguish `Real` from `S(pub)`, contradicting the theorem. So the bundle
-reveals nothing about `pad_seed / account_projection / masks / opening_tuple /
-syndrome preimage / gauge / randomizer` beyond the public class — the
+reveals nothing about `pad_seed / account_projection / masks /
+opening_tuple_preimage / authorization_witness / commitment_nonce / gauge /
+randomizer` beyond the explicitly public statement — the
 `forbidden private-material` denylist is upheld at the byte/algebra layer. ∎
 
 ## Adversarial Self-Check
 
-- **"Syndrome leaks the witness."** The creation surface carries `syndrome` only
-  inside the public `packed_witness_commitment = pack(syndrome ‖
-  masked_projection)`; `syndrome` is a public checked-core anchor (public-by-
-  design, A3), and `masked_projection` is hiding (A2). No unmasked projection is
-  on the creation surface. The post-spend charged opening that DOES disclose the
+- **"Syndrome leaks the witness."** The decoded creation statement carries the
+  checked-core `syndrome` directly and in the reversible public
+  `packed_witness_commitment = pack(syndrome ‖ masked_projection)`. It is an
+  allowed public authorization anchor, not the private signing response;
+  `masked_projection` is the A2 hiding surface. No unmasked account projection
+  is on the creation surface. The post-spend charged opening that discloses the
   six selected residues is a different, accounted surface
   (`deployable_pad_hiding_VERDICT.md` CLAIM 4, two-phase budget) — not this
   bundle.

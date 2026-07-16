@@ -17,7 +17,7 @@
       "byte_model_pinned": true,
       "deployment_ready": false,
       "deterministic_kat_digest_pins_bundle_bytes": true,
-      "field_count": 11,
+      "field_count": 12,
       "field_order": [
         {
           "data_bytes": 49,
@@ -90,6 +90,13 @@
           "variable_length": false
         },
         {
+          "data_bytes": 32,
+          "encoding": "append_frame 8 canonical u32 little-endian field limbs",
+          "field_name": "pad_seed_nullifier",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
           "data_bytes": 0,
           "encoding": "append_frame opaque descender-account-verifier bundle",
           "field_name": "account_stark_bundle",
@@ -97,8 +104,8 @@
           "variable_length": true
         }
       ],
-      "fixed_data_bytes_excluding_bundle": 221,
-      "fixed_frame_overhead_excluding_bundle": 558,
+      "fixed_data_bytes_excluding_bundle": 253,
+      "fixed_frame_overhead_excluding_bundle": 618,
       "full_proof_bytes_inlined_in_manifest": false,
       "masked_projection_bytes": 12,
       "masked_projection_lane_count": 6,
@@ -113,17 +120,17 @@
       "every_row_has_public_rejection_class": true,
       "frozen_corpus_complete": true,
       "payload_kat_corpus_reduction_bound": true,
-      "public_payload_field_mutation_count": 11,
+      "public_payload_field_mutation_count": 13,
       "roundtrip_regression_present": true,
-      "row_count": 13
+      "row_count": 15
     },
     "digests": {
-      "payload_byte_model_report_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
-      "payload_byte_model_report_recomputed_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
-      "payload_kat_boundary_report_byte_model_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
-      "payload_kat_boundary_report_digest": "f04603708bf738b85704207309e71450d40c5b32f3f2b316cdaea38b35f9a474",
-      "payload_kat_boundary_report_recomputed_digest": "f04603708bf738b85704207309e71450d40c5b32f3f2b316cdaea38b35f9a474",
-      "residual_matrix_report_digest": "c8a5ed3838bada980d7455e5a3aac8b2795ccc606736dada01ea938694529533"
+      "payload_byte_model_report_digest": "ee557e306a91eac202f3c78338395d3a911c513c675623f1163618c557aa7714",
+      "payload_byte_model_report_recomputed_digest": "ee557e306a91eac202f3c78338395d3a911c513c675623f1163618c557aa7714",
+      "payload_kat_boundary_report_byte_model_digest": "ee557e306a91eac202f3c78338395d3a911c513c675623f1163618c557aa7714",
+      "payload_kat_boundary_report_digest": "3bd006d08daefab7ce5e2dedb674b28abff10ece4118c26e01b3ed5f19084a80",
+      "payload_kat_boundary_report_recomputed_digest": "3bd006d08daefab7ce5e2dedb674b28abff10ece4118c26e01b3ed5f19084a80",
+      "residual_matrix_report_digest": "ccb8f82fe1237ac18c1c43409dc7440964bb998d9588610ba5cb8f7b662ff747"
     },
     "frozen_status": "frozen_boundary_manifest",
     "generator": {
@@ -181,6 +188,14 @@
         "public_rejection_class": "reject_binding_mismatch"
       },
       {
+        "case_id": "pad_seed_nullifier_mutation",
+        "covered_by_roundtrip_test": true,
+        "frozen_vector_present": true,
+        "internal_error_match": "account-creation STARK: payload digest mismatch",
+        "mutated_surface": "pad_seed_nullifier",
+        "public_rejection_class": "reject_binding_mismatch"
+      },
+      {
         "case_id": "account_stark_bundle_digest_mutation",
         "covered_by_roundtrip_test": true,
         "frozen_vector_present": true,
@@ -213,6 +228,14 @@
         "public_rejection_class": "reject_creation_evidence"
       },
       {
+        "case_id": "rebound_pad_seed_nullifier_anchor",
+        "covered_by_roundtrip_test": true,
+        "frozen_vector_present": true,
+        "internal_error_match": "deployed anchor mismatch: pad_seed_nullifier",
+        "mutated_surface": "pad_seed_nullifier",
+        "public_rejection_class": "reject_creation_evidence"
+      },
+      {
         "case_id": "rebound_corrupted_account_stark_bundle",
         "covered_by_roundtrip_test": true,
         "frozen_vector_present": true,
@@ -239,5 +262,5 @@
     ],
     "schema": "Descender.Path2.AccountStarkPayloadKatBoundaryManifest.v1"
   },
-  "manifest_digest": "b90e34f6dbde4810dc444d8fba60f703b76587afd406741e0e660c15ce3066a9"
+  "manifest_digest": "9da54788f0636a06bb7cbf42197b72461c83a06c8aff050c2ec462ff16f5e34d"
 }

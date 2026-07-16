@@ -300,15 +300,25 @@ fn require_direct_accepted_tuple_field_evidence_identity(
             let source_open = bool_at(source_row, "/open")?;
             let acceptance_hypothesis = str_at(source_row, "/acceptance_hypothesis")?;
             let imported_closed = !source_open
-                && ((obligation_id == "direct_obligation_consume_once"
-                    && acceptance_hypothesis
-                        == "lifecycle_transition_consumes_authorization_once")
+                && ((obligation_id == "direct_obligation_leaf_canonical_live"
+                    && acceptance_hypothesis == "leaf_is_canonical_and_live")
+                    || (obligation_id == "direct_obligation_evidence_leaf_bindings"
+                        && acceptance_hypothesis == "evidence_envelope_matches_leaf_bindings")
+                    || (obligation_id == "direct_obligation_admission_namespace"
+                        && acceptance_hypothesis
+                            == "direct_admission_namespace_contains_exact_tuple")
+                    || (obligation_id == "direct_obligation_consume_once"
+                        && acceptance_hypothesis
+                            == "lifecycle_transition_consumes_authorization_once")
                     || (obligation_id == "direct_obligation_checked_core_frame_binding"
                         && acceptance_hypothesis
                             == "checked_core_challenge_binds_public_spend_context")
                     || (obligation_id == "direct_obligation_slot_authorization_digest"
                         && acceptance_hypothesis
-                            == "slot_authorization_digest_matches_canonical_leaf"));
+                            == "slot_authorization_digest_matches_canonical_leaf")
+                    || (obligation_id == "direct_obligation_public_rejection"
+                        && acceptance_hypothesis
+                            == "rejection_is_deterministic_public_and_state_preserving"));
             all_referenced_open &= source_open;
             all_referenced_open_or_imported &= source_open || imported_closed;
         }
@@ -800,7 +810,19 @@ fn main() -> Result<(), String> {
         "/direct_accepted_composition_evidence_artifact/audit_summary/proof_family_obligations_still_open",
         "/direct_accepted_composition_evidence_artifact/audit_summary/verifier_boundary_accepts_creation",
         "/direct_accepted_composition_evidence_artifact/audit_summary/direct_spend_tuple_accepts",
+        "/direct_accepted_composition_evidence_artifact/audit_summary/qrom_action_theorem_linkage_reduction_imported",
+        "/direct_accepted_composition_evidence_artifact/audit_summary/qrom_action_review_hypothesis_explicit",
+        "/direct_obligation_vector_corpus_evidence/audit_summary/direct_leaf_canonical_live_imported",
+        "/direct_obligation_vector_corpus_evidence/audit_summary/direct_leaf_canonical_live_lifecycle_and_kat_hypothesis_explicit",
+        "/direct_obligation_vector_corpus_evidence/audit_summary/direct_evidence_leaf_binding_imported",
+        "/direct_obligation_vector_corpus_evidence/audit_summary/direct_evidence_leaf_binding_proof_boundary_hypothesis_explicit",
+        "/direct_obligation_vector_corpus_evidence/audit_summary/direct_admission_namespace_membership_imported",
+        "/direct_obligation_vector_corpus_evidence/audit_summary/direct_admission_namespace_data_availability_hypothesis_explicit",
+        "/direct_obligation_vector_corpus_evidence/audit_summary/direct_admission_namespace_and_data_availability_imported",
+        "/direct_obligation_vector_corpus_evidence/audit_summary/direct_admission_namespace_closed_by_sovereign_state",
         "/direct_obligation_vector_corpus_evidence/audit_summary/lifecycle_transition_profile_verified",
+        "/direct_obligation_vector_corpus_evidence/audit_summary/qrom_action_theorem_linkage_reduction_imported",
+        "/direct_obligation_vector_corpus_evidence/audit_summary/qrom_action_review_hypothesis_explicit",
         "/coverage/every_closure_dependency_has_open_obligation",
         "/coverage/every_closure_dependency_has_open_support_surface",
         "/coverage/every_open_closure_dependency_blocks_deployment",
@@ -1129,6 +1151,7 @@ fn main() -> Result<(), String> {
         );
     }
     if qrom_action_report.deployment_ready
+        || qrom_action_report.qrom_action_assumption_instantiated
         || qrom_action_report.theorem_imports_budget
         || qrom_action_report.external_qrom_review_complete
         || qrom_action_report.qrom_and_action_bounds_linked_to_theorem
@@ -1144,6 +1167,9 @@ fn main() -> Result<(), String> {
         || !qrom_action_report.optional_aggregation_terms_q_batch_only
         || !qrom_action_report.selected_horizon_within_margin
         || !qrom_action_report.negative_control_exceeds_margin
+        || !qrom_action_report.production_checked_core_acceptance_semantics_bound
+        || !qrom_action_report.qrom_action_valid_or_named_break_theorem_instantiated
+        || !qrom_action_report.qrom_domain_break_coupled_to_direct_game
     {
         return Err("direct QROM/action boundary is missing budget evidence".to_string());
     }
@@ -1252,7 +1278,6 @@ fn main() -> Result<(), String> {
         "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/every_accepted_tuple_field_has_evidence",
         "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/every_accepted_tuple_field_has_open_or_imported_direct_obligation",
         "/direct_accepted_composition_evidence_artifact/audit_summary/every_positive_acceptance_hypothesis_has_accepted_path_evidence",
-        "/direct_accepted_composition_evidence_artifact/audit_summary/public_rejection_hypothesis_deferred_to_rejection_kats",
     ] {
         if !bool_at(direct_boundary, pointer)? {
             return Err(format!(
@@ -1271,11 +1296,11 @@ fn main() -> Result<(), String> {
         ),
         (
             "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/accepted_tuple_field_open_obligation_count",
-            6,
+            1,
         ),
         (
             "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/accepted_tuple_field_imported_closure_count",
-            2,
+            9,
         ),
         (
             "/direct_accepted_composition_evidence_artifact/audit_summary/accepted_hypothesis_evidence_count",
@@ -1295,6 +1320,9 @@ fn main() -> Result<(), String> {
     if bool_at(
         direct_boundary,
         "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/every_accepted_tuple_field_has_open_direct_obligation",
+    )? || bool_at(
+        direct_boundary,
+        "/direct_accepted_composition_evidence_artifact/audit_summary/public_rejection_hypothesis_deferred_to_rejection_kats",
     )? {
         return Err(
             "production preflight manifest unexpectedly kept all-open tuple field flag".to_string(),
@@ -1362,9 +1390,21 @@ fn main() -> Result<(), String> {
                 .iter()
                 .filter(|row| !row.open)
                 .all(|row| {
-                    (row.obligation_id == "direct_obligation_consume_once"
-                        && row.acceptance_hypothesis
-                            == "lifecycle_transition_consumes_authorization_once")
+                    (row.obligation_id == "direct_obligation_leaf_canonical_live"
+                        && row.acceptance_hypothesis == "leaf_is_canonical_and_live"
+                        && direct_report
+                            .direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle)
+                        || (row.obligation_id == "direct_obligation_evidence_leaf_bindings"
+                            && row.acceptance_hypothesis
+                                == "evidence_envelope_matches_leaf_bindings"
+                            && direct_report.direct_evidence_leaf_binding_closed_by_frozen_kat)
+                        || (row.obligation_id == "direct_obligation_admission_namespace"
+                            && row.acceptance_hypothesis
+                                == "direct_admission_namespace_contains_exact_tuple"
+                            && direct_report.direct_admission_namespace_closed_by_sovereign_state)
+                        || (row.obligation_id == "direct_obligation_consume_once"
+                            && row.acceptance_hypothesis
+                                == "lifecycle_transition_consumes_authorization_once")
                         || (row.obligation_id == "direct_obligation_checked_core_frame_binding"
                             && row.acceptance_hypothesis
                                 == "checked_core_challenge_binds_public_spend_context"
@@ -1373,6 +1413,13 @@ fn main() -> Result<(), String> {
                             && row.acceptance_hypothesis
                                 == "slot_authorization_digest_matches_canonical_leaf"
                             && direct_report.slot_authorization_digest_imported)
+                        || (row.obligation_id == "direct_obligation_public_rejection"
+                            && row.acceptance_hypothesis
+                                == "rejection_is_deterministic_public_and_state_preserving"
+                            && direct_report.direct_public_rejection_state_preserving_imported
+                            && direct_report.direct_public_rejection_all_classes_kat_covered
+                            && direct_report.direct_public_rejection_all_public_objects_kat_covered
+                            && direct_report.direct_public_rejection_target_client_mapping_complete)
                 }))
     {
         return Err(
@@ -1480,6 +1527,14 @@ fn main() -> Result<(), String> {
         }
     }
     if !direct_report.qrom_and_action_bounds_linked_to_theorem {
+        if !direct_report.qrom_action_theorem_linkage_reduction_imported
+            || !direct_report.qrom_action_review_hypothesis_explicit
+        {
+            return Err(
+                "direct QROM/action closure is open without local theorem-linkage support"
+                    .to_string(),
+            );
+        }
         require_open_direct_obligation(
             &direct_report,
             blockers,
@@ -1487,8 +1542,19 @@ fn main() -> Result<(), String> {
             "direct_obligation_checked_core_acceptance",
             "checked_core_verification_accepts_poseidon2_and_fq12_action",
             "Fq12 action map",
-            "QROM/action-map numeric bounds",
+            "checked-core QROM/action assumption",
         )?;
+        if !qrom_action_report.production_checked_core_acceptance_semantics_bound
+            || !qrom_action_report.qrom_action_valid_or_named_break_theorem_instantiated
+            || !qrom_action_report.qrom_domain_break_coupled_to_direct_game
+            || qrom_action_report.qrom_action_assumption_instantiated
+            || !qrom_action_report.direct_qrom_action_local_linkage_reduction_imported
+        {
+            return Err(
+                "direct QROM/action closure status drifted from the explicit production links"
+                    .to_string(),
+            );
+        }
         if !contains(blockers, qrom_action_report.blocker) {
             return Err(
                 "direct QROM/action closure flag is open but QROM/action blocker is absent"

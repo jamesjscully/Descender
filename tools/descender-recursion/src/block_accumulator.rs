@@ -53,7 +53,10 @@ pub const PV_ROOT: usize = 0;
 pub const N_PUBLIC: usize = PV_ROOT + DIGEST_ELEMS;
 
 /// Host-side: fold `genesis` through `members` and return `chain_state_root`.
-pub fn accumulate(genesis: [Val; DIGEST_ELEMS], members: &[[Val; DIGEST_ELEMS]]) -> [Val; DIGEST_ELEMS] {
+pub fn accumulate(
+    genesis: [Val; DIGEST_ELEMS],
+    members: &[[Val; DIGEST_ELEMS]],
+) -> [Val; DIGEST_ELEMS] {
     let consts = inlined_perm::Constants::pinned();
     let mut chain = genesis;
     for m in members {
@@ -120,7 +123,11 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for BlockAccumulatorAir {
         let main = builder.main();
         let local: Vec<AB::Var> = main.current_slice().to_vec();
         let next: Vec<AB::Var> = main.next_slice().to_vec();
-        let pubs: Vec<AB::Expr> = builder.public_values().iter().map(|p| (*p).into()).collect();
+        let pubs: Vec<AB::Expr> = builder
+            .public_values()
+            .iter()
+            .map(|p| (*p).into())
+            .collect();
         let l = |i: usize| -> AB::Expr { local[i].into() };
 
         // node compression: combined = chain_i ‖ D_i (chain is the fixed left child).
@@ -175,7 +182,9 @@ mod tests {
     use p3_matrix::dense::RowMajorMatrix;
 
     fn member(seed: u32) -> [Val; DIGEST_ELEMS] {
-        core::array::from_fn(|i| Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32 + 1)))
+        core::array::from_fn(|i| {
+            Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32 + 1))
+        })
     }
 
     fn pubs(root: [Val; DIGEST_ELEMS]) -> Vec<Val> {
@@ -192,7 +201,11 @@ mod tests {
             assert_eq!(root, accumulate([Val::ZERO; DIGEST_ELEMS], &members));
             let m = RowMajorMatrix::new(flat, BC_N_COLS);
             let report = check_all_constraints(&BlockAccumulatorAir, &m, &pubs(root), None);
-            assert!(report.is_ok(), "honest block of {n} rejected: {} failures", report.failures.len());
+            assert!(
+                report.is_ok(),
+                "honest block of {n} rejected: {} failures",
+                report.failures.len()
+            );
         }
     }
 
@@ -207,8 +220,10 @@ mod tests {
         let mut bad = flat.clone();
         bad[BC_N_COLS + BC_MEMBER] += Val::ONE;
         let m = RowMajorMatrix::new(bad, BC_N_COLS);
-        assert!(!check_all_constraints(&BlockAccumulatorAir, &m, &pubs(root), None).is_ok(),
-            "a tampered block member was accepted");
+        assert!(
+            !check_all_constraints(&BlockAccumulatorAir, &m, &pubs(root), None).is_ok(),
+            "a tampered block member was accepted"
+        );
     }
 
     /// Forgery: breaking the chain (row i+1's chain_in != row i's output) ⇒ rejected by the transition.
@@ -221,8 +236,10 @@ mod tests {
         let mut bad = flat.clone();
         bad[2 * BC_N_COLS + BC_CHAIN] += Val::ONE; // row 2 chain_in no longer == row 1 output
         let m = RowMajorMatrix::new(bad, BC_N_COLS);
-        assert!(!check_all_constraints(&BlockAccumulatorAir, &m, &pubs(root), None).is_ok(),
-            "a broken accumulator chain was accepted");
+        assert!(
+            !check_all_constraints(&BlockAccumulatorAir, &m, &pubs(root), None).is_ok(),
+            "a broken accumulator chain was accepted"
+        );
     }
 
     /// Forgery: a wrong public chain_state_root ⇒ rejected by the last-row binding.
@@ -234,8 +251,10 @@ mod tests {
         let mut root = trace_root(n, &flat);
         root[0] += Val::ONE;
         let m = RowMajorMatrix::new(flat, BC_N_COLS);
-        assert!(!check_all_constraints(&BlockAccumulatorAir, &m, &pubs(root), None).is_ok(),
-            "a wrong chain_state_root was accepted");
+        assert!(
+            !check_all_constraints(&BlockAccumulatorAir, &m, &pubs(root), None).is_ok(),
+            "a wrong chain_state_root was accepted"
+        );
     }
 
     /// KEYSTONE: the block accumulator is PROVED into a real O(1) STARK proof and VERIFIED — one
@@ -264,7 +283,7 @@ mod tests {
         type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
         type DftT = Radix2DitParallel<Val>;
         type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
-        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 7>;
         type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
 
         let perm: Perm = default_koalabear_poseidon2_16();
@@ -329,7 +348,7 @@ mod tests {
         type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
         type DftT = Radix2DitParallel<Val>;
         type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
-        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 7>;
         type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
 
         let perm: Perm = default_koalabear_poseidon2_16();
@@ -386,16 +405,27 @@ mod tests {
         use p3_merkle_tree::MerkleTreeMmcs;
         use p3_uni_stark::{prove, StarkConfig};
 
-        type ValMmcs = MerkleTreeMmcs<<Val as Field>::Packing, <Val as Field>::Packing, MyHash, MyCompress, 2, DIGEST_ELEMS>;
+        type ValMmcs = MerkleTreeMmcs<
+            <Val as Field>::Packing,
+            <Val as Field>::Packing,
+            MyHash,
+            MyCompress,
+            2,
+            DIGEST_ELEMS,
+        >;
         type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
         type DftT = Radix2DitParallel<Val>;
         type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
-        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 7>;
         type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
 
         let perm: Perm = default_koalabear_poseidon2_16();
         let mk = || -> OuterConfig {
-            let val_mmcs = ValMmcs::new(MyHash::new(perm.clone()), MyCompress::new(MyHash::new(perm.clone())), 0);
+            let val_mmcs = ValMmcs::new(
+                MyHash::new(perm.clone()),
+                MyCompress::new(MyHash::new(perm.clone())),
+                0,
+            );
             let challenge_mmcs = ChallengeMmcs::new(val_mmcs.clone());
             let fri_params = FriParameters {
                 log_blowup: PROD_LOG_BLOWUP,
@@ -406,7 +436,10 @@ mod tests {
                 query_proof_of_work_bits: PROD_QUERY_POW_BITS,
                 mmcs: challenge_mmcs,
             };
-            OuterConfig::new(Pcs::new(DftT::default(), val_mmcs, fri_params), MyChallenger::new(perm.clone()))
+            OuterConfig::new(
+                Pcs::new(DftT::default(), val_mmcs, fri_params),
+                MyChallenger::new(perm.clone()),
+            )
         };
 
         // ~4.75 MB per-account creation proof (the floor aggregation must beat), in bytes.
@@ -429,7 +462,10 @@ mod tests {
                 per_account < CREATION_PROOF_BYTES / 10,
                 "per-account aggregate footprint {per_account} B not far below the creation-proof floor"
             );
-            assert!(per_account <= prev_per_account, "per-account footprint must not grow with block size");
+            assert!(
+                per_account <= prev_per_account,
+                "per-account footprint must not grow with block size"
+            );
             prev_per_account = per_account;
         }
     }
@@ -444,7 +480,9 @@ mod tests {
         let mut bad = flat.clone();
         bad[BC_CHAIN] += Val::ONE; // row 0 chain_in (genesis) != 0
         let m = RowMajorMatrix::new(bad, BC_N_COLS);
-        assert!(!check_all_constraints(&BlockAccumulatorAir, &m, &pubs(root), None).is_ok(),
-            "a nonzero genesis was accepted");
+        assert!(
+            !check_all_constraints(&BlockAccumulatorAir, &m, &pubs(root), None).is_ok(),
+            "a nonzero genesis was accepted"
+        );
     }
 }

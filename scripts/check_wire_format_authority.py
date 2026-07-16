@@ -43,6 +43,7 @@ ACCOUNT_STARK_PAYLOAD_DIGEST_FIELDS = [
     "slot_id",
     "masked_projection_lane_count",
     "masked_projection_le",
+    "pad_seed_nullifier",
     "account_stark_bundle",
 ]
 
@@ -271,12 +272,14 @@ def main() -> int:
         "slot_id",
         "native_role_root_commitment",
         "masked_projection",
+        "pad_seed_nullifier",
         "account_stark_bundle",
         "account-creation STARK: payload bundle is empty",
         "account-creation STARK: payload digest mismatch",
         "account-creation STARK production verification is fail-closed (external-review-gated)",
         "deployed anchor mismatch: native_role_root_commitment",
         "deployed anchor mismatch: masked_projection[0]",
+        "deployed anchor mismatch: pad_seed_nullifier",
         "account-creation STARK verify failed",
     ]:
         if marker not in source:

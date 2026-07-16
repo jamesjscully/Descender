@@ -4,8 +4,9 @@
 //! `fill_reduce_gadget`, `wide_reduce_masks`, `perm_num_cols`, `ce`) from the
 //! re-host benchmark's `c2_air.rs`. This is the 128-bit-hiding mask derivation:
 //! each of the 6 mask lanes is `mask_j = (sum_i lane_{j,i} * p^i) mod q12289`
-//! over FIVE squeezed base-`p` digits, so a uniform `W < p^5 ~ 2^155` reduced
-//! mod `q` has bias `<= q/p^5 ~ 2^-141` (vs the naive 1-lane ~2^-17). The
+//! over SIX squeezed base-`p` digits, so a uniform `W < p^6 ~ 2^186` reduced
+//! mod `q` has bias `<= q/p^6 < 2^-172`. Across six mask lanes and the selected
+//! 2^32-account horizon, the aggregate reduction term remains below 2^-137. The
 //! integer Horner reduction is constrained wrap-free via a base-2^16 limb/carry
 //! encoding; see the original module doc in `c2_air.rs` for the full soundness
 //! argument.
@@ -23,9 +24,9 @@ pub const Q12289: u32 = 12289;
 /// Number of projection-mask lanes.
 pub const NUM_OUTPUTS: usize = 6;
 /// Wide-then-reduce: squeezed field lanes per mask (base-`p` digits of `W`).
-pub const LANES_PER_MASK: usize = 5;
-/// Total squeezed field lanes = 6 masks * 5 lanes each.
-pub const NUM_SQUEEZE: usize = NUM_OUTPUTS * LANES_PER_MASK; // 30
+pub const LANES_PER_MASK: usize = 6;
+/// Total squeezed field lanes = 6 masks * 6 lanes each.
+pub const NUM_SQUEEZE: usize = NUM_OUTPUTS * LANES_PER_MASK; // 36
 /// Sponge rate (elements absorbed/squeezed per permutation) for WIDTH=16.
 pub const RATE: usize = 8;
 /// `mask < q12289` (~14-bit). 14 bits covers [0, 16384) ⊇ [0, q).
@@ -37,7 +38,7 @@ const LO_BITS: usize = 16;
 const HI_BITS: usize = 15;
 const S_LO_BITS: usize = 16;
 const S_TOP_BITS: usize = 14;
-const HORNER_STEPS: usize = LANES_PER_MASK; // 5
+const HORNER_STEPS: usize = LANES_PER_MASK; // 6
 
 /// Field cells per Horner step (scalar values, NOT counting bit cells).
 const STEP_VALS: usize = 11;
@@ -57,7 +58,7 @@ const STEP_BITS: usize = LO_BITS
 const STEP_R: usize = 1 + MASK_BITS + 1 + MASK_BITS;
 /// Total field cells per Horner step.
 const STEP_CELLS: usize = STEP_VALS + STEP_BITS + STEP_R;
-/// Per mask lane: 5 squeezed `lane` value copies + 5 Horner steps.
+/// Per mask lane: 6 squeezed `lane` value copies + 6 Horner steps.
 const PER_MASK_CELLS: usize = LANES_PER_MASK + HORNER_STEPS * STEP_CELLS;
 /// All 6 mask lanes' reduce-gadget columns.
 pub const REDUCE_CELLS: usize = NUM_OUTPUTS * PER_MASK_CELLS;
@@ -127,7 +128,7 @@ pub const fn perm_num_cols<
 }
 
 /// Evaluate the wide-then-reduce gadget for all NUM_OUTPUTS mask lanes. `squeezed`
-/// holds the 30 squeezed output exprs (lane_{j,i} = squeezed[j*5 + i]); the gadget
+/// holds the 36 squeezed output exprs (lane_{j,i} = squeezed[j*6 + i]); the gadget
 /// binds them to its own `lane` columns and returns the 6 reduced mask exprs.
 pub fn eval_reduce_gadget<AB>(
     builder: &mut AB,

@@ -62,8 +62,16 @@ pub fn pack_element(outer: Val, observed: Val, inner: Val) -> [Val; N_COLS] {
 /// `check_all_constraints`) so the boundary binding anchors the committed `C_OUTER` column to the
 /// proof's exposed statement.
 pub fn build_trace(outer: &[Val], observed: &[Val], inner: &[Val]) -> Vec<Val> {
-    assert_eq!(outer.len(), observed.len(), "outer/observed length mismatch");
-    assert_eq!(observed.len(), inner.len(), "observed/inner length mismatch");
+    assert_eq!(
+        outer.len(),
+        observed.len(),
+        "outer/observed length mismatch"
+    );
+    assert_eq!(
+        observed.len(),
+        inner.len(),
+        "observed/inner length mismatch"
+    );
     let mut flat = Vec::with_capacity(outer.len() * N_COLS);
     for ((&o, &b), &i) in outer.iter().zip(observed.iter()).zip(inner.iter()) {
         flat.extend_from_slice(&pack_element(o, b, i));
@@ -85,7 +93,11 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for PublicIoAir {
     fn eval(&self, builder: &mut AB) {
         let main = builder.main();
         let local: Vec<AB::Var> = main.current_slice().to_vec();
-        let pubs: Vec<AB::Expr> = builder.public_values().iter().map(|p| (*p).into()).collect();
+        let pubs: Vec<AB::Expr> = builder
+            .public_values()
+            .iter()
+            .map(|p| (*p).into())
+            .collect();
         let l = |i: usize| -> AB::Expr { local[i].into() };
 
         // --- element-wise core (every row): outer == observed == inner ---
@@ -111,7 +123,9 @@ mod tests {
     use p3_matrix::dense::RowMajorMatrix;
 
     fn pubs(seed: u32, n: usize) -> Vec<Val> {
-        (0..n as u32).map(|i| Val::from_u32(seed.wrapping_add(i))).collect()
+        (0..n as u32)
+            .map(|i| Val::from_u32(seed.wrapping_add(i)))
+            .collect()
     }
 
     fn matrix(outer: &[Val], observed: &[Val], inner: &[Val]) -> RowMajorMatrix<Val> {
@@ -125,7 +139,11 @@ mod tests {
         let stmt = pubs(1000, 24);
         let m = matrix(&stmt, &stmt, &stmt);
         let report = check_all_constraints(&PublicIoAir, &m, &stmt, None);
-        assert!(report.is_ok(), "honest statement rejected: {} failures", report.failures.len());
+        assert!(
+            report.is_ok(),
+            "honest statement rejected: {} failures",
+            report.failures.len()
+        );
     }
 
     /// Forgery — STATEMENT SUBSTITUTION (interior element): the inner proof's public value differs
@@ -194,7 +212,9 @@ mod tests {
 
         let mut exposed = stmt.clone();
         exposed[0] += Val::ONE;
-        assert!(!crate::public_io::verify_statement_preserved(&stmt, &exposed));
+        assert!(!crate::public_io::verify_statement_preserved(
+            &stmt, &exposed
+        ));
         // mirror the substitution in the AIR (boundary element differs from public values).
         assert!(!check_all_constraints(&PublicIoAir, &m, &exposed, None).is_ok());
     }

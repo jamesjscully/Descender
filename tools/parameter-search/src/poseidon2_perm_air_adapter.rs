@@ -11,7 +11,7 @@
 use crate::air::{Air, BoundaryConstraint};
 use crate::fq12_q12289::Fq12;
 use crate::poseidon2_air_q12289::{
-    self as perm_air, generate_trace, transition_kind, TransitionKind, N_COLS, N_ROWS,
+    self as perm_air, N_COLS, N_ROWS, TransitionKind, generate_trace, transition_kind,
 };
 use crate::poseidon2_q12289::{Poseidon2Params, T};
 
@@ -82,7 +82,11 @@ fn sbox_fq12(x: &Fq12) -> Fq12 {
     x4.mul(x)
 }
 
-fn expected_next_fq12(params: &Poseidon2Params, kind: TransitionKind, cur: &[Fq12; T]) -> [Fq12; T] {
+fn expected_next_fq12(
+    params: &Poseidon2Params,
+    kind: TransitionKind,
+    cur: &[Fq12; T],
+) -> [Fq12; T] {
     match kind {
         TransitionKind::InitialExternal => apply_me_fq12(params, cur),
         TransitionKind::Full { rc_index } => {

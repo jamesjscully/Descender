@@ -89,10 +89,9 @@ fn octic_cube<AB: AirBuilder>(a: &[AB::Expr; D]) -> [AB::Expr; D] {
 
 /// Lift a base-field `Val` constant to an octic expr (limb 0 = constant, rest 0).
 fn octic_const<AB: AirBuilder<F = Val>>(c: Val) -> [AB::Expr; D] {
-    let limbs = <Challenge as BasedVectorSpace<Val>>::as_basis_coefficients_slice(&Challenge::from(
-        c,
-    ))
-    .to_vec();
+    let limbs =
+        <Challenge as BasedVectorSpace<Val>>::as_basis_coefficients_slice(&Challenge::from(c))
+            .to_vec();
     core::array::from_fn(|i| AB::Expr::from(limbs[i]))
 }
 
@@ -165,7 +164,9 @@ impl<AB: AirBuilder<F = Val>> OcticConstants<AB> {
             external_initial: c
                 .external_initial
                 .map(|row| row.map(|v| octic_const::<AB>(v))),
-            external_final: c.external_final.map(|row| row.map(|v| octic_const::<AB>(v))),
+            external_final: c
+                .external_final
+                .map(|row| row.map(|v| octic_const::<AB>(v))),
             internal: c.internal.map(|v| octic_const::<AB>(v)),
             diag: c.diag.map(|v| octic_const::<AB>(v)),
         }
@@ -410,7 +411,11 @@ mod tests {
             let (oct_posts, oct_out) = native_perm(oct_in);
 
             for lane in 0..WIDTH {
-                assert_eq!(oct_out[lane], lift(val_out[lane]), "octic output lane {lane} diverges (seed {seed:#x})");
+                assert_eq!(
+                    oct_out[lane],
+                    lift(val_out[lane]),
+                    "octic output lane {lane} diverges (seed {seed:#x})"
+                );
             }
             // committed posts: compare octic posts vs the Val cols at the post offsets.
             let mut k = 0usize;
@@ -442,7 +447,11 @@ mod tests {
     fn native_octic_multilimb_records_all_posts() {
         let input: [Challenge; WIDTH] = core::array::from_fn(|i| {
             Challenge::from_basis_coefficients_fn(|j| {
-                Val::from_u32((i as u32 + 1).wrapping_mul(7).wrapping_add(j as u32 * 13 + 1))
+                Val::from_u32(
+                    (i as u32 + 1)
+                        .wrapping_mul(7)
+                        .wrapping_add(j as u32 * 13 + 1),
+                )
             })
         });
         let (posts, _out) = native_perm(input);

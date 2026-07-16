@@ -1,10 +1,10 @@
 use descender_parameter_search::production_reference::{
     DIGEST_BYTES, PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS,
-    PATH2_EVIDENCE_KIND_DIRECT_REPLAYABLE_RELATION_CERTIFICATE, PATH2_SLOT_PREVALIDATE_BATCH_DOMAIN,
-    Path2AccountCreationEvidenceV1, Path2PrevalidatedSlotLeafV1, PROFILE,
-    path2_account_creation_frame_kat_boundary_report_v1,
-    path2_account_creation_frame_public_rejection_class,
-    path2_account_creation_frame_kat_fixture_v1, path2_prevalidated_slot_leaf_digest,
+    PATH2_EVIDENCE_KIND_DIRECT_REPLAYABLE_RELATION_CERTIFICATE,
+    PATH2_SLOT_PREVALIDATE_BATCH_DOMAIN, PROFILE, Path2AccountCreationEvidenceV1,
+    Path2PrevalidatedSlotLeafV1, path2_account_creation_frame_kat_boundary_report_v1,
+    path2_account_creation_frame_kat_fixture_v1,
+    path2_account_creation_frame_public_rejection_class, path2_prevalidated_slot_leaf_digest,
     path2_slot_authorization_digest, verify_path2_prevalidated_slot_creation_frame_bindings,
     verify_path2_prevalidated_slot_creation_payload_bindings,
 };
@@ -146,7 +146,7 @@ fn manifest_body() -> Result<Value, String> {
         "corpus_id": "Descender.Path2.AccountCreationFrameKatBoundaryVectors.v1",
         "corpus_version": 1,
         "profile_id": PROFILE,
-        "status": "digest_pinned_boundary_vectors",
+        "status": "frozen_digest_pinned_boundary_vectors",
         "generator": {
             "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_frame_kat_vectors",
             "source": "tools/parameter-search/src/bin/path2_account_creation_frame_kat_vectors.rs"
@@ -162,6 +162,7 @@ fn manifest_body() -> Result<Value, String> {
             "digest": hex_encode(&report.digest),
             "row_count": report.row_count,
             "every_current_row_has_generated_vector": true,
+            "frozen_corpus_complete": report.frozen_corpus_complete,
             "deployment_ready": report.deployment_ready,
             "blocker": report.blocker
         },

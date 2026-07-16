@@ -2,7 +2,7 @@
 //!
 //! This is the ROW-BASED reference that the verifier-AIR's challenger columns must
 //! enforce constant-for-constant. It mirrors `p3_challenger::DuplexChallenger<Val,
-//! Perm, 16, 8>` (the leaf's `descender_account_stark::Challenger`) EXACTLY — the
+//! Perm, 16, 7>` (the leaf's `descender_account_stark::Challenger`) EXACTLY — the
 //! semantics pinned in `PHASE1_GADGET1_CHALLENGER_SPEC.md` §1: overwrite-not-add on
 //! absorb, the `+= num_absorbed` length tag into capacity slot `RATE`, LIFO
 //! `output_buffer.pop()`, and the `sample_bits` low-bits draw.
@@ -19,10 +19,10 @@ use p3_field::{PrimeCharacteristicRing, PrimeField32};
 use p3_koala_bear::default_koalabear_poseidon2_16;
 use p3_symmetric::Permutation;
 
-/// Sponge rate (must match `Challenger = DuplexChallenger<Val, Perm, 16, 8>`).
-pub const RATE: usize = 8;
-/// Sponge capacity = WIDTH − RATE = 8 (the c=8 floor accepted at 2⁻¹²⁴; see
-/// `field-bound-soundness-ceiling` decision — width-16 Poseidon2 is kept).
+/// ADR-0011 sponge rate (must match
+/// `Challenger = DuplexChallenger<Val, Perm, 16, 7>`).
+pub const RATE: usize = 7;
+/// Sponge capacity = WIDTH − RATE = 9.
 pub const CAPACITY: usize = WIDTH - RATE;
 
 /// Which atomic challenger transition a [`Row`] performs (spec §3.1 selectors;
@@ -321,7 +321,11 @@ pub mod air {
         c[C_OBSERVED_VAL] = row.observed_val;
         c[C_DRAW_OUT] = row.draw_out;
         c[C_ABSORB_LEN_TAG] = Val::from_u8(row.absorb_len_tag as u8);
-        c[C_IS_SQUEEZE] = if row.is_squeeze_permute { Val::ONE } else { Val::ZERO };
+        c[C_IS_SQUEEZE] = if row.is_squeeze_permute {
+            Val::ONE
+        } else {
+            Val::ZERO
+        };
         c
     }
 
@@ -477,7 +481,9 @@ pub mod air {
                 // append observed_val at index in_len: next.in_buf[j] = lt*cur + onehot*observed
                 for j in 0..RATE {
                     b.assert_zero(
-                        n(C_IN_BUF + j) - lt_in(j) * l(C_IN_BUF + j) - l(C_IN_SEL + j) * l(C_OBSERVED_VAL),
+                        n(C_IN_BUF + j)
+                            - lt_in(j) * l(C_IN_BUF + j)
+                            - l(C_IN_SEL + j) * l(C_OBSERVED_VAL),
                     );
                 }
                 // in_len += 1: next.in_sel shifts up by one
@@ -502,7 +508,7 @@ pub mod air {
                     b.assert_zero(n(C_OUT_SEL + k) - l(C_OUT_SEL + (k + 1)));
                 }
                 b.assert_zero(n(C_OUT_SEL + RATE)); // top can't stay set
-                // kept prefix unchanged: kept[j]=1 iff out_len > j+1
+                                                    // kept prefix unchanged: kept[j]=1 iff out_len > j+1
                 for j in 0..RATE {
                     let mut kept = AB::Expr::ZERO;
                     for i in (j + 2)..=RATE {
@@ -541,8 +547,8 @@ pub mod air {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use p3_challenger::{CanObserve, CanSample, CanSampleBits};
     use descender_account_stark::Challenger;
+    use p3_challenger::{CanObserve, CanSample, CanSampleBits};
 
     fn native() -> Challenger {
         Challenger::new(default_koalabear_poseidon2_16())
@@ -634,7 +640,10 @@ mod tests {
         let mut r = RowChallenger::new();
         let (rs, rb) = drive_row(&mut r);
 
-        assert_eq!(rs, ns, "sampled challenge values diverge from native challenger");
+        assert_eq!(
+            rs, ns,
+            "sampled challenge values diverge from native challenger"
+        );
         assert_eq!(rb, nb, "sampled query bits diverge from native challenger");
         assert!(!r.rows().is_empty());
     }
@@ -654,7 +663,10 @@ mod tests {
         b.observe(v(0xAB99)); // one element flipped
         let sb = b.sample();
 
-        assert_ne!(sa, sb, "a flipped public element did not change the FS challenge");
+        assert_ne!(
+            sa, sb,
+            "a flipped public element did not change the FS challenge"
+        );
     }
 
     /// Spec §7.3 length-tag binding: `[5,7]` vs `[5,7,0,0]` (distinct absorb lengths n)
@@ -674,7 +686,10 @@ mod tests {
         b.observe(v(0));
         let sb = b.sample(); // n=4 absorb
 
-        assert_ne!(sa, sb, "length-tag not binding: [5,7] and [5,7,0,0] collided");
+        assert_ne!(
+            sa, sb,
+            "length-tag not binding: [5,7] and [5,7,0,0] collided"
+        );
     }
 
     /// Spec §4 CONSTRAINTS — honest trace satisfies every transition + boundary.
@@ -682,7 +697,10 @@ mod tests {
     fn honest_trace_satisfies_gadget1_constraints() {
         let mut r = RowChallenger::new();
         let _ = drive_row(&mut r);
-        assert!(constraints::trace_ok(r.rows()), "honest challenger trace violated gadget-1 constraints");
+        assert!(
+            constraints::trace_ok(r.rows()),
+            "honest challenger trace violated gadget-1 constraints"
+        );
     }
 
     /// Forged trace rejected: flipping a popped draw value breaks the LIFO-pop relation
@@ -692,7 +710,10 @@ mod tests {
         let mut r = RowChallenger::new();
         let _ = drive_row(&mut r);
         let mut rows = r.rows().to_vec();
-        let i = rows.iter().position(|w| w.op == Op::SampleDraw).expect("a draw row exists");
+        let i = rows
+            .iter()
+            .position(|w| w.op == Op::SampleDraw)
+            .expect("a draw row exists");
         rows[i].draw_out += Val::ONE; // claim a different popped element
         assert!(!constraints::transition_ok(&rows[i], &rows[i + 1]));
         assert!(!constraints::trace_ok(&rows));
@@ -721,7 +742,10 @@ mod tests {
         let mut r = RowChallenger::new();
         let _ = drive_row(&mut r);
         let mut rows = r.rows().to_vec();
-        let i = rows.iter().position(|w| w.op == Op::SampleDraw).expect("a draw row exists");
+        let i = rows
+            .iter()
+            .position(|w| w.op == Op::SampleDraw)
+            .expect("a draw row exists");
         rows[i + 1].sponge[0] += Val::ONE; // sponge changed across a pure draw
         assert!(!constraints::transition_ok(&rows[i], &rows[i + 1]));
     }
@@ -799,7 +823,10 @@ mod tests {
         // A pad row (last) is NOT a valid active op (is_pad set, op selectors all zero).
         let last = &flat[(height - 1) * ncols..];
         assert_eq!(last[air::C_IS_PAD], Val::ONE);
-        assert!(air::unpack_row(last).is_none(), "pad row is not a valid active op");
+        assert!(
+            air::unpack_row(last).is_none(),
+            "pad row is not a valid active op"
+        );
     }
 
     /// Encoding-integrity: a corrupted (non-one-hot) length selector is rejected by the
@@ -839,7 +866,11 @@ mod tests {
             let _ = drive_row(&mut r);
             let m = matrix(r.rows());
             let report = check_all_constraints(&ChallengerAir, &m, &[], None);
-            assert!(report.is_ok(), "honest trace failed gadget-1 AIR: {} failures", report.failures.len());
+            assert!(
+                report.is_ok(),
+                "honest trace failed gadget-1 AIR: {} failures",
+                report.failures.len()
+            );
         }
 
         #[test]
@@ -849,7 +880,9 @@ mod tests {
             let mut rows = r.rows().to_vec();
             let i = rows.iter().position(|w| w.op == Op::SampleDraw).unwrap();
             rows[i].draw_out += Val::ONE;
-            assert!(check_all_constraints(&ChallengerAir, &matrix(&rows), &[], None).is_ok() == false);
+            assert!(
+                check_all_constraints(&ChallengerAir, &matrix(&rows), &[], None).is_ok() == false
+            );
         }
 
         #[test]
@@ -859,7 +892,9 @@ mod tests {
             let mut rows = r.rows().to_vec();
             let i = rows.iter().position(|w| w.op == Op::SampleDraw).unwrap();
             rows[i + 1].sponge[0] += Val::ONE; // sponge changed across a pure draw
-            assert!(check_all_constraints(&ChallengerAir, &matrix(&rows), &[], None).is_ok() == false);
+            assert!(
+                check_all_constraints(&ChallengerAir, &matrix(&rows), &[], None).is_ok() == false
+            );
         }
 
         #[test]
@@ -872,7 +907,9 @@ mod tests {
             let i = rows.iter().position(|w| w.op == Op::Observe).unwrap();
             let in_len = rows[i].in_len;
             rows[i + 1].in_buf[in_len] += Val::ONE; // next.in_buf[in_len] != observed_val
-            assert!(check_all_constraints(&ChallengerAir, &matrix(&rows), &[], None).is_ok() == false);
+            assert!(
+                check_all_constraints(&ChallengerAir, &matrix(&rows), &[], None).is_ok() == false
+            );
         }
 
         #[test]
@@ -881,7 +918,9 @@ mod tests {
             let _ = drive_row(&mut r);
             let mut rows = r.rows().to_vec();
             rows[0].sponge[3] += Val::ONE; // first row must start from zero sponge
-            assert!(check_all_constraints(&ChallengerAir, &matrix(&rows), &[], None).is_ok() == false);
+            assert!(
+                check_all_constraints(&ChallengerAir, &matrix(&rows), &[], None).is_ok() == false
+            );
         }
 
         #[test]
@@ -893,7 +932,9 @@ mod tests {
             // corrupting nothing else — a non-matching in_sel breaks the one-hot vs next shift.
             rows[2].in_len = if rows[2].in_len == 0 { 1 } else { 0 };
             // pack_row uses in_len for the one-hot, so this desyncs the append/shift relation.
-            assert!(check_all_constraints(&ChallengerAir, &matrix(&rows), &[], None).is_ok() == false);
+            assert!(
+                check_all_constraints(&ChallengerAir, &matrix(&rows), &[], None).is_ok() == false
+            );
         }
     }
 
@@ -907,7 +948,11 @@ mod tests {
         let _ = drive_row(&mut r);
         let rows = r.rows();
         let first = &rows[0];
-        assert_eq!(first.sponge, [Val::ZERO; WIDTH], "first row sponge != 0 (new())");
+        assert_eq!(
+            first.sponge,
+            [Val::ZERO; WIDTH],
+            "first row sponge != 0 (new())"
+        );
         assert_eq!(first.in_len, 0);
         assert_eq!(first.out_len, 0);
         for row in rows {

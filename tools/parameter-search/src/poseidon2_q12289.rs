@@ -316,7 +316,11 @@ fn generate_round_constants_generic(
 
 /// q = 12289 as big-endian bytes.
 fn q_be() -> Vec<u8> {
-    Q.to_be_bytes().iter().copied().skip_while(|&b| b == 0).collect()
+    Q.to_be_bytes()
+        .iter()
+        .copied()
+        .skip_while(|&b| b == 0)
+        .collect()
 }
 
 /// Bit length of q = 12289. 12289 < 2^14, >= 2^13, so n = 14.
@@ -895,7 +899,11 @@ pub fn projection_masks_poseidon2(
     for &b in slot_id.to_le_bytes().iter() {
         inputs.push(b as u16);
     }
-    let out = poseidon2_sponge(POSEIDON2_PROJECTION_MASK_DOMAIN, &inputs, PROJECTION_MASK_LANES);
+    let out = poseidon2_sponge(
+        POSEIDON2_PROJECTION_MASK_DOMAIN,
+        &inputs,
+        PROJECTION_MASK_LANES,
+    );
     let mut masks = [0u16; PROJECTION_MASK_LANES];
     masks.copy_from_slice(&out);
     masks
@@ -1017,7 +1025,10 @@ pub fn opening_tuple_commitment_poseidon2(
     );
     // 6 account_projection FIELD lanes (each a canonical residue < q).
     for &v in account_projection.iter() {
-        debug_assert!((v as u32) < Q, "account_projection lane must be canonical (< q)");
+        debug_assert!(
+            (v as u32) < Q,
+            "account_projection lane must be canonical (< q)"
+        );
         inputs.push(v);
     }
     // 32 lifecycle_anchor byte-lanes.
@@ -1060,7 +1071,10 @@ mod tests {
 
         let c_a = opening_tuple_commitment_poseidon2(&acc_a, &anchor_a, &nonce_a);
         // determinism
-        assert_eq!(c_a, opening_tuple_commitment_poseidon2(&acc_a, &anchor_a, &nonce_a));
+        assert_eq!(
+            c_a,
+            opening_tuple_commitment_poseidon2(&acc_a, &anchor_a, &nonce_a)
+        );
         // range + lane count
         assert_eq!(c_a.len(), OPENING_TUPLE_COMMITMENT_LANES);
         for &x in c_a.iter() {
@@ -1174,7 +1188,11 @@ mod tests {
             a
         }
         assert_eq!(gcd(5, (Q - 1) as u64), 1, "5 must be coprime to q-1");
-        assert_eq!(gcd(3, (Q - 1) as u64), 3, "3 must divide q-1 (x^3 not a permutation)");
+        assert_eq!(
+            gcd(3, (Q - 1) as u64),
+            3,
+            "3 must divide q-1 (x^3 not a permutation)"
+        );
 
         // x^5 hits every residue exactly once.
         let mut seen5 = vec![false; Q as usize];

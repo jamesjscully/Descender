@@ -42,8 +42,8 @@ mod enabled {
             || !evidence.tuple_fields_match_theorem_boundary
             || evidence.accepted_tuple_field_evidence_count != 11
             || evidence.accepted_tuple_field_evidence_present_count != 11
-            || evidence.accepted_tuple_field_open_obligation_count != 6
-            || evidence.accepted_tuple_field_imported_closure_count != 2
+            || evidence.accepted_tuple_field_open_obligation_count != 1
+            || evidence.accepted_tuple_field_imported_closure_count != 9
             || !evidence.every_accepted_tuple_field_has_evidence
             || evidence.every_accepted_tuple_field_has_open_direct_obligation
             || !evidence.every_accepted_tuple_field_has_open_or_imported_direct_obligation
@@ -63,7 +63,7 @@ mod enabled {
                 "source": "tools/parameter-search/src/bin/path2_direct_accepted_spend_tuple_evidence_manifest.rs"
             },
             "deterministic_tuple_mode": {
-                "accepted_tuple_endpoint": "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1",
+                "accepted_tuple_endpoint": "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_from_sovereign_state_v1",
                 "source_fixture_endpoint": "path2_direct_accepted_spend_tuple_kat_evidence_v1",
                 "proof_byte_policy": "deterministic KAT evidence only: the generator runs inside a one-thread Rayon pool so the fixed account-STARK proof-randomness seed also fixes Plonky3 proof-of-work witness selection; deployment producers still use fresh proof randomness",
                 "rayon_threads": 1,

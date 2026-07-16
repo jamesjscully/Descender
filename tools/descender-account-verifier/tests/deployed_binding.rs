@@ -6,10 +6,14 @@
 //! This runs ONE real single-instance STARK prove (memory-light; the heavy jobs
 //! are batch N≥1024 / 24k-sample tests, deliberately not exercised here).
 
-use descender_account_stark::{prove_account_creation_with_seed, AccountCreationSecrets, N_LANES, SYNDROME_LANES};
+use descender_account_stark::{
+    prove_account_creation_with_seed, AccountCreationSecrets, N_LANES, SYNDROME_LANES,
+};
 use descender_account_verifier::{
-    pack_bundle, role_root_export_digest, verify_deployed_account_creation, DeployedCreationAnchors,
-    VerifyError,
+    creation_nullifier_v1_bytes, pack_bundle, pack_public_statement,
+    public_statement_bytes_from_bundle, role_root_export_digest, unpack_public_statement,
+    verify_and_decode_deployed_account_creation, verify_deployed_account_creation,
+    DeployedCreationAnchors, VerifyError,
 };
 use p3_field::PrimeField32;
 
@@ -19,8 +23,8 @@ fn sample_secrets() -> AccountCreationSecrets {
         slot_id: 7,
         account_projection: [11, 2222, 333, 4444, 555, 6666],
         lifecycle_anchor: [0x11; 32],
-        c1_nonce: [0x22; 16],
-        c6_nonce: [0x33; 16],
+        c1_nonce: [0x22; 40],
+        c6_nonce: [0x33; 40],
         account_id: [0x44; 32],
         verifier_version: 0x0001_0002,
         account_state_root: [0x55; 32],
@@ -30,7 +34,9 @@ fn sample_secrets() -> AccountCreationSecrets {
 }
 
 /// Build the deployed anchors a correct PRODUCER would emit for `public`.
-fn anchors_for(public: &descender_account_verifier::AccountCreationPublic) -> DeployedCreationAnchors {
+fn anchors_for(
+    public: &descender_account_verifier::AccountCreationPublic,
+) -> DeployedCreationAnchors {
     let mut masked = [0u16; 6];
     assert_eq!(N_LANES, 6);
     for (j, v) in public.masked_projection.iter().enumerate() {
@@ -49,6 +55,7 @@ fn anchors_for(public: &descender_account_verifier::AccountCreationPublic) -> De
         masked_projection: masked,
         native_role_root_commitment: role_root_export_digest(&public.role_root),
         packed_witness_commitment: packed,
+        pad_seed_nullifier: creation_nullifier_v1_bytes(public),
     }
 }
 
@@ -59,11 +66,33 @@ fn deployed_verify_accepts_honest_and_binds_anchors() {
     let (public, proof) = prove_account_creation_with_seed(&secrets, 0xDEAD_BEEF).expect("prove");
     let bundle = pack_bundle(&public, &proof).expect("pack");
     let anchors = anchors_for(&public);
+    let statement = pack_public_statement(&public).expect("pack public statement");
+    assert_eq!(
+        public_statement_bytes_from_bundle(&bundle).expect("extract public statement"),
+        statement
+    );
+    assert_eq!(
+        unpack_public_statement(&statement).expect("decode public statement"),
+        public
+    );
+    assert_ne!(statement, bundle);
 
     // Honest: accepts.
-    verify_deployed_account_creation(&bundle, &anchors).expect("honest bundle must verify");
+    let verified = verify_and_decode_deployed_account_creation(&bundle, &anchors)
+        .expect("honest bundle must verify");
+    assert_eq!(
+        verified.pad_seed_nullifier(),
+        creation_nullifier_v1_bytes(&public)
+    );
 
     // Each tampered anchor must be rejected with an AnchorMismatch (proof is fine).
+    let mut a = anchors.clone();
+    a.pad_seed_nullifier[0] ^= 1;
+    assert!(matches!(
+        verify_deployed_account_creation(&bundle, &a),
+        Err(VerifyError::AnchorMismatch(_))
+    ));
+
     let mut a = anchors.clone();
     a.account_id[0] ^= 1;
     assert!(matches!(

@@ -35,12 +35,13 @@
 //! constant-for-constant against `descender_account_stark::config`.
 //!
 //! 1. `challenger` — in-AIR `DuplexChallenger` (Poseidon2 duplex sponge): observe
-//!    inner commitments + the leaf public-IO (~190 field elems @ rate 8), sample α
+//!    inner commitments + the leaf public-IO (~190 field elems @ rate 7), sample α
 //!    (DEEP/batch), per-round β fold challenges, and query indices (`sample_bits`).
 //!    Mirrors `p3-challenger::DuplexChallenger`.
 //! 2. `merkle_verify` — verify a salted Merkle opening (one `TruncatedPermutation` =
 //!    one Poseidon2 perm per node) for the main-trace commitment and each FRI
-//!    commit-phase layer, × `PROD_NUM_QUERIES` (56). Mirrors `MerkleTreeHidingMmcs`.
+//!    commit-phase layer, × the deployed `PROD_NUM_QUERIES` (120). Mirrors
+//!    `MerkleTreeHidingMmcs`.
 //! 3. `fri_fold` — per-query commit-phase consistency + `fold_row` over the degree-4
 //!    extension field, for each binary folding round. Mirrors `p3-fri::verifier`.
 //! 4. `constraint_eval` — DEEP / out-of-domain evaluation of the account-creation
@@ -67,7 +68,7 @@
 // Re-export the leaf config as the single source of truth for the verifier-AIR
 // (the recursive verifier must NOT re-declare FRI/Poseidon2/field params).
 pub use descender_account_stark::{
-    Proof as LeafProof, AccountCreationPublic as LeafPublic, PROD_LOG_BLOWUP, PROD_NUM_QUERIES,
+    AccountCreationPublic as LeafPublic, Proof as LeafProof, PROD_LOG_BLOWUP, PROD_NUM_QUERIES,
     PROD_QUERY_POW_BITS, PROD_SOUNDNESS_BITS,
 };
 
@@ -75,41 +76,54 @@ pub use descender_account_stark::{
 // lands with its own negative tests (mirroring the leaf's adversarial-test
 // discipline: test soundness by attempted forgery, never by substring scan).
 //
+pub mod accumulated_member; // Phase-3 (step 1) — fold IN-CIRCUIT-VERIFIED member roots into the block chain
+pub mod alpha_fold; // re-arithmetization — low-degree committed-accumulator alpha-batch fold (makes full-C(zeta) provable)
+pub mod block_accumulator; // Phase-3 (BEGIN) — fold a block of per-account recursive-proof commitments into one provable O(1) chain_state_root
+pub mod block_ood_binding_air; // production OOD vertical companion — same member/root chain as BlockRecursiveAir
+pub mod block_recursive_air; // Phase-3 TRUE single-proof O(1) — verify N members in-circuit + chain in one proof
+pub mod c9_challenger; // ADR-0011 native-fidelity reference — rate-7/capacity-9 FS schedule
+pub mod c9_extension_air; // ADR-0011 low-degree extension-sample AIR (8 limbs over rate 7)
 pub mod challenger; // gadget 1 — reference layer (row-based DuplexChallenger) landed
-pub mod merkle; // gadget 2 — Merkle path-verify reference (binary fold) landed
-pub mod perm; // gadget 2 building block — in-circuit Poseidon2 compression AIR (p3-poseidon2-air)
-pub mod inlined_perm; // gadget 2 building block — INLINED Poseidon2-16 round constraints (Option A, byte-pinned)
-pub mod inlined_perm_octic; // OCTIC (OOD) mirror of the Poseidon2-16 perm — residuals for the leaf C(zeta) sponge mirror
-pub mod merkle_air; // gadget 2 (proper) — binary Merkle path-verify AIR (inlined perm + fold wiring)
-pub mod fri_fold; // gadget 3 — FRI commit-phase fold reference (binary) landed
-pub mod fri_fold_air; // gadget 3 (proper) — FRI commit-phase binary fold AIR (deg-8 extension in-AIR)
-pub mod leaf_hash; // q128 leaf-row hash primitive (rate-7/digest-13 MyHash) — decouples LEAF_HASH_RATE from challenger::RATE / DIGEST_ELEMS
-pub mod fs_observe; // q128 FS commitment observation (DIGEST_ELEMS-wide commitment over rate-8 challenger) — fs_squeeze_betas_digest
-pub mod fri_chain_air; // gadget 3 (chaining) — multi-round FRI fold CHAINING transition AIR (per-layer log_height)
-pub mod fri_layer_air; // gadget 2/3 bridge — per-round FRI commit-phase LAYER Merkle open (leaf-hash + path + root) + final-poly check
-pub mod index_bus; // cross-gadget index bus (begin) — bind Merkle/FRI query index to gadget-1 sample_bits
 pub mod deep; // gadget 4 — DEEP-ALI out-of-domain quotient relation (core) landed
 pub mod deep_air; // gadget 4 (proper) — DEEP-ALI OOD quotient relation as Air<AB> (deg-8 extension in-AIR)
-pub mod reduce_consts; // shape constants for the C2 wide-then-reduce mask gadget mirror (PINned to descender_account_stark::reduce_gadget)
+pub mod fanout_anchor_air; // 120-query recursive fan-out -> canonical transcript anchor (128-row padded proof)
+pub mod fri_chain_air; // gadget 3 (chaining) — multi-round FRI fold CHAINING transition AIR (per-layer log_height)
+pub mod fri_fold; // gadget 3 — FRI commit-phase fold reference (binary) landed
+pub mod fri_fold_air; // gadget 3 (proper) — FRI commit-phase binary fold AIR (deg-8 extension in-AIR)
+pub mod fri_layer_air; // gadget 2/3 bridge — per-round FRI commit-phase LAYER Merkle open (leaf-hash + path + root) + final-poly check
+pub mod fs_observe; // q128 FS commitment observation (DIGEST_ELEMS-wide commitment over rate-7 challenger) — fs_squeeze_betas_digest
+pub mod index_bus; // cross-gadget index bus (begin) — bind Merkle/FRI query index to gadget-1 sample_bits
+pub mod inlined_perm; // gadget 2 building block — INLINED Poseidon2-16 round constraints (Option A, byte-pinned)
+pub mod inlined_perm_octic; // OCTIC (OOD) mirror of the Poseidon2-16 perm — residuals for the leaf C(zeta) sponge mirror
 pub mod leaf_constraint_air; // gadget 4 (proper, PART 2) — leaf C(zeta) MIRROR: alpha-batched leaf C4 residue constraints at the OOD point (bounded start)
+pub mod leaf_hash; // q128 leaf-row hash primitive (rate-7/digest-13 MyHash), independent of transcript scheduling
+pub mod merkle; // gadget 2 — Merkle path-verify reference (binary fold) landed
+pub mod merkle_air; // gadget 2 (proper) — binary Merkle path-verify AIR (inlined perm + fold wiring)
+pub mod ood_transcript_air; // vertical rate-7 OOD transcript accumulator (production-width challenger binding)
+pub mod pcs_opening_reduction_air; // constant-width p3 open_input reduction over ordered PCS claims
+pub mod pcs_opening_shape; // exact production batch/matrix/point/column order for vertical PCS reduction
+pub mod pcs_query_air; // one query: salted MMCS leaf cells -> OOD-bound reduction
+pub mod pcs_query_settlement; // versioned query-link + 3x MMCS + beta-bound FRI settlement envelope
+pub mod perm; // gadget 2 building block — in-circuit Poseidon2 compression AIR (p3-poseidon2-air)
 pub mod public_io; // gadget 5 — public-IO statement preservation landed
 pub mod public_io_air; // gadget 5 (proper) — public-IO statement preservation as Air<AB>
 pub mod recursive_air; // capstone (BEGIN) — monolithic verifier-AIR: index/challenge bus + FRI consumer in one window
-pub mod block_accumulator; // Phase-3 (BEGIN) — fold a block of per-account recursive-proof commitments into one provable O(1) chain_state_root
-pub mod accumulated_member; // Phase-3 (step 1) — fold IN-CIRCUIT-VERIFIED member roots into the block chain
-pub mod block_recursive_air; // Phase-3 TRUE single-proof O(1) — verify N members in-circuit + chain in one proof
-pub mod verifier_cost; // on-chain verification cost basis — MEASURE the aggregate-proof verifier Poseidon2 perm count
+pub mod reduce_consts; // shape constants for the C2 wide-then-reduce mask gadget mirror (PINned to descender_account_stark::reduce_gadget)
 pub mod settlement; // DEPLOYABLE verifier — native settlement/rollup O(1) block verify (prove_block/verify_block + transport)
 pub mod spend_block; // Phase-2→3 bridge — aggregate SPEND proofs into one O(1) chain_state_root (generic recursion)
-pub mod alpha_fold; // re-arithmetization — low-degree committed-accumulator alpha-batch fold (makes full-C(zeta) provable)
-pub mod spend_constraint_air; // spend recursive-verifier C(zeta) mirror — opened-cell residuals folded via alpha_fold
+pub mod spend_constraint_air;
+pub mod verifier_cost; // on-chain verification cost basis — MEASURE the aggregate-proof verifier Poseidon2 perm count // spend recursive-verifier C(zeta) mirror — opened-cell residuals folded via alpha_fold
+pub mod vertical_mmcs_air; // constant-width production salted-row hash + query-index-bound Merkle path
 
 /// Phase-1 milestone marker (kept until `recursive_air` lands). Asserts the
 /// re-exported leaf config is reachable so the crate's single-source-of-truth wiring
 /// is real, not aspirational.
 pub const fn phase1_target_present() -> bool {
     // Touch the re-exported constants so a future config drift breaks the build here.
-    PROD_NUM_QUERIES > 0 && PROD_LOG_BLOWUP > 0 && PROD_QUERY_POW_BITS > 0 && PROD_SOUNDNESS_BITS > 0
+    PROD_NUM_QUERIES > 0
+        && PROD_LOG_BLOWUP > 0
+        && PROD_QUERY_POW_BITS > 0
+        && PROD_SOUNDNESS_BITS > 0
 }
 
 #[cfg(test)]

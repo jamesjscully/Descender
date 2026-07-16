@@ -3,8 +3,14 @@
 > MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
 > This is a supporting recursion gadget spec note, not a normative spec. Current
 > normative authority starts at `../../spec/README.md`.
+> The constants and schedules below preserve the original rate-8/degree-4 phase-1
+> baseline and are not current configuration claims. The implemented account and
+> recursive challengers now use width 16, rate 7, capacity 9, degree 8, 120 FRI
+> queries, and 13-element commitments; use `src/challenger.rs`,
+> `src/recursive_air.rs`, and `../descender-account-stark/src/config.rs` as the
+> executable sources of truth.
 
-Status: SPEC (analysis only — no code, no build).
+Status: HISTORICAL DESIGN BASELINE (the corresponding code is implemented and has since migrated).
 Scope: gadget 1 ONLY. Gadgets 2–5 are out of scope for this run.
 Single source of truth: `descender_account_stark::config` (re-exported by `descender-recursion/src/lib.rs`).
 Reference impl this gadget must mirror constant-for-constant:
@@ -14,7 +20,7 @@ Reference impl this gadget must mirror constant-for-constant:
 
 ---
 
-## 0. Pinned constants (lifted, do NOT re-declare)
+## 0. Original phase-1 constants (historical; do not reuse as current values)
 
 From `descender-account-stark/src/config.rs`:
 

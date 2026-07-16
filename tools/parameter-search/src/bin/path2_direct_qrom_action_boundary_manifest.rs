@@ -1,12 +1,9 @@
 use descender_parameter_search::production_reference::{
-    path2_direct_qrom_action_boundary_report_v1,
-    path2_direct_qrom_action_boundary_report_v1_digest,
-    path2_direct_query_budget_v1,
-    path2_direct_theorem_boundary_report_v1,
-    validate_path2_direct_qrom_action_boundary_report_v1,
-    PROFILE,
+    PROFILE, path2_direct_qrom_action_boundary_report_v1,
+    path2_direct_qrom_action_boundary_report_v1_digest, path2_direct_query_budget_v1,
+    path2_direct_theorem_boundary_report_v1, validate_path2_direct_qrom_action_boundary_report_v1,
 };
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
 fn hex_encode(bytes: &[u8]) -> String {
@@ -108,9 +105,25 @@ fn manifest_body() -> Result<Value, String> {
                 report.optional_aggregation_terms_q_batch_only,
             "selected_horizon_within_margin": report.selected_horizon_within_margin,
             "negative_control_exceeds_margin": report.negative_control_exceeds_margin,
+            "direct_qrom_action_budget_bridge_lean_theorem":
+                report.direct_qrom_action_budget_bridge_lean_theorem,
+            "direct_qrom_action_budget_bridge_bound":
+                report.direct_qrom_action_budget_bridge_bound,
+            "direct_qrom_action_theorem_linkage_reduction_lean_theorem":
+                report.direct_qrom_action_theorem_linkage_reduction_lean_theorem,
+            "direct_qrom_action_local_linkage_reduction_imported":
+                report.direct_qrom_action_local_linkage_reduction_imported,
+            "production_checked_core_acceptance_semantics_bound":
+                report.production_checked_core_acceptance_semantics_bound,
+            "qrom_action_valid_or_named_break_theorem_instantiated":
+                report.qrom_action_valid_or_named_break_theorem_instantiated,
+            "qrom_domain_break_coupled_to_direct_game":
+                report.qrom_domain_break_coupled_to_direct_game,
             "checked_core_qrom_artifacts": report.checked_core_qrom_artifacts
         },
         "open_obligations": {
+            "qrom_action_assumption_instantiated":
+                report.qrom_action_assumption_instantiated,
             "theorem_imports_budget": report.theorem_imports_budget,
             "external_qrom_review_complete": report.external_qrom_review_complete,
             "qrom_and_action_bounds_linked_to_theorem":

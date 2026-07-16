@@ -444,7 +444,7 @@ tied to the account's creation-registered signing key: a spend with any other ke
 Validated: co-verification test asserts the key binding holds for the honest pair and FAILS for a
 wrong key; creation pubio extended (CLASS A-3 threaded through `AccountCreationPublic`, the batch
 digest chain `pubio_tuple`, single-mode public values, and the deployed verifier transport wire);
-frozen creation KAT re-pinned (b79c7375…). account-stark lib 44 + context_binding 6 green; verifier
+frozen creation KAT subsequently re-pinned for relation v3 (b4c9e522…). account-stark lib 51 + context_binding 6 green; verifier
 crate tests green (full deployed prove/verify with the new pubio + wire); all crates warning-clean.
 
 With this, the spend's acceptance is fully in-circuit AND tied to the account's registered key; the

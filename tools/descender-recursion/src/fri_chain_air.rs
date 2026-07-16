@@ -47,7 +47,7 @@ use crate::fri_fold::{fold_pair, fold_point};
 use crate::fri_fold_air::{limbs, D, W};
 use descender_account_stark::{Challenge, Val};
 use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
-use p3_field::{BasedVectorSpace, PrimeCharacteristicRing};
+use p3_field::{BasedVectorSpace, Field, PrimeCharacteristicRing};
 
 extern crate alloc;
 use alloc::vec::Vec;
@@ -64,13 +64,31 @@ pub const C_BETA: usize = C_E1 + D;
 pub const C_S: usize = C_BETA + D;
 /// The claimed folded eval `folded_r = g_r(s_r²)` (8 limbs).
 pub const C_FOLDED: usize = C_S + 1;
-/// Total AIR width (same shape as a `fri_fold_air` row).
-pub const N_COLS: usize = C_FOLDED + D;
+/// Zero-based commit-phase round ordinal.  This makes each public beta
+/// addressable inside the AIR rather than leaving the fold challenges as
+/// prover-selected witness cells.
+pub const C_ROUND: usize = C_FOLDED + D;
+/// Total AIR width.
+pub const N_COLS: usize = C_ROUND + 1;
+pub const PV_INITIAL_E0: usize = 0;
+pub const PV_INITIAL_PARITY: usize = PV_INITIAL_E0 + D;
+pub const PV_TERMINAL_FOLD: usize = PV_INITIAL_PARITY + 1;
+pub const PV_BETAS: usize = PV_TERMINAL_FOLD + D;
+
+pub const fn n_public(rounds: usize) -> usize {
+    PV_BETAS + rounds * D
+}
 
 /// One descent ROUND of one query at an explicit fold point `s`: sibling evals `(e0, e1)`,
 /// round challenge `beta`. `folded` is the reference [`fold_pair`] (the authority the per-row
 /// identity is checked against).
-pub fn pack_round(e0: Challenge, e1: Challenge, beta: Challenge, s: Val) -> [Val; N_COLS] {
+pub fn pack_round(
+    e0: Challenge,
+    e1: Challenge,
+    beta: Challenge,
+    s: Val,
+    round: usize,
+) -> [Val; N_COLS] {
     let folded = fold_pair(e0, e1, beta, s);
     let mut row = [Val::ZERO; N_COLS];
     row[C_E0..C_E0 + D].copy_from_slice(&limbs(e0));
@@ -78,6 +96,7 @@ pub fn pack_round(e0: Challenge, e1: Challenge, beta: Challenge, s: Val) -> [Val
     row[C_BETA..C_BETA + D].copy_from_slice(&limbs(beta));
     row[C_S] = s;
     row[C_FOLDED..C_FOLDED + D].copy_from_slice(&limbs(folded));
+    row[C_ROUND] = Val::from_usize(round);
     row
 }
 
@@ -102,13 +121,17 @@ pub fn build_query_chain(
     h0: usize,
     index: usize,
 ) -> Vec<Val> {
-    assert_eq!(betas.len(), siblings.len() + 1, "one beta per round; one sibling per round>0");
+    assert_eq!(
+        betas.len(),
+        siblings.len() + 1,
+        "one beta per round; one sibling per round>0"
+    );
     let rounds = betas.len();
     let mut flat = Vec::with_capacity(rounds * N_COLS);
 
     // round 0: the leaf-layer point s_0 = fold_point(h0, index); subsequent points square.
     let mut s = fold_point(h0, index);
-    let mut row = pack_round(e0_0, e1_0, betas[0], s);
+    let mut row = pack_round(e0_0, e1_0, betas[0], s, 0);
     flat.extend_from_slice(&row);
     let mut prev_folded = row_folded(&row);
 
@@ -116,9 +139,44 @@ pub fn build_query_chain(
     // e1 = freshly opened sibling at -s_r.
     for r in 1..rounds {
         s = s * s;
-        row = pack_round(prev_folded, siblings[r - 1], betas[r], s);
+        row = pack_round(prev_folded, siblings[r - 1], betas[r], s, r);
         flat.extend_from_slice(&row);
         prev_folded = row_folded(&row);
+    }
+    flat
+}
+
+/// Build the same semantic `(f(s), f(-s))` chain from a native p3 query proof.
+/// The first reduced opening is placed according to the dropped low query bit;
+/// subsequent rows keep the previous fold at `s^2` as semantic `e0`, regardless
+/// of the storage ordering used by the next MMCS opening.
+pub fn build_query_chain_from_opening(
+    reduced_opening: Challenge,
+    round_siblings: &[Challenge],
+    betas: &[Challenge],
+    log_global_height: usize,
+    index: usize,
+) -> Vec<Val> {
+    assert_eq!(round_siblings.len(), betas.len());
+    assert!(!betas.is_empty());
+    assert!(log_global_height >= betas.len());
+
+    let parity = index & 1 == 1;
+    let mut s = fold_point(log_global_height - 1, index >> 1);
+    let (e0, e1) = if parity {
+        (round_siblings[0], reduced_opening)
+    } else {
+        (reduced_opening, round_siblings[0])
+    };
+    let mut row = pack_round(e0, e1, betas[0], s, 0);
+    let mut flat = Vec::with_capacity(betas.len() * N_COLS);
+    flat.extend_from_slice(&row);
+    let mut folded = row_folded(&row);
+    for r in 1..betas.len() {
+        s *= s;
+        row = pack_round(folded, round_siblings[r], betas[r], s, r);
+        flat.extend_from_slice(&row);
+        folded = row_folded(&row);
     }
     flat
 }
@@ -147,11 +205,25 @@ fn octic_mul<AB: AirBuilder>(a: &[AB::Expr; D], b: &[AB::Expr; D]) -> [AB::Expr;
 /// (point-square) and `next.e0 == local.folded` (chain-link), so the next round's primary
 /// opening IS the previous round's fold output. Degree ≤ 3 (the (★) octic products are deg-3;
 /// the transition equalities are deg ≤ 2).
-pub struct FriChainAir;
+#[derive(Clone, Copy, Debug)]
+pub struct FriChainAir {
+    pub rounds: usize,
+}
+
+impl FriChainAir {
+    pub fn new(rounds: usize) -> Self {
+        assert!(rounds > 0, "FRI chain requires at least one round");
+        Self { rounds }
+    }
+}
 
 impl<F: Sync> BaseAir<F> for FriChainAir {
     fn width(&self) -> usize {
         N_COLS
+    }
+
+    fn num_public_values(&self) -> usize {
+        n_public(self.rounds)
     }
 }
 
@@ -160,8 +232,21 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for FriChainAir {
         let main = builder.main();
         let local: Vec<AB::Var> = main.current_slice().to_vec();
         let next: Vec<AB::Var> = main.next_slice().to_vec();
+        let pubs: Vec<AB::Expr> = builder
+            .public_values()
+            .iter()
+            .map(|p| (*p).into())
+            .collect();
         let l = |i: usize| -> AB::Expr { local[i].into() };
         let n = |i: usize| -> AB::Expr { next[i].into() };
+
+        builder.when_first_row().assert_zero(l(C_ROUND));
+        builder
+            .when_transition()
+            .assert_zero(n(C_ROUND) - l(C_ROUND) - AB::Expr::ONE);
+        builder
+            .when_last_row()
+            .assert_zero(l(C_ROUND) - AB::Expr::from(Val::from_usize(self.rounds - 1)));
 
         // ---- per-row: cleared fold identity (★) over the deg-8 extension ----
         let e0: [AB::Expr; D] = core::array::from_fn(|i| l(C_E0 + i));
@@ -197,7 +282,67 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for FriChainAir {
                 tb.assert_zero(n(C_E0 + k) - l(C_FOLDED + k));
             }
         }
+
+        // Settlement composition boundary: the opening reducer supplies the
+        // first FRI evaluation, and the final-polynomial check consumes the
+        // terminal fold. Every round beta is public-bound as well: accepting a
+        // structurally valid chain under prover-selected betas would not compose
+        // with the Fiat--Shamir transcript.
+        if pubs.len() == n_public(self.rounds) {
+            {
+                let mut first = builder.when_first_row();
+                let parity = pubs[PV_INITIAL_PARITY].clone();
+                first.assert_bool(parity.clone());
+                for i in 0..D {
+                    let selected = (AB::Expr::ONE - parity.clone()) * l(C_E0 + i)
+                        + parity.clone() * l(C_E1 + i);
+                    first.assert_eq(selected, pubs[PV_INITIAL_E0 + i].clone());
+                }
+            }
+            let round = l(C_ROUND);
+            for limb in 0..D {
+                let mut selected = AB::Expr::ZERO;
+                for r in 0..self.rounds {
+                    let mut numerator = AB::Expr::ONE;
+                    let mut denominator = Val::ONE;
+                    for j in 0..self.rounds {
+                        if j == r {
+                            continue;
+                        }
+                        numerator *= round.clone() - AB::Expr::from(Val::from_usize(j));
+                        denominator *= Val::from_usize(r) - Val::from_usize(j);
+                    }
+                    selected += numerator
+                        * AB::Expr::from(denominator.inverse())
+                        * pubs[PV_BETAS + r * D + limb].clone();
+                }
+                builder.assert_eq(l(C_BETA + limb), selected);
+            }
+            {
+                let mut last = builder.when_last_row();
+                for i in 0..D {
+                    last.assert_eq(l(C_FOLDED + i), pubs[PV_TERMINAL_FOLD + i].clone());
+                }
+            }
+        }
     }
+}
+
+pub fn public_values(
+    initial_reduced_opening: Challenge,
+    initial_parity: bool,
+    terminal_fold: Challenge,
+    betas: &[Challenge],
+) -> Vec<Val> {
+    assert!(!betas.is_empty());
+    let mut out = Vec::with_capacity(n_public(betas.len()));
+    out.extend_from_slice(&limbs(initial_reduced_opening));
+    out.push(Val::from_bool(initial_parity));
+    out.extend_from_slice(&limbs(terminal_fold));
+    for beta in betas {
+        out.extend_from_slice(&limbs(*beta));
+    }
+    out
 }
 
 #[cfg(test)]
@@ -227,9 +372,16 @@ mod tests {
                 let s2 = s * s;
                 // s2 lands on the next layer's root set: it equals +/- fold_point(h-1, i>>1).
                 let nxt = fold_point(h - 1, i >> 1);
-                assert!(s2 == nxt || s2 == -nxt, "s^2 not on next layer at h={h}, i={i}");
+                assert!(
+                    s2 == nxt || s2 == -nxt,
+                    "s^2 not on next layer at h={h}, i={i}"
+                );
                 // and s2 has order dividing 2^h (one halving): (s^2)^(2^h) == 1.
-                assert_eq!(s2.exp_power_of_2(h), Val::ONE, "s^2 order > 2^h at h={h}, i={i}");
+                assert_eq!(
+                    s2.exp_power_of_2(h),
+                    Val::ONE,
+                    "s^2 order > 2^h at h={h}, i={i}"
+                );
             }
         }
     }
@@ -288,8 +440,12 @@ mod tests {
         let (e0_0, e1_0, sibs) = honest_chain_inputs(&coeffs, &betas, h0, index);
         let flat = build_query_chain(e0_0, e1_0, &betas, &sibs, h0, index);
         let m = RowMajorMatrix::new(flat, N_COLS);
-        let report = check_all_constraints(&FriChainAir, &m, &[], None);
-        assert!(report.is_ok(), "honest multi-round chain rejected: {} failures", report.failures.len());
+        let report = check_all_constraints(&FriChainAir::new(betas.len()), &m, &[], None);
+        assert!(
+            report.is_ok(),
+            "honest multi-round chain rejected: {} failures",
+            report.failures.len()
+        );
     }
 
     /// The chain really threads a DECREASING per-layer log-height (h0, h0-1, ...) and the derived
@@ -306,9 +462,13 @@ mod tests {
         for r in 0..betas.len() - 1 {
             let s_r = m.values[r * N_COLS + C_S];
             let s_next = m.values[(r + 1) * N_COLS + C_S];
-            assert_eq!(s_r * s_r, s_next, "row {r}: point did not square to next row");
+            assert_eq!(
+                s_r * s_r,
+                s_next,
+                "row {r}: point did not square to next row"
+            );
         }
-        assert!(check_all_constraints(&FriChainAir, &m, &[], None).is_ok());
+        assert!(check_all_constraints(&FriChainAir::new(betas.len()), &m, &[], None).is_ok());
     }
 
     /// Forgery — BROKEN CHAIN LINK: round r+1 opens a primary eval `e0` inconsistent with round
@@ -326,7 +486,7 @@ mod tests {
         // Break the link into round 1: change row 1's primary eval e0 (no longer == row 0 folded).
         m.values[N_COLS + C_E0 + 2] += Val::ONE;
         assert!(
-            !check_all_constraints(&FriChainAir, &m, &[], None).is_ok(),
+            !check_all_constraints(&FriChainAir::new(betas.len()), &m, &[], None).is_ok(),
             "broken chain link accepted — chaining not load-bearing"
         );
     }
@@ -345,7 +505,7 @@ mod tests {
         let mut m = RowMajorMatrix::new(flat, N_COLS);
         // Tamper row 0's folded output: breaks (★) at row 0 AND the chain-link into row 1.
         m.values[C_FOLDED + 1] += Val::ONE;
-        assert!(!check_all_constraints(&FriChainAir, &m, &[], None).is_ok());
+        assert!(!check_all_constraints(&FriChainAir::new(betas.len()), &m, &[], None).is_ok());
     }
 
     /// Forgery — POINT-SQUARE violated: present a next-round point that is NOT the square of the
@@ -361,7 +521,7 @@ mod tests {
         let flat = build_query_chain(e0_0, e1_0, &betas, &sibs, h0, index);
         let mut m = RowMajorMatrix::new(flat, N_COLS);
         m.values[N_COLS + C_S] += Val::ONE; // row 1 point no longer == row 0 point squared
-        assert!(!check_all_constraints(&FriChainAir, &m, &[], None).is_ok());
+        assert!(!check_all_constraints(&FriChainAir::new(betas.len()), &m, &[], None).is_ok());
     }
 
     /// Forgery — a tampered round challenge `beta` in a middle round ⇒ (★) at that row fails ⇒
@@ -376,7 +536,7 @@ mod tests {
         let flat = build_query_chain(e0_0, e1_0, &betas, &sibs, h0, index);
         let mut m = RowMajorMatrix::new(flat, N_COLS);
         m.values[2 * N_COLS + C_BETA + 3] += Val::ONE; // tamper round-2 beta
-        assert!(!check_all_constraints(&FriChainAir, &m, &[], None).is_ok());
+        assert!(!check_all_constraints(&FriChainAir::new(betas.len()), &m, &[], None).is_ok());
     }
 
     /// Forgery — a tampered next-round SIBLING `e1` (the fresh `−s` opening) ⇒ (★) at that row
@@ -391,6 +551,39 @@ mod tests {
         let flat = build_query_chain(e0_0, e1_0, &betas, &sibs, h0, index);
         let mut m = RowMajorMatrix::new(flat, N_COLS);
         m.values[N_COLS + C_E1] += Val::ONE; // tamper round-1 sibling (constant limb)
-        assert!(!check_all_constraints(&FriChainAir, &m, &[], None).is_ok());
+        assert!(!check_all_constraints(&FriChainAir::new(betas.len()), &m, &[], None).is_ok());
+    }
+
+    #[test]
+    fn public_reduced_opening_feeds_q128_fri_chain() {
+        use p3_uni_stark::{prove, verify};
+
+        let coeffs: Vec<Challenge> = (0..16u32).map(|k| ext_multi(k + 19)).collect();
+        let betas: Vec<Challenge> = (0..4u32).map(|r| ext_multi(220 + r)).collect();
+        let h0 = 12usize;
+        let index = 0b1011usize;
+        let (initial, first_sibling, siblings) = honest_chain_inputs(&coeffs, &betas, h0, index);
+        let flat = build_query_chain(initial, first_sibling, &betas, &siblings, h0, index);
+        let terminal = Challenge::from_basis_coefficients_slice(
+            &flat[(betas.len() - 1) * N_COLS + C_FOLDED..(betas.len() - 1) * N_COLS + C_FOLDED + D],
+        )
+        .expect("terminal fold limbs");
+        let trace = p3_matrix::dense::RowMajorMatrix::new(flat, N_COLS);
+        let pubs = public_values(initial, false, terminal, &betas);
+        let air = FriChainAir::new(betas.len());
+        assert!(check_all_constraints(&air, &trace, &pubs, None).is_ok());
+
+        let mut wrong_initial = pubs.clone();
+        wrong_initial[PV_INITIAL_E0] += Val::ONE;
+        assert!(!check_all_constraints(&air, &trace, &wrong_initial, None).is_ok());
+
+        let mut wrong_beta = pubs.clone();
+        wrong_beta[PV_BETAS + D] += Val::ONE;
+        assert!(!check_all_constraints(&air, &trace, &wrong_beta, None).is_ok());
+
+        let config = crate::settlement::prod_config();
+        let proof = prove(&config, &air, trace, &pubs);
+        verify(&config, &air, &proof, &pubs)
+            .expect("public reduced opening must feed the q128 FRI chain proof");
     }
 }

@@ -3,9 +3,10 @@
     "boundary_report": {
       "blocker": "account-STARK residual matrix: KAT and public rejection-class evidence remain non-deployable until proof-family review and production gate closure",
       "deployment_ready": false,
-      "digest": "71a12775b526e364aa332e0de7fa52831dc63c662372170bfdad677d9d87ec38",
+      "digest": "2d6b187244f10c2241b5d68b91e3d1ec7bbcfd3531d6e238f49be9a0493c18db",
       "domain": "Descender.Path2.AccountCreationFrameKatBoundaryReport.v1",
       "every_current_row_has_generated_vector": true,
+      "frozen_corpus_complete": true,
       "row_count": 17
     },
     "case_count": 18,
@@ -204,7 +205,7 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "rejection_case_count": 17,
     "schema": "Descender.Path2.AccountCreationFrameKatVectors.v1",
-    "status": "digest_pinned_boundary_vectors"
+    "status": "frozen_digest_pinned_boundary_vectors"
   },
-  "corpus_digest": "f88c0f1db83664208d5fdb8c4e9213dc28e607873ab181be8cfc1b0a456c2092"
+  "corpus_digest": "23c5d4d68aeb27dd5455f35def4558ff6f3d551117caf6face27bc44df650d4a"
 }

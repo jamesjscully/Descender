@@ -122,6 +122,17 @@ batch inclusion is enabled.
 `path2_direct_query_budget_v1`, with schema
 `DESCENDER_PATH2_DIRECT_QUERY_BUDGET_V1`.
 
+`Descender/Path2HashBudget.lean` mirrors the same executable budget. The local
+bridge theorem `selectedRustDirectQromActionBudgetBridge_v1` packages
+`path2_direct_query_budget_priced`, active-symbol coverage, the widened Fq12
+challenge shape, and action-collision pricing for the direct theorem boundary.
+`Descender/Path2FullSpendConcrete.lean` then exposes
+`selectedRustDirectQromActionTheoremLinkageReduction_v1`, which reduces the
+direct checked-core/QROM-action theorem linkage to an explicit
+`QromActionReviewed` relation over spends carrying that local support package.
+This is only theorem-linkage support; it does not instantiate external QROM
+review, domain-separation review, or deployment readiness.
+
 The direct-mode numeric caps are inherited from the current QROM challenge
 budget memo:
 

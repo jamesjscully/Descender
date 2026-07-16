@@ -30,14 +30,15 @@ external. Numbers are MEASURED unless marked.
   true with blinded FRI openings = tests the WRONG channel (account_projection
   hiding rests on the mask bias on the PUBLIC masked_projection, not on FRI
   hiding). Same false-assurance shape as reopened HIGH-2. ALSO the default prove
-  path uses a FIXED 64-bit non-CSPRNG seed (non-hiding across proofs). Mask-bias
-  PROPERTY is independently confirmed ~2^-141 (likely sound), but it is NOT
+  path used a FIXED 64-bit non-CSPRNG seed (non-hiding across proofs). The old
+  five-digit mask-bias PROPERTY was independently confirmed at about 2^-141 per
+  mask, but it did not price the selected multi-target horizon and was NOT
   properly verified and the default RNG must be fixed.
 - **HIGH: "spend SUF-CMA preserved" is CONJECTURED, not proven.** "#9=0" is
   classifier deferral (keygen out-of-scope per AP2-005), the frame-PRF lemma is
   not composed into the spine, and the EC re-charge is not done.
-SURVIVED red-team (sound): single-instance hiding (no witness leak, bias 2^-141,
-no side channel, HidingFriPcs provisioning ok), cross-account/cross-slot replay
+SURVIVED red-team (sound at that historical scope): single-instance relation and
+no-export behavior, no side channel, HidingFriPcs provisioning, cross-account/cross-slot replay
 closed at the deployed binding layer, the fast single-instance prove/verify.
 VERDICT: design viable, NOT broken, but readiness was over-claimed on multiple
 axes; do not invest in heavy wiring until: batch digest bound, queries raised to
@@ -73,7 +74,7 @@ claim is corrected to "the core relation."
 `account_creation: ∃ hidden (pad_seed, slot, account_projection, lifecycle, nonces)`
 such that, jointly (one pad_seed, one canonical account_projection):
 - C1: pad_source_commitment opens to pad_seed
-- C2: projection masks = Poseidon2-PRF(pad_seed, slot)
+- C2: projection masks = Poseidon2-PRF(MASK, pad_seed, slot), six KoalaBear digits per q12289 mask
 - C4: masked_projection = account_projection + masks (mod q12289), account_projection canonical base-128
 - C6: opening_tuple_commitment opens to (account_projection, lifecycle)
 all as ONE Plonky3 ZK-STARK over KoalaBear. This is exactly the C1∧C2∧C4∧C6
@@ -90,7 +91,7 @@ obligation the machine-checked negative theorem said the old sampled core lacked
 | Proof size (batched) | ~6 KB/acct @ N=256, ~1.6 KB/acct @ N=1024 |
 | Soundness | 128-bit conjectured FRI (Plonky3, vetted); tamper-rejected |
 | Zero-knowledge | enabled (HidingFriPcs + salted Poseidon2-Merkle); verified by ATTEMPTED RECOVERY |
-| Hiding strength | 128-bit (wide-then-reduce mask gadget; bias 2⁻¹⁴¹) |
+| Hiding strength | Current C2 uses explicit `MASK` framing and 6-digit wide reduction; aggregate reduction term is below 2^-137 after six lanes and the selected 2^32-account horizon. Poseidon2 PRF review remains open. |
 | Constants | pinned vetted `default_koalabear_poseidon2_16` |
 | Field | KoalaBear (31-bit, recursion-friendly; retires the 14-bit small-field concern) |
 

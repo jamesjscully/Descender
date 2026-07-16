@@ -129,6 +129,22 @@ fn main() -> Result<(), String> {
         || bool_at(corpus, "/boundary_report/deployment_ready")?
         || bool_at(corpus, "/audit_summary/simulator_theorem_instantiated")?
         || bool_at(corpus, "/audit_summary/no_export_theorem_instantiated")?
+        || bool_at(
+            corpus,
+            "/boundary_report/poseidon_mask_prf_theorem_instantiated",
+        )?
+        || bool_at(
+            corpus,
+            "/audit_summary/poseidon_mask_prf_theorem_instantiated",
+        )?
+        || bool_at(
+            corpus,
+            "/boundary_report/poseidon_commitment_hiding_theorem_instantiated",
+        )?
+        || bool_at(
+            corpus,
+            "/audit_summary/poseidon_commitment_hiding_theorem_instantiated",
+        )?
         || bool_at(corpus, "/audit_summary/deployment_ready")?
     {
         return Err("no-export vector corpus unexpectedly closes theorem status".to_string());
@@ -225,6 +241,99 @@ fn main() -> Result<(), String> {
                 .to_string(),
         );
     }
+    if !bool_at(corpus, "/boundary_report/mask_translation_bijective_bound")?
+        || !bool_at(corpus, "/audit_summary/mask_translation_bijective_bound")?
+    {
+        return Err("no-export vector corpus lost mask-translation theorem hook".to_string());
+    }
+    for pointer in [
+        "/boundary_report/mask_prf_domain_separation_bound",
+        "/audit_summary/mask_prf_domain_separation_bound",
+        "/boundary_report/mask_prf_squeeze_index_injective_bound",
+        "/audit_summary/mask_prf_squeeze_index_injective_bound",
+        "/boundary_report/mask_prf_wide_reduction_q128_bound",
+        "/audit_summary/mask_prf_wide_reduction_q128_bound",
+        "/boundary_report/mask_prf_freshness_bound",
+        "/audit_summary/mask_prf_freshness_bound",
+        "/boundary_report/commitment_domain_separation_bound",
+        "/audit_summary/commitment_domain_separation_bound",
+        "/boundary_report/commitment_frame_dimensions_bound",
+        "/audit_summary/commitment_frame_dimensions_bound",
+        "/boundary_report/commitment_qrom_search_q128_bound",
+        "/audit_summary/commitment_qrom_search_q128_bound",
+        "/boundary_report/deployment_commitment_nonce_csprng_bound",
+        "/audit_summary/deployment_commitment_nonce_csprng_bound",
+    ] {
+        if !bool_at(corpus, pointer)? {
+            return Err(format!(
+                "no-export vector corpus lost mask-PRF reduction hook {pointer}"
+            ));
+        }
+    }
+    for (pointer, expected) in [
+        (
+            "/boundary_report/mask_prf_domain_lane",
+            report.mask_prf_domain_lane as u64,
+        ),
+        (
+            "/boundary_report/mask_prf_input_lanes",
+            report.mask_prf_input_lanes as u64,
+        ),
+        (
+            "/boundary_report/mask_prf_reduction_digits",
+            report.mask_prf_reduction_digits as u64,
+        ),
+        (
+            "/boundary_report/mask_prf_squeezed_lanes",
+            report.mask_prf_squeezed_lanes as u64,
+        ),
+        (
+            "/boundary_report/mask_prf_target_horizon_log2",
+            report.mask_prf_target_horizon_log2 as u64,
+        ),
+        (
+            "/boundary_report/pad_commitment_domain_lane",
+            report.pad_commitment_domain_lane as u64,
+        ),
+        (
+            "/boundary_report/opening_commitment_domain_lane",
+            report.opening_commitment_domain_lane as u64,
+        ),
+        (
+            "/boundary_report/commitment_nonce_bytes",
+            report.commitment_nonce_bytes as u64,
+        ),
+        (
+            "/boundary_report/commitment_nonce_bits",
+            report.commitment_nonce_bits as u64,
+        ),
+        (
+            "/boundary_report/pad_commitment_input_lanes",
+            report.pad_commitment_input_lanes as u64,
+        ),
+        (
+            "/boundary_report/opening_commitment_input_lanes",
+            report.opening_commitment_input_lanes as u64,
+        ),
+        (
+            "/boundary_report/hiding_commitments_per_account",
+            report.hiding_commitments_per_account as u64,
+        ),
+        (
+            "/boundary_report/commitment_target_horizon_log2",
+            report.commitment_target_horizon_log2 as u64,
+        ),
+        (
+            "/boundary_report/commitment_qrom_query_log2",
+            report.commitment_qrom_query_log2 as u64,
+        ),
+    ] {
+        if u64_at(corpus, pointer)? != expected {
+            return Err(format!(
+                "no-export vector corpus mask-PRF numeric drift at {pointer}"
+            ));
+        }
+    }
     if bool_at(
         corpus,
         "/audit_summary/accepted_bundle_simulatable_from_public_anchors",
@@ -292,13 +401,44 @@ fn main() -> Result<(), String> {
     }
 
     let payload_fields = string_vec_at(&cases[0], "/public_payload_fields")?;
+    let public_statement_fields =
+        string_vec_at(&cases[0], "/account_stark_public_statement_fields")?;
     let payload_denylist = string_vec_at(&cases[0], "/private_material_denylist")?;
     let simulator_fields = string_vec_at(&cases[1], "/simulator_public_input_fields")?;
     let simulator_denylist = string_vec_at(&cases[1], "/private_material_denylist")?;
     if !denylist_absent(&payload_fields, &payload_denylist)
+        || !denylist_absent(&public_statement_fields, &payload_denylist)
         || !denylist_absent(&simulator_fields, &simulator_denylist)
     {
         return Err("no-export vector corpus exposes a denylisted field".to_string());
+    }
+    if !public_statement_fields.contains(&"syndrome".to_string())
+        || payload_denylist.contains(&"syndrome".to_string())
+        || cases[0]
+            .get("nested_public_statement_audit_pinned")
+            .and_then(Value::as_bool)
+            != Some(true)
+        || cases[0]
+            .get("public_syndrome_classified_as_allowed")
+            .and_then(Value::as_bool)
+            != Some(true)
+    {
+        return Err("no-export public checked-core syndrome classification drifted".to_string());
+    }
+    if !simulator_fields.contains(&"account_stark_public_statement_bytes_or_digest".to_string())
+        || !simulator_fields.contains(&"pad_seed_nullifier".to_string())
+        || simulator_fields.contains(&"account_stark_bundle_bytes_or_digest".to_string())
+        || simulator_fields.contains(&"public_replay_payload_digest".to_string())
+        || cases[1]
+            .get("simulator_input_excludes_proof_output")
+            .and_then(Value::as_bool)
+            != Some(true)
+        || cases[1]
+            .get("simulator_input_independence_lean_theorem")
+            .and_then(Value::as_str)
+            != Some("selectedRustSimulatorInputIndependentOfProofOutput_v1")
+    {
+        return Err("no-export simulator input/output boundary is circular".to_string());
     }
     let public_bundle_case = cases
         .iter()
@@ -325,12 +465,121 @@ fn main() -> Result<(), String> {
                 == Some("no_export_simulator_input_lean_predicate")
         })
         .ok_or_else(|| "no-export vector corpus lost simulator-input Lean case".to_string())?;
+    if report.commitment_domain_separation_lean_theorem
+        != "selectedAccountCommitmentDomainsSeparated_v1"
+        || report.commitment_frame_dimensions_lean_theorem
+            != "selectedAccountCommitmentFrameDimensions_v1"
+        || report.commitment_qrom_search_q128_lean_theorem
+            != "selectedAccountCommitmentQromSearchError_le_q128_v1"
+    {
+        return Err("no-export commitment theorem names drifted".to_string());
+    }
     if simulator_input_case
         .get("simulator_input_allowlist_lean_theorem")
         .and_then(Value::as_str)
         != Some(report.simulator_input_allowlist_lean_theorem)
         || simulator_input_case
             .get("simulator_input_allowlist_predicate_instantiated")
+            .and_then(Value::as_bool)
+            != Some(true)
+        || simulator_input_case
+            .get("simulator_hybrid_lean_theorem")
+            .and_then(Value::as_str)
+            != Some(report.simulator_hybrid_lean_theorem)
+        || simulator_input_case
+            .get("simulator_hybrid_reduction_bound")
+            .and_then(Value::as_bool)
+            != Some(true)
+        || simulator_input_case
+            .get("mask_translation_bijective_lean_theorem")
+            .and_then(Value::as_str)
+            != Some(report.mask_translation_bijective_lean_theorem)
+        || simulator_input_case
+            .get("mask_translation_bijective_bound")
+            .and_then(Value::as_bool)
+            != Some(true)
+        || simulator_input_case
+            .get("mask_prf_domain_separation_lean_theorem")
+            .and_then(Value::as_str)
+            != Some(report.mask_prf_domain_separation_lean_theorem)
+        || simulator_input_case
+            .get("mask_prf_squeeze_index_injective_lean_theorem")
+            .and_then(Value::as_str)
+            != Some(report.mask_prf_squeeze_index_injective_lean_theorem)
+        || simulator_input_case
+            .get("mask_prf_wide_reduction_q128_lean_theorem")
+            .and_then(Value::as_str)
+            != Some(report.mask_prf_wide_reduction_q128_lean_theorem)
+        || simulator_input_case
+            .get("mask_prf_freshness_lean_theorem")
+            .and_then(Value::as_str)
+            != Some(report.mask_prf_freshness_lean_theorem)
+        || simulator_input_case
+            .get("mask_prf_domain_separation_bound")
+            .and_then(Value::as_bool)
+            != Some(true)
+        || simulator_input_case
+            .get("mask_prf_squeeze_index_injective_bound")
+            .and_then(Value::as_bool)
+            != Some(true)
+        || simulator_input_case
+            .get("mask_prf_wide_reduction_q128_bound")
+            .and_then(Value::as_bool)
+            != Some(true)
+        || simulator_input_case
+            .get("mask_prf_freshness_bound")
+            .and_then(Value::as_bool)
+            != Some(true)
+        || simulator_input_case
+            .get("poseidon_mask_prf_theorem_instantiated")
+            .and_then(Value::as_bool)
+            != Some(false)
+        || simulator_input_case
+            .get("commitment_domain_separation_lean_theorem")
+            .and_then(Value::as_str)
+            != Some(report.commitment_domain_separation_lean_theorem)
+        || simulator_input_case
+            .get("commitment_frame_dimensions_lean_theorem")
+            .and_then(Value::as_str)
+            != Some(report.commitment_frame_dimensions_lean_theorem)
+        || simulator_input_case
+            .get("commitment_qrom_search_q128_lean_theorem")
+            .and_then(Value::as_str)
+            != Some(report.commitment_qrom_search_q128_lean_theorem)
+        || simulator_input_case
+            .get("commitment_domain_separation_bound")
+            .and_then(Value::as_bool)
+            != Some(true)
+        || simulator_input_case
+            .get("commitment_frame_dimensions_bound")
+            .and_then(Value::as_bool)
+            != Some(true)
+        || simulator_input_case
+            .get("commitment_qrom_search_q128_bound")
+            .and_then(Value::as_bool)
+            != Some(true)
+        || simulator_input_case
+            .get("deployment_commitment_nonce_csprng_bound")
+            .and_then(Value::as_bool)
+            != Some(true)
+        || simulator_input_case
+            .get("poseidon_commitment_hiding_theorem_instantiated")
+            .and_then(Value::as_bool)
+            != Some(false)
+        || simulator_input_case
+            .get("hiding_rng_type")
+            .and_then(Value::as_str)
+            != Some(report.hiding_rng_type)
+        || simulator_input_case
+            .get("hiding_rng_seed_bits")
+            .and_then(Value::as_u64)
+            != Some(report.hiding_rng_seed_bits as u64)
+        || simulator_input_case
+            .get("hiding_rng_csprng_bound")
+            .and_then(Value::as_bool)
+            != Some(true)
+        || simulator_input_case
+            .get("hiding_rng_substreams_domain_separated")
             .and_then(Value::as_bool)
             != Some(true)
     {

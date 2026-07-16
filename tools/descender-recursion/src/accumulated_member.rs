@@ -79,7 +79,11 @@ pub struct Member {
     pub index: usize,
 }
 
-fn node_combined(running: &[Val; DIGEST_ELEMS], sib: &[Val; DIGEST_ELEMS], bit: bool) -> [Val; ABSORB_LEN] {
+fn node_combined(
+    running: &[Val; DIGEST_ELEMS],
+    sib: &[Val; DIGEST_ELEMS],
+    bit: bool,
+) -> [Val; ABSORB_LEN] {
     let (a, b) = if bit { (sib, running) } else { (running, sib) };
     let mut c = [Val::ZERO; ABSORB_LEN];
     c[..DIGEST_ELEMS].copy_from_slice(a);
@@ -122,7 +126,11 @@ pub fn build_trace(levels: usize, members: &[Member]) -> Vec<Val> {
     let mut flat = Vec::with_capacity(members.len() * ncols);
     let mut chain = [Val::ZERO; DIGEST_ELEMS];
     for m in members {
-        assert_eq!(m.siblings.len(), levels, "member sibling count must equal levels");
+        assert_eq!(
+            m.siblings.len(),
+            levels,
+            "member sibling count must equal levels"
+        );
         let mut row = vec![Val::ZERO; ncols];
         row[AM_LEAF..AM_LEAF + DIGEST_ELEMS].copy_from_slice(&m.leaf);
         // verify nodes: fold leaf up the path.
@@ -187,7 +195,11 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for AccumulatedMemberAir {
         let main = builder.main();
         let local: Vec<AB::Var> = main.current_slice().to_vec();
         let next: Vec<AB::Var> = main.next_slice().to_vec();
-        let pubs: Vec<AB::Expr> = builder.public_values().iter().map(|p| (*p).into()).collect();
+        let pubs: Vec<AB::Expr> = builder
+            .public_values()
+            .iter()
+            .map(|p| (*p).into())
+            .collect();
         let one = AB::Expr::ONE;
         let l = |i: usize| -> AB::Expr { local[i].into() };
 
@@ -198,7 +210,11 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for AccumulatedMemberAir {
         for k in 0..levels {
             let bit = l(am_bits(levels) + k);
             builder.assert_zero(bit.clone() * (bit.clone() - one.clone()));
-            let run_off = if k == 0 { AM_LEAF } else { verify_node_digest(levels, k - 1) };
+            let run_off = if k == 0 {
+                AM_LEAF
+            } else {
+                verify_node_digest(levels, k - 1)
+            };
             let run: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(run_off + i)).collect();
             let sib: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(am_sibling(k) + i)).collect();
             let bc = bit.clone();
@@ -265,7 +281,9 @@ mod tests {
     use p3_symmetric::PseudoCompressionFunction;
 
     fn d(seed: u32) -> [Val; DIGEST_ELEMS] {
-        core::array::from_fn(|i| Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32 + 1)))
+        core::array::from_fn(|i| {
+            Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32 + 1))
+        })
     }
 
     /// A real reference Merkle tree (mirror of merkle_air's RefTree) — the authority for member roots.
@@ -277,7 +295,10 @@ mod tests {
             let c = compressor();
             let mut levels = vec![leaves.clone()];
             while leaves.len() > 1 {
-                let next: Vec<Digest> = leaves.chunks_exact(2).map(|p| c.compress([p[0], p[1]])).collect();
+                let next: Vec<Digest> = leaves
+                    .chunks_exact(2)
+                    .map(|p| c.compress([p[0], p[1]]))
+                    .collect();
                 levels.push(next.clone());
                 leaves = next;
             }
@@ -306,7 +327,11 @@ mod tests {
             let leaves: Vec<Digest> = (0..tree_n as u32).map(|x| d(x + mi * 1000 + 1)).collect();
             let tree = RefTree::new(leaves.clone());
             let index = (mi as usize) % tree_n;
-            members.push(Member { leaf: leaves[index], siblings: tree.auth_path(index), index });
+            members.push(Member {
+                leaf: leaves[index],
+                siblings: tree.auth_path(index),
+                index,
+            });
             roots.push(tree.root());
         }
         (members, roots)
@@ -323,7 +348,11 @@ mod tests {
         for levels in [1usize, 3, 4] {
             let (members, roots) = block(levels, 3);
             for (m, r) in members.iter().zip(roots.iter()) {
-                assert_eq!(&member_root(m, &consts), r, "in-circuit member root != real tree root (levels={levels})");
+                assert_eq!(
+                    &member_root(m, &consts),
+                    r,
+                    "in-circuit member root != real tree root (levels={levels})"
+                );
             }
         }
     }
@@ -338,8 +367,13 @@ mod tests {
                 let root = trace_root(levels, n, &flat);
                 assert_eq!(root, accumulate(&members));
                 let m = RowMajorMatrix::new(flat, n_cols(levels));
-                let r = check_all_constraints(&AccumulatedMemberAir { levels }, &m, &pubs(root), None);
-                assert!(r.is_ok(), "honest block (levels={levels}, n={n}) rejected: {} failures", r.failures.len());
+                let r =
+                    check_all_constraints(&AccumulatedMemberAir { levels }, &m, &pubs(root), None);
+                assert!(
+                    r.is_ok(),
+                    "honest block (levels={levels}, n={n}) rejected: {} failures",
+                    r.failures.len()
+                );
             }
         }
     }
@@ -355,8 +389,10 @@ mod tests {
         let mut bad = flat.clone();
         bad[n_cols(levels) + am_sibling(2)] += Val::ONE; // row 1, sibling level 2
         let m = RowMajorMatrix::new(bad, n_cols(levels));
-        assert!(!check_all_constraints(&AccumulatedMemberAir { levels }, &m, &pubs(root), None).is_ok(),
-            "a tampered member path was accepted");
+        assert!(
+            !check_all_constraints(&AccumulatedMemberAir { levels }, &m, &pubs(root), None).is_ok(),
+            "a tampered member path was accepted"
+        );
     }
 
     /// Forgery: breaking the chain ⇒ reject.
@@ -370,8 +406,10 @@ mod tests {
         let mut bad = flat.clone();
         bad[2 * n_cols(levels) + am_chain(levels)] += Val::ONE;
         let m = RowMajorMatrix::new(bad, n_cols(levels));
-        assert!(!check_all_constraints(&AccumulatedMemberAir { levels }, &m, &pubs(root), None).is_ok(),
-            "a broken chain was accepted");
+        assert!(
+            !check_all_constraints(&AccumulatedMemberAir { levels }, &m, &pubs(root), None).is_ok(),
+            "a broken chain was accepted"
+        );
     }
 
     /// KEYSTONE: the multi-level in-circuit verified-member accumulator PROVES + VERIFIES at
@@ -380,7 +418,8 @@ mod tests {
     #[test]
     fn proves_at_production_q128_knobs() {
         use descender_account_stark::{
-            Challenge, MyCompress, MyHash, Perm, PROD_LOG_BLOWUP, PROD_NUM_QUERIES, PROD_QUERY_POW_BITS,
+            Challenge, MyCompress, MyHash, Perm, PROD_LOG_BLOWUP, PROD_NUM_QUERIES,
+            PROD_QUERY_POW_BITS,
         };
         use p3_challenger::DuplexChallenger;
         use p3_commit::ExtensionMmcs;
@@ -391,15 +430,26 @@ mod tests {
         use p3_merkle_tree::MerkleTreeMmcs;
         use p3_uni_stark::{prove, verify, StarkConfig};
 
-        type ValMmcs = MerkleTreeMmcs<<Val as Field>::Packing, <Val as Field>::Packing, MyHash, MyCompress, 2, DIGEST_ELEMS>;
+        type ValMmcs = MerkleTreeMmcs<
+            <Val as Field>::Packing,
+            <Val as Field>::Packing,
+            MyHash,
+            MyCompress,
+            2,
+            DIGEST_ELEMS,
+        >;
         type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
         type DftT = Radix2DitParallel<Val>;
         type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
-        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 7>;
         type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
 
         let perm: Perm = default_koalabear_poseidon2_16();
-        let val_mmcs = ValMmcs::new(MyHash::new(perm.clone()), MyCompress::new(MyHash::new(perm.clone())), 0);
+        let val_mmcs = ValMmcs::new(
+            MyHash::new(perm.clone()),
+            MyCompress::new(MyHash::new(perm.clone())),
+            0,
+        );
         let challenge_mmcs = ChallengeMmcs::new(val_mmcs.clone());
         let fri_params = FriParameters {
             log_blowup: PROD_LOG_BLOWUP,

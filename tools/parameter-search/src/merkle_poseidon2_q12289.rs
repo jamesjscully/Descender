@@ -180,7 +180,11 @@ impl MerkleTree {
     ///
     /// Panics if `index >= n_padded`.
     pub fn open(&self, index: usize) -> MerklePath {
-        assert!(index < self.n_padded, "open index {index} out of range (n_padded = {})", self.n_padded);
+        assert!(
+            index < self.n_padded,
+            "open index {index} out of range (n_padded = {})",
+            self.n_padded
+        );
         let mut siblings = Vec::with_capacity(self.depth());
         let mut pos = index;
         // Walk every non-root layer, recording the sibling of `pos`.
@@ -277,7 +281,11 @@ mod tests {
             assert_eq!(tree.depth(), (n as f64).log2() as usize);
             for (i, leaf) in leaves.iter().enumerate() {
                 let path = tree.open(i);
-                assert_eq!(path.siblings.len(), tree.depth(), "path length must equal depth");
+                assert_eq!(
+                    path.siblings.len(),
+                    tree.depth(),
+                    "path length must equal depth"
+                );
                 assert!(
                     verify(&root, i, leaf, &path),
                     "leaf {i} of {n} failed to verify against root"
@@ -298,7 +306,10 @@ mod tests {
         let path = tree.open(idx);
 
         // baseline: honest opening verifies
-        assert!(verify(&root, idx, leaf, &path), "honest opening must verify");
+        assert!(
+            verify(&root, idx, leaf, &path),
+            "honest opening must verify"
+        );
 
         // (a) flipped leaf value
         let mut bad_leaf = leaf.clone();
@@ -371,10 +382,15 @@ mod tests {
         }
 
         // Two entirely different leaf sets.
-        let other = make_leaves(8, 3).iter().map(|l| {
-            l.iter().map(|&v| ((v as u32 + 5) % Q) as u16).collect()
-        }).collect::<Vec<_>>();
-        assert_ne!(r0, MerkleTree::commit(&other).root(), "distinct leaf sets must give distinct roots");
+        let other = make_leaves(8, 3)
+            .iter()
+            .map(|l| l.iter().map(|&v| ((v as u32 + 5) % Q) as u16).collect())
+            .collect::<Vec<_>>();
+        assert_ne!(
+            r0,
+            MerkleTree::commit(&other).root(),
+            "distinct leaf sets must give distinct roots"
+        );
     }
 
     /// Index-bit ordering correctness: for several indices across the tree, the
@@ -420,7 +436,10 @@ mod tests {
         let root = tree.root();
         for (i, leaf) in leaves.iter().enumerate() {
             let path = tree.open(i);
-            assert!(verify(&root, i, leaf, &path), "real leaf {i} must verify in a padded tree");
+            assert!(
+                verify(&root, i, leaf, &path),
+                "real leaf {i} must verify in a padded tree"
+            );
         }
     }
 
@@ -431,7 +450,11 @@ mod tests {
         let tree = MerkleTree::commit(&leaves);
         assert_eq!(tree.depth(), 0);
         let root = tree.root();
-        assert_eq!(root, leaf_digest(&leaves[0]), "single-leaf root must equal the leaf digest");
+        assert_eq!(
+            root,
+            leaf_digest(&leaves[0]),
+            "single-leaf root must equal the leaf digest"
+        );
         let path = tree.open(0);
         assert!(path.siblings.is_empty(), "single-leaf path must be empty");
         assert!(verify(&root, 0, &leaves[0], &path));

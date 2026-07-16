@@ -1,4 +1,4 @@
-#![recursion_limit = "256"]
+#![recursion_limit = "512"]
 
 use descender_parameter_search::{
     manifest_vector_evidence::{
@@ -476,6 +476,75 @@ fn manifest_body() -> Result<Value, String> {
                         .accepted_boundary_simulator_no_export_reduction_lean_theorem,
                 "accepted_boundary_simulator_no_export_reduction_bound":
                     no_export_report.accepted_boundary_simulator_no_export_reduction_bound,
+                "simulator_hybrid_reduction_bound":
+                    no_export_report.simulator_hybrid_reduction_bound,
+                "mask_translation_bijective_lean_theorem":
+                    no_export_report.mask_translation_bijective_lean_theorem,
+                "mask_translation_bijective_bound":
+                    no_export_report.mask_translation_bijective_bound,
+                "mask_prf_domain_lane": no_export_report.mask_prf_domain_lane,
+                "mask_prf_input_lanes": no_export_report.mask_prf_input_lanes,
+                "mask_prf_reduction_digits": no_export_report.mask_prf_reduction_digits,
+                "mask_prf_squeezed_lanes": no_export_report.mask_prf_squeezed_lanes,
+                "mask_prf_target_horizon_log2":
+                    no_export_report.mask_prf_target_horizon_log2,
+                "mask_prf_domain_separation_lean_theorem":
+                    no_export_report.mask_prf_domain_separation_lean_theorem,
+                "mask_prf_domain_separation_bound":
+                    no_export_report.mask_prf_domain_separation_bound,
+                "mask_prf_squeeze_index_injective_lean_theorem":
+                    no_export_report.mask_prf_squeeze_index_injective_lean_theorem,
+                "mask_prf_squeeze_index_injective_bound":
+                    no_export_report.mask_prf_squeeze_index_injective_bound,
+                "mask_prf_wide_reduction_q128_lean_theorem":
+                    no_export_report.mask_prf_wide_reduction_q128_lean_theorem,
+                "mask_prf_wide_reduction_q128_bound":
+                    no_export_report.mask_prf_wide_reduction_q128_bound,
+                "mask_prf_freshness_lean_theorem":
+                    no_export_report.mask_prf_freshness_lean_theorem,
+                "mask_prf_freshness_bound": no_export_report.mask_prf_freshness_bound,
+                "poseidon_mask_prf_theorem_instantiated":
+                    no_export_report.poseidon_mask_prf_theorem_instantiated,
+                "pad_commitment_domain_lane": no_export_report.pad_commitment_domain_lane,
+                "opening_commitment_domain_lane":
+                    no_export_report.opening_commitment_domain_lane,
+                "commitment_nonce_bytes": no_export_report.commitment_nonce_bytes,
+                "commitment_nonce_bits": no_export_report.commitment_nonce_bits,
+                "pad_commitment_input_lanes": no_export_report.pad_commitment_input_lanes,
+                "opening_commitment_input_lanes":
+                    no_export_report.opening_commitment_input_lanes,
+                "hiding_commitments_per_account":
+                    no_export_report.hiding_commitments_per_account,
+                "commitment_target_horizon_log2":
+                    no_export_report.commitment_target_horizon_log2,
+                "commitment_qrom_query_log2": no_export_report.commitment_qrom_query_log2,
+                "commitment_domain_separation_lean_theorem":
+                    no_export_report.commitment_domain_separation_lean_theorem,
+                "commitment_domain_separation_bound":
+                    no_export_report.commitment_domain_separation_bound,
+                "commitment_frame_dimensions_lean_theorem":
+                    no_export_report.commitment_frame_dimensions_lean_theorem,
+                "commitment_frame_dimensions_bound":
+                    no_export_report.commitment_frame_dimensions_bound,
+                "commitment_qrom_search_q128_lean_theorem":
+                    no_export_report.commitment_qrom_search_q128_lean_theorem,
+                "commitment_qrom_search_q128_bound":
+                    no_export_report.commitment_qrom_search_q128_bound,
+                "deployment_commitment_nonce_csprng_bound":
+                    no_export_report.deployment_commitment_nonce_csprng_bound,
+                "poseidon_commitment_hiding_theorem_instantiated":
+                    no_export_report.poseidon_commitment_hiding_theorem_instantiated,
+                "nested_public_statement_audit_pinned":
+                    no_export_report.nested_public_statement_audit_pinned,
+                "public_syndrome_classified_as_allowed":
+                    no_export_report.public_syndrome_classified_as_allowed,
+                "public_statement_exports_private_material":
+                    no_export_report.public_statement_exports_private_material,
+                "hiding_rng_type": no_export_report.hiding_rng_type,
+                "hiding_rng_seed_bits": no_export_report.hiding_rng_seed_bits,
+                "hiding_rng_csprng_bound": no_export_report.hiding_rng_csprng_bound,
+                "hiding_rng_substreams_domain_separated":
+                    no_export_report.hiding_rng_substreams_domain_separated,
                 "simulator_theorem_instantiated":
                     no_export_report.simulator_theorem_instantiated,
                 "no_export_theorem_instantiated":
@@ -494,9 +563,29 @@ fn manifest_body() -> Result<Value, String> {
             "no_export_requirement": no_export_report.no_export_requirement,
             "simulator_theorem_target": no_export_report.simulator_theorem_target,
             "no_export_theorem_target": no_export_report.no_export_theorem_target,
+            "simulator_hybrid_lean_theorem":
+                no_export_report.simulator_hybrid_lean_theorem,
+            "mask_translation_bijective_lean_theorem":
+                no_export_report.mask_translation_bijective_lean_theorem,
+            "mask_prf_domain_separation_lean_theorem":
+                no_export_report.mask_prf_domain_separation_lean_theorem,
+            "mask_prf_squeeze_index_injective_lean_theorem":
+                no_export_report.mask_prf_squeeze_index_injective_lean_theorem,
+            "mask_prf_wide_reduction_q128_lean_theorem":
+                no_export_report.mask_prf_wide_reduction_q128_lean_theorem,
+            "mask_prf_freshness_lean_theorem":
+                no_export_report.mask_prf_freshness_lean_theorem,
+            "commitment_domain_separation_lean_theorem":
+                no_export_report.commitment_domain_separation_lean_theorem,
+            "commitment_frame_dimensions_lean_theorem":
+                no_export_report.commitment_frame_dimensions_lean_theorem,
+            "commitment_qrom_search_q128_lean_theorem":
+                no_export_report.commitment_qrom_search_q128_lean_theorem,
             "named_break": no_export_report.named_break,
             "simulator_public_input_fields":
                 no_export_report.simulator_public_input_fields,
+            "account_stark_public_statement_fields":
+                no_export_report.account_stark_public_statement_fields,
             "no_export_vector_case_ids": no_export_report.no_export_vector_case_ids,
             "no_export_private_material_fields":
                 no_export_report.no_export_private_material_fields

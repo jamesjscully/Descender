@@ -150,13 +150,17 @@ fn main() -> Result<(), String> {
     {
         return Err("payload byte model manifest recomputed digest mismatch".to_string());
     }
-    if str_at(&byte_model, "/manifest/authority_snapshot/selected_payload_type")?
-        != str_at(&vectors, "/corpus/authority/selected_payload_type")?
+    if str_at(
+        &byte_model,
+        "/manifest/authority_snapshot/selected_payload_type",
+    )? != str_at(&vectors, "/corpus/authority/selected_payload_type")?
     {
         return Err("payload byte model selected payload type drifted from vectors".to_string());
     }
-    if str_at(&byte_model, "/manifest/authority_snapshot/payload_frame_function")?
-        != str_at(&vectors, "/corpus/authority/payload_frame_function")?
+    if str_at(
+        &byte_model,
+        "/manifest/authority_snapshot/payload_frame_function",
+    )? != str_at(&vectors, "/corpus/authority/payload_frame_function")?
     {
         return Err("payload byte model frame function drifted from vectors".to_string());
     }
@@ -179,6 +183,7 @@ fn main() -> Result<(), String> {
         "slot_id",
         "masked_projection_lane_count",
         "masked_projection_le",
+        "pad_seed_nullifier",
         "account_stark_bundle",
     ];
     let fields = array_at(&byte_model, "/manifest/byte_model/field_order")?;
@@ -219,15 +224,15 @@ fn main() -> Result<(), String> {
         &byte_model,
         "/manifest/byte_model/fixed_frame_overhead_excluding_bundle",
     )?;
-    if fixed_overhead != 558 {
+    if fixed_overhead != 618 {
         return Err(format!(
-            "payload byte model fixed frame overhead drifted: got {fixed_overhead}, expected 558"
+            "payload byte model fixed frame overhead drifted: got {fixed_overhead}, expected 618"
         ));
     }
     if u64_at(
         &byte_model,
         "/manifest/byte_model/fixed_data_bytes_excluding_bundle",
-    )? != 221
+    )? != 253
     {
         return Err("payload byte model fixed data byte count drifted".to_string());
     }
@@ -248,7 +253,9 @@ fn main() -> Result<(), String> {
         "/manifest/byte_model/public_payload_exports_private_material",
     )? || bool_at(&byte_model, "/manifest/byte_model/deployment_ready")?
     {
-        return Err("payload byte model unexpectedly claims deployment surface readiness".to_string());
+        return Err(
+            "payload byte model unexpectedly claims deployment surface readiness".to_string(),
+        );
     }
 
     let payload_allowed = BTreeSet::from([
@@ -258,6 +265,7 @@ fn main() -> Result<(), String> {
         "leaf_context_digest",
         "masked_projection",
         "native_role_root_commitment",
+        "pad_seed_nullifier",
         "slot_id",
     ]);
     let payload_bytes_allowed = BTreeSet::from([
@@ -274,7 +282,11 @@ fn main() -> Result<(), String> {
         let case_id = str_at(case, "/case_id")?;
         let payload = object_at(case, "/payload")?;
         let payload_bytes = object_at(case, "/payload_bytes")?;
-        require_keys(payload, &payload_allowed, &format!("payload case {case_id}"))?;
+        require_keys(
+            payload,
+            &payload_allowed,
+            &format!("payload case {case_id}"),
+        )?;
         for key in payload_bytes.keys() {
             if !payload_bytes_allowed.contains(key.as_str()) {
                 return Err(format!(
@@ -318,8 +330,7 @@ fn main() -> Result<(), String> {
                     ));
                 }
                 let proof_policy = str_at(case, "/payload_bytes/proof_bytes_policy")?;
-                if !proof_policy.contains("digest-pinned")
-                    || !proof_policy.contains("not inlined")
+                if !proof_policy.contains("digest-pinned") || !proof_policy.contains("not inlined")
                 {
                     return Err(format!(
                         "payload case {case_id} proof bytes policy is not digest-pinned/non-inlined"
@@ -341,7 +352,9 @@ fn main() -> Result<(), String> {
                     ));
                 }
                 if case.pointer("/payload_bytes/payload_digest").is_some()
-                    || case.pointer("/payload_bytes/payload_frame_sha256").is_some()
+                    || case
+                        .pointer("/payload_bytes/payload_frame_sha256")
+                        .is_some()
                 {
                     return Err(format!(
                         "payload case {case_id} has digest bytes despite empty-bundle error"

@@ -804,7 +804,7 @@ def accountCreationSimulatorInputOutputTag : Nat := 11
 def accountCreationSimulatorInputFrame
     (leafContextDigest creationProofBindingDigest nativeRoleRootCommitment
       aggregationContextDigest slotId maskedProjection
-      accountStarkBundleBytesOrDigest publicReplayPayloadDigest
+      accountStarkPublicStatementBytesOrDigest padSeedNullifier
       deployedAccountId deployedAccountStateRoot deployedLifecycleAnchor
       deployedVerifierVersion deployedPackedWitnessCommitment
       publicRejectionCode : Nat) :
@@ -816,8 +816,8 @@ def accountCreationSimulatorInputFrame
     aggregationContextDigest,
     slotId,
     maskedProjection,
-    accountStarkBundleBytesOrDigest,
-    publicReplayPayloadDigest,
+    accountStarkPublicStatementBytesOrDigest,
+    padSeedNullifier,
     deployedAccountId,
     deployedAccountStateRoot,
     deployedLifecycleAnchor,
@@ -886,7 +886,7 @@ def simulatorInputOf
     (S : AccountCreationSimulatorInputSerializer)
     (leafContextDigest creationProofBindingDigest nativeRoleRootCommitment
       aggregationContextDigest slotId maskedProjection
-      accountStarkBundleBytesOrDigest publicReplayPayloadDigest
+      accountStarkPublicStatementBytesOrDigest padSeedNullifier
       deployedAccountId deployedAccountStateRoot deployedLifecycleAnchor
       deployedVerifierVersion deployedPackedWitnessCommitment
       publicRejectionCode : Nat) :
@@ -895,7 +895,7 @@ def simulatorInputOf
     (accountCreationSimulatorInputFrame leafContextDigest
       creationProofBindingDigest nativeRoleRootCommitment
       aggregationContextDigest slotId maskedProjection
-      accountStarkBundleBytesOrDigest publicReplayPayloadDigest
+      accountStarkPublicStatementBytesOrDigest padSeedNullifier
       deployedAccountId deployedAccountStateRoot deployedLifecycleAnchor
       deployedVerifierVersion deployedPackedWitnessCommitment
       publicRejectionCode)
@@ -905,15 +905,15 @@ def surface (S : AccountCreationSimulatorInputSerializer) : Nat -> Prop :=
   fun output =>
     ∃ leafContextDigest creationProofBindingDigest nativeRoleRootCommitment
       aggregationContextDigest slotId maskedProjection
-      accountStarkBundleBytesOrDigest publicReplayPayloadDigest
+      accountStarkPublicStatementBytesOrDigest padSeedNullifier
       deployedAccountId deployedAccountStateRoot deployedLifecycleAnchor
       deployedVerifierVersion deployedPackedWitnessCommitment
       publicRejectionCode,
       output =
         S.simulatorInputOf leafContextDigest creationProofBindingDigest
           nativeRoleRootCommitment aggregationContextDigest slotId
-          maskedProjection accountStarkBundleBytesOrDigest
-          publicReplayPayloadDigest deployedAccountId deployedAccountStateRoot
+          maskedProjection accountStarkPublicStatementBytesOrDigest
+          padSeedNullifier deployedAccountId deployedAccountStateRoot
           deployedLifecycleAnchor deployedVerifierVersion
           deployedPackedWitnessCommitment publicRejectionCode
 
@@ -928,7 +928,7 @@ def selectedRustAccountCreationSimulatorInputSerializer :
 theorem selectedRustAccountCreationSimulatorInputOutputConforms
     (leafContextDigest creationProofBindingDigest nativeRoleRootCommitment
       aggregationContextDigest slotId maskedProjection
-      accountStarkBundleBytesOrDigest publicReplayPayloadDigest
+      accountStarkPublicStatementBytesOrDigest padSeedNullifier
       deployedAccountId deployedAccountStateRoot deployedLifecycleAnchor
       deployedVerifierVersion deployedPackedWitnessCommitment
       publicRejectionCode : Nat) :
@@ -936,7 +936,7 @@ theorem selectedRustAccountCreationSimulatorInputOutputConforms
       (selectedRustAccountCreationSimulatorInputSerializer.simulatorInputOf
         leafContextDigest creationProofBindingDigest nativeRoleRootCommitment
         aggregationContextDigest slotId maskedProjection
-        accountStarkBundleBytesOrDigest publicReplayPayloadDigest
+        accountStarkPublicStatementBytesOrDigest padSeedNullifier
         deployedAccountId deployedAccountStateRoot deployedLifecycleAnchor
         deployedVerifierVersion deployedPackedWitnessCommitment
         publicRejectionCode) := by
@@ -944,7 +944,7 @@ theorem selectedRustAccountCreationSimulatorInputOutputConforms
     ⟨accountCreationSimulatorInputFrame leafContextDigest
       creationProofBindingDigest nativeRoleRootCommitment
       aggregationContextDigest slotId maskedProjection
-      accountStarkBundleBytesOrDigest publicReplayPayloadDigest
+      accountStarkPublicStatementBytesOrDigest padSeedNullifier
       deployedAccountId deployedAccountStateRoot deployedLifecycleAnchor
       deployedVerifierVersion deployedPackedWitnessCommitment
       publicRejectionCode, ?_, rfl⟩
@@ -966,15 +966,15 @@ theorem accountCreationSimulatorInputNoExportClosure_from_public_output_no_expor
     (Conforms :
       forall leafContextDigest creationProofBindingDigest
         nativeRoleRootCommitment aggregationContextDigest slotId
-        maskedProjection accountStarkBundleBytesOrDigest
-        publicReplayPayloadDigest deployedAccountId deployedAccountStateRoot
+        maskedProjection accountStarkPublicStatementBytesOrDigest
+        padSeedNullifier deployedAccountId deployedAccountStateRoot
         deployedLifecycleAnchor deployedVerifierVersion
         deployedPackedWitnessCommitment publicRejectionCode,
         Policy.outputConforms
           (S.simulatorInputOf leafContextDigest creationProofBindingDigest
             nativeRoleRootCommitment aggregationContextDigest slotId
-            maskedProjection accountStarkBundleBytesOrDigest
-            publicReplayPayloadDigest deployedAccountId deployedAccountStateRoot
+            maskedProjection accountStarkPublicStatementBytesOrDigest
+            padSeedNullifier deployedAccountId deployedAccountStateRoot
             deployedLifecycleAnchor deployedVerifierVersion
             deployedPackedWitnessCommitment publicRejectionCode)) :
     AccountCreationSimulatorInputNoExportClosure Policy (S.surface) := by
@@ -982,7 +982,7 @@ theorem accountCreationSimulatorInputNoExportClosure_from_public_output_no_expor
   rcases hProduced with
     ⟨leafContextDigest, creationProofBindingDigest, nativeRoleRootCommitment,
       aggregationContextDigest, slotId, maskedProjection,
-      accountStarkBundleBytesOrDigest, publicReplayPayloadDigest,
+      accountStarkPublicStatementBytesOrDigest, padSeedNullifier,
       deployedAccountId, deployedAccountStateRoot, deployedLifecycleAnchor,
       deployedVerifierVersion, deployedPackedWitnessCommitment,
       publicRejectionCode, hOutput⟩
@@ -990,8 +990,8 @@ theorem accountCreationSimulatorInputNoExportClosure_from_public_output_no_expor
   exact NoExport.no_denylisted_field
     (Conforms leafContextDigest creationProofBindingDigest
       nativeRoleRootCommitment aggregationContextDigest slotId
-      maskedProjection accountStarkBundleBytesOrDigest
-      publicReplayPayloadDigest deployedAccountId deployedAccountStateRoot
+      maskedProjection accountStarkPublicStatementBytesOrDigest
+      padSeedNullifier deployedAccountId deployedAccountStateRoot
       deployedLifecycleAnchor deployedVerifierVersion
       deployedPackedWitnessCommitment publicRejectionCode)
 
@@ -1037,6 +1037,8 @@ structure AccountCreationAcceptedPublicAnchorPackage where
   packedWitnessCommitment : Nat
   nativeRoleRootCommitment : Nat
   maskedProjection : Nat
+  accountStarkPublicStatementBytesOrDigest : Nat
+  padSeedNullifier : Nat
   accountStarkBundleBytesOrDigest : Nat
   publicReplayPayloadDigest : Nat
   lifecycleAnchor : Nat
@@ -1066,8 +1068,8 @@ def simulatorInputOutput (A : AccountCreationAcceptedPublicAnchorPackage) :
   selectedRustAccountCreationSimulatorInputSerializer.simulatorInputOf
     A.leafContextDigest A.creationProofBindingDigest
     A.nativeRoleRootCommitment A.aggregationContextDigest A.slotId
-    A.maskedProjection A.accountStarkBundleBytesOrDigest
-    A.publicReplayPayloadDigest A.accountId A.accountStateRoot
+    A.maskedProjection A.accountStarkPublicStatementBytesOrDigest
+    A.padSeedNullifier A.accountId A.accountStateRoot
     A.lifecycleAnchor A.verifierVersion A.packedWitnessCommitment
     A.publicRejectionCode
 
@@ -1125,8 +1127,8 @@ structure SimulatorPublicInputs where
   aggregationContextDigest : Nat
   slotId : Nat
   maskedProjection : Nat
-  accountStarkBundleBytesOrDigest : Nat
-  publicReplayPayloadDigest : Nat
+  accountStarkPublicStatementBytesOrDigest : Nat
+  padSeedNullifier : Nat
   deployedAccountId : Nat
   deployedAccountStateRoot : Nat
   deployedLifecycleAnchor : Nat
@@ -1141,8 +1143,8 @@ def output (I : SimulatorPublicInputs) : Nat :=
   selectedRustAccountCreationSimulatorInputSerializer.simulatorInputOf
     I.leafContextDigest I.creationProofBindingDigest
     I.nativeRoleRootCommitment I.aggregationContextDigest I.slotId
-    I.maskedProjection I.accountStarkBundleBytesOrDigest
-    I.publicReplayPayloadDigest I.deployedAccountId I.deployedAccountStateRoot
+    I.maskedProjection I.accountStarkPublicStatementBytesOrDigest
+    I.padSeedNullifier I.deployedAccountId I.deployedAccountStateRoot
     I.deployedLifecycleAnchor I.deployedVerifierVersion
     I.deployedPackedWitnessCommitment I.publicRejectionCode
 
@@ -1181,14 +1183,46 @@ def simulatorPublicInputs
   aggregationContextDigest := A.aggregationContextDigest
   slotId := A.slotId
   maskedProjection := A.maskedProjection
-  accountStarkBundleBytesOrDigest := A.accountStarkBundleBytesOrDigest
-  publicReplayPayloadDigest := A.publicReplayPayloadDigest
+  accountStarkPublicStatementBytesOrDigest :=
+    A.accountStarkPublicStatementBytesOrDigest
+  padSeedNullifier := A.padSeedNullifier
   deployedAccountId := A.accountId
   deployedAccountStateRoot := A.accountStateRoot
   deployedLifecycleAnchor := A.lifecycleAnchor
   deployedVerifierVersion := A.verifierVersion
   deployedPackedWitnessCommitment := A.packedWitnessCommitment
   publicRejectionCode := A.publicRejectionCode
+
+/-- Replace only the proof-derived public output of an accepted package. -/
+def withProofOutput
+    (A : AccountCreationAcceptedPublicAnchorPackage)
+    (accountStarkBundleBytesOrDigest publicReplayPayloadDigest : Nat) :
+    AccountCreationAcceptedPublicAnchorPackage :=
+  { A with
+    accountStarkBundleBytesOrDigest := accountStarkBundleBytesOrDigest
+    publicReplayPayloadDigest := publicReplayPayloadDigest }
+
+/--
+The simulator input is independent of the proof bytes and replay-payload digest
+that the simulator is required to produce. This blocks the former copy-based,
+circular simulator relation at the typed boundary.
+-/
+theorem selectedRustSimulatorInputIndependentOfProofOutput_v1
+    (A : AccountCreationAcceptedPublicAnchorPackage)
+    (accountStarkBundleBytesOrDigest publicReplayPayloadDigest : Nat) :
+    (A.withProofOutput accountStarkBundleBytesOrDigest
+      publicReplayPayloadDigest).simulatorPublicInputs =
+        A.simulatorPublicInputs := by
+  rfl
+
+/-- The encoded simulator-input surface is likewise proof-output independent. -/
+theorem selectedRustSimulatorInputOutputIndependentOfProofOutput_v1
+    (A : AccountCreationAcceptedPublicAnchorPackage)
+    (accountStarkBundleBytesOrDigest publicReplayPayloadDigest : Nat) :
+    (A.withProofOutput accountStarkBundleBytesOrDigest
+      publicReplayPayloadDigest).simulatorInputOutput =
+        A.simulatorInputOutput := by
+  rfl
 
 /--
 The accepted package feeds the selected public bundle through public anchors.
@@ -1252,10 +1286,452 @@ def publicAnchorSimulationBoundary
               selectedRustAccountCreationSimulatorInputSerializer.simulatorInputOf
                 A.leafContextDigest A.creationProofBindingDigest
                 A.nativeRoleRootCommitment A.aggregationContextDigest A.slotId
-                A.maskedProjection A.accountStarkBundleBytesOrDigest
-                A.publicReplayPayloadDigest A.accountId A.accountStateRoot
+                A.maskedProjection A.accountStarkPublicStatementBytesOrDigest
+                A.padSeedNullifier A.accountId A.accountStateRoot
                 A.lifecycleAnchor A.verifierVersion A.packedWitnessCommitment
                 A.publicRejectionCode
+
+/-- Six-lane q12289 account projection/mask carrier used by the selected path. -/
+abbrev SelectedAccountProjectionMaskVector := Fin 6 -> ZMod 12289
+
+/-- Adding a fixed account projection is an equivalence on uniform mask vectors. -/
+def selectedAccountProjectionMaskTranslation
+    (projection : SelectedAccountProjectionMaskVector) :
+    SelectedAccountProjectionMaskVector ≃ SelectedAccountProjectionMaskVector where
+  toFun mask := fun lane => projection lane + mask lane
+  invFun masked := fun lane => masked lane - projection lane
+  left_inv mask := by
+    funext lane
+    simp
+  right_inv masked := by
+    funext lane
+    simp
+
+/--
+The selected six-lane additive mask is a perfect one-time-pad translation once
+the mask vector is uniform. Thus A2's remaining computational assumption is the
+Poseidon2 mask-PRF replacement/freshness hop, not the modular masking algebra.
+-/
+theorem selectedRustUniformMaskTranslationBijective_v1
+    (projection : SelectedAccountProjectionMaskVector) :
+    Function.Bijective (fun mask =>
+      selectedAccountProjectionMaskTranslation projection mask) :=
+  (selectedAccountProjectionMaskTranslation projection).bijective
+
+/-- Equal masked carriers under one projection imply equal mask vectors. -/
+theorem selectedRustUniformMaskTranslationCollisionFree_v1
+    (projection mask₁ mask₂ : SelectedAccountProjectionMaskVector) :
+    selectedAccountProjectionMaskTranslation projection mask₁ =
+        selectedAccountProjectionMaskTranslation projection mask₂ ↔
+      mask₁ = mask₂ := by
+  constructor
+  · intro h
+    exact (selectedAccountProjectionMaskTranslation projection).injective h
+  · exact congrArg _
+
+/-! ## Selected C2 mask-PRF frame and deployment-scale reduction budget -/
+
+/-- "MASK" as the canonical KoalaBear field lane absorbed before C2 inputs. -/
+def selectedAccountMaskPrfDomain : Nat := 0x4D41534B
+
+/-- "NULL" is the distinct account-STARK nullifier domain lane. -/
+def selectedAccountNullifierDomain : Nat := 0x4E554C4C
+
+/-- KoalaBear's canonical prime modulus. -/
+def selectedAccountMaskPrfFieldModulus : Nat := 2130706433
+
+/-- Application modulus of each projection-mask lane. -/
+def selectedAccountMaskModulus : Nat := 12289
+
+/-- Six field outputs are combined for every q12289 mask lane. -/
+def selectedAccountMaskReductionDigits : Nat := 6
+
+/-- Six independent q12289 mask lanes form one selected projection carrier. -/
+def selectedAccountMaskLaneCount : Nat := 6
+
+/-- Selected deployment horizon: at most 2^32 admitted account targets. -/
+def selectedAccountMaskTargetHorizon : Nat := 2 ^ 32
+
+/-- C2 absorbs DOMAIN[1] || pad_seed[32] || slot_le[8]. -/
+def selectedAccountMaskPrfInputLanes : Nat := 1 + 32 + 8
+
+/-- C2 squeezes six disjoint field coordinates per each of six mask lanes. -/
+def selectedAccountMaskPrfSqueezedLanes : Nat :=
+  selectedAccountMaskLaneCount * selectedAccountMaskReductionDigits
+
+theorem selectedAccountMaskPrfDomainsSeparated_v1 :
+    selectedAccountMaskPrfDomain ≠ selectedAccountNullifierDomain := by
+  native_decide
+
+theorem selectedAccountMaskPrfFrameDimensions_v1 :
+    selectedAccountMaskPrfInputLanes = 41 ∧
+      selectedAccountMaskPrfSqueezedLanes = 36 := by
+  native_decide
+
+/-- Map `(mask lane, reduction digit)` to its dedicated C2 squeeze coordinate. -/
+def selectedAccountMaskPrfSqueezeIndex
+    (coordinate : Fin 6 × Fin 6) : Fin 36 :=
+  ⟨coordinate.1.val * 6 + coordinate.2.val, by omega⟩
+
+/-- No two selected mask/digit coordinates reuse one squeezed field lane. -/
+theorem selectedAccountMaskPrfSqueezeIndexInjective_v1 :
+    Function.Injective selectedAccountMaskPrfSqueezeIndex := by
+  intro a b h
+  have hval : a.1.val * 6 + a.2.val = b.1.val * 6 + b.2.val :=
+    congrArg Fin.val h
+  apply Prod.ext
+  · apply Fin.ext
+    omega
+  · apply Fin.ext
+    omega
+
+/--
+Loose aggregate statistical term for six `mod 12289` reductions over the
+selected 2^32-target account horizon, assuming ideal independent KoalaBear
+field outputs. Each mask contributes at most `q / p^6`; this deliberately uses
+the simple upper bound rather than relying on a tighter remainder calculation.
+-/
+noncomputable def selectedAccountMaskWideReductionError : ℝ :=
+  ((selectedAccountMaskLaneCount * selectedAccountMaskTargetHorizon *
+      selectedAccountMaskModulus : Nat) : ℝ) /
+    ((selectedAccountMaskPrfFieldModulus ^ selectedAccountMaskReductionDigits : Nat) : ℝ)
+
+/-- Exact integer certificate underlying the deployment-scale reduction bound. -/
+theorem selectedAccountMaskWideReductionScaledNumerator_le_denominator_v1 :
+    selectedAccountMaskLaneCount * selectedAccountMaskTargetHorizon *
+          selectedAccountMaskModulus * (2 ^ 128) ≤
+      selectedAccountMaskPrfFieldModulus ^ selectedAccountMaskReductionDigits := by
+  native_decide
+
+/-- The aggregate six-lane, 2^32-target reduction term meets q128. -/
+theorem selectedAccountMaskWideReductionError_le_q128_v1 :
+    selectedAccountMaskWideReductionError ≤ (1 : ℝ) / (2 ^ 128 : Nat) := by
+  norm_num [selectedAccountMaskWideReductionError,
+    selectedAccountMaskLaneCount, selectedAccountMaskTargetHorizon,
+    selectedAccountMaskModulus, selectedAccountMaskPrfFieldModulus,
+    selectedAccountMaskReductionDigits]
+
+/-- Adjacent games isolating PRF, freshness, and wide-reduction losses. -/
+structure SelectedAccountMaskPrfHybridGame where
+  realProbability : ℝ
+  idealPrfProbability : ℝ
+  freshInputProbability : ℝ
+  uniformMaskProbability : ℝ
+
+namespace SelectedAccountMaskPrfHybridGame
+
+def advantage (G : SelectedAccountMaskPrfHybridGame) : ℝ :=
+  |G.realProbability - G.uniformMaskProbability|
+
+end SelectedAccountMaskPrfHybridGame
+
+/--
+Exact A2 reduction surface. The selected Poseidon2 theorem supplies the first
+hop; the reorg-safe verified-nullifier registry supplies the second; the third
+is charged to the concrete six-digit reduction budget above.
+-/
+structure SelectedAccountMaskPrfHybridBounds
+    (G : SelectedAccountMaskPrfHybridGame) where
+  poseidonPrfError : ℝ
+  freshnessError : ℝ
+  poseidonPrfError_nonnegative : 0 ≤ poseidonPrfError
+  freshnessError_nonnegative : 0 ≤ freshnessError
+  poseidonPrfHop :
+    |G.realProbability - G.idealPrfProbability| ≤ poseidonPrfError
+  freshnessHop :
+    |G.idealPrfProbability - G.freshInputProbability| ≤ freshnessError
+  wideReductionHop :
+    |G.freshInputProbability - G.uniformMaskProbability| ≤
+      selectedAccountMaskWideReductionError
+
+namespace SelectedAccountMaskPrfHybridBounds
+
+noncomputable def totalError
+    {G : SelectedAccountMaskPrfHybridGame}
+    (B : SelectedAccountMaskPrfHybridBounds G) : ℝ :=
+  B.poseidonPrfError + B.freshnessError + selectedAccountMaskWideReductionError
+
+theorem advantage_le_totalError
+    {G : SelectedAccountMaskPrfHybridGame}
+    (B : SelectedAccountMaskPrfHybridBounds G) :
+    G.advantage ≤ B.totalError := by
+  calc
+    G.advantage = |G.realProbability - G.uniformMaskProbability| := rfl
+    _ ≤ |G.realProbability - G.idealPrfProbability| +
+          |G.idealPrfProbability - G.uniformMaskProbability| :=
+      abs_sub_le _ _ _
+    _ ≤ |G.realProbability - G.idealPrfProbability| +
+          (|G.idealPrfProbability - G.freshInputProbability| +
+            |G.freshInputProbability - G.uniformMaskProbability|) := by
+      gcongr
+      exact abs_sub_le _ _ _
+    _ ≤ B.poseidonPrfError +
+          (B.freshnessError + selectedAccountMaskWideReductionError) := by
+      gcongr
+      · exact B.poseidonPrfHop
+      · exact B.freshnessHop
+      · exact B.wideReductionHop
+    _ = B.totalError := by
+      simp [totalError, add_assoc]
+
+/-- After exact freshness, A2 loses only Poseidon2 PRF advantage plus 2^-128. -/
+theorem advantage_le_poseidonPrfError_add_q128
+    {G : SelectedAccountMaskPrfHybridGame}
+    (B : SelectedAccountMaskPrfHybridBounds G)
+    (hFresh : B.freshnessError = 0) :
+    G.advantage ≤ B.poseidonPrfError + (1 : ℝ) / (2 ^ 128 : Nat) := by
+  calc
+    G.advantage ≤ B.totalError := B.advantage_le_totalError
+    _ = B.poseidonPrfError + selectedAccountMaskWideReductionError := by
+      simp [totalError, hFresh]
+    _ ≤ B.poseidonPrfError + (1 : ℝ) / (2 ^ 128 : Nat) := by
+      gcongr
+      exact selectedAccountMaskWideReductionError_le_q128_v1
+
+end SelectedAccountMaskPrfHybridBounds
+
+/-! ## Selected C1/C6 commitment-hiding frame and QROM search budget -/
+
+/-- "PADS" is the selected C1 pad-source commitment domain lane. -/
+def selectedAccountPadCommitmentDomain : Nat := 0x50414453
+
+/-- "OPEN" is the selected C6 opening-tuple commitment domain lane. -/
+def selectedAccountOpeningCommitmentDomain : Nat := 0x4F50454E
+
+/-- Each selected commitment uses a fresh 40-byte deployment nonce. -/
+def selectedAccountCommitmentNonceBits : Nat := 40 * 8
+
+/-- C1 absorbs PADS[1] || pad_seed[32] || nonce[40]. -/
+def selectedAccountPadCommitmentInputLanes : Nat := 1 + 32 + 40
+
+/-- C6 absorbs OPEN[1] || projection[6] || lifecycle[32] || nonce[40] || account_id[32]. -/
+def selectedAccountOpeningCommitmentInputLanes : Nat := 1 + 6 + 32 + 40 + 32
+
+/-- Two independently nonced hiding commitments are emitted per admitted account. -/
+def selectedAccountHidingCommitmentsPerAccount : Nat := 2
+
+/-- Conservative total selected commitment targets over the 2^32-account horizon. -/
+def selectedAccountCommitmentTargetCount : Nat :=
+  selectedAccountHidingCommitmentsPerAccount * (2 ^ 32)
+
+/-- Selected global bounded-query ceiling imported by the Path 2 QROM ledger. -/
+def selectedAccountCommitmentQromQueries : Nat := 2 ^ 54
+
+/--
+Conservative QROM search term for recovering one fresh commitment nonce across
+all selected C1/C6 targets: `targets * queries^2 / 2^320`.
+-/
+noncomputable def selectedAccountCommitmentQromSearchError : ℝ :=
+  ((selectedAccountCommitmentTargetCount *
+      selectedAccountCommitmentQromQueries ^ 2 : Nat) : ℝ) /
+    ((2 ^ selectedAccountCommitmentNonceBits : Nat) : ℝ)
+
+/-- The selected PADS/OPEN/MASK/NULL domain words are pairwise distinct. -/
+theorem selectedAccountCommitmentDomainsSeparated_v1 :
+    selectedAccountPadCommitmentDomain ≠ selectedAccountOpeningCommitmentDomain ∧
+    selectedAccountPadCommitmentDomain ≠ selectedAccountMaskPrfDomain ∧
+    selectedAccountPadCommitmentDomain ≠ selectedAccountNullifierDomain ∧
+    selectedAccountOpeningCommitmentDomain ≠ selectedAccountMaskPrfDomain ∧
+    selectedAccountOpeningCommitmentDomain ≠ selectedAccountNullifierDomain ∧
+    selectedAccountMaskPrfDomain ≠ selectedAccountNullifierDomain := by
+  native_decide
+
+theorem selectedAccountCommitmentFrameDimensions_v1 :
+    selectedAccountCommitmentNonceBits = 320 ∧
+    selectedAccountPadCommitmentInputLanes = 73 ∧
+    selectedAccountOpeningCommitmentInputLanes = 111 ∧
+    selectedAccountCommitmentTargetCount = 2 ^ 33 := by
+  native_decide
+
+/-- Exact integer certificate for the selected multi-target QROM search term. -/
+theorem selectedAccountCommitmentQromSearchScaledNumerator_le_denominator_v1 :
+    selectedAccountCommitmentTargetCount *
+          selectedAccountCommitmentQromQueries ^ 2 * (2 ^ 128) ≤
+      2 ^ selectedAccountCommitmentNonceBits := by
+  native_decide
+
+/-- The local nonce-search term is below q128 (in fact exactly 2^-179). -/
+theorem selectedAccountCommitmentQromSearchError_le_q128_v1 :
+    selectedAccountCommitmentQromSearchError ≤ (1 : ℝ) / (2 ^ 128 : Nat) := by
+  unfold selectedAccountCommitmentQromSearchError
+  rw [div_le_div_iff₀ (by positivity) (by positivity)]
+  norm_num [
+    selectedAccountCommitmentTargetCount,
+    selectedAccountHidingCommitmentsPerAccount,
+    selectedAccountCommitmentQromQueries,
+    selectedAccountCommitmentNonceBits, pow_succ]
+
+/-- Adjacent games isolating Poseidon2 replacement and fresh-nonce search. -/
+structure SelectedAccountCommitmentHidingGame where
+  realProbability : ℝ
+  idealOracleProbability : ℝ
+  hiddenProbability : ℝ
+
+namespace SelectedAccountCommitmentHidingGame
+
+def advantage (G : SelectedAccountCommitmentHidingGame) : ℝ :=
+  |G.realProbability - G.hiddenProbability|
+
+end SelectedAccountCommitmentHidingGame
+
+/--
+Exact A3 local reduction. A reviewed bounded-query Poseidon2 commitment/QROM
+theorem supplies the first hop; the second is charged to the concrete fresh
+320-bit nonce-search budget above.
+-/
+structure SelectedAccountCommitmentHidingBounds
+    (G : SelectedAccountCommitmentHidingGame) where
+  poseidonCommitmentError : ℝ
+  poseidonCommitmentError_nonnegative : 0 ≤ poseidonCommitmentError
+  poseidonCommitmentHop :
+    |G.realProbability - G.idealOracleProbability| ≤ poseidonCommitmentError
+  freshNonceSearchHop :
+    |G.idealOracleProbability - G.hiddenProbability| ≤
+      selectedAccountCommitmentQromSearchError
+
+namespace SelectedAccountCommitmentHidingBounds
+
+noncomputable def totalError
+    {G : SelectedAccountCommitmentHidingGame}
+    (B : SelectedAccountCommitmentHidingBounds G) : ℝ :=
+  B.poseidonCommitmentError + selectedAccountCommitmentQromSearchError
+
+theorem advantage_le_totalError
+    {G : SelectedAccountCommitmentHidingGame}
+    (B : SelectedAccountCommitmentHidingBounds G) :
+    G.advantage ≤ B.totalError := by
+  calc
+    G.advantage = |G.realProbability - G.hiddenProbability| := rfl
+    _ ≤ |G.realProbability - G.idealOracleProbability| +
+          |G.idealOracleProbability - G.hiddenProbability| :=
+      abs_sub_le _ _ _
+    _ ≤ B.poseidonCommitmentError + selectedAccountCommitmentQromSearchError := by
+      gcongr
+      · exact B.poseidonCommitmentHop
+      · exact B.freshNonceSearchHop
+    _ = B.totalError := rfl
+
+theorem advantage_le_poseidonCommitmentError_add_q128
+    {G : SelectedAccountCommitmentHidingGame}
+    (B : SelectedAccountCommitmentHidingBounds G) :
+    G.advantage ≤ B.poseidonCommitmentError + (1 : ℝ) / (2 ^ 128 : Nat) := by
+  calc
+    G.advantage ≤ B.totalError := B.advantage_le_totalError
+    _ ≤ B.poseidonCommitmentError + (1 : ℝ) / (2 ^ 128 : Nat) := by
+      simpa [totalError] using
+        add_le_add_left selectedAccountCommitmentQromSearchError_le_q128_v1
+          B.poseidonCommitmentError
+
+end SelectedAccountCommitmentHidingBounds
+
+/-- Four adjacent account-STARK public-view games used by the simulator hybrid. -/
+structure SelectedAccountStarkSimulatorHybridGame where
+  realViewProbability : ℝ
+  friSimulatedProbability : ℝ
+  maskSimulatedProbability : ℝ
+  fullySimulatedProbability : ℝ
+
+namespace SelectedAccountStarkSimulatorHybridGame
+
+/-- Real-versus-fully-simulated distinguishing advantage. -/
+def advantage (G : SelectedAccountStarkSimulatorHybridGame) : ℝ :=
+  |G.realViewProbability - G.fullySimulatedProbability|
+
+end SelectedAccountStarkSimulatorHybridGame
+
+/--
+The exact three named hybrid assumptions for the selected account-STARK:
+
+1. hiding-FRI/PCS HVZK replaces proof bytes;
+2. the fresh Poseidon2 mask PRF replaces the masked projection;
+3. commitment hiding replaces the remaining hidden-preimage view.
+-/
+structure SelectedAccountStarkSimulatorHybridBounds
+    (G : SelectedAccountStarkSimulatorHybridGame) where
+  zkFriHvzkError : ℝ
+  maskPrfError : ℝ
+  commitmentHidingError : ℝ
+  zkFriHvzkError_nonnegative : 0 ≤ zkFriHvzkError
+  maskPrfError_nonnegative : 0 ≤ maskPrfError
+  commitmentHidingError_nonnegative : 0 ≤ commitmentHidingError
+  zkFriHvzkHop :
+    |G.realViewProbability - G.friSimulatedProbability| ≤ zkFriHvzkError
+  maskPrfHop :
+    |G.friSimulatedProbability - G.maskSimulatedProbability| ≤ maskPrfError
+  commitmentHidingHop :
+    |G.maskSimulatedProbability - G.fullySimulatedProbability| ≤
+      commitmentHidingError
+
+namespace SelectedAccountStarkSimulatorHybridBounds
+
+/-- Additive distinguishing budget for the selected three-hop hybrid. -/
+def totalError
+    {G : SelectedAccountStarkSimulatorHybridGame}
+    (B : SelectedAccountStarkSimulatorHybridBounds G) : ℝ :=
+  B.zkFriHvzkError + B.maskPrfError + B.commitmentHidingError
+
+/-- The real/simulated advantage is bounded by the sum of the three named hops. -/
+theorem advantage_le_totalError
+    {G : SelectedAccountStarkSimulatorHybridGame}
+    (B : SelectedAccountStarkSimulatorHybridBounds G) :
+    G.advantage ≤ B.totalError := by
+  calc
+    G.advantage =
+        |G.realViewProbability - G.fullySimulatedProbability| := rfl
+    _ ≤ |G.realViewProbability - G.friSimulatedProbability| +
+          |G.friSimulatedProbability - G.fullySimulatedProbability| :=
+      abs_sub_le _ _ _
+    _ ≤ |G.realViewProbability - G.friSimulatedProbability| +
+          (|G.friSimulatedProbability - G.maskSimulatedProbability| +
+            |G.maskSimulatedProbability - G.fullySimulatedProbability|) := by
+      gcongr
+      exact abs_sub_le _ _ _
+    _ ≤ B.zkFriHvzkError + (B.maskPrfError + B.commitmentHidingError) := by
+      gcongr
+      · exact B.zkFriHvzkHop
+      · exact B.maskPrfHop
+      · exact B.commitmentHidingHop
+    _ = B.totalError := by
+      simp [totalError, add_assoc]
+
+end SelectedAccountStarkSimulatorHybridBounds
+
+/--
+Concrete hybrid certificate for one accepted public-anchor package. A future
+cryptographic import must supply the three hop bounds and a reviewed target;
+the certificate cannot be constructed from the public-anchor projection alone.
+-/
+structure SelectedAccountStarkSimulatorHybridCertificate
+    (A : AccountCreationAcceptedPublicAnchorPackage) where
+  game : SelectedAccountStarkSimulatorHybridGame
+  bounds : SelectedAccountStarkSimulatorHybridBounds game
+  targetError : ℝ
+  targetError_nonnegative : 0 ≤ targetError
+  totalError_le_target : bounds.totalError ≤ targetError
+
+namespace SelectedAccountStarkSimulatorHybridCertificate
+
+/-- A concrete certificate imports the additive hybrid bound. -/
+theorem advantage_le_target
+    {A : AccountCreationAcceptedPublicAnchorPackage}
+    (C : SelectedAccountStarkSimulatorHybridCertificate A) :
+    C.game.advantage ≤ C.targetError :=
+  le_trans C.bounds.advantage_le_totalError C.totalError_le_target
+
+end SelectedAccountStarkSimulatorHybridCertificate
+
+/--
+Selected simulator relation with an explicit three-hop certificate. This is
+strictly stronger than an arbitrary supplied relation: producing a witness
+requires concrete zk-FRI, mask-PRF, and commitment-hiding error bounds.
+-/
+def selectedAccountStarkSimulatorHybridRelation
+    (I : PublicBundleInputs) (J : SimulatorPublicInputs) : Prop :=
+  ∃ A : AccountCreationAcceptedPublicAnchorPackage,
+    A.publicBundleInputs = I ∧
+      A.simulatorPublicInputs = J ∧
+        ∃ C : SelectedAccountStarkSimulatorHybridCertificate A,
+          C.game.advantage ≤ C.targetError
 
 /--
 Accepted-bundle simulability reduced to a supplied public simulator relation.
@@ -1303,8 +1779,8 @@ theorem selectedRustAcceptedPublicAnchorPackage_surfaces_v1
     refine
       ⟨A.leafContextDigest, A.creationProofBindingDigest,
         A.nativeRoleRootCommitment, A.aggregationContextDigest, A.slotId,
-        A.maskedProjection, A.accountStarkBundleBytesOrDigest,
-        A.publicReplayPayloadDigest, A.accountId, A.accountStateRoot,
+        A.maskedProjection, A.accountStarkPublicStatementBytesOrDigest,
+        A.padSeedNullifier, A.accountId, A.accountStateRoot,
         A.lifecycleAnchor, A.verifierVersion, A.packedWitnessCommitment,
         A.publicRejectionCode, ?_⟩
     rfl
@@ -1429,6 +1905,24 @@ theorem selectedRustAcceptedBundleSimulatorNoExportReduction_v1
   have hBoundary :=
     selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1 A
   exact ⟨⟨hBoundary, hSimulator A hBoundary⟩, hBoundary.2.1⟩
+
+/--
+Selected account-STARK simulator/no-export theorem under explicit hybrid
+certificates. This closes the local composition from three named advantage
+bounds to accepted-bundle simulation and no-export. It does not manufacture the
+cryptographic certificates or claim their external review.
+-/
+theorem selectedRustAcceptedBundleSimulatorNoExportFromHybrid_v1
+    (hHybrid :
+      ∀ A : AccountCreationAcceptedPublicAnchorPackage,
+        AccountCreationAcceptedPublicAnchorPackage.SelectedAccountStarkSimulatorHybridCertificate A) :
+    ∀ A : AccountCreationAcceptedPublicAnchorPackage,
+      A.acceptedBundleSimulatorNoExportWith
+        AccountCreationAcceptedPublicAnchorPackage.selectedAccountStarkSimulatorHybridRelation := by
+  apply selectedRustAcceptedBundleSimulatorNoExportReduction_v1
+  intro A _hBoundary
+  let C := hHybrid A
+  exact ⟨A, rfl, rfl, C, C.advantage_le_target⟩
 
 end Path2NoExportConcrete
 end Descender

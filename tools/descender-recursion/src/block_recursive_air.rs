@@ -20,7 +20,8 @@
 use crate::inlined_perm::{self, ConstantsExpr, PermCells, C_OUTPUT, PERM_COLS};
 use crate::merkle_air::{eval_node, node_blocks, ABSORB_LEN, N_PERM};
 use crate::recursive_air::{
-    n_cols as ra_n_cols, window_merkle_root, window_root_col, RecursiveAir, RecursiveConfig,
+    n_cols as ra_n_cols, window_verified_root, window_verified_root_col, RecursiveAir,
+    RecursiveConfig,
 };
 use descender_account_stark::{Val, DIGEST_ELEMS};
 use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
@@ -65,7 +66,7 @@ pub fn build_trace(cfg: &RecursiveConfig, member_windows: &[Vec<Val>]) -> Vec<Va
             ra,
             "member window width must equal ra_n_cols(cfg)"
         );
-        let root = window_merkle_root(cfg, win); // the IN-CIRCUIT-verified member root
+        let root = window_verified_root(cfg, win); // verified member root, including OOD endpoint
         let mut row = win.clone();
         row.extend_from_slice(&chain); // BR_CHAIN
         let mut combined = [Val::ZERO; ABSORB_LEN];
@@ -131,7 +132,7 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for BlockRecursiveAir {
         let consts = ConstantsExpr::<AB>::pinned();
 
         // 2. chain fold: combined = chain_i ‖ verified_root_i (root at the window-root column).
-        let wr = window_root_col(cfg);
+        let wr = window_verified_root_col(cfg);
         let chain_off = br_chain(cfg);
         let chain_in: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(chain_off + i)).collect();
         let root_e: Vec<AB::Expr> = (0..DIGEST_ELEMS).map(|i| l(wr + i)).collect();
@@ -192,9 +193,31 @@ pub fn cfg_merkle_settlement(levels: usize) -> RecursiveConfig {
 /// `recursive_air` window verifying a Merkle opening in-circuit. The canonical example of assembling
 /// member windows for [`crate::settlement::prove_block`].
 pub fn windows_for_settlement(cfg: &RecursiveConfig, levels: usize, n: usize) -> Vec<Vec<Val>> {
+    windows_for_settlement_inner(cfg, levels, n, None)
+}
+
+/// Reference helper for the paired settlement path. It builds the same independently verified
+/// Merkle members as [`windows_for_settlement`] and commits each supplied vertical-OOD terminal
+/// state into that member's external endpoint block.
+pub fn windows_for_external_ood_settlement(
+    cfg: &RecursiveConfig,
+    levels: usize,
+    external_ends: &[[Val; descender_account_stark::WIDTH]],
+) -> Vec<Vec<Val>> {
+    assert!(cfg.fs_ood_external, "external OOD config required");
+    assert!(!external_ends.is_empty(), "need >= 1 member");
+    windows_for_settlement_inner(cfg, levels, external_ends.len(), Some(external_ends))
+}
+
+fn windows_for_settlement_inner(
+    cfg: &RecursiveConfig,
+    levels: usize,
+    n: usize,
+    external_ends: Option<&[[Val; descender_account_stark::WIDTH]]>,
+) -> Vec<Vec<Val>> {
     use crate::challenger::RATE;
     use crate::merkle::{compressor, Digest};
-    use crate::recursive_air::{pack_window, WindowInputs};
+    use crate::recursive_air::{pack_window, pack_window_external_ood, WindowInputs};
     use descender_account_stark::{Challenge, SALT_ELEMS, WIDTH};
     use p3_field::{BasedVectorSpace, PrimeCharacteristicRing};
     use p3_symmetric::PseudoCompressionFunction;
@@ -211,10 +234,11 @@ pub fn windows_for_settlement(cfg: &RecursiveConfig, levels: usize, n: usize) ->
     };
     let c = compressor();
     let leaf_count = 1usize << levels;
-    (0..n as u32)
+    (0..n)
         .map(|member| {
+            let member_u32 = u32::try_from(member).expect("reference member index must fit u32");
             let leaves: Vec<Digest> = (0..leaf_count as u32)
-                .map(|x| d(x + member * 1000 + 1))
+                .map(|x| d(x + member_u32 * 1000 + 1))
                 .collect();
             // Reference Merkle tree: fold leaves up to the root, recording sibling levels.
             let mut levels_vec = vec![leaves.clone()];
@@ -226,13 +250,24 @@ pub fn windows_for_settlement(cfg: &RecursiveConfig, levels: usize, n: usize) ->
                     .collect();
                 levels_vec.push(cur.clone());
             }
-            let idx = (member as usize) % leaf_count;
+            let idx = member % leaf_count;
             let mut sibs = Vec::new();
             let mut k = idx;
             for level in &levels_vec[..levels_vec.len() - 1] {
                 sibs.push(level[k ^ 1]);
                 k >>= 1;
             }
+            let fs_rounds = cfg.fs_pre_alpha_rounds
+                + usize::from(cfg.fs_pre_alpha_partial > 0)
+                + cfg.fs_quotient_rounds
+                + usize::from(cfg.fs_quotient_partial > 0);
+            let fs_blocks: Vec<[Val; RATE]> = (0..fs_rounds)
+                .map(|r| {
+                    core::array::from_fn(|i| {
+                        Val::from_usize(700_000 + member * 10_000 + r * RATE + i)
+                    })
+                })
+                .collect();
             let inp = WindowInputs {
                 draw_out: Val::from_u32(idx as u32),
                 e0: ext(1),
@@ -244,7 +279,7 @@ pub fn windows_for_settlement(cfg: &RecursiveConfig, levels: usize, n: usize) ->
                 deep_zeta: Challenge::ZERO,
                 deep_q: Challenge::ZERO,
                 deep_alpha: Challenge::ZERO,
-                fs_blocks: &[],
+                fs_blocks: &fs_blocks,
                 sponge_in: [Val::ZERO; WIDTH],
                 prior_state: [Val::ZERO; WIDTH],
                 absorbed: [Val::ZERO; RATE],
@@ -277,7 +312,13 @@ pub fn windows_for_settlement(cfg: &RecursiveConfig, levels: usize, n: usize) ->
                 quot_x: Val::ZERO,
                 quot_siblings: &[],
             };
-            pack_window(cfg, &inp)
+            if cfg.fs_ood_external {
+                let ends = external_ends.expect("external endpoint list required");
+                pack_window_external_ood(cfg, &inp, 0, ends[member])
+            } else {
+                assert!(external_ends.is_none(), "unexpected external endpoints");
+                pack_window(cfg, &inp)
+            }
         })
         .collect()
 }
@@ -703,7 +744,7 @@ mod tests {
         type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
         type DftT = Radix2DitParallel<Val>;
         type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
-        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 7>;
         type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
 
         let levels = 3usize;
@@ -919,7 +960,7 @@ mod tests {
         type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
         type DftT = Radix2DitParallel<Val>;
         type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
-        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 7>;
         type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
 
         let levels = 3usize;
@@ -1144,7 +1185,7 @@ mod tests {
         type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
         type DftT = Radix2DitParallel<Val>;
         type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
-        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 7>;
         type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
 
         let levels = 3usize;
@@ -1320,7 +1361,7 @@ mod tests {
         type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
         type DftT = Radix2DitParallel<Val>;
         type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
-        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 7>;
         type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
 
         let levels = 3usize;
@@ -1408,7 +1449,7 @@ mod tests {
         type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
         type DftT = Radix2DitParallel<Val>;
         type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
-        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 7>;
         type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
 
         let levels = 3usize;
@@ -1543,7 +1584,7 @@ mod tests {
         type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
         type DftT = Radix2DitParallel<Val>;
         type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
-        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 7>;
         type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
 
         let perm: Perm = default_koalabear_poseidon2_16();

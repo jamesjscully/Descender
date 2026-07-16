@@ -17,7 +17,7 @@
       "byte_model_pinned": true,
       "deployment_ready": false,
       "deterministic_kat_digest_pins_bundle_bytes": true,
-      "field_count": 11,
+      "field_count": 12,
       "field_order": [
         {
           "data_bytes": 49,
@@ -90,6 +90,13 @@
           "variable_length": false
         },
         {
+          "data_bytes": 32,
+          "encoding": "append_frame 8 canonical u32 little-endian field limbs",
+          "field_name": "pad_seed_nullifier",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
           "data_bytes": 0,
           "encoding": "append_frame opaque descender-account-verifier bundle",
           "field_name": "account_stark_bundle",
@@ -97,8 +104,8 @@
           "variable_length": true
         }
       ],
-      "fixed_data_bytes_excluding_bundle": 221,
-      "fixed_frame_overhead_excluding_bundle": 558,
+      "fixed_data_bytes_excluding_bundle": 253,
+      "fixed_frame_overhead_excluding_bundle": 618,
       "full_proof_bytes_inlined_in_manifest": false,
       "masked_projection_bytes": 12,
       "masked_projection_lane_count": 6,
@@ -114,10 +121,10 @@
       "public_payload_exports_private_material": false
     },
     "digests": {
-      "payload_byte_model_report_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
-      "payload_byte_model_report_recomputed_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
-      "payload_kat_boundary_report_byte_model_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
-      "payload_kat_boundary_report_digest": "f04603708bf738b85704207309e71450d40c5b32f3f2b316cdaea38b35f9a474"
+      "payload_byte_model_report_digest": "ee557e306a91eac202f3c78338395d3a911c513c675623f1163618c557aa7714",
+      "payload_byte_model_report_recomputed_digest": "ee557e306a91eac202f3c78338395d3a911c513c675623f1163618c557aa7714",
+      "payload_kat_boundary_report_byte_model_digest": "ee557e306a91eac202f3c78338395d3a911c513c675623f1163618c557aa7714",
+      "payload_kat_boundary_report_digest": "3bd006d08daefab7ce5e2dedb674b28abff10ece4118c26e01b3ed5f19084a80"
     },
     "frozen_status": "draft_byte_model_manifest",
     "generator": {
@@ -127,5 +134,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.AccountStarkPayloadByteModelManifest.v1"
   },
-  "manifest_digest": "82489d724db5a3897d93311cf578e7684be70bc4e3629e8ad277432902cf3383"
+  "manifest_digest": "fdae24de2ad3fad5b99186a4a621c64221a9fe86f819664ecc4d0f332f17ba5c"
 }

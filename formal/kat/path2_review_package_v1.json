@@ -2,7 +2,7 @@
   "manifest": {
     "schema": "Descender.Path2.ReviewPackageManifest.v1",
     "package_id": "path2_direct_q128_review_candidate_v1",
-    "package_version": "2026-07-09",
+    "package_version": "2026-07-15",
     "frozen_status": "draft_fail_closed_review_candidate",
     "review_complete": false,
     "deployment_ready": false,
@@ -28,8 +28,12 @@
       "boundary_artifacts": [
         "formal/kat/path2_direct_theorem_boundary_v1.json",
         "formal/kat/path2_account_creation_proof_boundary_v1.json",
+        "formal/kat/path2_account_creation_frame_kat_boundary_v1.json",
+        "formal/kat/path2_account_creation_frame_kat_vectors_v1.json",
+        "formal/kat/path2_direct_admission_boundary_v1.json",
         "formal/kat/path2_account_stark_fri_qrom_residual_v1.json",
         "formal/kat/path2_account_stark_fri_aok_boundary_v1.json",
+        "formal/kat/path2_pcs_all_query_statement_kat_v1.json",
         "formal/kat/path2_direct_accepted_spend_tuple_evidence_v1.json",
         "formal/kat/path2_direct_accepted_composition_evidence_v1.json",
         "formal/kat/path2_leakage_battery_v1.json"
@@ -58,51 +62,71 @@
     "artifact_hashes": [
       {
         "path": "spec/README.md",
-        "sha256": "2a7b207d2f62bd54e0c30462f38854d64e78c94d84d360dead2d6ccee5d49e16"
+        "sha256": "9f21895a8bd53faeee38526571ae922e3a21f56d313085df6c78acbbc812cc50"
       },
       {
         "path": "spec/security_model.md",
-        "sha256": "356934a9fe614aac2f6d3d75cde6963abfd1319c432cee610a3fbf0446c83794"
+        "sha256": "930dbcd7604c60d8b44411f174b1661b8ac68cdc2c06fc81585dda153185ceff"
       },
       {
         "path": "spec/review_package.md",
-        "sha256": "a7a0a3be074142f85c5e3194ac393199250068b934ad6ccaccd0abf0829e1565"
+        "sha256": "ef9408577be831766a4e13f48a246e3feff89067b2966f8b80d1cc29993be67b"
       },
       {
         "path": "spec/blockchain_requirements.md",
-        "sha256": "020d3d289ed90e36b55d8b7cdcee761da35c58911d2fb26762a596d441d223f1"
+        "sha256": "14959694ee60932a8a42cede7261b670586c2c964ab7865f9ed12fb82047f950"
       },
       {
         "path": "TRACKER.md",
-        "sha256": "deca800ffe20c058401a9a40bb98ac8e92e9e03c2f68db151c9f5cc8df74d73d"
+        "sha256": "cae23a0527b8a036bb555f94156cbbe346877370255d09a2d2e8a451f5981800"
       },
       {
         "path": "formal/kat/path2_direct_theorem_boundary_v1.json",
-        "sha256": "8b02c5d0a54c30726a47c78a990ed697d7278451e322439a88bce3e045b973f0"
+        "sha256": "9fe36b8918348db1bcaa3c3f519d8a9814e2e34e5532e5e97d610c25d6ff648c"
       },
       {
         "path": "formal/kat/path2_account_creation_proof_boundary_v1.json",
-        "sha256": "9c7db9ec88bb69817dd972fcf98e299b394d520154b1999ea7e4a204428604f4"
+        "sha256": "ce7b5da61cdfd096b981cec70e1015d7c6a449c05176ee74aff68ea07221b545"
+      },
+      {
+        "path": "formal/kat/path2_account_creation_frame_kat_boundary_v1.json",
+        "sha256": "71cabe4ba627a19433e06cec574be0922f61858afdd5e300e3321469181563fc"
+      },
+      {
+        "path": "formal/kat/path2_account_creation_frame_kat_vectors_v1.json",
+        "sha256": "04856f40c5e620ada9551193b0a51bb34cebec98a1ecf02084974a2a6e04feea"
+      },
+      {
+        "path": "formal/kat/path2_direct_admission_boundary_v1.json",
+        "sha256": "a23e27fa46f686e9ef8b789fe963881d367e5d687b0450dd56516d5ad785eb5b"
       },
       {
         "path": "formal/kat/path2_account_stark_fri_qrom_residual_v1.json",
-        "sha256": "c07bf95b3be5107c554e5894cde47a94cb9a679933fe4fec0bf9d9588abc5354"
+        "sha256": "fda5da39d68b6fe61cf8493a57ac9272757d1637a87377e3b18b5477a580d659"
       },
       {
         "path": "formal/kat/path2_account_stark_fri_aok_boundary_v1.json",
-        "sha256": "13901746a7486bfe181ae8a80e368e954eb13f595bbfb4e316fb89472b3a37ec"
+        "sha256": "72365e47613fb944cb44abb9b3a14d2eeaab1fa39f118c1fa12ad425ee32f116"
+      },
+      {
+        "path": "formal/kat/path2_pcs_all_query_statement_kat_v1.json",
+        "sha256": "fe0c4852f4d012972b3d2aef2cf5d42ff5a04e41374230dd453282094b7dc602"
       },
       {
         "path": "formal/kat/path2_direct_accepted_spend_tuple_evidence_v1.json",
-        "sha256": "eddffa144e7bd6e36f4d90a102847268007f11e5299062eef2c86511fefbdff9"
+        "sha256": "274565eb53b141ff33769846f997ae97999ee5db11d6dce973a0a18c874735cc"
       },
       {
         "path": "formal/kat/path2_direct_accepted_composition_evidence_v1.json",
-        "sha256": "4b9a94b985d07010d80a0ee5a1d8cf880696f63a3ef44cf09f4092b0624349ab"
+        "sha256": "3cdacbf57d7882021b2e8f40daf5ea822a007db3b3233bb6fe00232832f8a934"
       },
       {
         "path": "formal/kat/path2_leakage_battery_v1.json",
-        "sha256": "f8e1fc19f952738f477a4c8102b1e60a1017e7fd8dc928fa6c91b36dae4c833f"
+        "sha256": "abebb557d557e7c03599808f862b4a6efb2be125849d9907590f776c9dd87695"
+      },
+      {
+        "path": "scripts/check_path2_review_replay.sh",
+        "sha256": "8b05eb504f17d963c46c786f6b88f4c0aff140f08abfa78fc4bbe12a6a8fba83"
       }
     ],
     "reproduction_commands": [
@@ -115,8 +139,16 @@
         "command": "bash scripts/check_build.sh"
       },
       {
+        "id": "review_replay_gate",
+        "command": "bash scripts/check_path2_review_replay.sh"
+      },
+      {
         "id": "leakage_battery_gate",
         "command": "python3 scripts/check_path2_leakage_battery.py"
+      },
+      {
+        "id": "pcs_all_query_statement_kat",
+        "command": "cargo test --manifest-path tools/descender-recursion/Cargo.toml real_proof_query_runs_through_vertical_opening_reduction -- --nocapture"
       },
       {
         "id": "direct_theorem_boundary",
@@ -403,7 +435,7 @@
             "id": "hard_128_profile_not_ready",
             "kind": "text_contains",
             "path": "spec/blockchain_requirements.md",
-            "text": "| Hard-128 profile decision | `direct` | `not_ready` | evidence that the q128 practical floor and remaining review obligations are acceptable for the target adopter | `ADOPT-128-001`, `DIR-QROM-001`, `DIR-REVIEW-001` |"
+          "text": "| Hard-128 profile decision | `direct` | `not_ready` | `ADR-0011` adaptive-QROM game, global query-bound policy, separate primitive target ledgers, migrated rate-7/capacity-9 account-STARK Fiat-Shamir challenger, recursive-mirror closure, and evidence that the q128 practical floor and remaining review obligations are acceptable for the target adopter | `ADOPT-128-001`, `DIR-QROM-001`, `DIR-REVIEW-001` |"
           }
         ]
       }

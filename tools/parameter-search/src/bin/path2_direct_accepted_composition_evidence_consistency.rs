@@ -16,7 +16,7 @@ mod enabled {
             validate_path2_direct_accepted_composition_evidence_v1,
         },
     };
-    use serde_json::{to_value, Value};
+    use serde_json::{Value, to_value};
     use sha2::{Digest, Sha256};
     use std::{
         fs,
@@ -418,6 +418,10 @@ mod enabled {
             "/evidence/creation_evidence_matches_direct_tuple",
             "/evidence/proof_boundary_digest_matches_direct_theorem",
             "/evidence/qrom_action_digest_matches_direct_theorem",
+            "/evidence/qrom_action_budget_bridge_imported",
+            "/evidence/qrom_action_theorem_linkage_reduction_imported",
+            "/evidence/qrom_action_review_hypothesis_explicit",
+            "/evidence/qrom_action_external_review_still_open",
             "/evidence/lifecycle_digest_matches_direct_theorem",
             "/evidence/direct_admission_namespace_matches_authorization",
             "/evidence/consume_once_transition_matches_tuple",
@@ -425,7 +429,6 @@ mod enabled {
             "/evidence/direct_spend_tuple_accepts",
             "/evidence/public_result_accepts_same_slot",
             "/evidence/every_positive_acceptance_hypothesis_has_accepted_path_evidence",
-            "/evidence/public_rejection_hypothesis_deferred_to_rejection_kats",
             "/evidence/direct_theorem_obligations_still_open",
             "/evidence/proof_family_obligations_still_open",
         ] {
@@ -445,8 +448,7 @@ mod enabled {
             )? != evidence.positive_acceptance_hypothesis_evidence_count as u64
             || evidence.accepted_hypothesis_evidence_count != 9
             || evidence.positive_acceptance_hypothesis_evidence_count != 8
-            || at(body, "/evidence/accepted_hypothesis_evidence_rows")?
-                != &expected_hypothesis_rows
+            || at(body, "/evidence/accepted_hypothesis_evidence_rows")? != &expected_hypothesis_rows
         {
             return Err(
                 "direct accepted composition manifest lost accepted-hypothesis evidence rows"
@@ -454,6 +456,7 @@ mod enabled {
             );
         }
         for pointer in [
+            "/evidence/public_rejection_hypothesis_deferred_to_rejection_kats",
             "/evidence/composition_theorem_instantiated",
             "/evidence/account_creation_proof_boundary_verified",
             "/evidence/deployment_ready",

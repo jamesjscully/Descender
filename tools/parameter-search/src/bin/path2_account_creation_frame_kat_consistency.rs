@@ -66,15 +66,13 @@ fn main() -> Result<(), String> {
     {
         return Err("frame KAT boundary manifest schema mismatch".to_string());
     }
-    if str_at(&boundary, "/manifest/frozen_status")? != "draft_boundary_manifest" {
+    if str_at(&boundary, "/manifest/frozen_status")? != "frozen_boundary_manifest" {
         return Err("frame KAT boundary manifest frozen_status drifted".to_string());
     }
-    if str_at(&vectors, "/corpus/schema")?
-        != "Descender.Path2.AccountCreationFrameKatVectors.v1"
-    {
+    if str_at(&vectors, "/corpus/schema")? != "Descender.Path2.AccountCreationFrameKatVectors.v1" {
         return Err("frame KAT vector corpus schema mismatch".to_string());
     }
-    if str_at(&vectors, "/corpus/status")? != "digest_pinned_boundary_vectors" {
+    if str_at(&vectors, "/corpus/status")? != "frozen_digest_pinned_boundary_vectors" {
         return Err("frame KAT vector corpus status drifted".to_string());
     }
 
@@ -102,10 +100,11 @@ fn main() -> Result<(), String> {
     )? {
         return Err("frame KAT vectors do not cover every current boundary row".to_string());
     }
-    if bool_at(&boundary, "/manifest/coverage/frozen_corpus_complete")? {
-        return Err(
-            "frame KAT boundary manifest unexpectedly claims frozen corpus complete".to_string(),
-        );
+    if !bool_at(&vectors, "/corpus/boundary_report/frozen_corpus_complete")? {
+        return Err("frame KAT vectors are not marked frozen".to_string());
+    }
+    if !bool_at(&boundary, "/manifest/coverage/frozen_corpus_complete")? {
+        return Err("frame KAT boundary manifest lost frozen corpus closure".to_string());
     }
     if bool_at(&boundary, "/manifest/coverage/deployment_ready")? {
         return Err(
@@ -143,9 +142,7 @@ fn main() -> Result<(), String> {
 
     let honest_count = cases
         .iter()
-        .filter(|case| {
-            case.get("case_id").and_then(Value::as_str) == Some("honest_frame_accepts")
-        })
+        .filter(|case| case.get("case_id").and_then(Value::as_str) == Some("honest_frame_accepts"))
         .count();
     if honest_count != 1 {
         return Err(format!(
@@ -170,10 +167,14 @@ fn main() -> Result<(), String> {
             continue;
         }
         if kind != "reject" {
-            return Err(format!("frame KAT vector case {case_id} is not marked reject"));
+            return Err(format!(
+                "frame KAT vector case {case_id} is not marked reject"
+            ));
         }
         if rejection_cases.insert(case_id, case).is_some() {
-            return Err(format!("duplicate frame KAT vector rejection case {case_id}"));
+            return Err(format!(
+                "duplicate frame KAT vector rejection case {case_id}"
+            ));
         }
     }
 
@@ -183,6 +184,13 @@ fn main() -> Result<(), String> {
         let public_class = row_string(row, "public_rejection_class")?;
         let internal_error = row_string(row, "internal_error_match")?;
         let mutated_surface = row_string(row, "mutated_surface")?;
+        if row.get("covered_by_unit_test").and_then(Value::as_bool) != Some(true)
+            || row.get("frozen_vector_present").and_then(Value::as_bool) != Some(true)
+        {
+            return Err(format!(
+                "frame KAT boundary row {case_id} is not test-covered and frozen"
+            ));
+        }
         expected_ids.insert(case_id);
 
         let case = rejection_cases

@@ -11,13 +11,14 @@
 //!
 //! # The relation
 //!
-//! * C1 — `pad_source_commitment = Poseidon2-commit(pad_seed[32] ‖ nonce_c1[16])`
+//! * C1 — `pad_source_commitment = Poseidon2-commit(PADS ‖ pad_seed[32] ‖ nonce_c1[40])`
 //!   absorbed as byte-lanes, squeezed to `N_COMMIT_LANES` 31-bit outputs (public).
-//! * C2 — `masks[6] = Poseidon2-PRF(pad_seed[32] ‖ slot[8])` reduced mod q12289
+//! * C2 — `masks[6] = Poseidon2-PRF(MASK_DOMAIN ‖ pad_seed[32] ‖ slot[8])`
+//!   reduced mod q12289
 //!   via the WIDE-THEN-REDUCE gadget (the 6 masks feed the carrier, NOT public).
 //! * C6 — `opening_tuple_commitment =
-//!   Poseidon2-commit(account_projection[6] field-lanes ‖ lifecycle_anchor[32] ‖
-//!   nonce_c6[16])`, squeezed to `N_COMMIT_LANES` outputs (public).
+//!   Poseidon2-commit(OPEN ‖ account_projection[6] field-lanes ‖ lifecycle_anchor[32] ‖
+//!   nonce_c6[40] ‖ account_id[32])`, squeezed to `N_COMMIT_LANES` outputs (public).
 //! * C4 — `masked_projection[6] = account_projection[6] + masks[6]` (carrier,
 //!   mod q12289) with `account_projection` constrained to a CANONICAL base-128
 //!   representation (`q = 96*128+1` canonicity gadget).
@@ -41,8 +42,8 @@ use p3_poseidon2::GenericPoseidon2LinearLayers;
 use p3_poseidon2_air::{generate_trace_rows_for_perm, Poseidon2Cols, RoundConstants};
 
 use crate::reduce_gadget::{
-    ce, eval_reduce_gadget, fill_reduce_gadget, perm_num_cols, wide_reduce_masks, NUM_SQUEEZE, RATE,
-    REDUCE_CELLS,
+    ce, eval_reduce_gadget, fill_reduce_gadget, perm_num_cols, wide_reduce_masks, NUM_SQUEEZE,
+    RATE, REDUCE_CELLS,
 };
 
 // ===========================================================================
@@ -59,16 +60,28 @@ pub const N_LANES: usize = 6;
 /// collision margin.
 pub const N_COMMIT_LANES: usize = 10;
 
-/// C1 input byte-lanes: pad_seed[32] ‖ blinding_nonce_c1[16].
-pub const C1_INPUT_LANES: usize = 32 + 16;
-/// C2 input byte-lanes: pad_seed[32] ‖ slot_id[8].
-pub const C2_INPUT_LANES: usize = 32 + 8;
-/// C6 input lanes: account_projection[6] (FIELD lanes) ‖ lifecycle_anchor[32] ‖
-/// blinding_nonce_c6[16] ‖ account_id[32] (byte-lanes). The trailing
+/// Commitment blinding nonce width. At 40 bytes, two commitments for each of
+/// 2^32 accounts and 2^54 quantum oracle queries leave a 2^-179 search term.
+pub const COMMITMENT_NONCE_BYTES: usize = 40;
+/// Domain-separation tag absorbed as C1's first field lane ("PADS" as ASCII).
+pub const PAD_COMMITMENT_DOMAIN: u32 = 0x5041_4453;
+/// C1 byte lanes: pad_seed[32] ‖ blinding_nonce_c1[40].
+pub const C1_BYTE_LANES: usize = 32 + COMMITMENT_NONCE_BYTES;
+/// C1 input lanes: PADS_DOMAIN[1] ‖ pad_seed[32] ‖ blinding_nonce_c1[40].
+pub const C1_INPUT_LANES: usize = 1 + C1_BYTE_LANES;
+/// Domain-separation tag absorbed as C2's first field lane ("MASK" as ASCII).
+pub const MASK_PRF_DOMAIN: u32 = 0x4D41_534B;
+/// C2 input lanes: MASK_DOMAIN[1] ‖ pad_seed[32] ‖ slot_id[8].
+pub const C2_INPUT_LANES: usize = 1 + 32 + 8;
+/// Domain-separation tag absorbed as C6's first field lane ("OPEN" as ASCII).
+pub const OPENING_COMMITMENT_DOMAIN: u32 = 0x4F50_454E;
+/// C6 input lanes: OPEN_DOMAIN[1] ‖ account_projection[6] (FIELD lanes) ‖
+/// lifecycle_anchor[32] ‖ blinding_nonce_c6[40] ‖ account_id[32] (byte-lanes). The trailing
 /// `account_id` block is the opening-tuple-account-binding (added 2026-06-18 to
 /// kill the context-free universal-admission-token finding).
-pub const C6_FIELD_LANES: usize = N_LANES;
-pub const C6_BYTE_LANES: usize = 32 + 16 + 32;
+pub const C6_DOMAIN_LANES: usize = 1;
+pub const C6_FIELD_LANES: usize = C6_DOMAIN_LANES + N_LANES;
+pub const C6_BYTE_LANES: usize = 32 + COMMITMENT_NONCE_BYTES + 32;
 #[allow(dead_code)]
 pub const C6_INPUT_LANES: usize = C6_FIELD_LANES + C6_BYTE_LANES;
 
@@ -156,8 +169,9 @@ pub const NULLIFIER_ELEMS: usize = 8;
 // the public statement (FS-transcript-bound), is pinned by an AIR equality, and
 // is checked field-wise by the library verifier.
 //
-// The constant digits encode: relation tag "DESCv1" + the structural profile
-// (trace width family, the two new classes, the pinned FRI schedule 56q/blowup4).
+// The constant digits encode the DESC relation version, public-IO profile, and
+// pinned FRI schedule. v3 adds explicit C1 PADS/C6 OPEN domains and 40-byte
+// commitment nonces; it retains the v2 C2 frame and active 120-query schedule.
 // Treat as an OPAQUE pinned id; bump it whenever the relation/profile changes.
 // ---------------------------------------------------------------------------
 /// Number of pinned `relation_id` field elements.
@@ -165,10 +179,10 @@ pub const RELATION_ID_ELEMS: usize = 4;
 /// The pinned `relation_id` (proof-system-bookkeeping tag). Bump on any change to
 /// the relation version / column profile / query schedule.
 pub const RELATION_ID: [u32; RELATION_ID_ELEMS] = [
-    0x4445_5343, // "DESC"
-    0x7631_0000 | (PUBIO_ELEMS as u32 & 0xFFFF), // "v1" ‖ pubio-profile width
+    0x4445_5343,                                                 // "DESC"
+    0x7633_0000 | (PUBIO_ELEMS as u32 & 0xFFFF),                 // "v3" ‖ pubio-profile width
     (ROLE_ROOT_ELEMS as u32) << 16 | (RELATION_ID_ELEMS as u32), // class-A/B sizes
-    (56u32 << 8) | 4u32, // pinned FRI schedule: 56 queries, log_blowup 4
+    (120u32 << 8) | 4u32, // pinned FRI schedule: 120 queries, log_blowup 4
 ];
 
 const BYTE_BITS: usize = 8;
@@ -443,7 +457,8 @@ pub const PUBIO_SYNDROME_OFF: usize = PUBIO_RELATION_ID_OFF + RELATION_ID_ELEMS;
 /// `packed_witness_commitment` byte anchors.
 pub const PUBIO_PACKED_WITNESS_OFF: usize = PUBIO_SYNDROME_OFF + SYNDROME_LANES;
 /// CLASS A-3 — offset (within one row's pubio block) of the `checked_core_key_commitment` bytes.
-pub const PUBIO_KEY_COMMITMENT_OFF: usize = PUBIO_PACKED_WITNESS_OFF + PACKED_WITNESS_COMMITMENT_BYTES;
+pub const PUBIO_KEY_COMMITMENT_OFF: usize =
+    PUBIO_PACKED_WITNESS_OFF + PACKED_WITNESS_COMMITMENT_BYTES;
 
 // ---------------------------------------------------------------------------
 // BATCH DIGEST CHAIN (the per-row public-IO binding commitment).
@@ -483,8 +498,12 @@ pub const BATCH_PUBLIC_VALUES: usize = CHAIN_DIGEST_ELEMS + 1;
 
 impl FullLayout {
     pub fn new(perm_cols: usize) -> Self {
-        let c1_plan = SpongePlan::new(vec![true; C1_INPUT_LANES], N_COMMIT_LANES);
-        let c2_plan = SpongePlan::new(vec![true; C2_INPUT_LANES], NUM_SQUEEZE);
+        let mut c1_br = vec![false; 1];
+        c1_br.extend(vec![true; C1_BYTE_LANES]);
+        let c1_plan = SpongePlan::new(c1_br, N_COMMIT_LANES);
+        let mut c2_br = vec![false; 1];
+        c2_br.extend(vec![true; 32 + SLOT_ID_BYTES]);
+        let c2_plan = SpongePlan::new(c2_br, NUM_SQUEEZE);
         let mut c6_br = vec![false; C6_FIELD_LANES];
         c6_br.extend(vec![true; C6_BYTE_LANES]);
         let c6_plan = SpongePlan::new(c6_br, N_COMMIT_LANES);
@@ -789,7 +808,7 @@ where
             }
         }
 
-        // ----- C2 sponge -> 30 squeezed lanes -> WIDE-THEN-REDUCE masks[6] -----
+        // ----- C2 sponge -> 36 squeezed lanes -> WIDE-THEN-REDUCE masks[6] -----
         let c2_out = self.eval_sponge::<AB, LinearLayers>(
             builder,
             &local,
@@ -826,11 +845,23 @@ where
             builder.assert_eq(local[lay.carry_acc_off + j].into(), v.clone());
         }
 
-        // ----- SEAM: pad_seed C1 == C2 (32 same-row lane equalities) -----
+        // ----- Commitment/mask domain pins + seam: pad_seed C1 == C2 -----
+        builder.assert_eq(
+            local[lay.c1_off + lay.c1.lanes].into(),
+            ce::<AB>(PAD_COMMITMENT_DOMAIN as u64),
+        );
+        builder.assert_eq(
+            local[lay.c2_off + lay.c2.lanes].into(),
+            ce::<AB>(MASK_PRF_DOMAIN as u64),
+        );
+        builder.assert_eq(
+            local[lay.c6_off + lay.c6.lanes].into(),
+            ce::<AB>(OPENING_COMMITMENT_DOMAIN as u64),
+        );
         for b in 0..32 {
             builder.assert_eq(
-                local[lay.c1_off + lay.c1.lanes + b].into(),
-                local[lay.c2_off + lay.c2.lanes + b].into(),
+                local[lay.c1_off + lay.c1.lanes + 1 + b].into(),
+                local[lay.c2_off + lay.c2.lanes + 1 + b].into(),
             );
         }
 
@@ -838,7 +869,7 @@ where
         for i in 0..N_LANES {
             builder.assert_eq(
                 local[lay.carry_acc_off + i].into(),
-                local[lay.c6_off + lay.c6.lanes + i].into(),
+                local[lay.c6_off + lay.c6.lanes + C6_DOMAIN_LANES + i].into(),
             );
         }
 
@@ -868,15 +899,15 @@ where
         }
 
         // (a) slot_id absorbed into the C2 PRF == public slot_id (in-circuit).
-        //     The C2 slot byte-lanes are lane indices [32, 40) (after pad_seed[32]).
+        //     The C2 slot byte-lanes are lane indices [33, 41), after DOMAIN and pad_seed.
         for b in 0..SLOT_ID_BYTES {
             builder.assert_eq(
-                local[lay.c2_off + lay.c2.lanes + 32 + b].into(),
+                local[lay.c2_off + lay.c2.lanes + 1 + 32 + b].into(),
                 ctx_pub(CTX_SLOT_OFF + b),
             );
         }
         // (b) lifecycle_anchor absorbed into the C6 opening tuple == public (in-circuit).
-        //     C6 lifecycle byte-lanes are lane indices [N_LANES, N_LANES+32).
+        //     C6 lifecycle byte-lanes follow DOMAIN[1] and account_projection[6].
         for b in 0..LIFECYCLE_BYTES {
             builder.assert_eq(
                 local[lay.c6_off + lay.c6.lanes + C6_FIELD_LANES + b].into(),
@@ -885,8 +916,8 @@ where
         }
         // (c) account_id folded into the C6 opening-tuple preimage == public
         //     (opening-tuple-account-binding). account_id byte-lanes sit AFTER
-        //     account_projection[6] ‖ lifecycle[32] ‖ nonce_c6[16].
-        let c6_account_id_lane0 = C6_FIELD_LANES + LIFECYCLE_BYTES + 16;
+        //     DOMAIN[1] ‖ account_projection[6] ‖ lifecycle[32] ‖ nonce_c6[40].
+        let c6_account_id_lane0 = C6_FIELD_LANES + LIFECYCLE_BYTES + COMMITMENT_NONCE_BYTES;
         for b in 0..ACCOUNT_ID_BYTES {
             builder.assert_eq(
                 local[lay.c6_off + lay.c6.lanes + c6_account_id_lane0 + b].into(),
@@ -1035,14 +1066,14 @@ where
             for b in 0..32 {
                 builder.assert_eq(
                     null_lane(1 + b).into(),
-                    local[lay.c1_off + lay.c1.lanes + b].into(),
+                    local[lay.c1_off + lay.c1.lanes + 1 + b].into(),
                 );
             }
-            // lanes 33..41: slot (== C2's slot lanes [32,40), context-bound to public slot).
+            // lanes 33..41: slot (== C2's slot lanes [33,41), context-bound to public slot).
             for b in 0..SLOT_ID_BYTES {
                 builder.assert_eq(
                     null_lane(1 + 32 + b).into(),
-                    local[lay.c2_off + lay.c2.lanes + 32 + b].into(),
+                    local[lay.c2_off + lay.c2.lanes + 1 + 32 + b].into(),
                 );
             }
             // (ii) run the nullifier sponge over those (now-bound) input lanes.
@@ -1063,8 +1094,7 @@ where
                 } else {
                     builder.assert_eq(
                         nullifier_out[j].clone(),
-                        public
-                            [2 * N_COMMIT_LANES + N_LANES + CONTEXT_ELEMS + ROLE_ROOT_ELEMS + j],
+                        public[2 * N_COMMIT_LANES + N_LANES + CONTEXT_ELEMS + ROLE_ROOT_ELEMS + j],
                     );
                 }
             }
@@ -1091,8 +1121,8 @@ where
                         + ROLE_ROOT_ELEMS
                         + NULLIFIER_ELEMS
                         + j]
-                    .clone()
-                    .into(),
+                        .clone()
+                        .into(),
                     pinned,
                 );
             }
@@ -1285,8 +1315,7 @@ impl<
         }
 
         // chain_in state exprs.
-        let chain_in: Vec<AB::Expr> =
-            (0..w).map(|c| local[lay.chain_in_off + c].into()).collect();
+        let chain_in: Vec<AB::Expr> = (0..w).map(|c| local[lay.chain_in_off + c].into()).collect();
 
         // Absorb across CHAIN_PERMS_PER_ROW permutations seeded by chain_in.
         let mut prev_post: Option<[AB::Expr; WIDTH]> = None;
@@ -1359,7 +1388,10 @@ impl<
             let next_enable = next[lay.enable_off];
             let mut wt = builder.when(is_transition.clone());
             for c in 0..w {
-                wt.assert_eq(next[lay.chain_in_off + c].into(), local[lay.chain_out_off + c].into());
+                wt.assert_eq(
+                    next[lay.chain_in_off + c].into(),
+                    local[lay.chain_out_off + c].into(),
+                );
             }
             wt.assert_eq(
                 next[lay.count_acc_off].into(),
@@ -1376,7 +1408,10 @@ impl<
         {
             let mut wl = builder.when(is_last_row.clone());
             for c in 0..CHAIN_DIGEST_ELEMS {
-                wl.assert_eq(local[lay.chain_out_off + c].into(), public[c].clone().into());
+                wl.assert_eq(
+                    local[lay.chain_out_off + c].into(),
+                    public[c].clone().into(),
+                );
             }
             wl.assert_eq(
                 local[lay.count_acc_off].into(),
@@ -1525,7 +1560,11 @@ impl<
             }
             acc
         };
-        for bit in lo_bits.iter().chain(hi_bits.iter()).chain(slack_bits.iter()) {
+        for bit in lo_bits
+            .iter()
+            .chain(hi_bits.iter())
+            .chain(slack_bits.iter())
+        {
             builder.assert_bool(*bit);
         }
         builder.assert_eq(d_lo.into(), recompose(&lo_bits));
@@ -1591,8 +1630,7 @@ impl<
 
         for round in 0..PARTIAL_ROUNDS {
             let pr = &pcols.partial_rounds[round];
-            let after_rc =
-                state[0].clone() + Into::<AB::Expr>::into(self.partial_rc[round].dup());
+            let after_rc = state[0].clone() + Into::<AB::Expr>::into(self.partial_rc[round].dup());
             let sb =
                 eval_sbox_expr::<AB, SBOX_DEGREE, SBOX_REGISTERS>(builder, &pr.sbox.0, after_rc);
             builder.assert_eq(sb, pr.post_sbox);
@@ -1633,9 +1671,9 @@ pub struct FullSecrets {
     pub pad_seed: [u8; 32],
     pub slot: u64,
     pub account_projection: [u16; N_LANES],
-    pub nonce_c1: [u8; 16],
+    pub nonce_c1: [u8; COMMITMENT_NONCE_BYTES],
     pub lifecycle_anchor: [u8; 32],
-    pub nonce_c6: [u8; 16],
+    pub nonce_c6: [u8; COMMITMENT_NONCE_BYTES],
     /// PUBLIC context: 32-byte account identity (folded into the C6 preimage).
     pub account_id: [u8; 32],
     /// PUBLIC context: verifier version (transcript-bound).
@@ -1706,7 +1744,11 @@ fn run_sponge<
         } else if p < plan.n_absorb {
             for r in 0..RATE {
                 let pos = p * RATE + r;
-                let add = if pos < plan.padded_len() { elems[pos] } else { F::ZERO };
+                let add = if pos < plan.padded_len() {
+                    elems[pos]
+                } else {
+                    F::ZERO
+                };
                 state[r] = prev_post[r] + add;
             }
             for c in RATE..WIDTH {
@@ -1760,9 +1802,10 @@ fn run_sponge<
 /// This reproduces EXACTLY what `generate_full_trace` does for the C2 sponge — it
 /// reuses the SAME private primitives (`SpongePlan::new`, `build_elems`,
 /// `run_sponge`, `wide_reduce_masks`), so it CANNOT drift from the prover's trace
-/// fill. It returns both the 30 squeezed lanes and the 6 reduced q12289 masks.
+/// fill. It returns both the 36 squeezed lanes and the 6 reduced q12289 masks.
 ///
-/// Input lane order matches the trace generator: `pad_seed[32] ‖ slot_id LE[8]`.
+/// Input lane order matches the trace generator:
+/// `MASK_DOMAIN[1] ‖ pad_seed[32] ‖ slot_id LE[8]`.
 #[doc(hidden)]
 pub fn reference_c2_mask_prf<
     F: PrimeField32,
@@ -1780,15 +1823,24 @@ pub fn reference_c2_mask_prf<
     let perm_cols =
         perm_num_cols::<WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS>();
 
-    // Same C2 data layout as `generate_instance_row` (pad_seed bytes ‖ slot LE).
-    let mut c2_data: Vec<u32> = pad_seed.iter().map(|&b| b as u32).collect();
+    // Same C2 data layout as `generate_instance_row` (DOMAIN ‖ pad_seed ‖ slot LE).
+    let mut c2_data: Vec<u32> = vec![MASK_PRF_DOMAIN];
+    c2_data.extend(pad_seed.iter().map(|&b| b as u32));
     c2_data.extend(slot_id.to_le_bytes().iter().map(|&b| b as u32));
     debug_assert_eq!(c2_data.len(), C2_INPUT_LANES);
 
-    let plan = SpongePlan::new(vec![true; C2_INPUT_LANES], NUM_SQUEEZE);
+    let mut c2_br = vec![false; 1];
+    c2_br.extend(vec![true; 32 + SLOT_ID_BYTES]);
+    let plan = SpongePlan::new(c2_br, NUM_SQUEEZE);
     let elems = build_elems::<F>(&c2_data, &plan);
     let (_blocks, _post, outputs) = run_sponge::<
-        F, LinearLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+        F,
+        LinearLayers,
+        WIDTH,
+        SBOX_DEGREE,
+        SBOX_REGISTERS,
+        HALF_FULL_ROUNDS,
+        PARTIAL_ROUNDS,
     >(&elems, &plan, constants, perm_cols);
 
     let mut squeezed = [0u32; NUM_SQUEEZE];
@@ -1902,9 +1954,8 @@ fn c4_witness<F: PrimeField32>(v: u32) -> ([F; C4_CELLS], F) {
     let is96 = d_hi == C4_MAX_HI;
     let diff = F::from_u32(d_hi) - F::from_u32(C4_MAX_HI);
     let inv = if is96 { F::ZERO } else { diff.inverse() };
-    let bits = |x: u32| -> [F; C4_DIGIT_BITS] {
-        core::array::from_fn(|k| F::from_u32((x >> k) & 1))
-    };
+    let bits =
+        |x: u32| -> [F; C4_DIGIT_BITS] { core::array::from_fn(|k| F::from_u32((x >> k) & 1)) };
     let mut cells = [F::ZERO; C4_CELLS];
     cells[0] = F::from_u32(v);
     cells[1] = F::from_u32(d_lo);
@@ -1946,7 +1997,13 @@ pub fn chain_digest<
             msg[1 + i] = e;
         }
         let (_blocks, post) = run_chain_step::<
-            F, LinearLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+            F,
+            LinearLayers,
+            WIDTH,
+            SBOX_DEGREE,
+            SBOX_REGISTERS,
+            HALF_FULL_ROUNDS,
+            PARTIAL_ROUNDS,
         >(state, &msg, constants, perm_cols);
         state = post;
     }
@@ -2004,7 +2061,12 @@ pub fn generate_batch_trace<
 >(
     secrets: &[FullSecrets],
     constants: &RoundConstants<F, WIDTH, HALF_FULL_ROUNDS, PARTIAL_ROUNDS>,
-) -> (RowMajorMatrix<F>, Vec<FullInstance<F>>, [F; CHAIN_DIGEST_ELEMS], usize) {
+) -> (
+    RowMajorMatrix<F>,
+    Vec<FullInstance<F>>,
+    [F; CHAIN_DIGEST_ELEMS],
+    usize,
+) {
     assert!(!secrets.is_empty());
     let perm_cols =
         perm_num_cols::<WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS>();
@@ -2020,7 +2082,13 @@ pub fn generate_batch_trace<
     let mut last_row: Vec<F> = Vec::new();
     for (r, s) in secrets.iter().enumerate() {
         let (row, inst) = build_full_row::<
-            F, LinearLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+            F,
+            LinearLayers,
+            WIDTH,
+            SBOX_DEGREE,
+            SBOX_REGISTERS,
+            HALF_FULL_ROUNDS,
+            PARTIAL_ROUNDS,
         >(s, &lay, constants, perm_cols);
         values[r * width..(r + 1) * width].copy_from_slice(&row);
         last_row = row;
@@ -2051,7 +2119,13 @@ pub fn generate_batch_trace<
             }
         }
         let (blocks, post) = run_chain_step::<
-            F, LinearLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+            F,
+            LinearLayers,
+            WIDTH,
+            SBOX_DEGREE,
+            SBOX_REGISTERS,
+            HALF_FULL_ROUNDS,
+            PARTIAL_ROUNDS,
         >(state, &msg, constants, perm_cols);
         for (p, b) in blocks.iter().enumerate() {
             let off = base + lay.chain_perms_off + p * perm_cols;
@@ -2089,16 +2163,24 @@ fn build_full_row<
 ) -> (Vec<F>, FullInstance<F>) {
     let mut row = vec![F::ZERO; lay.width];
 
-    let mut c1_data: Vec<u32> = secrets.pad_seed.iter().map(|&b| b as u32).collect();
+    let mut c1_data: Vec<u32> = vec![PAD_COMMITMENT_DOMAIN];
+    c1_data.extend(secrets.pad_seed.iter().map(|&b| b as u32));
     c1_data.extend(secrets.nonce_c1.iter().map(|&b| b as u32));
-    let mut c2_data: Vec<u32> = secrets.pad_seed.iter().map(|&b| b as u32).collect();
+    let mut c2_data: Vec<u32> = vec![MASK_PRF_DOMAIN];
+    c2_data.extend(secrets.pad_seed.iter().map(|&b| b as u32));
     c2_data.extend(secrets.slot.to_le_bytes().iter().map(|&b| b as u32));
-    let mut c6_data: Vec<u32> = secrets.account_projection.iter().map(|&v| v as u32).collect();
+    let mut c6_data: Vec<u32> = vec![OPENING_COMMITMENT_DOMAIN];
+    c6_data.extend(secrets.account_projection.iter().map(|&v| v as u32));
     c6_data.extend(secrets.lifecycle_anchor.iter().map(|&b| b as u32));
     c6_data.extend(secrets.nonce_c6.iter().map(|&b| b as u32));
     c6_data.extend(secrets.account_id.iter().map(|&b| b as u32));
 
-    let fill_sponge = |row: &mut [F], off: usize, slay: &SpongeLayout, plan: &SpongePlan, data: &[u32]| -> Vec<F> {
+    let fill_sponge = |row: &mut [F],
+                       off: usize,
+                       slay: &SpongeLayout,
+                       plan: &SpongePlan,
+                       data: &[u32]|
+     -> Vec<F> {
         for (i, &v) in data.iter().enumerate() {
             row[off + slay.lanes + i] = F::from_u32(v);
         }
@@ -2106,7 +2188,8 @@ fn build_full_row<
         for (i, &v) in data.iter().enumerate() {
             if plan.byte_ranged[i] {
                 for b in 0..BYTE_BITS {
-                    row[off + slay.lane_bits + bit_cursor * BYTE_BITS + b] = F::from_u32((v >> b) & 1);
+                    row[off + slay.lane_bits + bit_cursor * BYTE_BITS + b] =
+                        F::from_u32((v >> b) & 1);
                 }
                 bit_cursor += 1;
             }
@@ -2204,7 +2287,13 @@ fn build_full_row<
     role_data.extend(c1_out.iter().map(|f| f.as_canonical_u32()));
     role_data.extend(c6_out.iter().map(|f| f.as_canonical_u32()));
     role_data.extend(masked_projection.iter().map(|f| f.as_canonical_u32()));
-    let role_out = fill_sponge(&mut row, lay.role_off, &lay.role, &lay.role_plan, &role_data);
+    let role_out = fill_sponge(
+        &mut row,
+        lay.role_off,
+        &lay.role,
+        &lay.role_plan,
+        &role_data,
+    );
     let mut role_root = [F::ZERO; ROLE_ROOT_ELEMS];
     for j in 0..ROLE_ROOT_ELEMS {
         role_root[j] = role_out[j];
@@ -2239,7 +2328,10 @@ fn build_full_row<
         };
         put(CTX_ACCOUNT_ID_OFF, &secrets.account_id);
         put(CTX_SLOT_OFF, &secrets.slot.to_le_bytes());
-        put(CTX_VERIFIER_VERSION_OFF, &secrets.verifier_version.to_le_bytes());
+        put(
+            CTX_VERIFIER_VERSION_OFF,
+            &secrets.verifier_version.to_le_bytes(),
+        );
         put(CTX_STATE_ROOT_OFF, &secrets.account_state_root);
         put(CTX_LIFECYCLE_OFF, &secrets.lifecycle_anchor);
     }
@@ -2351,7 +2443,7 @@ pub fn full_public_values<F: PrimeField32>(inst: &FullInstance<F>) -> Vec<F> {
 mod context_constraint_tests {
     use super::*;
     use crate::config::{
-        HALF_FULL_ROUNDS, LinLayers, PARTIAL_ROUNDS, SBOX_DEGREE, SBOX_REGISTERS, Val, WIDTH,
+        LinLayers, Val, HALF_FULL_ROUNDS, PARTIAL_ROUNDS, SBOX_DEGREE, SBOX_REGISTERS, WIDTH,
     };
     use p3_air::check_constraints;
     use p3_koala_bear::{
@@ -2379,15 +2471,24 @@ mod context_constraint_tests {
             nonce_c6: core::array::from_fn(|i| (i as u8).wrapping_mul(9).wrapping_add(1)),
             account_id: core::array::from_fn(|i| (i as u8).wrapping_mul(13).wrapping_add(3)),
             verifier_version: 0x0102_0304,
-            account_state_root: core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(7)),
+            account_state_root: core::array::from_fn(|i| {
+                (i as u8).wrapping_mul(17).wrapping_add(7)
+            }),
             // CLASS C: 12 canonical (< q12289) checked-core syndrome lanes.
             syndrome: core::array::from_fn(|i| ((i as u32 * 1009 + 17) % Q12289_CARRIER) as u16),
             // CLASS A-3: a registered key commitment (declared; any value is creation-valid).
-            checked_core_key_commitment: core::array::from_fn(|i| (i as u8).wrapping_mul(19).wrapping_add(2)),
+            checked_core_key_commitment: core::array::from_fn(|i| {
+                (i as u8).wrapping_mul(19).wrapping_add(2)
+            }),
         }
     }
 
-    fn build() -> (Air, p3_matrix::dense::RowMajorMatrix<Val>, Vec<Val>, FullLayout) {
+    fn build() -> (
+        Air,
+        p3_matrix::dense::RowMajorMatrix<Val>,
+        Vec<Val>,
+        FullLayout,
+    ) {
         let _ = default_koalabear_poseidon2_16(); // pin the same instance
         let air: Air = FullRelationAir::from_arrays_mode(
             KOALABEAR_POSEIDON2_RC_16_EXTERNAL_INITIAL,
@@ -2396,7 +2497,13 @@ mod context_constraint_tests {
             false,
         );
         let (trace, inst) = generate_full_trace::<
-            Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+            Val,
+            LinLayers,
+            WIDTH,
+            SBOX_DEGREE,
+            SBOX_REGISTERS,
+            HALF_FULL_ROUNDS,
+            PARTIAL_ROUNDS,
         >(&secrets(), air.constants(), 2);
         let pv = full_public_values(&inst);
         let lay = FullLayout::new(air.layout().perm_cols);
@@ -2415,7 +2522,46 @@ mod context_constraint_tests {
     #[should_panic]
     fn c2_slot_lane_mismatch_violates_constraints() {
         let (air, mut trace, pv, lay) = build();
-        let col = lay.c2_off + lay.c2_lanes_off() + 32; // first slot byte-lane
+        let col = lay.c2_off + lay.c2_lanes_off() + 1 + 32; // first slot byte-lane
+        let w = lay.width;
+        for r in 0..trace.values.len() / w {
+            trace.values[r * w + col] += Val::ONE;
+        }
+        check_constraints(&air, &trace, &pv);
+    }
+
+    // Corrupt the C2 MASK domain input lane -> the explicit domain pin fails.
+    #[test]
+    #[should_panic]
+    fn c2_mask_domain_lane_mismatch_violates_constraints() {
+        let (air, mut trace, pv, lay) = build();
+        let col = lay.c2_off + lay.c2_lanes_off();
+        let w = lay.width;
+        for r in 0..trace.values.len() / w {
+            trace.values[r * w + col] += Val::ONE;
+        }
+        check_constraints(&air, &trace, &pv);
+    }
+
+    // Corrupt the C1 PADS domain input lane -> the explicit domain pin fails.
+    #[test]
+    #[should_panic]
+    fn c1_pad_commitment_domain_lane_mismatch_violates_constraints() {
+        let (air, mut trace, pv, lay) = build();
+        let col = lay.c1_off + lay.c1_lanes_off();
+        let w = lay.width;
+        for r in 0..trace.values.len() / w {
+            trace.values[r * w + col] += Val::ONE;
+        }
+        check_constraints(&air, &trace, &pv);
+    }
+
+    // Corrupt the C6 OPEN domain input lane -> the explicit domain pin fails.
+    #[test]
+    #[should_panic]
+    fn c6_opening_commitment_domain_lane_mismatch_violates_constraints() {
+        let (air, mut trace, pv, lay) = build();
+        let col = lay.c6_off + lay.c6_lanes_off();
         let w = lay.width;
         for r in 0..trace.values.len() / w {
             trace.values[r * w + col] += Val::ONE;
@@ -2441,7 +2587,11 @@ mod context_constraint_tests {
     #[should_panic]
     fn c6_account_id_lane_mismatch_violates_constraints() {
         let (air, mut trace, pv, lay) = build();
-        let col = lay.c6_off + lay.c6_lanes_off() + C6_FIELD_LANES + LIFECYCLE_BYTES + 16;
+        let col = lay.c6_off
+            + lay.c6_lanes_off()
+            + C6_FIELD_LANES
+            + LIFECYCLE_BYTES
+            + COMMITMENT_NONCE_BYTES;
         let w = lay.width;
         for r in 0..trace.values.len() / w {
             trace.values[r * w + col] += Val::ONE;
@@ -2473,19 +2623,39 @@ mod context_constraint_tests {
             false,
         );
         let (_trace, inst) = generate_full_trace::<
-            Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+            Val,
+            LinLayers,
+            WIDTH,
+            SBOX_DEGREE,
+            SBOX_REGISTERS,
+            HALF_FULL_ROUNDS,
+            PARTIAL_ROUNDS,
         >(&secrets(), air.constants(), 2);
 
         // Independent recompute of the role-root sponge over the role handles.
         let perm_cols = air.layout().perm_cols;
         let role_plan = SpongePlan::new(vec![false; ROLE_HANDLE_LANES], ROLE_ROOT_ELEMS);
         let mut data: Vec<u32> = Vec::new();
-        data.extend(inst.pad_source_commitment.iter().map(|f| f.as_canonical_u32()));
-        data.extend(inst.opening_tuple_commitment.iter().map(|f| f.as_canonical_u32()));
+        data.extend(
+            inst.pad_source_commitment
+                .iter()
+                .map(|f| f.as_canonical_u32()),
+        );
+        data.extend(
+            inst.opening_tuple_commitment
+                .iter()
+                .map(|f| f.as_canonical_u32()),
+        );
         data.extend(inst.masked_projection.iter().map(|f| f.as_canonical_u32()));
         let elems = build_elems::<Val>(&data, &role_plan);
         let (_b, _post, outputs) = run_sponge::<
-            Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+            Val,
+            LinLayers,
+            WIDTH,
+            SBOX_DEGREE,
+            SBOX_REGISTERS,
+            HALF_FULL_ROUNDS,
+            PARTIAL_ROUNDS,
         >(&elems, &role_plan, air.constants(), perm_cols);
         for j in 0..ROLE_ROOT_ELEMS {
             assert_eq!(inst.role_root[j], outputs[j], "role_root[{j}] != recompute");
@@ -2538,7 +2708,13 @@ mod context_constraint_tests {
         );
         let s = secrets();
         let (_t, inst) = generate_full_trace::<
-            Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+            Val,
+            LinLayers,
+            WIDTH,
+            SBOX_DEGREE,
+            SBOX_REGISTERS,
+            HALF_FULL_ROUNDS,
+            PARTIAL_ROUNDS,
         >(&s, air.constants(), 2);
 
         // Independent recompute of the nullifier sponge over DOMAIN ‖ pad_seed ‖ slot.
@@ -2551,7 +2727,13 @@ mod context_constraint_tests {
         data.extend(s.slot.to_le_bytes().iter().map(|&b| b as u32));
         let elems = build_elems::<Val>(&data, &null_plan);
         let (_b, _post, outputs) = run_sponge::<
-            Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+            Val,
+            LinLayers,
+            WIDTH,
+            SBOX_DEGREE,
+            SBOX_REGISTERS,
+            HALF_FULL_ROUNDS,
+            PARTIAL_ROUNDS,
         >(&elems, &null_plan, air.constants(), perm_cols);
         for j in 0..NULLIFIER_ELEMS {
             assert_eq!(inst.nullifier[j], outputs[j], "nullifier[{j}] != recompute");
@@ -2567,7 +2749,13 @@ mod context_constraint_tests {
         let mut s2 = secrets();
         s2.nonce_c1 = core::array::from_fn(|i| s.nonce_c1[i] ^ 0xA5);
         let (_t2, inst2) = generate_full_trace::<
-            Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+            Val,
+            LinLayers,
+            WIDTH,
+            SBOX_DEGREE,
+            SBOX_REGISTERS,
+            HALF_FULL_ROUNDS,
+            PARTIAL_ROUNDS,
         >(&s2, air.constants(), 2);
         assert_ne!(
             inst.pad_source_commitment, inst2.pad_source_commitment,
@@ -2582,7 +2770,13 @@ mod context_constraint_tests {
         let mut s3 = secrets();
         s3.slot ^= 0x1;
         let (_t3, inst3) = generate_full_trace::<
-            Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+            Val,
+            LinLayers,
+            WIDTH,
+            SBOX_DEGREE,
+            SBOX_REGISTERS,
+            HALF_FULL_ROUNDS,
+            PARTIAL_ROUNDS,
         >(&s3, air.constants(), 2);
         assert_ne!(
             inst.nullifier, inst3.nullifier,
@@ -2648,7 +2842,13 @@ mod context_constraint_tests {
             false,
         );
         let (_trace, inst) = generate_full_trace::<
-            Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+            Val,
+            LinLayers,
+            WIDTH,
+            SBOX_DEGREE,
+            SBOX_REGISTERS,
+            HALF_FULL_ROUNDS,
+            PARTIAL_ROUNDS,
         >(&secrets(), air.constants(), 2);
 
         // masked_projection (canonical u16) + syndrome -> reference packer.
@@ -2668,7 +2868,10 @@ mod context_constraint_tests {
             assert_eq!(pv[syndrome_pv_off() + j], inst.syndrome[j]);
         }
         for k in 0..PACKED_WITNESS_COMMITMENT_BYTES {
-            assert_eq!(pv[packed_witness_pv_off() + k], inst.packed_witness_commitment[k]);
+            assert_eq!(
+                pv[packed_witness_pv_off() + k],
+                inst.packed_witness_commitment[k]
+            );
         }
     }
 

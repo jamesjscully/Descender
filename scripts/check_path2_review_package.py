@@ -15,6 +15,7 @@ SPEC_PATH = ROOT / "spec/review_package.md"
 TRACKER_PATH = ROOT / "TRACKER.md"
 LOCAL_GATE = ROOT / "scripts/check_build.sh"
 CI_GATE = ROOT / ".github/workflows/ci.yml"
+REVIEW_REPLAY_GATE = ROOT / "scripts/check_path2_review_replay.sh"
 
 EXPECTED_LANES = (
     "cryptographic_core",
@@ -83,20 +84,47 @@ REQUIRED_ARTIFACTS = {
     "TRACKER.md",
     "formal/kat/path2_direct_theorem_boundary_v1.json",
     "formal/kat/path2_account_creation_proof_boundary_v1.json",
+    "formal/kat/path2_account_creation_frame_kat_boundary_v1.json",
+    "formal/kat/path2_account_creation_frame_kat_vectors_v1.json",
+    "formal/kat/path2_direct_admission_boundary_v1.json",
     "formal/kat/path2_account_stark_fri_qrom_residual_v1.json",
     "formal/kat/path2_account_stark_fri_aok_boundary_v1.json",
+    "formal/kat/path2_pcs_all_query_statement_kat_v1.json",
     "formal/kat/path2_direct_accepted_spend_tuple_evidence_v1.json",
     "formal/kat/path2_direct_accepted_composition_evidence_v1.json",
     "formal/kat/path2_leakage_battery_v1.json",
+    "scripts/check_path2_review_replay.sh",
 }
 REQUIRED_COMMANDS = {
     "python3 scripts/check_path2_review_package.py",
     "bash scripts/check_build.sh",
+    "bash scripts/check_path2_review_replay.sh",
     "python3 scripts/check_path2_leakage_battery.py",
+    "cargo test --manifest-path tools/descender-recursion/Cargo.toml real_proof_query_runs_through_vertical_opening_reduction -- --nocapture",
     "cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_direct_theorem_boundary_manifest",
     "cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_direct_theorem_obligation_vector_consistency",
     "cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_preflight_boundary_consistency",
 }
+REQUIRED_REPLAY_GATE_MARKERS = (
+    "CARGO_BUILD_JOBS:=1",
+    "CARGO_TARGET_DIR:=/tmp/descender-cargo-target",
+    "Descender/Path2HashBudget.lean",
+    "Descender/Path2FullSpendConcrete.lean",
+    "selectedRustDirectQromActionTheoremLinkageReduction_v1",
+    "path2_account_creation_frame_kat_manifest",
+    "path2_account_creation_frame_kat_vectors",
+    "path2_account_creation_frame_kat_consistency",
+    "path2_direct_qrom_action_boundary_manifest",
+    "path2_direct_admission_boundary_manifest",
+    "path2_direct_admission_boundary_consistency",
+    "path2_direct_accepted_spend_tuple_evidence_manifest",
+    "path2_direct_accepted_composition_evidence_manifest",
+    "path2_direct_theorem_obligation_vector_consistency",
+    "path2_account_creation_proof_obligation_vector_consistency",
+    "path2_boundary_manifest_consistency",
+    "path2_preflight_boundary_consistency",
+    "scripts/check_path2_review_package.py",
+)
 
 
 def require(condition: bool, message: str) -> None:
@@ -209,10 +237,12 @@ def main() -> int:
         "current review package manifest and verifier",
         "formal/kat/path2_review_package_v1.json",
         "scripts/check_path2_review_package.py",
+        "scripts/check_path2_review_replay.sh",
     ):
         require(phrase in spec or phrase in tracker, f"missing review package authority phrase: {phrase}")
     require("formal/kat/path2_review_package_v1.json" in tracker, "TRACKER.md must cite review package manifest")
     require("scripts/check_path2_review_package.py" in tracker, "TRACKER.md must cite review package checker")
+    require("scripts/check_path2_review_replay.sh" in tracker, "TRACKER.md must cite review replay gate")
     require(
         "python3 scripts/check_path2_review_package.py" in local_gate,
         "local build gate must run review package checker",
@@ -221,6 +251,10 @@ def main() -> int:
         "python3 scripts/check_path2_review_package.py" in ci_gate,
         "CI must run review package checker",
     )
+    require(REVIEW_REPLAY_GATE.exists(), "review replay gate script is missing")
+    replay_gate = REVIEW_REPLAY_GATE.read_text(encoding="utf-8")
+    for marker in REQUIRED_REPLAY_GATE_MARKERS:
+        require(marker in replay_gate, f"review replay gate is missing marker: {marker}")
 
     snapshot = manifest.get("authority_snapshot")
     require(isinstance(snapshot, dict), "authority_snapshot must be an object")

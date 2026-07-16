@@ -8,13 +8,11 @@
 //!   * the FS `DuplexChallenger` rate (`challenger::RATE` — observes the transcript),
 //!   * the Merkle hash output width (`DIGEST_ELEMS`),
 //!   * the leaf-row hash (`MyHash`) sponge rate.
-//! At the quantum-128 profile they SEPARATE (`research/path2_quantum128_parameterization_v1.md`):
-//! the config keeps `Challenger = DuplexChallenger<Val,Perm,16,8>` (rate 8) but moves
-//! `MyHash` to `PaddingFreeSponge<Perm,16,7,13>` (rate 7, capacity c=9, digest 13). So the
-//! leaf-row hash that `MerkleTreeHidingMmcs` applies to an opened (row ‖ salt) absorbs over
-//! rate 7, NOT the challenger's rate 8. This module gives that primitive its own name
-//! (`LEAF_HASH_RATE`) and a fidelity test against the real `PaddingFreeSponge`, so the
-//! recursion's leaf-hash AIR blocks can be repointed off `challenger::RATE` without guessing.
+//! At the quantum-128 profile the output width separates from the rate
+//! (`research/path2_quantum128_parameterization_v1.md`): both the challenger and `MyHash` use
+//! rate 7/capacity 9, while the Merkle digest is 13 elements. This module gives the leaf-hash
+//! rate its own semantic name (`LEAF_HASH_RATE`) and a fidelity test against the real
+//! `PaddingFreeSponge`, so future changes cannot silently re-conflate sponge rate and digest width.
 
 use crate::inlined_perm;
 use descender_account_stark::{Val, DIGEST_ELEMS, WIDTH};
@@ -23,13 +21,17 @@ use p3_field::PrimeCharacteristicRing;
 extern crate alloc;
 use alloc::vec::Vec;
 
-/// The leaf-row hash (`config::MyHash = PaddingFreeSponge<Perm,16,7,13>`) sponge RATE — DISTINCT
-/// from the FS `DuplexChallenger` rate (`crate::challenger::RATE = 8`) and the Merkle digest width
-/// (`DIGEST_ELEMS = 13`). Capacity is `WIDTH - LEAF_HASH_RATE = 9` (`c/2 ≈ 139`-bit
+/// The leaf-row hash (`config::MyHash = PaddingFreeSponge<Perm,16,7,13>`) sponge RATE. It equals
+/// the current FS challenger rate by profile choice but is semantically distinct from it and from
+/// the Merkle digest width (`DIGEST_ELEMS = 13`). Capacity is
+/// `WIDTH - LEAF_HASH_RATE = 9` (`c/2 ≈ 139`-bit
 /// indifferentiability). Pinned to the leaf config by [`tests::leaf_hash_matches_real_padding_free_sponge`].
 pub const LEAF_HASH_RATE: usize = 7;
 const _: () = assert!(LEAF_HASH_RATE < WIDTH);
-const _: () = assert!(WIDTH - LEAF_HASH_RATE == 9, "q128 leaf-hash capacity must be c = 9");
+const _: () = assert!(
+    WIDTH - LEAF_HASH_RATE == 9,
+    "q128 leaf-hash capacity must be c = 9"
+);
 
 /// Number of Poseidon2 absorb-permutes `PaddingFreeSponge::hash_iter` performs over `m` input
 /// elements at `LEAF_HASH_RATE` (one per full or trailing-partial block; `>= 1`).
@@ -98,13 +100,18 @@ mod tests {
         let real = RealMyHash::new(perm);
         // lengths spanning: < rate, == rate, rate+partial, several full blocks, full multiple.
         for &len in &[1usize, 6, 7, 8, 13, 14, 20, 21, 26] {
-            let input: Vec<Val> =
-                (0..len as u32).map(|i| Val::from_u32(i.wrapping_mul(2654435761).wrapping_add(1))).collect();
+            let input: Vec<Val> = (0..len as u32)
+                .map(|i| Val::from_u32(i.wrapping_mul(2654435761).wrapping_add(1)))
+                .collect();
             let got = leaf_hash_digest(&input);
             let want: [Val; DIGEST_ELEMS] = real.hash_iter(input.iter().copied());
             assert_eq!(got, want, "leaf_hash_digest != real MyHash at len {len}");
             // perm count matches the sponge schedule.
-            assert_eq!(leaf_hash_pre_states(&input).len(), lh_perms(len), "perm count mismatch at len {len}");
+            assert_eq!(
+                leaf_hash_pre_states(&input).len(),
+                lh_perms(len),
+                "perm count mismatch at len {len}"
+            );
         }
     }
 
@@ -113,7 +120,11 @@ mod tests {
     #[test]
     fn salted_layer_leaf_input_schedule() {
         let m = 2 * crate::fri_fold_air::D + descender_account_stark::SALT_ELEMS; // 16 + 4 = 20
-        assert_eq!(lh_perms(m), 3, "salted layer-leaf must be a 3-permute rate-7 sponge");
+        assert_eq!(
+            lh_perms(m),
+            3,
+            "salted layer-leaf must be a 3-permute rate-7 sponge"
+        );
         let input: Vec<Val> = (0..m as u32).map(Val::from_u32).collect();
         assert_eq!(leaf_hash_digest(&input).len(), DIGEST_ELEMS);
     }
@@ -127,7 +138,11 @@ mod tests {
         for k in 0..base.len() {
             let mut t = base.clone();
             t[k] += Val::ONE;
-            assert_ne!(leaf_hash_digest(&t), d, "digest must bind input element {k}");
+            assert_ne!(
+                leaf_hash_digest(&t),
+                d,
+                "digest must bind input element {k}"
+            );
         }
     }
 }

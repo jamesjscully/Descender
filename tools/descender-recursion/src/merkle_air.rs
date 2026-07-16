@@ -176,7 +176,11 @@ pub fn pack_level(
     // Sponge input is the concatenation a ‖ b, where (a, b) = (running, sibling) when bit 0,
     // else (sibling, running) — exactly `fold_step` / `compress([a, b])`.
     let mut combined = [Val::ZERO; ABSORB_LEN];
-    let (a, b) = if index_bit { (sibling, running) } else { (running, sibling) };
+    let (a, b) = if index_bit {
+        (sibling, running)
+    } else {
+        (running, sibling)
+    };
     combined[..DIGEST_ELEMS].copy_from_slice(&a);
     combined[DIGEST_ELEMS..].copy_from_slice(&b);
 
@@ -265,8 +269,11 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for MerkleFoldAir {
         let main = builder.main();
         let local: Vec<AB::Var> = main.current_slice().to_vec();
         let next: Vec<AB::Var> = main.next_slice().to_vec();
-        let pubs: Vec<AB::Expr> =
-            builder.public_values().iter().map(|p| (*p).into()).collect();
+        let pubs: Vec<AB::Expr> = builder
+            .public_values()
+            .iter()
+            .map(|p| (*p).into())
+            .collect();
         let one = AB::Expr::ONE;
 
         let l = |i: usize| -> AB::Expr { local[i].into() };
@@ -350,8 +357,10 @@ mod tests {
             let c = compressor();
             let mut levels = vec![leaves.clone()];
             while leaves.len() > 1 {
-                let next: Vec<Digest> =
-                    leaves.chunks_exact(2).map(|p| c.compress([p[0], p[1]])).collect();
+                let next: Vec<Digest> = leaves
+                    .chunks_exact(2)
+                    .map(|p| c.compress([p[0], p[1]]))
+                    .collect();
                 levels.push(next.clone());
                 leaves = next;
             }
@@ -395,7 +404,11 @@ mod tests {
         for &bit in &[false, true] {
             let row = pack_level(running, sibling, bit, &c);
             let got = level_output(&row);
-            let (a, b) = if bit { (sibling, running) } else { (running, sibling) };
+            let (a, b) = if bit {
+                (sibling, running)
+            } else {
+                (running, sibling)
+            };
             let want = comp.compress([a, b]);
             assert_eq!(got, want, "AIR sponge node (bit={bit}) != real compression");
         }
@@ -414,7 +427,11 @@ mod tests {
             let sibs = tree.auth_path(i);
             let m = trace(leaves[i], i, &sibs);
             let report = check_all_constraints(&MerkleFoldAir, &m, &pubs(leaves[i], root), None);
-            assert!(report.is_ok(), "honest opening for leaf {i} rejected: {} failures", report.failures.len());
+            assert!(
+                report.is_ok(),
+                "honest opening for leaf {i} rejected: {} failures",
+                report.failures.len()
+            );
         }
     }
 
@@ -428,7 +445,10 @@ mod tests {
         let mut sibs = tree.auth_path(3);
         sibs[0][0] += Val::ONE; // tamper the first sibling
         let m = trace(leaves[3], 3, &sibs);
-        assert!(check_all_constraints(&MerkleFoldAir, &m, &pubs(leaves[3], root), None).is_ok() == false);
+        assert!(
+            check_all_constraints(&MerkleFoldAir, &m, &pubs(leaves[3], root), None).is_ok()
+                == false
+        );
     }
 
     /// Forgery: flipping ONE index bit re-places the running digest on the wrong side of the
@@ -459,7 +479,10 @@ mod tests {
             idx >>= 1;
         }
         let m = RowMajorMatrix::new(flat, N_COLS);
-        assert!(check_all_constraints(&MerkleFoldAir, &m, &pubs(leaves[i], root), None).is_ok() == false);
+        assert!(
+            check_all_constraints(&MerkleFoldAir, &m, &pubs(leaves[i], root), None).is_ok()
+                == false
+        );
     }
 
     /// Forgery: breaking the running-digest chain (next.running != this.output) ⇒ rejected by
@@ -476,7 +499,10 @@ mod tests {
         let mut m = RowMajorMatrix::new(flat, N_COLS);
         // Corrupt row 1's running digest (no longer == row 0's output) — breaks the chain.
         m.values[N_COLS + C_RUNNING] += Val::ONE;
-        assert!(check_all_constraints(&MerkleFoldAir, &m, &pubs(leaves[i], root), None).is_ok() == false);
+        assert!(
+            check_all_constraints(&MerkleFoldAir, &m, &pubs(leaves[i], root), None).is_ok()
+                == false
+        );
     }
 
     /// Forgery: a wrong leaf (public value) doesn't match the first-row running digest ⇒ rejected.
@@ -489,7 +515,9 @@ mod tests {
         let m = trace(leaves[2], 2, &sibs);
         let mut bad_leaf = leaves[2];
         bad_leaf[0] += Val::ONE; // claim a different leaf than the trace folds
-        assert!(check_all_constraints(&MerkleFoldAir, &m, &pubs(bad_leaf, root), None).is_ok() == false);
+        assert!(
+            check_all_constraints(&MerkleFoldAir, &m, &pubs(bad_leaf, root), None).is_ok() == false
+        );
     }
 
     /// Forgery: a wrong root (public value) ⇒ rejected by the last-row boundary.
@@ -501,7 +529,10 @@ mod tests {
         let m = trace(leaves[1], 1, &sibs);
         let mut bad_root = tree.root();
         bad_root[0] += Val::ONE;
-        assert!(check_all_constraints(&MerkleFoldAir, &m, &pubs(leaves[1], bad_root), None).is_ok() == false);
+        assert!(
+            check_all_constraints(&MerkleFoldAir, &m, &pubs(leaves[1], bad_root), None).is_ok()
+                == false
+        );
     }
 
     /// Forgery: a tampered INTERIOR perm cell (a committed round post) in a MIDDLE sponge block ⇒
@@ -518,6 +549,9 @@ mod tests {
         let mut m = RowMajorMatrix::new(flat, N_COLS);
         // Corrupt a beginning-full-round post cell of level 0's SECOND sponge block (block 1).
         m.values[perm_off(1) + inlined_perm::C_BEGIN_POST] += Val::ONE;
-        assert!(check_all_constraints(&MerkleFoldAir, &m, &pubs(leaves[4], root), None).is_ok() == false);
+        assert!(
+            check_all_constraints(&MerkleFoldAir, &m, &pubs(leaves[4], root), None).is_ok()
+                == false
+        );
     }
 }

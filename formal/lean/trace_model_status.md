@@ -41,14 +41,11 @@ budgets. That closure was abstract over the game `G`. This file supplies a
    cannot make `successProb ≤ 2^-128` vacuously true. Whatever sampler a
    deployment supplies, the events stay pinned to the real verifier.
 
-5. **Two per-event break bounds genuinely discharged to `0`.**
-   `ConcreteBreakFor` classifies `qromOrDomainSeparationBreak` and
-   `liveSlotLeakageOrKeygenBreak` as `False` *at this layer* (they are charged
-   in the separate hash/QROM sub-game). The boolean events therefore never fire
-   (`qromBreak_never`, `liveSlotLeakageBreak_never`), so their probability is
-   provably `0` (`qromBreakProb_eq_zero`, `liveSlotLeakageBreakProb_eq_zero`) via
-   `breakProb_eq_zero_of_never`. This is a real `never`-proof of a real boolean
-   event, not a vacuous `True`/empty-type cheat.
+5. **All nine cryptographic breaks remain explicit.**
+   `ConcreteBreakFor` now reads `qromOrDomainSeparationBreak` and
+   `liveSlotLeakageOrKeygenBreak` from the reduction-game outcome carried with
+   the concrete signature body. The trace model no longer assigns either event
+   probability zero merely because its external subgame coupling is absent.
 
 ## Remaining obligations (named, NOT `sorry`, NOT faked)
 
@@ -58,8 +55,7 @@ conclusion for the faithful game with the following as **explicit hypotheses**:
 | Obligation | Hypothesis in the theorem | Why still open |
 |---|---|---|
 | Accepted-spend forgery bound `≤ 2^-129` | `hAccept` + `hAcceptBudget` | This is the core SIS / response-link-coded hardness reduction. It is the multi-week WS7 forgery reduction and is never proven unconditionally — it is a standard cryptographic assumption that a reduction must price. |
-| The 7 cryptographically-charged named breaks `≤ 2^-133` each | `hBreak` + `hBreakBudget` | `creationTimeHiddenSourceSoundnessBreak`, `prevalidationLeafBindingBreak`, `prevalidationRegistryBindingBreak`, `prevalidationDataAvailabilityBreak`, `postchallengeSlotCreationOrRewriteBreak`, `checkedCoreMessageBindingBreak`, `slotReplayOrRollbackBreak`. Each requires its own QROM / hash-collision / domain-separation / consensus-rollback bound. These are the per-event reductions WS7 owns. |
-| `qromOrDomainSeparationBreak`, `liveSlotLeakageOrKeygenBreak` | satisfied for free | Already proven `= 0 ≤ 2^-133` here. |
+| The 9 cryptographically-charged named breaks `≤ 2^-133` each | `hBreak` + `hBreakBudget` | The seven structural break classes plus `qromOrDomainSeparationBreak` and `liveSlotLeakageOrKeygenBreak`. Each requires its own reduction or a proved coupling to a separately priced subgame. |
 
 ### Why the open items cannot be discharged now
 
@@ -69,7 +65,7 @@ conclusion for the faithful game with the following as **explicit hypotheses**:
   if written.
 - **Mathematical depth.** Each cryptographic break bound is a genuine
   QROM/collision argument, not a Mathlib arithmetic fact. Producing a sound
-  `breakProb b ≤ 2^-133` for the seven active breaks is the multi-week reduction
+  `breakProb b ≤ 2^-133` for the nine active breaks is the multi-week reduction
   work, not a one-file increment.
 - **Honesty constraint.** Discharging them with a toy distribution that makes the
   events impossible would be exactly the vacuous `G` the task forbids. The
@@ -80,7 +76,7 @@ conclusion for the faithful game with the following as **explicit hypotheses**:
 
 1. Supply a SIS / forking reduction bounding
    `(concreteNumericGame …).acceptedSpendProb ≤ 2^-129` (EasyCrypt or Lean).
-2. Supply per-break QROM/hash/rollback reductions bounding the seven active
+2. Supply per-break QROM/hash/rollback reductions bounding the nine active
    `breakProb b ≤ 2^-133`.
 3. Feed both into `concreteNumericClosure_of_cryptographic_bounds` to close the
    faithful concrete game at `2^-128` with no remaining hypothesis.

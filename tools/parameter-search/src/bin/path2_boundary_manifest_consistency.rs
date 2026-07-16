@@ -301,15 +301,25 @@ fn expect_direct_accepted_tuple_field_evidence_identity(
                 &format!("{label}.boundary.obligation_rows"),
             )?;
             let imported_closed = !source_open
-                && ((obligation_id == "direct_obligation_consume_once"
-                    && acceptance_hypothesis
-                        == "lifecycle_transition_consumes_authorization_once")
+                && ((obligation_id == "direct_obligation_leaf_canonical_live"
+                    && acceptance_hypothesis == "leaf_is_canonical_and_live")
+                    || (obligation_id == "direct_obligation_evidence_leaf_bindings"
+                        && acceptance_hypothesis == "evidence_envelope_matches_leaf_bindings")
+                    || (obligation_id == "direct_obligation_admission_namespace"
+                        && acceptance_hypothesis
+                            == "direct_admission_namespace_contains_exact_tuple")
+                    || (obligation_id == "direct_obligation_consume_once"
+                        && acceptance_hypothesis
+                            == "lifecycle_transition_consumes_authorization_once")
                     || (obligation_id == "direct_obligation_checked_core_frame_binding"
                         && acceptance_hypothesis
                             == "checked_core_challenge_binds_public_spend_context")
                     || (obligation_id == "direct_obligation_slot_authorization_digest"
                         && acceptance_hypothesis
-                            == "slot_authorization_digest_matches_canonical_leaf"));
+                            == "slot_authorization_digest_matches_canonical_leaf")
+                    || (obligation_id == "direct_obligation_public_rejection"
+                        && acceptance_hypothesis
+                            == "rejection_is_deterministic_public_and_state_preserving"));
             all_referenced_open &= source_open;
             all_referenced_open_or_imported &= source_open || imported_closed;
         }
@@ -417,6 +427,7 @@ fn check_consistency() -> Result<(), String> {
         "formal/kat/path2_account_creation_proof_boundary_v1.json",
     )?;
     let lifecycle = read_json(&root, "formal/kat/path2_direct_lifecycle_boundary_v1.json")?;
+    let admission = read_json(&root, "formal/kat/path2_direct_admission_boundary_v1.json")?;
     let direct = read_json(&root, "formal/kat/path2_direct_theorem_boundary_v1.json")?;
     let accepted_proof_boundary = read_json(
         &root,
@@ -432,6 +443,7 @@ fn check_consistency() -> Result<(), String> {
     )?;
     let proof_manifest = get(&proof, &["manifest"])?;
     let lifecycle_manifest = get(&lifecycle, &["manifest"])?;
+    let admission_manifest = get(&admission, &["manifest"])?;
     let direct_manifest = get(&direct, &["manifest"])?;
     let accepted_proof_boundary_evidence =
         get(&accepted_proof_boundary, &["manifest", "evidence"])?;
@@ -522,6 +534,142 @@ fn check_consistency() -> Result<(), String> {
         &lifecycle_profile_verification_evidence,
         "standalone lifecycle profile verification evidence",
     )?;
+
+    expect_eq(
+        get(
+            admission_manifest,
+            &["digests", "direct_admission_boundary_report_digest"],
+        )?,
+        "admission.manifest.digests.direct_admission_boundary_report_digest",
+        get(
+            direct_manifest,
+            &["digests", "direct_admission_boundary_report_digest"],
+        )?,
+        "direct.manifest.digests.direct_admission_boundary_report_digest",
+    )?;
+    for (standalone_path, direct_path, label) in [
+        (
+            vec!["authority_snapshot", "selected_target_profile_id"],
+            vec!["direct_admission_boundary", "profile_id"],
+            "selected target profile id",
+        ),
+        (
+            vec!["authority_snapshot", "storage_class"],
+            vec!["direct_admission_boundary", "storage_class"],
+            "admission storage class",
+        ),
+        (
+            vec!["consensus_state_contract", "namespace_key_fields"],
+            vec!["direct_admission_boundary", "namespace_key_fields"],
+            "admission namespace key fields",
+        ),
+        (
+            vec!["consensus_state_contract", "record_value_fields"],
+            vec!["direct_admission_boundary", "record_value_fields"],
+            "admission record value fields",
+        ),
+        (
+            vec!["authority_snapshot", "verified_public_anchors_type"],
+            vec!["direct_admission_boundary", "verified_public_anchors_type"],
+            "verified public anchors type",
+        ),
+        (
+            vec!["authority_snapshot", "verified_nullifier_decode_endpoint"],
+            vec![
+                "direct_admission_boundary",
+                "verified_nullifier_decode_endpoint",
+            ],
+            "verified nullifier decode endpoint",
+        ),
+        (
+            vec!["authority_snapshot", "verified_admission_candidate_type"],
+            vec![
+                "direct_admission_boundary",
+                "verified_admission_candidate_type",
+            ],
+            "verified admission candidate type",
+        ),
+        (
+            vec![
+                "authority_snapshot",
+                "verified_admission_candidate_endpoint",
+            ],
+            vec![
+                "direct_admission_boundary",
+                "verified_admission_candidate_endpoint",
+            ],
+            "verified admission candidate endpoint",
+        ),
+        (
+            vec!["authority_snapshot", "nullifier_registry_key_type"],
+            vec!["direct_admission_boundary", "nullifier_registry_key_type"],
+            "nullifier registry key type",
+        ),
+        (
+            vec!["authority_snapshot", "nullifier_encoding"],
+            vec!["direct_admission_boundary", "nullifier_encoding"],
+            "nullifier encoding",
+        ),
+        (
+            vec!["authority_snapshot", "nullifier_block_admission_endpoint"],
+            vec![
+                "direct_admission_boundary",
+                "nullifier_block_admission_endpoint",
+            ],
+            "nullifier block admission endpoint",
+        ),
+        (
+            vec!["authority_snapshot", "restore_anchor_type"],
+            vec!["direct_admission_boundary", "restore_anchor_type"],
+            "restore anchor type",
+        ),
+        (
+            vec!["authority_snapshot", "restore_anchor_endpoint"],
+            vec!["direct_admission_boundary", "restore_anchor_endpoint"],
+            "restore anchor endpoint",
+        ),
+        (
+            vec!["authority_snapshot", "restore_endpoint"],
+            vec!["direct_admission_boundary", "restore_endpoint"],
+            "restore endpoint",
+        ),
+    ] {
+        expect_eq(
+            get(admission_manifest, &standalone_path)?,
+            &format!("admission.manifest.{label}"),
+            get(direct_manifest, &direct_path)?,
+            &format!("direct.manifest.{label}"),
+        )?;
+    }
+    for flag in [
+        "exact_namespace_tuple_key_pinned",
+        "canonical_leaf_bytes_stored_directly",
+        "leaf_and_evidence_digests_rechecked",
+        "spend_reads_canonical_consensus_record",
+        "missing_record_rejected",
+        "corrupt_record_fails_closed",
+        "duplicate_admission_rejected",
+        "d2_finalized_head_reorg_semantics",
+        "verified_creation_nullifier_anchor_bound",
+        "sovereign_nullifier_registry_consensus_wired",
+        "sovereign_nullifier_block_atomic",
+        "sovereign_nullifier_d2_reorg_index_rebuild_verified",
+        "pad_seed_reorg_safe_uniqueness_selected_state_reduction_imported",
+        "snapshot_restores_nullifier_registry",
+        "snapshot_restore_anchor_bound",
+        "target_chain_data_availability_instantiated",
+        "admission_closure_lean_imported",
+    ] {
+        expect_eq(
+            get(admission_manifest, &["consensus_state_contract", flag])?,
+            &format!("admission.manifest.consensus_state_contract.{flag}"),
+            get(
+                direct_manifest,
+                &["direct_admission_boundary", "coverage", flag],
+            )?,
+            &format!("direct.manifest.direct_admission_boundary.coverage.{flag}"),
+        )?;
+    }
 
     expect_eq(
         get(
@@ -652,6 +800,33 @@ fn check_consistency() -> Result<(), String> {
         ],
         false,
     )?;
+    for flag in [
+        "composition_theorem_reduction_imported",
+        "composition_external_hypotheses_explicit",
+        "composition_capstone_under_explicit_named_assumptions_imported",
+        "direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle",
+        "direct_evidence_leaf_binding_closed_by_frozen_kat",
+        "direct_admission_namespace_and_data_availability_imported",
+        "direct_admission_namespace_closed_by_sovereign_state",
+        "direct_public_rejection_state_preserving_imported",
+        "direct_public_rejection_classifier_total",
+        "direct_public_rejection_all_classes_kat_covered",
+        "direct_public_rejection_panic_fail_closed_kat_covered",
+        "direct_public_rejection_all_public_objects_kat_covered",
+        "direct_public_rejection_target_client_mapping_complete",
+        "direct_public_rejection_consensus_kat_hypothesis_explicit",
+    ] {
+        expect_bool(
+            direct_manifest,
+            &[
+                "direct_theorem_boundary",
+                "direct_obligation_vector_corpus_evidence",
+                "audit_summary",
+                flag,
+            ],
+            true,
+        )?;
+    }
     expect_u64(
         direct_manifest,
         &[
@@ -686,7 +861,7 @@ fn check_consistency() -> Result<(), String> {
             "coverage",
             "closure_dependency_open_obligation_evidence_count",
         ],
-        6,
+        2,
     )?;
     expect_u64(
         direct_manifest,
@@ -695,7 +870,7 @@ fn check_consistency() -> Result<(), String> {
             "coverage",
             "closure_dependency_open_support_evidence_count",
         ],
-        6,
+        2,
     )?;
     expect_bool(
         direct_manifest,
@@ -716,6 +891,26 @@ fn check_consistency() -> Result<(), String> {
             "direct_theorem_boundary",
             "coverage",
             "every_closure_dependency_has_open_support_surface",
+        ],
+        true,
+    )?;
+    expect_bool(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "direct_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "direct_admission_namespace_and_data_availability_imported",
+        ],
+        true,
+    )?;
+    expect_bool(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "direct_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "direct_admission_namespace_closed_by_sovereign_state",
         ],
         true,
     )?;
@@ -1204,7 +1399,7 @@ fn check_consistency() -> Result<(), String> {
             "audit_summary",
             "fri_qrom_domain_case_count",
         ],
-        5,
+        7,
     )?;
     expect_u64(
         proof_manifest,
@@ -1214,7 +1409,7 @@ fn check_consistency() -> Result<(), String> {
             "audit_summary",
             "payload_kat_case_count",
         ],
-        14,
+        16,
     )?;
     expect_bool(
         proof_manifest,
@@ -1917,7 +2112,67 @@ fn check_consistency() -> Result<(), String> {
             "direct_theorem_boundary",
             "direct_obligation_vector_corpus_evidence",
             "audit_summary",
+            "direct_leaf_canonical_live_imported",
+        ],
+        true,
+    )?;
+    expect_bool(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "direct_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "direct_leaf_canonical_live_lifecycle_and_kat_hypothesis_explicit",
+        ],
+        true,
+    )?;
+    expect_bool(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "direct_obligation_vector_corpus_evidence",
+            "audit_summary",
             "slot_authorization_digest_imported",
+        ],
+        true,
+    )?;
+    expect_bool(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "direct_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "direct_evidence_leaf_binding_imported",
+        ],
+        true,
+    )?;
+    expect_bool(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "direct_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "direct_evidence_leaf_binding_proof_boundary_hypothesis_explicit",
+        ],
+        true,
+    )?;
+    expect_bool(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "direct_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "direct_admission_namespace_membership_imported",
+        ],
+        true,
+    )?;
+    expect_bool(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "direct_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "direct_admission_namespace_data_availability_hypothesis_explicit",
         ],
         true,
     )?;
@@ -1948,6 +2203,26 @@ fn check_consistency() -> Result<(), String> {
             "direct_obligation_vector_corpus_evidence",
             "audit_summary",
             "lifecycle_transition_profile_verified",
+        ],
+        true,
+    )?;
+    expect_bool(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "direct_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "qrom_action_theorem_linkage_reduction_imported",
+        ],
+        true,
+    )?;
+    expect_bool(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "direct_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "qrom_action_review_hypothesis_explicit",
         ],
         true,
     )?;
@@ -2084,8 +2359,8 @@ fn check_consistency() -> Result<(), String> {
     for (field, expected) in [
         ("accepted_tuple_field_evidence_count", 11),
         ("accepted_tuple_field_evidence_present_count", 11),
-        ("accepted_tuple_field_open_obligation_count", 6),
-        ("accepted_tuple_field_imported_closure_count", 2),
+        ("accepted_tuple_field_open_obligation_count", 1),
+        ("accepted_tuple_field_imported_closure_count", 9),
     ] {
         expect_u64(
             direct_manifest,
@@ -2220,10 +2495,7 @@ fn check_consistency() -> Result<(), String> {
         accepted_direct_composition_evidence,
         "direct.manifest.direct_theorem_boundary",
     )?;
-    for flag in [
-        "every_positive_acceptance_hypothesis_has_accepted_path_evidence",
-        "public_rejection_hypothesis_deferred_to_rejection_kats",
-    ] {
+    for flag in ["every_positive_acceptance_hypothesis_has_accepted_path_evidence"] {
         expect_bool(
             direct_manifest,
             &[
@@ -2236,6 +2508,7 @@ fn check_consistency() -> Result<(), String> {
         )?;
     }
     for flag in [
+        "public_rejection_hypothesis_deferred_to_rejection_kats",
         "composition_theorem_instantiated",
         "account_creation_proof_boundary_verified",
         "deployment_ready",

@@ -226,7 +226,7 @@ spend spine -> write the 176-row AIR using Poseidon2/x^5 throughout.
   before the full ~176-row relation: role-restriction/commitment (C1/C6),
   mask-consistency, lifecycle/context, checked-core-compat.
 
-- **C1 pad-source commitment-opening, composed with shared pad_seed — BUILT + tested.**
+- **Historical q12289 C1 pad-source commitment-opening, composed with shared pad_seed — BUILT + tested.**
   `tools/parameter-search/src/poseidon2_commit_air_q12289.rs` + extension of the
   composed relation. New reference `pad_source_commitment_poseidon2(pad_seed,
   blinding_nonce)` = Poseidon2 sponge over 32 pad_seed + 16 nonce byte-lanes,
@@ -240,7 +240,7 @@ spend spine -> write the 176-row AIR using Poseidon2/x^5 throughout.
   pad_seed_digest. Remaining: C6 opening-tuple/other role commitments, then
   mask-consistency / lifecycle-context / checked-core-compat classes.
 
-- **C6 opening-tuple commitment, composed with shared account_projection — BUILT + tested.**
+- **Historical q12289 C6 opening-tuple commitment, composed with shared account_projection — BUILT + tested.**
   `tools/parameter-search/src/poseidon2_opening_tuple_commit_air_q12289.rs` +
   relation extension. New reference `opening_tuple_commitment_poseidon2(
   account_projection, lifecycle_anchor, blinding_nonce)` = Poseidon2 over the 6

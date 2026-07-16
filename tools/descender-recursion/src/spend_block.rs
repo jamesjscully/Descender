@@ -771,7 +771,7 @@ mod tests {
         type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
         type DftT = Radix2DitParallel<Val>;
         type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
-        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 7>;
         type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
 
         let perm: Perm = default_koalabear_poseidon2_16();
@@ -862,7 +862,7 @@ mod tests {
         type ChallengeMmcs = ExtensionMmcs<Val, descender_account_stark::Challenge, ValMmcs>;
         type DftT = Radix2DitParallel<Val>;
         type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
-        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 7>;
         type OuterConfig = StarkConfig<Pcs, descender_account_stark::Challenge, MyChallenger>;
 
         let perm: Perm = default_koalabear_poseidon2_16();

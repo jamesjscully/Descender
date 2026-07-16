@@ -29,7 +29,7 @@ fn manifest_body() -> Result<Value, String> {
         "corpus_id": "Descender.Path2.AccountCreationFrameKatBoundary.v1",
         "corpus_version": 1,
         "profile_id": PROFILE,
-        "frozen_status": "draft_boundary_manifest",
+        "frozen_status": "frozen_boundary_manifest",
         "generator": {
             "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_frame_kat_manifest",
             "source": "tools/parameter-search/src/bin/path2_account_creation_frame_kat_manifest.rs"

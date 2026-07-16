@@ -34,6 +34,10 @@ bincode = "1"
 # Test-only: deterministic round-constants for the gadget-2 Poseidon2 compression AIR
 # integration check (RoundConstants::from_rng with a fixed SmallRng seed).
 rand = "0.10"
+# Test-only: freeze the genuine relation-v3 all-query KAT inside a one-worker
+# pool. Plonky3's parallel PoW grinder uses find-any semantics, so a fixed
+# proof-randomness seed alone does not select a deterministic witness.
+rayon = "1"
 
 [profile.release]
 opt-level = 3

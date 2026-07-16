@@ -153,7 +153,14 @@ pub fn eval_perm_block<
     const PARTIAL_ROUNDS: usize,
 >(
     builder: &mut AB,
-    pcols: &Poseidon2Cols<AB::Var, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS>,
+    pcols: &Poseidon2Cols<
+        AB::Var,
+        WIDTH,
+        SBOX_DEGREE,
+        SBOX_REGISTERS,
+        HALF_FULL_ROUNDS,
+        PARTIAL_ROUNDS,
+    >,
     beginning_full_rc: &[[AB::F; WIDTH]; HALF_FULL_ROUNDS],
     partial_rc: &[AB::F; PARTIAL_ROUNDS],
     ending_full_rc: &[[AB::F; WIDTH]; HALF_FULL_ROUNDS],
@@ -311,7 +318,15 @@ where
             }
         }
 
-        let post = eval_perm_block::<AB, LL, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS>(
+        let post = eval_perm_block::<
+            AB,
+            LL,
+            WIDTH,
+            SBOX_DEGREE,
+            SBOX_REGISTERS,
+            HALF_FULL_ROUNDS,
+            PARTIAL_ROUNDS,
+        >(
             builder,
             pcols,
             beginning_full_rc,
@@ -379,7 +394,11 @@ pub fn run_sponge<
         } else if p < spec.n_absorb {
             for r in 0..RATE {
                 let pos = p * RATE + r;
-                let add = if pos < spec.padded_len() { elems[pos] } else { F::ZERO };
+                let add = if pos < spec.padded_len() {
+                    elems[pos]
+                } else {
+                    F::ZERO
+                };
                 state[r] = prev_post[r] + add;
             }
             for c in RATE..WIDTH {
@@ -399,9 +418,15 @@ pub fn run_sponge<
             HALF_FULL_ROUNDS,
             PARTIAL_ROUNDS,
         > = block.as_mut_slice().borrow_mut();
-        generate_trace_rows_for_perm::<F, LL, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS>(
-            pcols, state, constants,
-        );
+        generate_trace_rows_for_perm::<
+            F,
+            LL,
+            WIDTH,
+            SBOX_DEGREE,
+            SBOX_REGISTERS,
+            HALF_FULL_ROUNDS,
+            PARTIAL_ROUNDS,
+        >(pcols, state, constants);
         let post = unsafe {
             let pp = &pcols.ending_full_rounds[HALF_FULL_ROUNDS - 1].post;
             core::array::from_fn::<F, WIDTH, _>(|c| pp[c].assume_init())

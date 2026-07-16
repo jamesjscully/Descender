@@ -79,10 +79,12 @@ closure-dependency evidence rows, and current open blocker for this theorem
 boundary.
 `formal/kat/path2_direct_theorem_boundary_v1.json` is regenerated from that
 report, the current `Path2DirectQromActionBoundaryReportV1`, the current
-`Path2DirectLifecycleBoundaryReportV1`, and the current
+`Path2DirectLifecycleBoundaryReportV1`, the current
+`Path2DirectAdmissionBoundaryReportV1`, and the current
 `Path2AccountCreationProofBoundaryReportV1` by a local and CI gate, so the
 direct theorem target, conclusion, QROM/action digest, lifecycle digest,
-proof-boundary digest, and selected field groups cannot drift silently. The
+admission-state digest, proof-boundary digest, and selected field groups cannot
+drift silently. The
 production report validator separately rejects weakened
 acceptance-hypothesis/obligation-row coverage, missing pinned accepted-evidence
 hooks, missing direct closure-dependency rows, unexpectedly closed theorem
@@ -91,11 +93,11 @@ direct theorem blocker drift. The boundary and preflight consistency gates also
 compare each direct closure-dependency evidence row field-for-field against its
 source closure-dependency row. The
 `formal/kat/path2_direct_theorem_obligation_vectors_v1.json` corpus records one
-digest-pinned audit case for each open direct-theorem obligation and binds that
-row list to the current QROM/action, lifecycle, and account-creation
+digest-pinned audit case for each direct-theorem obligation and binds that
+row list to the current QROM/action, lifecycle, admission-state, and account-creation
 proof-boundary reports while also carrying the direct closure-dependency rows
 and derived evidence rows that tie the nine accepted-tuple hypotheses to their
-still-open source reports/support surfaces. It keeps composition,
+open or theorem-scoped imported source reports/support surfaces. It keeps composition,
 imported-boundary verification, and deployment flags false.
 The Lean concrete full-spend carrier mirrors this: `AccountCreationAccepted`
 now requires `AccountCreationProofBoundaryEvidenceAccepted`, so an accepted
@@ -144,11 +146,12 @@ QROM/action, lifecycle, and proof-boundary report digests, and the public
 `accept_spend_slot` result. It also carries an eleven-row
 accepted-tuple-field evidence checklist tying every direct theorem tuple field
 to its accepted-path evidence source, accepted-path check, imported boundary
-report when applicable, and still-open direct theorem obligation. The
-`verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1`
-hook runs the real direct verifier, snapshots the consume-once transition, and
-checks the public result wrapper independently accepts the same slot from the
-same before-state. The
+report when applicable, and open or theorem-scoped imported direct obligation. The
+`verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_from_sovereign_state_v1`
+hook loads and rechecks the canonical admission record from
+`Path2SovereignDirectAdmissionStateV1`, runs the real direct verifier, snapshots
+the consume-once transition, and checks the public result wrapper independently
+accepts the same slot from the same before-state. The
 `Path2DirectAcceptedCompositionEvidenceV1` feature-gated evidence path now
 uses the selected account-STARK creation fixture and the checked-core direct
 spend verifier together, binding the accepted creation proof-boundary evidence,
@@ -202,6 +205,24 @@ theorem and does not verify the account-creation proof family. The
 feature-gated `path2_direct_accepted_composition_evidence_binds_creation_and_spend`
 test gates the current accepted creation-to-spend composition evidence while
 keeping composition, proof-boundary verification, and deployment flags false.
+The Lean carrier now also proves
+`selectedRustDirectModeAuthorizationTheoremReduction_v1`, which composes the
+selected-Rust bound slot, prechallenge admission, checked-core binding, and
+consume-once transition into one product conclusion while naming account-STARK
+proof-family review, QROM/action review, deterministic public rejection,
+signer/keygen review, and external coded-SIS/lattice-core review as explicit
+hypotheses. `Path2DirectTheoremBoundaryReportV1` pins that reduction and its
+explicit-hypothesis shape, but keeps `composition_theorem_instantiated = false`
+until those hypotheses are supplied by accepted proof/review evidence.
+The status-neutral capstone
+`selectedRustDirectModeAuthorizationClosedUnderExplicitAssumptions_v1` now
+specializes that reduction using the five accepted-boundary proof-family
+residual reductions, an explicit post-quantum target, the selected sovereign F2
+state invariant, reviewed QROM/action, signer/keygen, and external core
+assumptions. The report records
+`composition_capstone_under_explicit_named_assumptions_imported = true`; this is
+not composition instantiation, proof-family verification, external review, or
+deployment readiness.
 The
 public-rejection obligation row now records
 `Path2PublicResultClassV1`, `Path2DirectSpendPublicResultV1`, the direct spend
@@ -218,15 +239,70 @@ failures with panic-free rejection, public class mapping, and no consume-once
 mutation. `path2_direct_single_slot_spend_public_result_wrapper_hides_internal_diagnostics`
 checks accept, malformed, checked-core, and lifecycle outcomes through the public
 wrapper without internal diagnostic exposure and with rejection-state rollback.
-This does not replace panic-free malformed-input KATs for every public object,
-state-no-mutation coverage for every direct-mode rejection, or full
-target-chain consensus-client mapping still required for closure. The
+The Lean model now proves
+`selectedRustDirectPublicRejectionStatePreserving_v1`: for the selected wrapper
+control shape, every explicit verifier error and caught panic returns the exact
+pre-call state. `Path2DirectTheoremBoundaryReportV1` source-pins that theorem to
+the Rust wrapper's two restore branches, exhaustive eleven-class public result
+table, classifier fallback, and fail-closed panic class. It records the local
+state-preservation and classifier-totality imports while keeping the full
+consensus-KAT hypothesis explicit.
+`path2_direct_public_rejection_classes_are_exhaustive_and_state_preserving`
+now exercises every one of the nine rejection classes through the centralized
+rollback helper, mutates state before each injected rejection, checks exact
+rollback, checks panic-to-internal-error rollback, and keeps a success mutation
+as the negative control.
+`PATH2_DIRECT_PUBLIC_OBJECT_MUTATION_KAT_CASES_V1` names all nine typed public
+request/state objects consumed by the direct spend wrapper, and
+`path2_direct_all_consensus_visible_public_object_mutations_are_panic_free`
+executes one semantic mutation per object through the real wrapper while
+checking the selected client result and exact consume-once rollback.
+`PATH2_SOVEREIGN_DIRECT_CLIENT_MAPPING_ROWS_V1` pins all eleven result classes
+to unique consensus codes and the ADR-0009/ADR-0010 sovereign-rollup state
+effects; `path2_sovereign_direct_client_mapping_is_exhaustive_and_state_preserving`
+checks every rejection maps to an invalid transaction with no state mutation.
+Lean proves `selectedRustDirectDeterministicPublicRejectionClosed_v1` and
+`selectedRustDirectModeAuthorizationWithClosedPublicRejectionReduction_v1`, so
+the theorem-scoped public-rejection obligation is closed and the boundary flags
+for all typed public objects and target-client mapping are true.
+The account-creation frame corpus is also frozen for the current leaf/evidence
+boundary: one honest frame plus seventeen one-surface mutation/rejection cases
+cover the current frame rows, all fifteen duplicated leaf/evidence binding
+fields, public rejection classes, and unit-test coverage. The generated
+boundary and vector artifacts set `frozen_corpus_complete = true` while keeping
+`deployment_ready = false`. Lean packages the accepted leaf and evidence facts
+as `SelectedRustDirectLeafAndEvidenceClosure` and proves
+`selectedRustDirectLeafAndEvidenceClosure_of_concreteSpendAccepts`; the direct
+boundary additionally requires the verified ADR-0010 D2 lifecycle profile.
+Consequently `direct_obligation_leaf_canonical_live` and
+`direct_obligation_evidence_leaf_bindings` are theorem-scoped closed rows. The
+nine-row direct audit is now two open and seven closed. The selected ADR-0009
+sovereign profile stores the full canonical leaf record in consensus state under
+the exact `(account_id, account_state_root_before,
+slot_authorization_digest)` key, rechecks leaf and evidence digests on spend,
+rejects missing, corrupt, and duplicate records, and applies ADR-0010 D2
+finalized-head reorg semantics. `Path2DirectAdmissionBoundaryReportV1`,
+`formal/kat/path2_direct_admission_boundary_v1.json`, and
+`selectedRustDirectAdmissionNamespaceAndDataAvailabilityClosure_of_concreteSpendAccepts`
+therefore close the theorem-scoped admission namespace/data-availability row.
+The remaining open rows are creation-before-challenge/proof-family consumption
+and checked-core QROM/action acceptance.
+This does not claim the broader consensus verifier is verified: byte-string
+parser corpora, positive byte-for-byte admission/spend vectors, target-specific
+database integration and external storage review, resource/gas profiles, and
+adoption-specific client integration remain open. The
 QROM/action report pins the checked-core direct query budget, 182-bit priced
 transcript term,
 246-bit full challenge term, 163-bit Fq12 action floor, direct-mode `q_chal`
-and inactive `q_batch` status, and generated QROM artifacts, while keeping
-theorem import, external review, theorem-linked QROM/action closure, and
-deployment readiness false. The lifecycle report pins the local
+and inactive `q_batch` status, and generated QROM artifacts. The concrete Lean
+carrier independently states deterministic checked-core validity, imports the
+production direct verifier's canonical decode, commitment, challenge, equation,
+public-fiber, pad-opening, and slot checks, proves accepted implies valid or a
+concrete equation/frame/domain-QROM/parser break, and couples the domain/QROM
+branch to the direct trace event. The report records those local links as
+present while keeping the external QROM/action assumption, reviewed event
+bound, theorem budget import, external review, theorem-linked QROM/action
+closure, and deployment readiness false. The lifecycle report pins the local
 consume-once successor-state model, replay rejection, spent-slot ledger,
 reorg-burn support, restore-anchor support, recovery-burn support,
 snapshot-recovery support, file-store recovery support, and
@@ -335,8 +411,10 @@ Admission acceptance requires all of:
 - `DeployedCreationAnchors` equality for account id, slot id, state root,
   lifecycle anchor, raw verifier version, masked projection,
   packed-witness commitment, and the named role-root export bridge;
-- zero-knowledge/no-export semantics for pad source, projection, syndrome,
-  opening tuple, witness, mask, and private trace material;
+- zero-knowledge/no-export semantics for pad seed, account projection,
+  opening-tuple preimage, authorization witness, mask, commitment nonce, and
+  private trace material; the decoded public statement's checked-core syndrome
+  is an explicitly allowed public authorization anchor;
 - QROM/domain separation for the account STARK transcript, Poseidon2/FRI
   challenge flow, and deployed digest frames;
 - deterministic public rejection for malformed, unavailable, or
@@ -362,15 +440,17 @@ replay-payload digest chain and deployed-anchor public statement comparison
 without treating those flags as a theorem closure. It also pins a structured
 proof-obligation row list for honest sampler soundness, authorization-class binding,
 no-postchallenge timing, simulator/no-export closure, FRI/AoK extraction,
-FRI/QROM residual pricing, frozen payload KATs, and production-gate review. Six
-rows remain open, while the no-postchallenge timing and frozen payload-KAT rows
-are closed by imported evidence. Each open row carries a named break and the
+FRI/QROM residual pricing, frozen payload KATs, and production-gate review. Four
+rows remain open, while honest sampler soundness, authorization-class binding,
+no-postchallenge timing, and frozen payload KATs are closed by imported evidence.
+Each open row carries a named break and the
 fail-closed account-creation proof-boundary blocker. A separate
 closure-dependency row table maps those eight proof obligations to their source
 report flag groups and, where
 applicable, the selected account-STARK residual matrix row. Derived
-closure-dependency evidence rows pin each dependency to the open proof
-obligation, open source support surface, named break, and blocker; the production
+closure-dependency evidence rows pin each dependency to its open obligation or
+imported theorem-scoped closure, source support surface, named break, and
+blocker; the production
 validator rejects the proof-boundary report if a false sampler, no-export,
 FRI/AoK, FRI/QROM, payload-KAT, or production-gate flag is not backed by the
 expected open obligation and support surface. The boundary and preflight gates
@@ -459,7 +539,7 @@ current vector case ids where they exist, public rejection classes for rejection
 vectors, closure target, and blocker; it records that all ten requirements have
 current frame-KAT, account-STARK payload, no-export audit, or FRI/QROM domain
 audit vectors. The FRI/QROM domain audit corpus pins the selected proof-family
-domain, Poseidon2 width and sponge floor, FRI challenge schedule, checked-core
+domain, Poseidon2 width and Merkle/MMCS sponge floor, FRI challenge schedule, checked-core
 QROM budget import, and fail-closed open theorem flags; it is not an
 account-STARK transcript QROM theorem or residual-pricing closure. The
 sampler/timing report pins the honest-create
@@ -541,6 +621,14 @@ flag, so the current boundary remains fail-closed.
 pad-seed seam reduction from a global admission registry plus the ADR-0010 D2
 finalized-head lifecycle facts into that pad-seed uniqueness shape; it is
 lifecycle/proof-boundary accounting, not deployment readiness.
+For the selected sovereign state, the stronger adapter
+`selectedRustSovereignPadSeedReorgSafeUniqueness_of_verifiedNullifierRegistry_v1`
+reduces deterministic account-STARK nullifier output, the raw canonical global
+nullifier index, atomic candidate-block admission, and D2 reorg behavior to F2
+under an explicit `SelectedRustSovereignVerifiedNullifierRegistryContract`
+contract. The report records this selected-state reduction as imported, not as
+a cross-language proof that Rust satisfies the Lean contract. Trusted restore
+anchor placement, target database adoption, and external review remain open.
 `formal/kat/path2_account_creation_proof_boundary_v1.json` is regenerated from
 that report, the selected `Path2AccountStarkResidualMatrixReportV1`, the current
 `Path2AccountStarkPayloadKatBoundaryReportV1`, the current sampler/timing
@@ -708,15 +796,101 @@ row count, generated-vector flag, rejection rows, public classes, error markers,
 selected Rust accepted-boundary payload-KAT corpus reduction hook, and false
 deployment/frozen claims cannot drift independently.
 `Path2AccountStarkFriQromResidualReportV1` pins the active account-STARK FRI
-schedule, degree-8 challenge field, Poseidon2 sponge floor, and the existing
+schedule, degree-8 challenge field, Merkle/MMCS Poseidon2 sponge floor, and the existing
 checked-core spend-transcript QROM target cap, plus the selected Rust
 accepted-boundary FRI/QROM transcript reduction theorem
 `selectedRustAcceptedBoundaryFriQromTranscriptReduction_v1`. Its standalone manifest
 `formal/kat/path2_account_stark_fri_qrom_residual_v1.json` and the
 `path2_account_stark_fri_qrom_residual_consistency` gate compare those claims
 against `tools/descender-account-stark/src/config.rs` and the generated QROM
-JSON artifacts. This is still not residual closure: the manifest explicitly
-records that the account-STARK FRI transcript QROM theorem, recursion pricing,
+JSON artifacts. The same consistency gate pins the account-STARK's migrated
+rate-7/capacity-9 Fiat-Shamir challenger source shape and the native-fidelity
+reference used to migrate the recursive transcript. The monolithic recursive
+AIR now uses rate 7/capacity 9 for alpha, zeta, OOD, batch-combination alpha,
+commit-phase betas, and query-index continuation, with native-equivalence and
+tamper tests. Full-plus-partial pre-alpha and quotient rounds are constraint-checked
+against a real production proof's transcript. The end-to-end migration flag stays
+false. The real production OOD stream now passes a constant-width vertical
+rate-7 accumulator AIR with public start/end states, native terminal-state fidelity,
+tamper rejection, and a production-q128 proof. A block-wide companion now enforces
+element-for-element ordered equality between independently supplied transcript and
+PCS-claim streams, derives the terminal endpoint, binds it to each verified member
+root, folds the same augmented roots as `BlockRecursiveAir`, and is paired with the
+block proof by `BoundBlockProofV1` under one public root and an expected shape profile.
+The genuine proof shape is now pinned to 23,254 extension opening terms
+(`random[12] || trace[23,146] || quotient[8][12]`). A 68-column arithmetic
+reference AIR reproduces the exact Plonky3 alpha-power/reduced-opening recurrence.
+The production-shaped `PcsQueryAir` closes the former host-only seam for one query:
+the same ordered `p_at_x` cells are absorbed into the three salted input-MMCS leaf
+digests and consumed by the reduction; the `p_at_z` limbs are duplexed from the
+public post-zeta state to the public OOD endpoint; the real batch-combination alpha
+is derived from that endpoint; and the public terminal reduction is the selected
+first value of the native-order FRI fold chain. The separate 717-column vertical
+MMCS AIR now public-binds each salted leaf digest as well as its root and verifier
+index. Synthetic cross-binding attacks, q128 prove/verify tests, and a genuine-proof
+capstone covering the complete 23,254-term query, all three real MMCS batches, the
+real OOD endpoint/challenge, and the real FRI terminal polynomial pass. The
+production query-link trace at the genuine relation-v3 log height 6 is 2,265
+columns, 3,325 active rows, height 4,096, 102 public field values, and 37,109,760
+base-witness bytes before LDE/prover costs. `PcsQuerySettlementProfileV1` and
+`PcsQuerySettlementProofV1` now provide the versioned composition boundary for
+one query: the query-link proof, all three MMCS proofs, and the FRI-chain proof
+verify against one typed caller-supplied statement, including every FRI beta.
+The genuine relation-v3 query proves and verifies through that envelope at q128
+knobs. The production profile fixes 120 queries, log height 6, two FRI rounds,
+and exactly five component proofs per query. `AllPcsQueryStatementsV1` and
+the checked all-query materializer now provides the compact pre-proof input
+contract: the genuine relation-v3 capstone derives all 120 statements from one
+verified proof, recomputes every query-link output, three MMCS roots, FRI terminal,
+and both ordered roots, and evaluates all five component AIR traces per query. The
+600 host-side constraint checks are performed and dropped one query at a time; they
+are not recursive proofs and do not establish economical aggregation.
+The recursive FRI layer-opening layout now uses the native binary-fold tree
+depths 5 then 4 rather than assuming one fixed path length for both rounds.
+`formal/kat/path2_pcs_all_query_statement_kat_v1.json` freezes deterministic
+single-worker proof construction, all 120 query indices, both KoalaBear roots, exact reproduction
+command, one observed debug runtime, and explicit false flags for the missing
+all-window proof, economical aggregation, and deployment readiness. It is a
+compact statement KAT, not a frozen aggregate-proof byte/runtime artifact.
+Its explicit unaggregated price remains
+600 proofs and 5,879,402,880 base-witness bytes before LDE/prover memory. This
+is diagnostic evidence that the envelope is functionally composed but not yet
+an economically viable all-query settlement consumer. The envelope also carries
+domain-separated ordered roots for the transcript-owned anchors and the complete
+typed statements; verification recomputes both, giving the recursive fan-out
+proof an exact public export target. `FanOutAnchorAirV1` now consumes those exact
+recursive cells in the same canonical 116-field preimage, constrains the
+transcript-observed trace/quotient roots and final polynomial equal to the cells
+consumed by the recursive opening checks, verifies exactly 120 active rows, and
+uses eight inactive rows to reach proving height 128. Its q128 proof test crosses
+the real proof boundary on a smaller fan-out and composes the exported anchor with
+the existing chain-state root under the domain-separated
+`transcript_anchored_block_root_v1`; wrong settlement, anchor, and chain roots
+reject. The genuine relation-v3 capstone additionally pins all 120 real queries'
+recursive source-map preimages equal, element-for-element, to their native settlement
+statements. A genuine relation-v3 all-120 recursive-window trace and proof are not yet
+materialized, and the diagnostic 600 component proofs have not been replaced by
+an economical aggregated all-query consumer. All-query proof bytes, runtime, and
+the KAT chain are likewise not materialized/frozen. The
+genuine relation-v3 capstone pins 186,032 OOD field elements (26,576 rate-7
+rounds); the 299-column companion has 26,589 active rows per member and a
+39,190,528-byte one-member base witness matrix after power-of-two padding. This
+does not include LDE/prover memory, time, proof bytes, or deployment costs. The
+report also pins the published BCS error shape,
+`Q = 2^16`, `T = 2^32`, candidate `kappa = 247`, conditional
+`epsilon_rbr <= 2^-256`, and a conservative `C_qrom <= 2^32` lift constant.
+`selectedAccountStarkFriQromRbrTerm_le_q130_v1` and
+`selectedAccountStarkFriQromBcsOracleTerm_le_q130_v1` bound the two normalized
+terms by `2^-130`; `selectedAccountStarkFriQromNormalizedBudget_le_q128_v1`
+bounds their sum by `2^-128`. The separate exact single-leaf substitution uses
+`degree_bits = 2` and `|L0| = 64`, bounds the published RBR candidate by
+`2^-218`, and proves the adaptive-one-forgery arithmetic remains below q128.
+`ADR-0011` selects that adaptive game with a global adversary query bound and
+does not reuse the checked-core target count in the BCS term; the stronger
+lifetime-union expression remains a non-selected negative control. This is
+still not residual closure: the manifest
+explicitly keeps the challenger-output-to-`kappa` mapping, RBR theorem, reviewed
+QROM constant, full account-STARK FRI transcript QROM theorem, recursion pricing,
 external FRI/QROM review, deployment-profile acceptance, and deployment-ready
 status are all false. `Path2AccountStarkFriAokBoundaryReportV1` adds the
 separate extractor boundary: it binds the AIR audit evidence, selected
@@ -734,33 +908,62 @@ checked by `path2_account_stark_fri_aok_boundary_consistency`.
 | `Path2AccountStarkCreationPayloadV1` byte and replay binding | Wire-format digest frame, certificate/evidence binding, deployed anchor checks, active mutation tests, `Path2AccountStarkPayloadByteModelReportV1` frame/overhead/non-inlined-bundle manifest plus consistency gate, `Path2AccountStarkPayloadKatBoundaryReportV1` public rejection-class mapping, frozen manifest regeneration, deterministic digest-pinned current-row boundary vectors, manifest/vector consistency gates, accepted-boundary payload-KAT support via `selectedRustAcceptedBoundaryPayloadKatSupport_of_boundaryAccepted`, selected Rust payload-KAT corpus reduction via `selectedRustAcceptedBoundaryPayloadKatCorpusReduction_v1`, and accepted-path decoded-anchor evidence for replay digest, raw verifier version, masked projection, role-root export bridge, and packed-witness commitment exist. | Full frozen byte corpus and public rejection-class mapping for every consensus-visible malformed payload beyond the current-row boundary vectors. | `account_stark_payload_binding_break` |
 | AIR relation soundness | `research/path2_account_stark_air_soundness_audit.md` reports all relation classes wired and MED findings remediated. | External proof-family review confirms the AIR constraints match the claimed creation relation and no false statement accepts except with a named proof break. | `account_stark_air_soundness_break` |
 | FRI argument-of-knowledge extractor | The AIR is fully constrained, and `Path2AccountStarkFriAokBoundaryReportV1` plus `formal/kat/path2_account_stark_fri_aok_boundary_v1.json` pin the support audit, selected proof family, FRI/QROM residual digest, residual-matrix digest, AIR coverage counts, MED remediation counts, selected Rust accepted-boundary FRI/AoK extractor reduction predicate, and open extractor/review/deployment flags. | A concrete extractor theorem for the selected Plonky3/q12289 configuration shows accepting proof implies an extractable account-creation witness or exports a named FRI/AoK break. | `account_stark_fri_aok_extractor_break` |
-| Zero-knowledge simulator and no-export statement | Boundary text forbids export of pad source, projection, syndrome, opening tuple, witness, mask, and private trace material; `Path2AccountCreationNoExportBoundaryReportV1` plus `formal/kat/path2_account_creation_no_export_boundary_v1.json` pin the support file, selected payload endpoints, payload byte-model/KAT-boundary digests, denylist, simulator/no-export theorem targets, accepted-bundle simulator public-input allowlist, public-payload-only byte model, mutation coverage, frozen no-export audit vectors, selected Rust public-bundle denylist predicate, selected Rust simulator-input allowlist predicate, selected Rust accepted public-anchor package binding predicate, selected Rust accepted-bundle public-anchor simulation-boundary predicate, selected Rust accepted-bundle public-bundle projection predicate, selected Rust accepted-bundle simulator-input projection predicate, selected Rust accepted-bundle simulator/no-export reduction predicate, selected Rust accepted-boundary simulator/no-export reduction predicate, and fail-closed production gate while leaving simulator, no-export, accepted-bundle simulability, review, and deployment flags false. | Simulator theorem for the selected payload proves the accepted public bundle can be simulated from public anchors and allowed commitments without revealing private creation material. | `account_stark_simulator_or_no_export_break` |
-| FRI soundness margin and recursion ledger | `Path2AccountStarkFriQromResidualReportV1` pins `log_blowup = 4`, `num_queries = 120`, query PoW 16, conservative-Johnson FRI label 256 bits, degree-8 challenge field, 139-bit Poseidon2 sponge floor, checked-core QROM `log2(T) <= 54`, and the selected Rust accepted-boundary FRI/QROM transcript reduction predicate; `formal/kat/path2_account_stark_fri_qrom_domain_vectors_v1.json` adds digest-pinned audit cases for the selected proof-family domain, FRI schedule, checked-core QROM import, reduction-hook binding, and open theorem flags; the consistency gates compare these to active config, checked-in manifests, and generated QROM artifacts. | Residual-assumption ledger prices FRI queries, field size, the account-STARK Poseidon2/FRI transcript theorem, recursion if used, and multi-target/QROM terms against the selected deployment profile, then obtains external FRI/QROM review. | `fri_soundness_margin_break` |
+| Zero-knowledge simulator and no-export statement | Boundary text forbids export of pad seed, account projection, opening-tuple preimage, authorization witness, mask, private trace material, and commitment nonce. The decoded `AccountCreationPublic` checked-core syndrome is explicitly classified as an allowed public authorization anchor, and all 14 nested public-statement fields are audited rather than hidden behind the opaque-bundle label. `Path2AccountCreationNoExportBoundaryReportV1` pins that nested audit, simulator/no-export theorem targets, the non-circular simulator input, private-material denylist, frozen vectors, selected Rust public projections/reductions, and fail-closed production flags. The selected hiding stack uses a 256-bit-seeded ChaCha20 CSPRNG with independent input-MMCS, FRI-MMCS, and PCS substreams, while `SelectedAccountStarkSimulatorHybridBounds.advantage_le_totalError` and `selectedRustAcceptedBundleSimulatorNoExportFromHybrid_v1` machine-check the additive A1/A2/A3 hybrid under concrete supplied hop bounds. For A2, the C2 AIR and standalone signer absorb the explicit `MASK` domain, squeeze 36 disjoint KoalaBear coordinates, and use six digits per each of six q12289 masks. `selectedAccountMaskWideReductionError_le_q128_v1` prices the full six-lane term at the selected `2^32` account horizon, `selectedRustAccountMaskPrfFramesFresh_of_verifiedNullifierRegistry_v1` imports proof-bound admitted-frame freshness, and `selectedRustUniformMaskTranslationBijective_v1` closes the modular translation. For A3, relation v3 absorbs explicit `PADS`/`OPEN` domains and the deployment prover supplies fresh 40-byte commitment nonces. `selectedAccountCommitmentQromSearchError_le_q128_v1` prices two commitments per account, `2^32` targets, and `2^54` QROM queries at `2^-179`; the frame/domain arithmetic is machine-checked. The bounded-query concrete Poseidon2 mask-PRF and commitment/QROM replacement theorems remain open. Simulator, accepted-bundle simulability, review, and deployment flags remain false. | Import reviewed concrete zk-FRI HVZK, bounded-query Poseidon2 sponge/permutation PRF, and Poseidon2 commitment-hiding bounds into the selected hybrid certificate so the accepted bundle is simulatable without private creation material beyond the explicitly public statement. | `account_stark_simulator_or_no_export_break` |
+| FRI soundness margin and recursion ledger | `Path2AccountStarkFriQromResidualReportV1` pins `log_blowup = 4`, `num_queries = 120`, query PoW 16, conservative-Johnson FRI schedule label 256 bits, degree-8 challenge field, and the 139-bit rate-7/capacity-9 Merkle/MMCS and Fiat-Shamir sponge floors. The account-STARK executable config and the monolithic recursive challenger arithmetic now use rate 7/capacity 9. The recursive AIR constrains full-plus-partial pre-alpha and quotient observes, alpha/zeta refills, OOD observation, batch-combination alpha, 13-element commit-phase digests and betas, and final/query continuation. Native-equivalence and permutation/partial-tail tamper tests cover those schedules; a real-proof capstone constraint-checks the production pre-alpha/quotient blocks against supplied transcript values and reproduces every production challenge and query index. The same capstone materializes the real production OOD stream through a constant-width vertical accumulator and independently reconstructs the PCS claim order. `BlockOodBindingAir` proves their ordered equality, endpoint/member-root augmentation, and block chain; `BoundBlockProofV1` verifies that companion and `BlockRecursiveAir` against one root and one expected shape, with q128 transport/mixup tests. `PcsQueryAir` now uses the same cells for salted input-leaf hashing and the exact opening reduction, derives the batch alpha from the OOD endpoint, shares public leaf digests with the vertical MMCS proofs, and public-binds the reduction into the native-order FRI chain. `PcsQuerySettlementProofV1` additionally verifies that query link, all three MMCS openings, and the beta-bound FRI chain against one expected statement; a genuine relation-v3 query proves through it. The fixed all-120 profile exposes the unaggregated cost as 600 proofs and 5,879,402,880 base-witness bytes. `FanOutAnchorAirV1` implements the exact canonical transcript-anchor export with 120 active / 128 total rows, transcript-consumer seams, and a versioned block-root composition; a smaller-fan-out q128 proof and coherent root-substitution attacks pass/reject as expected. Genuine all-120 recursive-window materialization, economical all-query aggregation, and proof-byte/runtime/KAT closure remain open, so the end-to-end migration flag remains false. The conditional lifetime stress ledger imports `Q = 2^16` and `T = 2^32`, while the exact single-leaf substitution pins `degree_bits = 2`, `|L0| = 64`, and the published candidate RBR terms at `<= 2^-218`. `ADR-0011` selects the theorem-native adaptive game with global `Q` and no account-count multiplier; its arithmetic clears q128 (`2^-154` and `2^-165` terms). The seven-case FRI/QROM domain corpus keeps the end-to-end challenger migration, RBR hypothesis mapping, challenger-output mapping, QROM constant review, transcript theorem, recursion, and review flags open. | Materialize and prove the genuine 120 recursive query windows against the exported anchor; implement and price an economically aggregated all-query consumer rather than the 600-proof diagnostic envelope; freeze proof bytes/runtime/KATs; map every relevant Plonky3 challenger output to effective `kappa >= 247`; instantiate the selected RBR/BCS/QROM theorem with an explicit lift constant within the `2^32` allowance; compose the extractor/AIR/MMCS/primitive terms; and obtain external FRI/QROM review. | `fri_soundness_margin_break` |
 | Production admission gate and review disposition | `verify_path2_direct_creation_account_stark_payload_boundary_for_production` remains fail-closed and regression-tested; the proof-boundary report and proof-obligation corpus pin `selectedRustAcceptedBoundaryProductionGateReviewReduction_v1` as a reduction from accepted-boundary fail-closed support to a supplied review/maintainer-gate theorem without instantiating that theorem. | External review, tracker disposition, and explicit maintainer decision flip the production gate; otherwise production admission must continue to reject. | `account_stark_production_gate_break` |
 | Legacy proof-route disposition | Transparent descent/native-boundary paths are fail-closed support and cannot be selected by implication. | Any route change requires an ADR that updates this matrix, wire formats, KAT scope, and tracker ownership before the route can become deployment authority. | `proof_route_authority_break` |
 
 ## Current Security-Level Position
 
-The active Poseidon2/Plonky3 path has been re-parameterized to the q128 profile:
-120 FRI queries, query PoW 16, and width-16 Poseidon2 with capacity 9 and a
-13-element Merkle digest. The generated residual ledger now prices the
-conservative-Johnson FRI label at 256 bits and the Poseidon2/Merkle generic
-floor at 139 bits. This is the honest current parameter floor and must be stated
-plainly.
+The active Poseidon2/Plonky3 path carries the candidate q128 schedule: 120 FRI
+queries, query PoW 16, rate-7/capacity-9 width-16 Poseidon2 Merkle/MMCS and
+Fiat-Shamir sponges, and a 13-element Merkle digest. The generated residual
+ledger records the conservative-Johnson schedule label at 256 bits and both
+generic sponge floors at 139 bits. The account-STARK migration and recursive
+rate-7/capacity-9 challenger arithmetic are complete, including constraint-checked
+real pre-alpha/quotient streams and the constant-width vertical accumulation of the
+real production OOD stream. Ordered transcript/claim equality, endpoint/member-root
+binding, and paired production-settlement transport are implemented. One genuine
+query now carries those claim-side values through same-cell salted-leaf hashing,
+MMCS leaf-digest authentication, exact opening reduction, and a beta-bound public
+native-order FRI-chain boundary. A versioned per-query settlement envelope verifies
+all five component proofs against one expected statement, and its production profile
+fixes the all-120 count and exposes the unaggregated 600-proof / 5,879,402,880-byte
+base-witness price. The envelope recomputes ordered, domain-separated transcript-anchor
+and complete-statement roots. The production-shaped fan-out wrapper now fixes 120
+active rows in a 128-row trace and implements the canonical anchor export and
+versioned block-root composition, with a smaller-fan-out q128 proof/mutation test.
+One genuine relation-v3 query also pins the recursive source-map preimage to the
+native settlement statement.
+Materializing the genuine relation-v3 all-120 windows/proof, replacing the diagnostic
+600-proof form with an economically aggregated all-query proof, and freezing proof
+bytes/runtime/KATs are not complete. The conditional BCS arithmetic fits
+q128 for `Q = 2^16`, `T = 2^32`, candidate `kappa = 247`, a `2^-256` RBR
+input, and a QROM lift constant at most `2^32`. The explicit published-bound
+candidate for the actual single leaf is `2^-218`. `ADR-0011` selects its
+adaptive-one-forgery game with a global query bound and no account-count
+multiplier. The end-to-end production transcript/KAT migration, challenger mapping,
+RBR theorem mapping, and constant review are not instantiated. Therefore neither the
+schedule label, sponge floors, nor conditional arithmetic is a composed
+deployment security level.
 
-The pre-q128 POST-QUANTUM shortfall remains important historical evidence
+The pre-q128 post-quantum shortfall remains important historical evidence
 (assumption-boundary stress test,
 `research/cryptanalysis/assumption_boundary_stress_test_20260627.md`,
-2026-06-27): under non-interactive Fiat-Shamir the full FRI query plus
-proof-of-work grinding budget is a single Grover search, so the earlier
-56-query/capacity-8 profile could not support a hard quantum-128 claim. The
-current q128 profile is the response to that finding; it does not by itself
-clear the deployment gate.
+2026-06-27): the earlier 56-query/capacity-8 profile did not have an instantiated
+hard quantum-128 argument. Its "single Grover search" calculation is retained as
+a negative-control sizing heuristic, not as the selected theorem. The published
+FRI BCS/QROM result instead requires explicit round-by-round error, oracle-output
+length, and bounded oracle-query terms. The current 120-query candidate profile
+is a response to that finding; it does not by itself clear the theorem or
+deployment gate.
 
 `ADR-0008` commits the deployable bar to hard quantum-128 and is the governing
-decision. The current implementation has landed the q128 parameter profile for
-the active account-STARK/direct path, but a deployment-ready hard-128 claim still
-depends on the full consensus-visible KAT corpus, external FRI/QROM and
+decision. The current implementation has landed a candidate q128 FRI and
+Merkle/MMCS parameter set plus a machine-checked conditional BCS budget, while
+the Fiat-Shamir challenger-output mapping and bounded-query QROM theorem remain
+open. A deployment-ready hard-128 claim
+also depends on the full consensus-visible KAT corpus, external FRI/QROM and
 implementation review, the production-gate decision, and any selected
 aggregation/recursion review scope. Until those gates close, the project must
 not claim "hard 128-bit deployment readiness."

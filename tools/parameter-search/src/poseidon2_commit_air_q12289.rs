@@ -51,12 +51,12 @@
 //! linking/range constraints degree <= 2). MAX DEGREE = 5 (the S-box).
 
 use crate::poseidon2_air_q12289::{
-    self as perm_air, generate_trace as gen_perm_trace, Trace as PermTrace,
+    self as perm_air, Trace as PermTrace, generate_trace as gen_perm_trace,
 };
 use crate::poseidon2_q12289::{
-    fq_add, fq_from_u32, fq_mul, fq_sub, init_capacity, Poseidon2Params, CAPACITY,
-    PAD_SOURCE_BLINDING_BYTES, PAD_SOURCE_COMMITMENT_LANES,
-    POSEIDON2_PAD_SOURCE_COMMITMENT_DOMAIN, RATE, T,
+    CAPACITY, PAD_SOURCE_BLINDING_BYTES, PAD_SOURCE_COMMITMENT_LANES,
+    POSEIDON2_PAD_SOURCE_COMMITMENT_DOMAIN, Poseidon2Params, RATE, T, fq_add, fq_from_u32, fq_mul,
+    fq_sub, init_capacity,
 };
 
 // -----------------------------------------------------------------------------
@@ -189,10 +189,7 @@ impl Trace {
 }
 
 /// Encode the 48 input byte-lanes exactly as the reference commitment does.
-fn encode_input_lanes(
-    pad_seed: &[u8; 32],
-    nonce: &[u8; NONCE_LANES],
-) -> [u32; N_INPUT_LANES] {
+fn encode_input_lanes(pad_seed: &[u8; 32], nonce: &[u8; NONCE_LANES]) -> [u32; N_INPUT_LANES] {
     let mut lanes = [0u32; N_INPUT_LANES];
     for (i, &b) in pad_seed.iter().enumerate() {
         lanes[i] = b as u32;
@@ -222,10 +219,7 @@ fn block_elem_value(elem: BlockElem, input_lanes: &[u32; N_INPUT_LANES]) -> u32 
 /// commitment and records each permutation as a single-permutation AIR
 /// sub-trace, plus all linking witnesses. By construction the recorded states
 /// are exactly those the reference sponge visits.
-pub fn generate_commit_trace(
-    pad_seed: &[u8; 32],
-    nonce: &[u8; NONCE_LANES],
-) -> Trace {
+pub fn generate_commit_trace(pad_seed: &[u8; 32], nonce: &[u8; NONCE_LANES]) -> Trace {
     let params = Poseidon2Params::new();
     let plan = build_plan();
     let input_lanes = encode_input_lanes(pad_seed, nonce);
@@ -324,7 +318,10 @@ pub fn all_residuals(
             .enumerate()
         {
             out.push(Residual {
-                kind: ResidualKind::Perm { perm: p, index: idx },
+                kind: ResidualKind::Perm {
+                    perm: p,
+                    index: idx,
+                },
                 value: r.value,
             });
         }
@@ -467,7 +464,7 @@ pub const MAX_DEGREE: u32 = 5;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::poseidon2_q12289::{pad_source_commitment_poseidon2, Q};
+    use crate::poseidon2_q12289::{Q, pad_source_commitment_poseidon2};
 
     fn xorshift(s: &mut u64) -> u64 {
         *s ^= *s << 13;
@@ -506,7 +503,10 @@ mod tests {
         assert_eq!(plan.roles.len(), 13);
         for (p, role) in plan.roles.iter().enumerate() {
             if p < 10 {
-                assert!(matches!(role, PermRole::Absorb { .. }), "perm {p} not absorb");
+                assert!(
+                    matches!(role, PermRole::Absorb { .. }),
+                    "perm {p} not absorb"
+                );
             } else {
                 assert!(matches!(role, PermRole::Squeeze), "perm {p} not squeeze");
             }
@@ -534,7 +534,11 @@ mod tests {
         let params = Poseidon2Params::new();
         let committed = claimed_commitment(&trace);
         let residuals = all_residuals(&params, &trace, &committed);
-        assert_eq!(residuals.len(), n_constraints(), "constraint count mismatch");
+        assert_eq!(
+            residuals.len(),
+            n_constraints(),
+            "constraint count mismatch"
+        );
         assert_eq!(MAX_DEGREE, 5);
     }
 
@@ -582,15 +586,18 @@ mod tests {
         t.input_lanes[40] = fq_add(t.input_lanes[40], 1); // a nonce lane
         let res = all_residuals(&params, &t, &committed);
         assert!(
-            res.iter().any(|r| r.value != 0
-                && matches!(r.kind, ResidualKind::BitRecompose { lane: 40 })),
+            res.iter()
+                .any(|r| r.value != 0 && matches!(r.kind, ResidualKind::BitRecompose { lane: 40 })),
             "stale-bits nonce lane mutation not caught"
         );
 
         let mut t2 = trace.clone();
         t2.subs[0].rows[0][3] = fq_add(t2.subs[0].rows[0][3], 1);
         let res2 = all_residuals(&params, &t2, &committed);
-        assert!(res2.iter().any(|r| r.value != 0), "absorb input cell mutation not caught");
+        assert!(
+            res2.iter().any(|r| r.value != 0),
+            "absorb input cell mutation not caught"
+        );
     }
 
     /// MUTATION: an intermediate permutation cell fires the reused per-perm AIR.
@@ -606,8 +613,8 @@ mod tests {
         t.subs[5].rows[30][9] = fq_add(t.subs[5].rows[30][9], 1);
         let res = all_residuals(&params, &t, &committed);
         assert!(
-            res.iter().any(|r| r.value != 0
-                && matches!(r.kind, ResidualKind::Perm { perm: 5, .. })),
+            res.iter()
+                .any(|r| r.value != 0 && matches!(r.kind, ResidualKind::Perm { perm: 5, .. })),
             "intermediate perm cell mutation not caught"
         );
     }
@@ -625,8 +632,8 @@ mod tests {
         c1[2] = fq_add(c1[2], 1); // first squeeze lane
         let res = all_residuals(&params, &trace, &c1);
         assert!(
-            res.iter().any(|r| r.value != 0
-                && matches!(r.kind, ResidualKind::CommitOutput { out: 2 })),
+            res.iter()
+                .any(|r| r.value != 0 && matches!(r.kind, ResidualKind::CommitOutput { out: 2 })),
             "first-squeeze commitment mutation not caught"
         );
 
@@ -634,8 +641,8 @@ mod tests {
         c2[8] = fq_add(c2[8], 1); // second squeeze lane
         let res2 = all_residuals(&params, &trace, &c2);
         assert!(
-            res2.iter().any(|r| r.value != 0
-                && matches!(r.kind, ResidualKind::CommitOutput { out: 8 })),
+            res2.iter()
+                .any(|r| r.value != 0 && matches!(r.kind, ResidualKind::CommitOutput { out: 8 })),
             "second-squeeze commitment mutation not caught"
         );
     }
@@ -655,8 +662,8 @@ mod tests {
         t.input_bits[45] = [0u32; BITS_PER_LANE];
         let res = all_residuals(&params, &t, &committed);
         assert!(
-            res.iter().any(|r| r.value != 0
-                && matches!(r.kind, ResidualKind::BitRecompose { lane: 45 })),
+            res.iter()
+                .any(|r| r.value != 0 && matches!(r.kind, ResidualKind::BitRecompose { lane: 45 })),
             "out-of-range byte not rejected by recompose"
         );
 
@@ -667,8 +674,9 @@ mod tests {
         t2.input_bits[0][0] = 256;
         let res2 = all_residuals(&params, &t2, &committed);
         assert!(
-            res2.iter().any(|r| r.value != 0
-                && matches!(r.kind, ResidualKind::BitBoolean { lane: 0, bit: 0 })),
+            res2.iter()
+                .any(|r| r.value != 0
+                    && matches!(r.kind, ResidualKind::BitBoolean { lane: 0, bit: 0 })),
             "non-boolean bit not rejected"
         );
     }

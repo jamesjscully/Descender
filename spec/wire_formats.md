@@ -144,6 +144,7 @@ The payload fields are:
 | `aggregation_context_digest` | digest | equals the creation-proof binding aggregation context |
 | `slot_id` | `u64` | equals the admitted leaf slot id |
 | `masked_projection` | six `u16` q-residue lanes | equals the proven STARK public masked projection and deployed opening |
+| `pad_seed_nullifier` | 32 bytes | canonical encoding of the proof-bound CLASS A-2 nullifier; equals `DeployedCreationAnchors.pad_seed_nullifier` and is the consume-once sovereign admission-registry key |
 | `account_stark_bundle` | nonempty bytes | opaque packed `(AccountCreationPublic, Proof)` bundle verified by `descender-account-verifier` |
 
 The canonical replay-payload digest is:
@@ -161,6 +162,7 @@ path2_account_stark_creation_payload_v1_digest =
     slot_id,
     masked_projection_lane_count,
     masked_projection_le,
+    pad_seed_nullifier,
     account_stark_bundle,
   ))
 ```
@@ -171,7 +173,10 @@ integer as little-endian data inside the same frame format.
 `masked_projection_le` is exactly six little-endian `u16` lanes and
 `masked_projection_lane_count` is `6`. `payload_version` is `1`.
 `account_stark_verifier_version` is the raw verifier version currently bound in
-the STARK public statement.
+the STARK public statement. `pad_seed_nullifier` is the canonical 32-byte
+encoding exported by `creation_nullifier_v1_bytes` from the verified public
+statement; admission must register these exact bytes in the global nullifier
+index.
 
 The account-creation verifier must reject if:
 
@@ -179,7 +184,7 @@ The account-creation verifier must reject if:
 - any field mutation changes the canonical payload digest without a matching
   replay-certificate/evidence rebind;
 - a rebound payload digest verifies but `DeployedCreationAnchors` disagree with
-  the STARK public statement; or
+  the STARK public statement, including `pad_seed_nullifier`; or
 - the opaque bundle fails STARK verification.
 
 Current executable coverage for this boundary is the feature-gated Rust test

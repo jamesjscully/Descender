@@ -206,7 +206,11 @@ mod tests {
             }
             acc
         });
-        assert_eq!(got, limbs(prod), "in-AIR octic mul (W={W}) != native Challenge mul");
+        assert_eq!(
+            got,
+            limbs(prod),
+            "in-AIR octic mul (W={W}) != native Challenge mul"
+        );
     }
 
     /// GOLDEN (positive): honest fold rows — across both base-only and multi-limb evals, and
@@ -224,11 +228,20 @@ mod tests {
         for (k, &(lh, idx)) in [(5usize, 1usize), (6, 30), (7, 100)].iter().enumerate() {
             let s = fold_point(lh, idx);
             let kk = k as u32;
-            folds.push((ext_multi(10 + kk), ext_multi(40 + kk), ext_multi(70 + kk), s));
+            folds.push((
+                ext_multi(10 + kk),
+                ext_multi(40 + kk),
+                ext_multi(70 + kk),
+                s,
+            ));
         }
         let m = matrix(&folds);
         let report = check_all_constraints(&FriFoldAir, &m, &[], None);
-        assert!(report.is_ok(), "honest fold trace rejected: {} failures", report.failures.len());
+        assert!(
+            report.is_ok(),
+            "honest fold trace rejected: {} failures",
+            report.failures.len()
+        );
     }
 
     /// Forgery: a tampered first sibling eval `e0` ⇒ (★) no longer holds ⇒ rejected. (The fold
@@ -287,10 +300,19 @@ mod tests {
         let folds: Vec<_> = (0..8u32)
             .map(|q| {
                 let s = fold_point(6, (q as usize) * 5 + 1);
-                (ext_multi(100 + q), ext_multi(200 + q), ext_multi(300 + q), s)
+                (
+                    ext_multi(100 + q),
+                    ext_multi(200 + q),
+                    ext_multi(300 + q),
+                    s,
+                )
             })
             .collect();
         let report = check_all_constraints(&FriFoldAir, &matrix(&folds), &[], None);
-        assert!(report.is_ok(), "honest multi-row fold trace rejected: {} failures", report.failures.len());
+        assert!(
+            report.is_ok(),
+            "honest multi-row fold trace rejected: {} failures",
+            report.failures.len()
+        );
     }
 }

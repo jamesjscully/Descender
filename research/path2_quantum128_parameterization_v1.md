@@ -68,8 +68,9 @@ it widens the squeeze, changing the Merkle compression output width.)
 
 ## Why it must be atomic (queries-alone is a bad trade)
 
-Bumping `num_queries` 56→120 *alone* roughly **doubles** the FRI proof size
-(4.75 MB → ~9.5 MB, worse economics) while the quantum headline stays at
+Bumping `num_queries` 56→120 *alone* was projected to roughly **double** the FRI
+proof size (4.75 MB → ~9.5 MB); the complete active relation now measures
+12.14 MB. The quantum headline would still stay at
 ~2⁻⁸²⁻⁹⁹ — because the Merkle binding term still dominates. So a queries-only
 change is all-cost, no-headline-benefit. The three fixes must ship together; the
 quantum headline only reaches 128 when the weakest of the three does.
@@ -103,7 +104,7 @@ quantum headline only reaches 128 when the weakest of the three does.
 
 ## Economic note
 
-The ~9.5 MB inner proof is irrelevant to on-chain cost (creation is verified off
+The measured 12.14 MB inner proof is irrelevant to on-chain cost (creation is verified off
 the hot path via recursion per `research/path2_economic_deployment_architecture_v1.md`),
 but it ~doubles prover and recursion-verification work. This is a prover-side
 cost, acceptable; it is NOT an on-chain per-tx cost.
@@ -341,13 +342,17 @@ Tracking: q128-green recursion modules — `merkle`, `merkle_air`, `leaf_hash`, 
 `fri_layer_air`, and `recursive_air` (lib + test binary at digest-13). The q128 recursion is
 fully integrated and exercised end-to-end at digest-13.
 
-**Config observation (assumption boundary):** the q128 worktree config moved
-`MyHash` to rate 7 / capacity c=9 but KEEPS `Challenger = DuplexChallenger<...,16,8>`
-(rate 8 / capacity c=8). The challenger sponge therefore still sits at c/2 ≈ 124-bit
-indifferentiability, below the 139-bit q128 target the hashes now meet. Whether the
-FS challenger must also move to c=9 (rate 7) for the q128 headline — or whether the
-FS-grind term (handled by `num_queries`) already covers the challenger's contribution
-— is a config-level question to settle alongside the recursion mirror.
+**Current config observation (assumption boundary):** `MyHash` and the
+account-STARK `Challenger` are both rate 7 / capacity 9. The account proof's
+degree-8 extension challenge therefore crosses two seven-element output blocks.
+`c9_challenger.rs` pins native Plonky3 fidelity and `c9_extension_air.rs` pins the
+second-squeeze AIR shape. Older rate-8 detail above records the path used to reach
+the current implementation. The monolithic recursive challenger arithmetic is now
+rate 7/capacity 9 across alpha/zeta, OOD, batch-combination alpha, betas, and query
+continuation. Full-plus-partial pre-alpha and quotient schedules are now
+constraint-checked on a real production proof. End-to-end closure still requires
+all actual inner-proof columns, especially the cost-heavy OOD/opening stream, in
+one priced production settlement member window followed by a joint KAT-chain refresh.
 
 ## Frozen q128 leaf-proof KAT (2026-06-27)
 
@@ -355,7 +360,8 @@ A deterministic PRODUCTION-config q128 account-creation proof (digest-13 sponge,
 query-PoW 16) now has a PINNED byte-format KAT: `descender-account-stark`
 `tests::frozen_q128_leaf_proof_kat` proves under a single-thread pool (so the FRI query-PoW grind is
 deterministic), bincode-serializes the proof, SHA-256s it, and pins
-`6bc93269a557ea9ea0f48bed0e0c546f0017cc2e35dd78ef7ea3295fa09c16c0` (determinism cross-checked by
+`b4c9e522f599cc4cd574a7387a6f7300d7d23a1215b83f2a5a667657d4a6e4a0` (determinism cross-checked by
 proving twice). This freezes the q128 proof byte format against drift (DIR-STARK-001
-frozen-byte-format KAT). It is one deterministic-proof pin; the full multi-vector production KAT
-corpus (boundary cases, batch, the parameter-search vector machinery) at q128 remains.
+frozen-byte-format KAT). The production payload corpus separately pins 16 accept/reject cases and
+the 12,144,273-byte bundle digest in
+`formal/kat/path2_account_stark_payload_kat_vectors_v1.json`.

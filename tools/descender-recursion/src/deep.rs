@@ -76,8 +76,18 @@ mod tests {
         assert!(verify_quotient_relation(c, q, zeta, log_degree));
         assert!(verify_quotient_relation_div(c, q, zeta, log_degree));
         // tampered constraint eval / quotient must be rejected
-        assert!(!verify_quotient_relation(c + Challenge::ONE, q, zeta, log_degree));
-        assert!(!verify_quotient_relation(c, q + Challenge::ONE, zeta, log_degree));
+        assert!(!verify_quotient_relation(
+            c + Challenge::ONE,
+            q,
+            zeta,
+            log_degree
+        ));
+        assert!(!verify_quotient_relation(
+            c,
+            q + Challenge::ONE,
+            zeta,
+            log_degree
+        ));
     }
 
     /// `Z_H` vanishes EXACTLY on the trace domain `H = <omega>` (order 2^log_degree) and is
@@ -87,10 +97,14 @@ mod tests {
     fn vanishing_poly_zeroes_on_domain_only() {
         let log_degree = 8;
         let omega = Val::two_adic_generator(log_degree); // primitive 2^log_degree root
-        // On-domain points omega^k: Z_H = 0.
+                                                         // On-domain points omega^k: Z_H = 0.
         for k in [0u64, 1, 7, 100, 255] {
             let pt = Challenge::from(omega.exp_u64(k));
-            assert_eq!(vanishing_poly_at(pt, log_degree), Challenge::ZERO, "Z_H(omega^{k}) != 0");
+            assert_eq!(
+                vanishing_poly_at(pt, log_degree),
+                Challenge::ZERO,
+                "Z_H(omega^{k}) != 0"
+            );
         }
         // Off-domain point: Z_H != 0.
         let off = ext(3) * Challenge::from(omega) + Challenge::ONE; // not a pure root of unity
@@ -109,7 +123,12 @@ mod tests {
         let honest_c = vanishing_poly_at(zeta, log_degree) * q;
         // Any C' != honest_c fails for this (Q, zeta).
         for delta in [2u32, 5, 9999] {
-            assert!(!verify_quotient_relation(honest_c + ext(delta), q, zeta, log_degree));
+            assert!(!verify_quotient_relation(
+                honest_c + ext(delta),
+                q,
+                zeta,
+                log_degree
+            ));
         }
     }
 }

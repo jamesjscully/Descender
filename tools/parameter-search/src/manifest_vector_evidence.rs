@@ -12,6 +12,7 @@ use crate::production_reference::{
     path2_account_stark_fri_qrom_residual_report_v1_digest,
     path2_account_stark_payload_kat_boundary_report_v1,
     path2_account_stark_payload_kat_boundary_report_v1_digest,
+    path2_direct_admission_boundary_report_v1, path2_direct_admission_boundary_report_v1_digest,
     path2_direct_lifecycle_boundary_report_v1, path2_direct_lifecycle_boundary_report_v1_digest,
     path2_direct_qrom_action_boundary_report_v1,
     path2_direct_qrom_action_boundary_report_v1_digest, path2_direct_theorem_boundary_report_v1,
@@ -21,6 +22,7 @@ use crate::production_reference::{
     validate_path2_account_creation_proof_boundary_report_v1,
     validate_path2_account_stark_fri_qrom_residual_report_v1,
     validate_path2_account_stark_payload_kat_boundary_report_v1,
+    validate_path2_direct_admission_boundary_report_v1,
     validate_path2_direct_lifecycle_boundary_report_v1,
     validate_path2_direct_qrom_action_boundary_report_v1,
     validate_path2_direct_theorem_boundary_report_v1,
@@ -865,11 +867,11 @@ pub fn path2_direct_accepted_spend_tuple_evidence_artifact_v1() -> Result<Value,
         || u64_at(
             artifact,
             "/evidence/accepted_tuple_field_open_obligation_count",
-        )? != 6
+        )? != 1
         || u64_at(
             artifact,
             "/evidence/accepted_tuple_field_imported_closure_count",
-        )? != 2
+        )? != 9
         || u64_at(artifact, "/evidence/acceptance_hypothesis_count")?
             != direct_report.acceptance_hypotheses.len() as u64
         || str_at(
@@ -1201,6 +1203,13 @@ pub fn path2_direct_accepted_composition_evidence_artifact_v1() -> Result<Value,
             artifact,
             "/evidence/qrom_action_digest_matches_direct_theorem",
         )?
+        || !bool_at(artifact, "/evidence/qrom_action_budget_bridge_imported")?
+        || !bool_at(
+            artifact,
+            "/evidence/qrom_action_theorem_linkage_reduction_imported",
+        )?
+        || !bool_at(artifact, "/evidence/qrom_action_review_hypothesis_explicit")?
+        || !bool_at(artifact, "/evidence/qrom_action_external_review_still_open")?
         || !bool_at(
             artifact,
             "/evidence/lifecycle_digest_matches_direct_theorem",
@@ -1223,7 +1232,7 @@ pub fn path2_direct_accepted_composition_evidence_artifact_v1() -> Result<Value,
             artifact,
             "/evidence/every_positive_acceptance_hypothesis_has_accepted_path_evidence",
         )?
-        || !bool_at(
+        || bool_at(
             artifact,
             "/evidence/public_rejection_hypothesis_deferred_to_rejection_kats",
         )?
@@ -1326,6 +1335,22 @@ pub fn path2_direct_accepted_composition_evidence_artifact_v1() -> Result<Value,
             "qrom_action_digest_matches_direct_theorem": bool_at(
                 artifact,
                 "/evidence/qrom_action_digest_matches_direct_theorem"
+            )?,
+            "qrom_action_budget_bridge_imported": bool_at(
+                artifact,
+                "/evidence/qrom_action_budget_bridge_imported"
+            )?,
+            "qrom_action_theorem_linkage_reduction_imported": bool_at(
+                artifact,
+                "/evidence/qrom_action_theorem_linkage_reduction_imported"
+            )?,
+            "qrom_action_review_hypothesis_explicit": bool_at(
+                artifact,
+                "/evidence/qrom_action_review_hypothesis_explicit"
+            )?,
+            "qrom_action_external_review_still_open": bool_at(
+                artifact,
+                "/evidence/qrom_action_external_review_still_open"
             )?,
             "lifecycle_digest_matches_direct_theorem": bool_at(
                 artifact,
@@ -1693,6 +1718,13 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
         return Err("direct lifecycle boundary report digest mismatch".to_string());
     }
 
+    let admission_report = path2_direct_admission_boundary_report_v1();
+    validate_path2_direct_admission_boundary_report_v1(&admission_report)?;
+    let admission_digest = path2_direct_admission_boundary_report_v1_digest(&admission_report);
+    if admission_digest != admission_report.digest {
+        return Err("direct admission boundary report digest mismatch".to_string());
+    }
+
     let proof_report = path2_account_creation_proof_boundary_report_v1();
     validate_path2_account_creation_proof_boundary_report_v1(&proof_report)?;
     let proof_digest = path2_account_creation_proof_boundary_report_v1_digest(&proof_report);
@@ -1701,6 +1733,7 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
     }
     if direct_report.direct_qrom_action_boundary_report_digest != qrom_action_report.digest
         || direct_report.direct_lifecycle_boundary_report_digest != lifecycle_report.digest
+        || direct_report.direct_admission_boundary_report_digest != admission_report.digest
         || direct_report.account_creation_proof_boundary_report_digest != proof_report.digest
     {
         return Err("direct theorem report lost imported boundary digest binding".to_string());
@@ -1738,6 +1771,10 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
             != hex_encode(&lifecycle_report.digest)
         || str_at(corpus, "/lifecycle_boundary_report/recomputed_digest")?
             != hex_encode(&lifecycle_digest)
+        || str_at(corpus, "/admission_boundary_report/digest")?
+            != hex_encode(&admission_report.digest)
+        || str_at(corpus, "/admission_boundary_report/recomputed_digest")?
+            != hex_encode(&admission_digest)
         || str_at(corpus, "/account_creation_proof_boundary_report/digest")?
             != hex_encode(&proof_report.digest)
         || str_at(
@@ -1808,13 +1845,98 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
         || bool_at(corpus, "/audit_summary/all_cases_open")?
         || !bool_at(corpus, "/audit_summary/all_cases_have_named_break")?
         || !bool_at(corpus, "/audit_summary/all_open_cases_block_deployment")?
+        || !bool_at(
+            corpus,
+            "/audit_summary/composition_theorem_reduction_imported",
+        )?
+        || !bool_at(
+            corpus,
+            "/audit_summary/composition_external_hypotheses_explicit",
+        )?
+        || !bool_at(
+            corpus,
+            "/audit_summary/composition_capstone_under_explicit_named_assumptions_imported",
+        )?
+        || !bool_at(
+            corpus,
+            "/audit_summary/direct_public_rejection_state_preserving_imported",
+        )?
+        || !bool_at(
+            corpus,
+            "/audit_summary/direct_public_rejection_classifier_total",
+        )?
+        || !bool_at(
+            corpus,
+            "/audit_summary/direct_public_rejection_all_classes_kat_covered",
+        )?
+        || !bool_at(
+            corpus,
+            "/audit_summary/direct_public_rejection_panic_fail_closed_kat_covered",
+        )?
+        || !bool_at(
+            corpus,
+            "/audit_summary/direct_public_rejection_consensus_kat_hypothesis_explicit",
+        )?
+        || !bool_at(
+            corpus,
+            "/audit_summary/direct_public_rejection_all_public_objects_kat_covered",
+        )?
+        || !bool_at(
+            corpus,
+            "/audit_summary/direct_public_rejection_target_client_mapping_complete",
+        )?
         || bool_at(corpus, "/audit_summary/composition_theorem_instantiated")?
         || bool_at(
             corpus,
             "/audit_summary/account_creation_proof_boundary_verified",
         )?
+        || !bool_at(corpus, "/audit_summary/direct_leaf_canonical_live_imported")?
+        || !bool_at(
+            corpus,
+            "/audit_summary/direct_leaf_canonical_live_lifecycle_and_kat_hypothesis_explicit",
+        )?
+        || !bool_at(
+            corpus,
+            "/audit_summary/direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle",
+        )?
         || !bool_at(corpus, "/audit_summary/checked_core_frame_binding_imported")?
         || !bool_at(corpus, "/audit_summary/slot_authorization_digest_imported")?
+        || !bool_at(
+            corpus,
+            "/audit_summary/direct_evidence_leaf_binding_imported",
+        )?
+        || !bool_at(
+            corpus,
+            "/audit_summary/direct_evidence_leaf_binding_proof_boundary_hypothesis_explicit",
+        )?
+        || !bool_at(
+            corpus,
+            "/audit_summary/direct_evidence_leaf_binding_closed_by_frozen_kat",
+        )?
+        || !bool_at(
+            corpus,
+            "/audit_summary/direct_admission_namespace_membership_imported",
+        )?
+        || !bool_at(
+            corpus,
+            "/audit_summary/direct_admission_namespace_data_availability_hypothesis_explicit",
+        )?
+        || !bool_at(
+            corpus,
+            "/audit_summary/direct_admission_namespace_and_data_availability_imported",
+        )?
+        || !bool_at(
+            corpus,
+            "/audit_summary/direct_admission_namespace_closed_by_sovereign_state",
+        )?
+        || !bool_at(
+            corpus,
+            "/audit_summary/qrom_action_theorem_linkage_reduction_imported",
+        )?
+        || !bool_at(
+            corpus,
+            "/audit_summary/qrom_action_review_hypothesis_explicit",
+        )?
         || bool_at(corpus, "/audit_summary/proof_boundary_deployment_ready")?
         || bool_at(corpus, "/audit_summary/qrom_theorem_imports_budget")?
         || bool_at(corpus, "/audit_summary/qrom_external_review_complete")?
@@ -1866,6 +1988,11 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
             "/lifecycle_boundary_report/digest"
         )?,
         "direct_lifecycle_boundary_report_recomputed_digest": hex_encode(&lifecycle_digest),
+        "direct_admission_boundary_report_digest": str_at(
+            corpus,
+            "/admission_boundary_report/digest"
+        )?,
+        "direct_admission_boundary_report_recomputed_digest": hex_encode(&admission_digest),
         "account_creation_proof_boundary_report_digest": str_at(
             corpus,
             "/account_creation_proof_boundary_report/digest"
@@ -1907,6 +2034,46 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
                 corpus,
                 "/audit_summary/all_open_cases_block_deployment"
             )?,
+            "composition_theorem_reduction_imported": bool_at(
+                corpus,
+                "/audit_summary/composition_theorem_reduction_imported"
+            )?,
+            "composition_external_hypotheses_explicit": bool_at(
+                corpus,
+                "/audit_summary/composition_external_hypotheses_explicit"
+            )?,
+            "composition_capstone_under_explicit_named_assumptions_imported": bool_at(
+                corpus,
+                "/audit_summary/composition_capstone_under_explicit_named_assumptions_imported"
+            )?,
+            "direct_public_rejection_state_preserving_imported": bool_at(
+                corpus,
+                "/audit_summary/direct_public_rejection_state_preserving_imported"
+            )?,
+            "direct_public_rejection_classifier_total": bool_at(
+                corpus,
+                "/audit_summary/direct_public_rejection_classifier_total"
+            )?,
+            "direct_public_rejection_all_classes_kat_covered": bool_at(
+                corpus,
+                "/audit_summary/direct_public_rejection_all_classes_kat_covered"
+            )?,
+            "direct_public_rejection_panic_fail_closed_kat_covered": bool_at(
+                corpus,
+                "/audit_summary/direct_public_rejection_panic_fail_closed_kat_covered"
+            )?,
+            "direct_public_rejection_all_public_objects_kat_covered": bool_at(
+                corpus,
+                "/audit_summary/direct_public_rejection_all_public_objects_kat_covered"
+            )?,
+            "direct_public_rejection_target_client_mapping_complete": bool_at(
+                corpus,
+                "/audit_summary/direct_public_rejection_target_client_mapping_complete"
+            )?,
+            "direct_public_rejection_consensus_kat_hypothesis_explicit": bool_at(
+                corpus,
+                "/audit_summary/direct_public_rejection_consensus_kat_hypothesis_explicit"
+            )?,
             "composition_theorem_instantiated": bool_at(
                 corpus,
                 "/audit_summary/composition_theorem_instantiated"
@@ -1915,6 +2082,18 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
                 corpus,
                 "/audit_summary/account_creation_proof_boundary_verified"
             )?,
+            "direct_leaf_canonical_live_imported": bool_at(
+                corpus,
+                "/audit_summary/direct_leaf_canonical_live_imported"
+            )?,
+            "direct_leaf_canonical_live_lifecycle_and_kat_hypothesis_explicit": bool_at(
+                corpus,
+                "/audit_summary/direct_leaf_canonical_live_lifecycle_and_kat_hypothesis_explicit"
+            )?,
+            "direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle": bool_at(
+                corpus,
+                "/audit_summary/direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle"
+            )?,
             "checked_core_frame_binding_imported": bool_at(
                 corpus,
                 "/audit_summary/checked_core_frame_binding_imported"
@@ -1922,6 +2101,42 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
             "slot_authorization_digest_imported": bool_at(
                 corpus,
                 "/audit_summary/slot_authorization_digest_imported"
+            )?,
+            "direct_evidence_leaf_binding_imported": bool_at(
+                corpus,
+                "/audit_summary/direct_evidence_leaf_binding_imported"
+            )?,
+            "direct_evidence_leaf_binding_proof_boundary_hypothesis_explicit": bool_at(
+                corpus,
+                "/audit_summary/direct_evidence_leaf_binding_proof_boundary_hypothesis_explicit"
+            )?,
+            "direct_evidence_leaf_binding_closed_by_frozen_kat": bool_at(
+                corpus,
+                "/audit_summary/direct_evidence_leaf_binding_closed_by_frozen_kat"
+            )?,
+            "direct_admission_namespace_membership_imported": bool_at(
+                corpus,
+                "/audit_summary/direct_admission_namespace_membership_imported"
+            )?,
+            "direct_admission_namespace_data_availability_hypothesis_explicit": bool_at(
+                corpus,
+                "/audit_summary/direct_admission_namespace_data_availability_hypothesis_explicit"
+            )?,
+            "direct_admission_namespace_and_data_availability_imported": bool_at(
+                corpus,
+                "/audit_summary/direct_admission_namespace_and_data_availability_imported"
+            )?,
+            "direct_admission_namespace_closed_by_sovereign_state": bool_at(
+                corpus,
+                "/audit_summary/direct_admission_namespace_closed_by_sovereign_state"
+            )?,
+            "qrom_action_theorem_linkage_reduction_imported": bool_at(
+                corpus,
+                "/audit_summary/qrom_action_theorem_linkage_reduction_imported"
+            )?,
+            "qrom_action_review_hypothesis_explicit": bool_at(
+                corpus,
+                "/audit_summary/qrom_action_review_hypothesis_explicit"
             )?,
             "proof_boundary_deployment_ready": bool_at(
                 corpus,
@@ -1967,9 +2182,9 @@ pub fn path2_account_creation_requirement_vector_corpus_evidence_v1() -> Result<
     if frame_digest != frame_report.digest {
         return Err("frame KAT boundary report digest mismatch".to_string());
     }
-    if frame_report.frozen_corpus_complete || frame_report.deployment_ready {
+    if !frame_report.frozen_corpus_complete || frame_report.deployment_ready {
         return Err(
-            "frame KAT boundary unexpectedly claims frozen/deployment readiness".to_string(),
+            "frame KAT boundary must be frozen while deployment remains closed".to_string(),
         );
     }
 
@@ -2020,7 +2235,7 @@ pub fn path2_account_creation_requirement_vector_corpus_evidence_v1() -> Result<
         return Err("frame KAT vector corpus digest mismatch".to_string());
     }
     if str_at(frame_vectors, "/schema")? != "Descender.Path2.AccountCreationFrameKatVectors.v1"
-        || str_at(frame_vectors, "/status")? != "digest_pinned_boundary_vectors"
+        || str_at(frame_vectors, "/status")? != "frozen_digest_pinned_boundary_vectors"
         || str_at(frame_vectors, "/boundary_report/digest")? != hex_encode(&frame_report.digest)
         || u64_at(frame_vectors, "/boundary_report/row_count")? != frame_report.rows.len() as u64
         || u64_at(frame_vectors, "/case_count")? != frame_report.rows.len() as u64 + 1
@@ -2029,6 +2244,7 @@ pub fn path2_account_creation_requirement_vector_corpus_evidence_v1() -> Result<
             frame_vectors,
             "/boundary_report/every_current_row_has_generated_vector",
         )?
+        || !bool_at(frame_vectors, "/boundary_report/frozen_corpus_complete")?
         || bool_at(frame_vectors, "/boundary_report/deployment_ready")?
     {
         return Err(

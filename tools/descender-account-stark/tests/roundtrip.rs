@@ -10,11 +10,10 @@
 //!   * invalid witness (non-canonical projection) -> Err
 
 use descender_account_stark::{
-    padseed_witness_column, proof_size_bytes, prove_account_creation,
-    prove_account_creation_batch, prove_account_creation_batch_with_seed,
-    prove_account_creation_with_seed, trace_columns, verify_account_creation,
-    verify_account_creation_batch, AccountCreationSecrets, Challenge, Val, N_LANES,
-    PROD_SOUNDNESS_BITS,
+    padseed_witness_column, proof_size_bytes, prove_account_creation, prove_account_creation_batch,
+    prove_account_creation_batch_with_seed, prove_account_creation_with_seed, trace_columns,
+    verify_account_creation, verify_account_creation_batch, AccountCreationSecrets, Challenge, Val,
+    N_LANES, PROD_SOUNDNESS_BITS,
 };
 use p3_field::PrimeCharacteristicRing;
 
@@ -128,8 +127,14 @@ fn single_zk_hiding_by_attempted_recovery() {
     let target = Challenge::from(Val::from_u32(s.pad_seed[k] as u32));
     let ra = proof_a.opened_values.trace_local[col];
     let rb = proof_b.opened_values.trace_local[col];
-    assert_ne!(ra, target, "HIDING BROKEN: recovered pad_seed byte (seed a)");
-    assert_ne!(rb, target, "HIDING BROKEN: recovered pad_seed byte (seed b)");
+    assert_ne!(
+        ra, target,
+        "HIDING BROKEN: recovered pad_seed byte (seed a)"
+    );
+    assert_ne!(
+        rb, target,
+        "HIDING BROKEN: recovered pad_seed byte (seed b)"
+    );
     assert_ne!(ra, rb, "opening not randomized across mask seeds");
 
     // The proofs themselves must differ (ZK randomness present).
@@ -189,8 +194,7 @@ fn batch_soundness_tampered_public_rejected() {
 fn batch_soundness_tampered_proof_rejected() {
     let n = 4usize;
     let secrets: Vec<_> = (0..n as u64).map(secrets_indexed).collect();
-    let (digest, publics, mut proof) =
-        prove_account_creation_batch(&secrets).expect("batch prove");
+    let (digest, publics, mut proof) = prove_account_creation_batch(&secrets).expect("batch prove");
 
     proof.opened_values.trace_local[0] += Challenge::ONE;
     let bad = proof;

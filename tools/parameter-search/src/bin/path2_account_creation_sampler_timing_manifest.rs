@@ -1,13 +1,13 @@
 use descender_parameter_search::production_reference::{
-    path2_account_creation_proof_boundary_report_v1,
+    PROFILE, path2_account_creation_proof_boundary_report_v1,
     path2_account_creation_proof_boundary_report_v1_digest,
     path2_account_creation_sampler_timing_report_v1,
     path2_account_creation_sampler_timing_report_v1_digest,
     path2_authorization_class_binding_audit_report_v1,
     validate_path2_account_creation_sampler_timing_report_v1,
-    validate_path2_authorization_class_binding_audit_report_v1, PROFILE,
+    validate_path2_authorization_class_binding_audit_report_v1,
 };
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
 fn hex_encode(bytes: &[u8]) -> String {

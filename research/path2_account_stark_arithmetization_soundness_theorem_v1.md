@@ -98,7 +98,7 @@ monotone count, closing reorder/fabricate/inflate (audit headline, batch mode).
 For a trace `T` define the decoded witness from the committed columns:
 
 ```text
-pad_seed        := T[c1.lanes + 0 .. +32]            (= T[c2.lanes + 0..32] by SEAM, air.rs:766)
+pad_seed        := T[c1.lanes + 1 .. +33]            (= T[c2.lanes + 1..33] by SEAM)
 account_proj[j] := eval_c4_residue(T, c4_off + j)    canonical < q   (air.rs:761, :1381)
 masks[j]        := reduce_gadget(C2 squeeze)          (air.rs:737)
 masked_proj[j]  := T[carry_masked_off + j]                            (air.rs:862)
@@ -128,23 +128,28 @@ not re-proven here.
 
 ### L1 — Commitment binding (clauses 2, 5, 6 commitments)
 
-`pad_source_commitment = P_sponge(pad_seed‖…)` is forced equal to `pv[0..10)`
-(`air.rs:712-726`); `opening_tuple_commitment = P_sponge(account_proj‖lifecycle
-‖account_id‖…)` equal to `pv[10..20)` (`air.rs:739-756`). The sponge input
-lanes are the committed witness columns and the squeeze equals `pv`, so the two
+`pad_source_commitment = P_sponge(PADS ‖ pad_seed[32] ‖ nonce_c1[40])` is
+forced equal to `pv[0..10)`; `opening_tuple_commitment = P_sponge(OPEN ‖
+account_proj[6] ‖ lifecycle[32] ‖ nonce_c6[40] ‖ account_id[32])` is forced
+equal to `pv[10..20)`. The AIR pins `PADS = 0x50414453` and `OPEN =
+0x4F50454E`, range-checks every byte lane, and the deployment prover replaces
+both nonces with fresh OS-CSPRNG output before tracing. The sponge input lanes
+are the committed witness columns and the squeeze equals `pv`, so the two
 public commitments are exactly the Poseidon2 images of the decoded witness.
 A trace cannot present a commitment in `pv` that is not the sponge image of its
 own committed preimage. ∎
 
 ### L2 — Mask = PRF(pad_seed, slot, domain) (clause 4 masks)
 
-`masks` are not free columns: C2 is a Poseidon2 sponge over `pad_seed‖slot_id‖…`
-(`air.rs:728-738`), squeezed to 30 lanes and `reduce_gadget`-reduced
+`masks` are not free columns: C2 is a Poseidon2 sponge over the explicit
+`MASK = 0x4D41534B` field lane followed by `pad_seed‖slot_id`
+(`air.rs`), squeezed to 36 lanes and `reduce_gadget`-reduced with six
+KoalaBear digits per mask
 (`reduce_gadget.rs`) to six `mask[j] ∈ [0,q)`. The SEAM `pad_seed C1==C2`
 (`air.rs:765-772`, 32 byte equalities) forces the C2 PRF and the C1 commitment
 to use the *same* pad seed, and context-bind (a) (`air.rs:806-813`) forces the
 absorbed `slot_id` to equal `pv` slot. Hence each `mask[j]` is the deterministic
-sponge image of `(pad_seed, slot_id, domain)` — there is no freedom to choose
+sponge image of `(MASK, pad_seed, slot_id)` — there is no freedom to choose
 masks independent of the committed pad seed and public slot. ∎
 
 ### L3 — Canonical account projection, range-exact (clause 4 residues)

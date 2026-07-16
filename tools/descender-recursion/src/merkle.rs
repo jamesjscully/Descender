@@ -74,7 +74,10 @@ pub fn verify_path(
 /// Drift guard: the const layout must match the leaf STARK's `MyCompress`/digest at the
 /// quantum-128 binding profile (13-element sponge-mode digest over the width-16 permutation).
 pub fn assert_layout_matches_leaf() {
-    assert_eq!(DIGEST_ELEMS, 13, "digest width drifted from leaf config (q128 = 13)");
+    assert_eq!(
+        DIGEST_ELEMS, 13,
+        "digest width drifted from leaf config (q128 = 13)"
+    );
     assert_eq!(WIDTH, 16, "Poseidon2 width drifted from leaf config");
 }
 
@@ -84,7 +87,9 @@ mod tests {
     use p3_field::PrimeCharacteristicRing;
 
     fn digest(seed: u32) -> Digest {
-        core::array::from_fn(|i| Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32)))
+        core::array::from_fn(|i| {
+            Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32))
+        })
     }
 
     /// A reference binary Merkle tree built with the REAL compression — the authority the

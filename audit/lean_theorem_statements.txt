@@ -75,6 +75,18 @@ theorem Descender.Path2FullOpeningFieldEvidenceSourceAdapters.reviewed_fq12_cert
       RouteParser P),
   Descender.Path2NativeBoundary.ReviewedFq12ExtractionCertificateSoundness P
 
+theorem Descender.Path2FullSpendConcrete.concreteCheckedCoreAuthorizationAccepted_valid_or_named_break_v1 :
+∀ {spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple},
+  Descender.Path2FullSpendConcrete.ConcreteCheckedCoreAuthorizationAcceptance spend →
+    Descender.Path2FullSpendConcrete.ConcreteCheckedCoreValidOrNamedBreak spend
+
+theorem Descender.Path2FullSpendConcrete.concreteCheckedCoreDomainQromBreak_couples_to_directGame_v1 :
+∀ {C : Descender.Path2FullSpendConcrete.ConcreteGameConfig}
+  {spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple},
+  spend.signatureBody.qromOrDomainSeparationBreak →
+    Descender.Path2FullSpendConcrete.ConcreteBreakFor C spend
+      Descender.Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak
+
 theorem Descender.Path2FullSpendConcrete.concreteFullSignatureExecutionSource_instantiation_v1 :
 Exists fun selectedRustFullExecutionSource =>
   Descender.Path2FullSpendConcrete.ConcreteFullExecutionAcceptedSpendLift
@@ -185,6 +197,137 @@ theorem Descender.Path2FullSpendConcrete.selectedRustAcceptedBoundarySimulatorNo
           Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend →
         Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundarySimulatorNoExportWith SimulatorNoExportSound spend
 
+theorem Descender.Path2FullSpendConcrete.selectedRustAccountMaskPrfFramesFresh_of_verifiedNullifierRegistry_v1 :
+∀ (reg : Descender.Path2FullSpendConcrete.GlobalPadSeedRegistry)
+  (padSeedSlotOf verifiedNullifierOf leafIdOf : Descender.Path2FullSpendConcrete.ConcretePrevalidatedSlotLeaf → Nat)
+  (admitted : Descender.Path2FullSpendConcrete.ConcretePrevalidatedSlotLeaf → Prop)
+  (TargetChainFinalityProfileInstantiated LifecycleTransitionProfileVerified ReorgBelowFinalizedRejected
+    PendingWindowReorgFreesAdmissions FinalizedAdmissionsPreserved : Prop),
+  Descender.Path2FullSpendConcrete.SelectedRustSovereignVerifiedNullifierRegistryContract reg padSeedSlotOf
+      verifiedNullifierOf leafIdOf admitted TargetChainFinalityProfileInstantiated LifecycleTransitionProfileVerified
+      ReorgBelowFinalizedRejected PendingWindowReorgFreesAdmissions FinalizedAdmissionsPreserved →
+    Descender.Path2FullSpendConcrete.SelectedAccountMaskPrfAdmissionFramesFresh padSeedSlotOf admitted
+
+theorem Descender.Path2FullSpendConcrete.selectedRustDirectDeterministicPublicRejectionClosed_v1 :
+Descender.Path2FullSpendConcrete.SelectedRustDirectDeterministicPublicRejection
+
+theorem Descender.Path2FullSpendConcrete.selectedRustDirectModeAuthorizationClosedUnderExplicitAssumptions_v1 :
+∀
+  (SimulatorNoExportSound FriAokExtractorSound FriQromTranscriptSound FrozenPayloadKatsComplete
+    ProductionGateReviewAccepted : Descender.Path2FullSpendConcrete.ConcreteSpendTuple → Prop)
+  (PostQuantumSoundnessTargetMet : Prop)
+  (QromActionReviewed : Descender.Path2FullSpendConcrete.ConcreteSpendTuple → Prop)
+  (SignerAndKeygenReviewed ExternalCodedSisOrLatticeCoreReviewed : Prop)
+  (reg : Descender.Path2FullSpendConcrete.GlobalPadSeedRegistry)
+  (padSeedSlotOf verifiedNullifierOf leafIdOf : Descender.Path2FullSpendConcrete.ConcretePrevalidatedSlotLeaf → Nat)
+  (admitted : Descender.Path2FullSpendConcrete.ConcretePrevalidatedSlotLeaf → Prop)
+  (TargetChainFinalityProfileInstantiated LifecycleTransitionProfileVerified ReorgBelowFinalizedRejected
+    PendingWindowReorgFreesAdmissions FinalizedAdmissionsPreserved : Prop),
+  (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+      Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryNoExportSupport spend →
+        SimulatorNoExportSound spend) →
+    (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+        Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryFriAokSupport spend → FriAokExtractorSound spend) →
+      (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+          Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryFriQromSupport spend →
+            FriQromTranscriptSound spend) →
+        (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+            Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryPayloadKatSupport spend →
+              FrozenPayloadKatsComplete spend) →
+          (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+              Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryProductionGateSupport spend →
+                ProductionGateReviewAccepted spend) →
+            PostQuantumSoundnessTargetMet →
+              Descender.Path2FullSpendConcrete.SelectedRustSovereignVerifiedNullifierRegistryContract reg padSeedSlotOf
+                  verifiedNullifierOf leafIdOf admitted TargetChainFinalityProfileInstantiated
+                  LifecycleTransitionProfileVerified ReorgBelowFinalizedRejected PendingWindowReorgFreesAdmissions
+                  FinalizedAdmissionsPreserved →
+                (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+                    Descender.Path2FullSpendConcrete.SelectedRustDirectQromActionTheoremSupport
+                        Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend →
+                      QromActionReviewed spend) →
+                  SignerAndKeygenReviewed →
+                    ExternalCodedSisOrLatticeCoreReviewed →
+                      ∀ {spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple},
+                        Descender.Path2FullSpendConcrete.ConcreteSpendVerificationAccepts
+                            Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend →
+                          Descender.Path2FullSpendConcrete.SelectedRustDirectProductConclusionWith
+                            (Descender.Path2FullSpendConcrete.SelectedRustAcceptedBoundaryProofFamilyReviewedUnderExplicitAssumptionsWith
+                              SimulatorNoExportSound FriAokExtractorSound FriQromTranscriptSound
+                              FrozenPayloadKatsComplete ProductionGateReviewAccepted PostQuantumSoundnessTargetMet
+                              (Descender.Path2FullSpendConcrete.PadSeedGloballyReorgSafeUniqueWith padSeedSlotOf
+                                admitted TargetChainFinalityProfileInstantiated LifecycleTransitionProfileVerified
+                                ReorgBelowFinalizedRejected PendingWindowReorgFreesAdmissions
+                                FinalizedAdmissionsPreserved))
+                            QromActionReviewed
+                            Descender.Path2FullSpendConcrete.SelectedRustDirectDeterministicPublicRejection
+                            SignerAndKeygenReviewed ExternalCodedSisOrLatticeCoreReviewed spend
+-- depends on native_decide (compiler-trust axioms)
+
+theorem Descender.Path2FullSpendConcrete.selectedRustDirectModeAuthorizationTheoremReduction_v1 :
+∀ (AccountCreationProofFamilyReviewed QromActionReviewed : Descender.Path2FullSpendConcrete.ConcreteSpendTuple → Prop)
+  (DeterministicPublicRejection SignerAndKeygenReviewed ExternalCodedSisOrLatticeCoreReviewed : Prop),
+  (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+      Descender.Path2FullSpendConcrete.AccountCreationProofBoundaryEvidenceAccepted
+          Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend →
+        AccountCreationProofFamilyReviewed spend) →
+    (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+        Descender.Path2FullSpendConcrete.SelectedRustDirectQromActionTheoremSupport
+            Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend →
+          QromActionReviewed spend) →
+      DeterministicPublicRejection →
+        SignerAndKeygenReviewed →
+          ExternalCodedSisOrLatticeCoreReviewed →
+            ∀ {spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple},
+              Descender.Path2FullSpendConcrete.ConcreteSpendVerificationAccepts
+                  Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend →
+                Descender.Path2FullSpendConcrete.SelectedRustDirectProductConclusionWith
+                  AccountCreationProofFamilyReviewed QromActionReviewed DeterministicPublicRejection
+                  SignerAndKeygenReviewed ExternalCodedSisOrLatticeCoreReviewed spend
+-- depends on native_decide (compiler-trust axioms)
+
+theorem Descender.Path2FullSpendConcrete.selectedRustDirectModeAuthorizationWithClosedPublicRejectionReduction_v1 :
+∀ (AccountCreationProofFamilyReviewed QromActionReviewed : Descender.Path2FullSpendConcrete.ConcreteSpendTuple → Prop)
+  (SignerAndKeygenReviewed ExternalCodedSisOrLatticeCoreReviewed : Prop),
+  (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+      Descender.Path2FullSpendConcrete.AccountCreationProofBoundaryEvidenceAccepted
+          Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend →
+        AccountCreationProofFamilyReviewed spend) →
+    (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+        Descender.Path2FullSpendConcrete.SelectedRustDirectQromActionTheoremSupport
+            Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend →
+          QromActionReviewed spend) →
+      SignerAndKeygenReviewed →
+        ExternalCodedSisOrLatticeCoreReviewed →
+          ∀ {spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple},
+            Descender.Path2FullSpendConcrete.ConcreteSpendVerificationAccepts
+                Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend →
+              Descender.Path2FullSpendConcrete.SelectedRustDirectProductConclusionWith
+                AccountCreationProofFamilyReviewed QromActionReviewed
+                Descender.Path2FullSpendConcrete.SelectedRustDirectDeterministicPublicRejection SignerAndKeygenReviewed
+                ExternalCodedSisOrLatticeCoreReviewed spend
+-- depends on native_decide (compiler-trust axioms)
+
+theorem Descender.Path2FullSpendConcrete.selectedRustDirectPublicRejectionStatePreserving_v1 :
+∀ {State Error : Type} (classify : Error → Descender.Path2FullSpendConcrete.SelectedRustDirectPublicResultClass)
+  (stateBefore : State) (verification : Option (Except Error (Prod Nat State)))
+  {resultClass : Descender.Path2FullSpendConcrete.SelectedRustDirectPublicResultClass} {rejectedState : State},
+  Eq (Descender.Path2FullSpendConcrete.selectedRustDirectPublicWrapperModel classify stateBefore verification)
+      (Descender.Path2FullSpendConcrete.SelectedRustDirectPublicWrapperOutcome.rejected resultClass rejectedState) →
+    Eq rejectedState stateBefore
+
+theorem Descender.Path2FullSpendConcrete.selectedRustDirectQromActionTheoremLinkageReduction_v1 :
+∀ (QromActionReviewed : Descender.Path2FullSpendConcrete.ConcreteSpendTuple → Prop),
+  (∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+      Descender.Path2FullSpendConcrete.SelectedRustDirectQromActionTheoremSupport
+          Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend →
+        QromActionReviewed spend) →
+    ∀ (spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple),
+      Descender.Path2FullSpendConcrete.ConcreteSpendVerificationAccepts
+          Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend →
+        Descender.Path2FullSpendConcrete.SelectedRustDirectQromActionTheoremLinkageWith QromActionReviewed spend
+-- depends on native_decide (compiler-trust axioms)
+
 theorem Descender.Path2FullSpendConcrete.selectedRustPadSeedGloballyReorgSafeUniqueReduction_v1 :
 ∀ (reg : Descender.Path2FullSpendConcrete.GlobalPadSeedRegistry)
   (padSeedOf leafIdOf : Descender.Path2FullSpendConcrete.ConcretePrevalidatedSlotLeaf → Nat)
@@ -202,6 +345,105 @@ theorem Descender.Path2FullSpendConcrete.selectedRustPadSeedGloballyReorgSafeUni
                 Descender.Path2FullSpendConcrete.PadSeedGloballyReorgSafeUniqueWith padSeedOf admitted
                   TargetChainFinalityProfileInstantiated LifecycleTransitionProfileVerified ReorgBelowFinalizedRejected
                   PendingWindowReorgFreesAdmissions FinalizedAdmissionsPreserved
+
+theorem Descender.Path2FullSpendConcrete.selectedRustProductionCheckedCoreAccepted_valid_or_named_break_v1 :
+∀ {spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple},
+  Descender.Path2FullSpendConcrete.ConcreteSpendVerificationAccepts
+      Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend →
+    Descender.Path2FullSpendConcrete.ConcreteCheckedCoreValidOrNamedBreak spend
+
+theorem Descender.Path2FullSpendConcrete.selectedRustProductionCheckedCoreAccepted_valid_v1 :
+∀ {spend : Descender.Path2FullSpendConcrete.ConcreteSpendTuple},
+  Descender.Path2FullSpendConcrete.ConcreteSpendVerificationAccepts
+      Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig spend →
+    Descender.Path2FullSpendConcrete.ConcreteCheckedCoreAuthorizationValid spend
+
+theorem Descender.Path2FullSpendConcrete.selectedRustSovereignDirectClientRejectionMapsToNoMutation_v1 :
+∀ (resultClass : Descender.Path2FullSpendConcrete.SelectedRustDirectPublicResultClass),
+  Descender.Path2FullSpendConcrete.selectedRustDirectPublicResultClassIsRejection resultClass →
+    Eq (Descender.Path2FullSpendConcrete.selectedRustSovereignDirectClientStateEffect resultClass)
+      Descender.Path2FullSpendConcrete.SelectedRustSovereignDirectClientStateEffect.noMutation
+
+theorem Descender.Path2FullSpendConcrete.selectedRustSovereignPadSeedReorgSafeUniqueness_of_verifiedNullifierRegistry_v1 :
+∀ (reg : Descender.Path2FullSpendConcrete.GlobalPadSeedRegistry)
+  (padSeedSlotOf verifiedNullifierOf leafIdOf : Descender.Path2FullSpendConcrete.ConcretePrevalidatedSlotLeaf → Nat)
+  (admitted : Descender.Path2FullSpendConcrete.ConcretePrevalidatedSlotLeaf → Prop)
+  (TargetChainFinalityProfileInstantiated LifecycleTransitionProfileVerified ReorgBelowFinalizedRejected
+    PendingWindowReorgFreesAdmissions FinalizedAdmissionsPreserved : Prop),
+  Descender.Path2FullSpendConcrete.SelectedRustSovereignVerifiedNullifierRegistryContract reg padSeedSlotOf
+      verifiedNullifierOf leafIdOf admitted TargetChainFinalityProfileInstantiated LifecycleTransitionProfileVerified
+      ReorgBelowFinalizedRejected PendingWindowReorgFreesAdmissions FinalizedAdmissionsPreserved →
+    Descender.Path2FullSpendConcrete.PadSeedGloballyReorgSafeUniqueWith padSeedSlotOf admitted
+      TargetChainFinalityProfileInstantiated LifecycleTransitionProfileVerified ReorgBelowFinalizedRejected
+      PendingWindowReorgFreesAdmissions FinalizedAdmissionsPreserved
+
+theorem Descender.Path2HashBudget.selectedAccountStarkFriAdaptiveBcsOracleTerm_le_q165_v1 :
+Real.instLE.le Descender.Path2HashBudget.selectedAccountStarkFriAdaptiveBcsOracleTerm
+  (instHDiv.hDiv 1 (instHPow.hPow 2 165).cast)
+
+theorem Descender.Path2HashBudget.selectedAccountStarkFriAdaptiveQromPolicy_v1 :
+And (Eq Descender.Path2HashBudget.selectedAccountStarkFriAdaptiveGlobalQueryBound Bool.true)
+  (Eq Descender.Path2HashBudget.selectedAccountStarkFriBcsAccountTargetMultiplier 1)
+
+theorem Descender.Path2HashBudget.selectedAccountStarkFriQromBcsOracleTerm_le_q130_v1 :
+Real.instLE.le Descender.Path2HashBudget.selectedAccountStarkFriQromBcsOracleTerm
+  (instHDiv.hDiv 1 (instHPow.hPow 2 130).cast)
+
+theorem Descender.Path2HashBudget.selectedAccountStarkFriQromDimensions_v1 :
+And (Eq Descender.Path2HashBudget.selectedAccountStarkFriQromQueryCount (instHPow.hPow 2 16))
+  (And (Eq Descender.Path2HashBudget.selectedAccountStarkFriQromTargetCount (instHPow.hPow 2 32))
+    (And (Eq Descender.Path2HashBudget.selectedAccountStarkFriQromOutputBits 247)
+      (And (Eq Descender.Path2HashBudget.selectedAccountStarkFriQromRbrBits 256)
+        (Eq Descender.Path2HashBudget.selectedAccountStarkFriQromLiftConstantBound (instHPow.hPow 2 32)))))
+
+theorem Descender.Path2HashBudget.selectedAccountStarkFriQromNormalizedBudget_le_q128_v1 :
+Real.instLE.le Descender.Path2HashBudget.selectedAccountStarkFriQromNormalizedBudget
+  (instHDiv.hDiv 1 (instHPow.hPow 2 128).cast)
+
+theorem Descender.Path2HashBudget.selectedAccountStarkFriQromRbrTerm_le_q130_v1 :
+Real.instLE.le Descender.Path2HashBudget.selectedAccountStarkFriQromRbrTerm (instHDiv.hDiv 1 (instHPow.hPow 2 130).cast)
+
+theorem Descender.Path2HashBudget.selectedAccountStarkPublishedFriAdaptiveBudget_le_q128_v1 :
+Real.instLE.le
+  (instHAdd.hAdd Descender.Path2HashBudget.selectedAccountStarkPublishedFriAdaptiveRbrTerm
+    Descender.Path2HashBudget.selectedAccountStarkFriAdaptiveBcsOracleTerm)
+  (instHDiv.hDiv 1 (instHPow.hPow 2 128).cast)
+
+theorem Descender.Path2HashBudget.selectedAccountStarkPublishedFriAdaptiveRbrTerm_le_q154_v1 :
+Real.instLE.le Descender.Path2HashBudget.selectedAccountStarkPublishedFriAdaptiveRbrTerm
+  (instHDiv.hDiv 1 (instHPow.hPow 2 154).cast)
+
+theorem Descender.Path2HashBudget.selectedAccountStarkPublishedFriLifetimeFieldBudget_not_le_q128_v1 :
+Not
+  (Real.instLE.le
+    (instHMul.hMul
+      (instHMul.hMul
+        (instHMul.hMul Descender.Path2HashBudget.selectedAccountStarkFriQromLiftConstantBound.cast
+          Descender.Path2HashBudget.selectedAccountStarkFriQromTargetCount.cast)
+        (instHPow.hPow Descender.Path2HashBudget.selectedAccountStarkFriQromQueryCount.cast 2))
+      Descender.Path2HashBudget.selectedAccountStarkPublishedFriRbrFieldTerm)
+    (instHDiv.hDiv 1 (instHPow.hPow 2 128).cast))
+
+theorem Descender.Path2HashBudget.selectedAccountStarkPublishedFriRbrBound_le_q218_v1 :
+Real.instLE.le Descender.Path2HashBudget.selectedAccountStarkPublishedFriRbrBound
+  (instHDiv.hDiv 1 (instHPow.hPow 2 218).cast)
+
+theorem Descender.Path2HashBudget.selectedAccountStarkPublishedFriRbrDimensions_v1 :
+And (Eq Descender.Path2HashBudget.selectedAccountStarkChallengeFieldOrder (instHPow.hPow 2130706433 8))
+  (And (Eq Descender.Path2HashBudget.selectedAccountStarkSingleLeafDegreeBits 2)
+    (Eq Descender.Path2HashBudget.selectedAccountStarkSingleLeafFriDomainSize 64))
+
+theorem Descender.Path2HashBudget.selectedAccountStarkPublishedFriRbrFieldTerm_le_q218_v1 :
+Real.instLE.le Descender.Path2HashBudget.selectedAccountStarkPublishedFriRbrFieldTerm
+  (instHDiv.hDiv 1 (instHPow.hPow 2 218).cast)
+
+theorem Descender.Path2HashBudget.selectedAccountStarkPublishedFriRbrQueryTerm_le_q218_v1 :
+Real.instLE.le Descender.Path2HashBudget.selectedAccountStarkPublishedFriRbrQueryTerm
+  (instHDiv.hDiv 1 (instHPow.hPow 2 218).cast)
+
+theorem Descender.Path2HashBudget.selectedRustDirectQromActionBudgetBridge_v1 :
+Descender.Path2HashBudget.DirectQromActionBudgetBridge Descender.Path2HashBudget.path2DirectQueryBudgetV1
+-- depends on native_decide (compiler-trust axioms)
 
 theorem Descender.Path2HashDomainAndMultiTarget.checkedCoreFrameByteDomainSeparated_of_instantiation :
 ∀ {R : Descender.Path2HashDomainAndMultiTarget.ActiveHashDomainRegistry}
@@ -249,6 +491,133 @@ theorem Descender.Path2HiddenSourceSemanticsBoundary.reviewed_fq12_hidden_source
                 Descender.Path2HiddenSourceSemanticsBoundary.ReviewedFq12HiddenSourceProofSemanticsClosed
                   selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates
 
+theorem Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountCommitmentDomainsSeparated_v1 :
+And
+  (Ne Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountPadCommitmentDomain
+    Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountOpeningCommitmentDomain)
+  (And
+    (Ne Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountPadCommitmentDomain
+      Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountMaskPrfDomain)
+    (And
+      (Ne Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountPadCommitmentDomain
+        Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountNullifierDomain)
+      (And
+        (Ne
+          Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountOpeningCommitmentDomain
+          Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountMaskPrfDomain)
+        (And
+          (Ne
+            Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountOpeningCommitmentDomain
+            Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountNullifierDomain)
+          (Ne Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountMaskPrfDomain
+            Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountNullifierDomain)))))
+-- depends on native_decide (compiler-trust axioms)
+
+theorem Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountCommitmentFrameDimensions_v1 :
+And
+  (Eq Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountCommitmentNonceBits 320)
+  (And
+    (Eq
+      Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountPadCommitmentInputLanes
+      73)
+    (And
+      (Eq
+        Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountOpeningCommitmentInputLanes
+        111)
+      (Eq
+        Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountCommitmentTargetCount
+        (instHPow.hPow 2 33))))
+-- depends on native_decide (compiler-trust axioms)
+
+theorem Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountCommitmentQromSearchError_le_q128_v1 :
+Real.instLE.le
+  Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountCommitmentQromSearchError
+  (instHDiv.hDiv 1 (instHPow.hPow 2 128).cast)
+
+theorem Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountCommitmentQromSearchScaledNumerator_le_denominator_v1 :
+instLENat.le
+  (instHMul.hMul
+    (instHMul.hMul
+      Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountCommitmentTargetCount
+      (instHPow.hPow
+        Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountCommitmentQromQueries
+        2))
+    (instHPow.hPow 2 128))
+  (instHPow.hPow 2
+    Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountCommitmentNonceBits)
+-- depends on native_decide (compiler-trust axioms)
+
+theorem Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountMaskPrfDomainsSeparated_v1 :
+Ne Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountMaskPrfDomain
+  Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountNullifierDomain
+-- depends on native_decide (compiler-trust axioms)
+
+theorem Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountMaskPrfFrameDimensions_v1 :
+And (Eq Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountMaskPrfInputLanes 41)
+  (Eq Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountMaskPrfSqueezedLanes 36)
+-- depends on native_decide (compiler-trust axioms)
+
+theorem Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountMaskPrfSqueezeIndexInjective_v1 :
+Function.Injective
+  Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountMaskPrfSqueezeIndex
+
+theorem Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountMaskWideReductionError_le_q128_v1 :
+Real.instLE.le
+  Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountMaskWideReductionError
+  (instHDiv.hDiv 1 (instHPow.hPow 2 128).cast)
+
+theorem Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountMaskWideReductionScaledNumerator_le_denominator_v1 :
+instLENat.le
+  (instHMul.hMul
+    (instHMul.hMul
+      (instHMul.hMul
+        Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountMaskLaneCount
+        Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountMaskTargetHorizon)
+      Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountMaskModulus)
+    (instHPow.hPow 2 128))
+  (instHPow.hPow
+    Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountMaskPrfFieldModulus
+    Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountMaskReductionDigits)
+-- depends on native_decide (compiler-trust axioms)
+
+theorem Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedRustSimulatorInputIndependentOfProofOutput_v1 :
+∀ (A : Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage)
+  (accountStarkBundleBytesOrDigest publicReplayPayloadDigest : Nat),
+  Eq (A.withProofOutput accountStarkBundleBytesOrDigest publicReplayPayloadDigest).simulatorPublicInputs
+    A.simulatorPublicInputs
+
+theorem Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedRustSimulatorInputOutputIndependentOfProofOutput_v1 :
+∀ (A : Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage)
+  (accountStarkBundleBytesOrDigest publicReplayPayloadDigest : Nat),
+  Eq (A.withProofOutput accountStarkBundleBytesOrDigest publicReplayPayloadDigest).simulatorInputOutput
+    A.simulatorInputOutput
+
+theorem Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedRustUniformMaskTranslationBijective_v1 :
+∀
+  (projection :
+    Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.SelectedAccountProjectionMaskVector),
+  Function.Bijective fun mask =>
+    EquivLike.toFunLike.coe
+      (Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountProjectionMaskTranslation
+        projection)
+      mask
+
+theorem Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedRustUniformMaskTranslationCollisionFree_v1 :
+∀
+  (projection mask₁ mask₂ :
+    Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.SelectedAccountProjectionMaskVector),
+  Iff
+    (Eq
+      (EquivLike.toFunLike.coe
+        (Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountProjectionMaskTranslation
+          projection)
+        mask₁)
+      (EquivLike.toFunLike.coe
+        (Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountProjectionMaskTranslation
+          projection)
+        mask₂))
+    (Eq mask₁ mask₂)
+
 theorem Descender.Path2NoExportConcrete.selectedRustAcceptedBundlePublicAnchorSimulationBoundary_v1 :
 ∀ (A : Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage), A.publicAnchorSimulationBoundary
 
@@ -257,6 +626,16 @@ theorem Descender.Path2NoExportConcrete.selectedRustAcceptedBundlePublicBundleFr
 
 theorem Descender.Path2NoExportConcrete.selectedRustAcceptedBundleSimulatorInputFromPublicAnchors_v1 :
 ∀ (A : Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage), A.simulatorInputFromPublicAnchors
+
+theorem Descender.Path2NoExportConcrete.selectedRustAcceptedBundleSimulatorNoExportFromHybrid_v1 :
+∀
+  (hHybrid :
+    (A : Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage) →
+      A.SelectedAccountStarkSimulatorHybridCertificate)
+  (A : Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage),
+  Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.acceptedBundleSimulatorNoExportWith
+    Descender.Path2NoExportConcrete.AccountCreationAcceptedPublicAnchorPackage.selectedAccountStarkSimulatorHybridRelation
+    A
 
 theorem Descender.Path2NoExportConcrete.selectedRustAcceptedBundleSimulatorNoExportReduction_v1 :
 ∀

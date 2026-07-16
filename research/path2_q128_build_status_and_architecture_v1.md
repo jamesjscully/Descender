@@ -31,6 +31,7 @@ The original objective driving this work: *an economically viable quantum-128 le
 | `PROD_LOG_BLOWUP` | 4 | rate ρ = 1/16 |
 | `PROD_QUERY_POW_BITS` | 16 | query proof-of-work |
 | `Challenge` | `BinomialExtensionField<Val, 8>` | degree-8 ext (|F| = p^8 ≈ 2^248) |
+| `Challenger` | `DuplexChallenger<Val, Perm, 16, 7>` | rate 7 / capacity 9; extension challenges require two squeeze blocks |
 | field / perm | KoalaBear / Poseidon2-16 | Plonky3 0.6.1 |
 
 The conservative q128 floors (FS-grind→Grover, sponge indifferentiability c/2, digest-13 BHT
@@ -64,8 +65,21 @@ A hand-written verifier-as-AIR that re-verifies the creation leaf STARK in-circu
 no recursion primitive). `src/recursive_air.rs` is the monolithic verifier-AIR (index/challenge bus +
 FRI/DEEP/quotient consumer + leaf C(zeta) mirror + public-IO), made PROVABLE (uniform via
 `num_public_values`) and proven into a real O(1) recursive STARK proof. Gadgets:
-`challenger`, `merkle`/`merkle_air`, `fri_fold`/`fri_fold_air`/`fri_chain_air`/`fri_layer_air`,
+`challenger` plus the capacity-9 migration references `c9_challenger`/`c9_extension_air`,
+`merkle`/`merkle_air`, `fri_fold`/`fri_fold_air`/`fri_chain_air`/`fri_layer_air`,
 `deep`/`deep_air`, `leaf_constraint_air`, `public_io`/`public_io_air`, `index_bus`, `inlined_perm*`.
+The account-STARK transcript and monolithic recursive challenger arithmetic are
+rate 7/capacity 9. The recursive AIR now constrains alpha/zeta refill boundaries,
+the OOD stream, batch-combination alpha, 13-element commit-phase commitments and
+betas, and final/query continuation, with native-fidelity and tamper tests. The
+full-plus-partial pre-alpha and quotient schedules are constraint-checked on a
+real production proof and transcript-value tampering rejects. The real proof's
+production-sized OOD opened-value stream is now also materialized in the
+constant-width vertical `ood_transcript_air`: every rate-7 absorb/permutation is
+constraint-checked, its terminal state matches native Poseidon2, and the AIR proves
+at production q128 knobs. The end-to-end migration flag remains open until those
+vertical witness blocks are equated in-circuit with the PCS opening-verifier columns,
+composed into the production settlement proof, priced, and frozen in the KAT chain.
 
 ### 2.3 True single-proof O(1) block aggregator (Phase-3) — `block_recursive_air`
 
@@ -134,7 +148,7 @@ architecture.
 
 Both pin a deterministic production-config proof's SHA-256 digest (single-thread PoW grind),
 `#[ignore]` (slow; run explicitly):
-- creation leaf — `frozen_q128_leaf_proof_kat`, `b79c7375484b78a5d00579e1d02b93eda1ea04cffc70923a0164887bbe82b4a0`
+- creation leaf — `frozen_q128_leaf_proof_kat`, `b4c9e522f599cc4cd574a7387a6f7300d7d23a1215b83f2a5a667657d4a6e4a0`
 - spend leaf — `frozen_q128_spend_proof_kat`, `297df18647c3c9f3f2a286a4e2d33beb38bac3448031ccfdfc8635d3f0ce4e24`
 
 ## 4. Economics
@@ -147,27 +161,23 @@ native speed. Under native settlement the measured per-block perm counts are thr
 
 ## 5. Remaining gates (precise, honest)
 
-1. **Spend in the O(1) aggregator.** PARTIALLY DONE (2026-06-28): `descender_recursion::spend_block`
-   aggregates N real spend witnesses (via `spend_air::spend_derive`) into one `chain_state_root`
-   through the generic recursion — each member's `packed_witness_commitment` verified in-circuit at the
-   SAME depth the creation aggregator runs at (`proves_spend_block_q128`, production q128). The generic
-   machinery is not creation-coupled, so spends reuse it as-is. The full constraint-level spend
-   verification — `descender_recursion::spend_constraint_air` re-deriving the ENTIRE spend C(zeta)
-   (packing + frame/challenge Poseidon2 sponges + checked-core SIS + sigma identity + sigma commitments
-   + relation-id) over opened-at-zeta cells — is now DONE (2026-06-28): every residual vanishes on a
-   real lifted spend trace, and the full C(zeta) folds + proves+verifies at production q128 via the
-   shared `alpha_fold` committed-accumulator primitive (`full_spend_czeta_folds_provably_q128`, ~57s).
-   The SAME re-arithmetization closes BOTH the creation (`leaf_constraint_air`, in the recursion window)
-   and spend (`spend_constraint_air`) full-inner-C(zeta) halves. REMAINING (the deeper rung): WIRING the
-   spend C(zeta) mirror into a spend `recursive_air` window (as `eval_full_leaf_c` does for creation)
-   and lifting the `{creation, spend}` cross-binding (MED-2 + key) into the aggregator.
+1. **Spend in the O(1) aggregator.** IMPLEMENTED locally: the full spend C(zeta)
+   mirror is wired into `RecursiveAir`, and the authenticated creation/spend
+   binding fixture enforces MED-2 plus key equality in the aggregate proof at
+   production q128 knobs. Remaining deployment work is to freeze aggregate
+   statement/DA formats, quantify outer-recursion soundness, and record release
+   profiling/capstone evidence.
 2. **L1 settlement bridge** (decision + build). Position taken (native settlement) for the verifier;
    posting rollup state to L1 re-introduces the precompile-vs-SNARK-wrap PQ trade-off — a maintainer
    decision (future ADR).
-3. **Consensus wiring** (deployment decisions). Wire `pad_seed_registry` into the live admission path;
-   the lifecycle consume-once / admission registry into consensus; pin the reorg/free policy to the
-   chosen finality profile (D2).
-4. **External review + production gate** — gated by ADR-0008. This is the "external analysis" the
+3. **Consensus wiring.** The selected sovereign state model and ADR-0010 D2
+   reorg/finality semantics are implemented and theorem-scoped; target database
+   integration, restore-anchor placement, and independent-client adoption remain.
+4. **FRI/QROM and proof-family theorem inputs.** The selected BCS multi-target
+   arithmetic is machine-checked at q128 under explicit RBR, effective-kappa,
+   and QROM-constant inputs. Those inputs, FRI/AoK extraction, zk-FRI HVZK,
+   Poseidon2 primitive reductions, and outer-recursion pricing remain open.
+5. **External review + production gate** — gated by ADR-0008. This is the "external analysis" the
    objective explicitly EXCLUDES; the code has moved into the active repository, but the production
    gate remains closed.
 

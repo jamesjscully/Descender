@@ -49,3 +49,4 @@ a new ADR.
 | `ADR-0008` | `Accepted` | `2026-06-27` | Commit To Hard Quantum-128 Security Target | `ADR-0008-commit-hard-quantum-128-target.md` |
 | `ADR-0009` | `Accepted` | `2026-06-28` | Native Sovereign Post-Quantum Validity-Rollup Settlement | `ADR-0009-native-sovereign-pq-rollup-settlement.md` |
 | `ADR-0010` | `Accepted` | `2026-06-28` | Pad-Seed Registry & Spend-Lifecycle Consensus Wiring + Finality (D2) | `ADR-0010-registry-lifecycle-consensus-wiring-and-finality.md` |
+| `ADR-0011` | `Accepted` | `2026-07-10` | Account-STARK Adaptive QROM Game And Capacity-9 Challenger | `ADR-0011-account-stark-adaptive-qrom-and-c9-challenger.md` |

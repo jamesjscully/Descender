@@ -13,7 +13,9 @@
 mod tests {
     use crate::block_accumulator::{build_trace, trace_root, BlockAccumulatorAir, BC_N_COLS};
     use core::sync::atomic::{AtomicU64, Ordering};
-    use descender_account_stark::{Challenge, Perm, Val, DIGEST_ELEMS, PROD_LOG_BLOWUP, PROD_NUM_QUERIES, PROD_QUERY_POW_BITS};
+    use descender_account_stark::{
+        Challenge, Perm, Val, DIGEST_ELEMS, PROD_LOG_BLOWUP, PROD_NUM_QUERIES, PROD_QUERY_POW_BITS,
+    };
     use p3_challenger::DuplexChallenger;
     use p3_commit::ExtensionMmcs;
     use p3_dft::Radix2DitParallel;
@@ -54,16 +56,25 @@ mod tests {
 
     type CHash = PaddingFreeSponge<CountingPerm, 16, 7, DIGEST_ELEMS>;
     type CCompress = descender_account_stark::sponge_compression::SpongeCompression<CHash>;
-    type CValMmcs = MerkleTreeMmcs<<Val as Field>::Packing, <Val as Field>::Packing, CHash, CCompress, 2, DIGEST_ELEMS>;
+    type CValMmcs = MerkleTreeMmcs<
+        <Val as Field>::Packing,
+        <Val as Field>::Packing,
+        CHash,
+        CCompress,
+        2,
+        DIGEST_ELEMS,
+    >;
     type CChallengeMmcs = ExtensionMmcs<Val, Challenge, CValMmcs>;
     type DftT = Radix2DitParallel<Val>;
     type CPcs = TwoAdicFriPcs<Val, DftT, CValMmcs, CChallengeMmcs>;
-    type CChallenger = DuplexChallenger<Val, CountingPerm, 16, 8>;
+    type CChallenger = DuplexChallenger<Val, CountingPerm, 16, 7>;
     type CConfig = StarkConfig<CPcs, Challenge, CChallenger>;
 
     fn member(seed: u32) -> [Val; DIGEST_ELEMS] {
         use p3_field::PrimeCharacteristicRing;
-        core::array::from_fn(|i| Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32 + 1)))
+        core::array::from_fn(|i| {
+            Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32 + 1))
+        })
     }
 
     /// MEASURE the verifier's Poseidon2 permutation count for the aggregate O(1) block proof at
@@ -71,9 +82,15 @@ mod tests {
     /// (amortized over the block's members) and the basis for an EVM gas estimate.
     #[test]
     fn measure_aggregate_verify_perm_count() {
-        let cp = CountingPerm { inner: default_koalabear_poseidon2_16() };
+        let cp = CountingPerm {
+            inner: default_koalabear_poseidon2_16(),
+        };
         let mk = || -> CConfig {
-            let val_mmcs = CValMmcs::new(CHash::new(cp.clone()), CCompress::new(CHash::new(cp.clone())), 0);
+            let val_mmcs = CValMmcs::new(
+                CHash::new(cp.clone()),
+                CCompress::new(CHash::new(cp.clone())),
+                0,
+            );
             let challenge_mmcs = CChallengeMmcs::new(val_mmcs.clone());
             let fri_params = FriParameters {
                 log_blowup: PROD_LOG_BLOWUP,
@@ -84,7 +101,10 @@ mod tests {
                 query_proof_of_work_bits: PROD_QUERY_POW_BITS,
                 mmcs: challenge_mmcs,
             };
-            StarkConfig::new(CPcs::new(DftT::default(), val_mmcs, fri_params), CChallenger::new(cp.clone()))
+            StarkConfig::new(
+                CPcs::new(DftT::default(), val_mmcs, fri_params),
+                CChallenger::new(cp.clone()),
+            )
         };
 
         for &n in &[4usize, 16, 64] {
@@ -109,7 +129,10 @@ mod tests {
             );
             assert!(perms > 0, "verify must invoke the counted permutation");
             // The per-block verification work is sub-linear in block size ⇒ per-member work falls.
-            assert!(per_member < perms, "per-member work must be a fraction of the block work");
+            assert!(
+                per_member < perms,
+                "per-member work must be a fraction of the block work"
+            );
         }
     }
 }

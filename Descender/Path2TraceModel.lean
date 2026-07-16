@@ -29,16 +29,8 @@ is and is not proven:
   `concrete_account_creation_prevalidated_slot_authorization_or_break` via the
   closure bridge `success_implies_accepted_or_break_of_structural`.
 
-* **Genuinely discharged per-event bounds (proven here, probability `0`).**  The
-  concrete classifier `ConcreteBreakFor` makes the `qromOrDomainSeparationBreak`
-  and `liveSlotLeakageOrKeygenBreak` events `False` *by construction at this
-  layer* (they are charged in a different sub-game).  We discharge their numeric
-  contribution to `0` with a real `never`-proof through
-  `breakProb_eq_zero_of_never`.  This is not vacuous: it is a real boolean event
-  that is provably never `true`, so its probability is provably `0`.
-
 * **Still open (named, NOT `sorry`, NOT faked).**  The accepted-spend forgery
-  bound (SIS / response-link hardness) and the seven *cryptographically*-charged
+  bound and all nine cryptographically charged
   named breaks are NOT proven here and must not be.  They remain explicit
   hypotheses of `concreteNumericClosure_of_cryptographic_bounds` below; supplying
   them is the multi-week WS7 reduction work (see
@@ -49,7 +41,7 @@ Crucially, this file does **not** define a toy distribution that makes
 `observe`, or the trace support at all: those are taken as inputs to the game
 constructor `concreteNumericGame`.  Whatever sampler a deployment supplies, the
 events are pinned to the real verifier, the soundness field is the real theorem,
-and the two structurally-impossible breaks cost `0`.
+and no cryptographic break is erased by the structural carrier.
 -/
 
 namespace Path2TraceModel
@@ -156,78 +148,7 @@ def concreteNumericGame
   success_implies_accepted_or_break :=
     concrete_success_implies_accepted_or_break C observe
 
-/-! ## Structurally-impossible breaks cost zero (genuinely discharged) -/
-
-/--
-The concrete classifier makes `qromOrDomainSeparationBreak` `False` at this
-layer, so the boolean event never fires for any trace.  This is a real
-`never`-proof, not a vacuous type cheat.
--/
-theorem qromBreak_never
-    {Trace : Type*} (C : ConcreteGameConfig)
-    (observe : Trace → ConcreteOutcome) :
-    ∀ trace,
-      concreteNamedBreak C
-        Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak
-        (observe trace) = false := by
-  intro trace
-  simp only [concreteNamedBreak, ConcreteBreakFor, decide_false]
-
-/-- Likewise the `liveSlotLeakageOrKeygenBreak` event never fires at this layer. -/
-theorem liveSlotLeakageBreak_never
-    {Trace : Type*} (C : ConcreteGameConfig)
-    (observe : Trace → ConcreteOutcome) :
-    ∀ trace,
-      concreteNamedBreak C
-        Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak
-        (observe trace) = false := by
-  intro trace
-  simp only [concreteNamedBreak, ConcreteBreakFor, decide_false]
-
-/--
-**Discharged per-event bound (probability `0`).**  The QROM/domain-separation
-break contributes `0` to the budget in the faithful concrete game.
--/
-theorem qromBreakProb_eq_zero
-    {Trace : Type*} [Fintype Trace]
-    (C : ConcreteGameConfig)
-    (traceDist : FiniteProbability Trace)
-    (observe : Trace → ConcreteOutcome) :
-    (concreteNumericGame C traceDist observe).breakProb
-        Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak = 0 :=
-  breakProb_eq_zero_of_never (concreteNumericGame C traceDist observe)
-    Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak
-    (by
-      intro trace
-      simpa [concreteNumericGame] using qromBreak_never C observe trace)
-
-/--
-**Discharged per-event bound (probability `0`).**  The live-slot
-leakage/keygen break contributes `0` to the budget in the faithful concrete
-game.
--/
-theorem liveSlotLeakageBreakProb_eq_zero
-    {Trace : Type*} [Fintype Trace]
-    (C : ConcreteGameConfig)
-    (traceDist : FiniteProbability Trace)
-    (observe : Trace → ConcreteOutcome) :
-    (concreteNumericGame C traceDist observe).breakProb
-        Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak = 0 :=
-  breakProb_eq_zero_of_never (concreteNumericGame C traceDist observe)
-    Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak
-    (by
-      intro trace
-      simpa [concreteNumericGame] using liveSlotLeakageBreak_never C observe trace)
-
-/-! ## Honest endpoint: the remaining cryptographic obligations, named explicitly
-
-The two breaks above are zero *by construction*.  The accepted-spend forgery
-bound and the remaining seven named breaks are genuinely cryptographic and are
-NOT discharged here.  The theorem below states the closed `2^-128` conclusion
-with those obligations as explicit hypotheses, so the faithful game plugs into
-the proven closure without any hidden assumption or `sorry`.  Supplying the
-hypotheses is the multi-week WS7 reduction work documented in
-`formal/lean/trace_model_status.md`. -/
+/-! ## Honest endpoint: all cryptographic obligations remain explicit -/
 
 /--
 **Conditional 128-bit closure for the faithful concrete game.**
@@ -236,11 +157,10 @@ Given the standard cryptographic per-event budgets — the accepted-spend forger
 probability `≤ 2^-129` and each named break `≤ 2^-133` — the faithful concrete
 game's full-signature success probability is `≤ 2^-128`.
 
-The QROM and live-slot breaks already have proven `0 ≤ 2^-133` bounds (from
-`qromBreakProb_eq_zero` / `liveSlotLeakageBreakProb_eq_zero`); the caller need
-only supply the genuinely-cryptographic remaining budgets.  Nothing here is
-faked: the two impossible breaks are discharged, and the rest are the real
-unproven obligations passed in as hypotheses.
+The caller supplies the accepted-spend bound and a bound for every named break,
+including QROM/domain-separation and live-slot leakage/keygen.  Those two risks
+belong to external reduction subgames, but this structural layer no longer
+mistakes the absence of a coupling theorem for probability zero.
 -/
 theorem concreteNumericClosure_of_cryptographic_bounds
     {Trace : Type*} [Fintype Trace]
@@ -261,69 +181,14 @@ theorem concreteNumericClosure_of_cryptographic_bounds
     (concreteNumericGame C traceDist observe)
     acceptedSpendBound breakBound hAccept hBreak hAcceptBudget hBreakBudget
 
-/--
-Concrete 128-bit closure with the two structurally-impossible breaks discharged
-inside the trace model.
-
-The caller supplies cryptographic probability bounds only for the remaining
-named breaks.  The QROM/domain-separation and live-slot/keygen events are
-handled here by their proven zero-probability facts, plus nonnegative component
-budgets for their slots.
--/
-theorem concreteNumericClosure_of_remaining_cryptographic_bounds
-    {Trace : Type*} [Fintype Trace]
-    (C : ConcreteGameConfig)
-    (traceDist : FiniteProbability Trace)
-    (observe : Trace → ConcreteOutcome)
-    (acceptedSpendBound : ℝ)
-    (breakBound : Path2FullSpendGame.BreakEvent → ℝ)
-    (hAccept :
-      (concreteNumericGame C traceDist observe).acceptedSpendProb ≤
-        acceptedSpendBound)
-    (hBreak :
-      ∀ b,
-        b ≠ Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak →
-        b ≠ Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak →
-          (concreteNumericGame C traceDist observe).breakProb b ≤
-            breakBound b)
-    (hQromBreakBound_nonneg :
-      0 ≤ breakBound
-        Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak)
-    (hLiveSlotBreakBound_nonneg :
-      0 ≤ breakBound
-        Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak)
-    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
-    (hBreakBudget : ∀ b, breakBound b ≤ (1 : ℝ) / 2 ^ 133) :
-    (concreteNumericGame C traceDist observe).successProb ≤ (1 : ℝ) / 2 ^ 128 := by
-  refine
-    concreteNumericClosure_of_cryptographic_bounds
-      C traceDist observe acceptedSpendBound breakBound hAccept ?_
-      hAcceptBudget hBreakBudget
-  intro b
-  by_cases hQrom :
-      b = Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak
-  · subst b
-    rw [qromBreakProb_eq_zero]
-    exact hQromBreakBound_nonneg
-  · by_cases hLive :
-        b = Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak
-    · subst b
-      rw [liveSlotLeakageBreakProb_eq_zero]
-      exact hLiveSlotBreakBound_nonneg
-    · exact hBreak b hQrom hLive
-
 /-- Break events that remain cryptographically priced by the caller. -/
 def IsRemainingCryptographicBreak
-    (breakEvent : Path2FullSpendGame.BreakEvent) : Prop :=
-  breakEvent ≠
-      Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak ∧
-    breakEvent ≠
-      Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak
+    (_breakEvent : Path2FullSpendGame.BreakEvent) : Prop :=
+  True
 
 /--
-Subtype of named breaks whose probability still needs an external
-cryptographic bound after the trace model discharges the two impossible
-structural events.
+Subtype of named breaks whose probability needs an external cryptographic
+bound.
 -/
 abbrev RemainingCryptographicBreak : Type :=
   { breakEvent : Path2FullSpendGame.BreakEvent //
@@ -338,12 +203,12 @@ def remainingCryptographicBreakEvents :
     Path2FullSpendGame.BreakEvent.prevalidationDataAvailabilityBreak,
     Path2FullSpendGame.BreakEvent.postchallengeSlotCreationOrRewriteBreak,
     Path2FullSpendGame.BreakEvent.checkedCoreMessageBindingBreak,
-    Path2FullSpendGame.BreakEvent.slotReplayOrRollbackBreak }
+    Path2FullSpendGame.BreakEvent.slotReplayOrRollbackBreak,
+    Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak,
+    Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak }
 
 /--
-The explicit remaining-break set is exactly the subtype predicate used by the
-pricing package: the only excluded finite events are the two structurally-zero
-slots discharged in this trace model.
+The explicit remaining-break set is exactly the full finite break family.
 -/
 theorem mem_remainingCryptographicBreakEvents_iff
     (breakEvent : Path2FullSpendGame.BreakEvent) :
@@ -352,9 +217,9 @@ theorem mem_remainingCryptographicBreakEvents_iff
   cases breakEvent <;>
     simp [remainingCryptographicBreakEvents, IsRemainingCryptographicBreak]
 
-/-- The active remaining cryptographic break surface has seven events. -/
+/-- The active remaining cryptographic break surface has nine events. -/
 theorem remainingCryptographicBreakEvents_card :
-    remainingCryptographicBreakEvents.card = 7 := by
+    remainingCryptographicBreakEvents.card = 9 := by
   native_decide
 
 /-- Every subtype witness projects into the explicit remaining-break set. -/
@@ -363,9 +228,9 @@ theorem remainingCryptographicBreak_mem_remainingCryptographicBreakEvents
     breakEvent.1 ∈ remainingCryptographicBreakEvents :=
   (mem_remainingCryptographicBreakEvents_iff breakEvent.1).2 breakEvent.2
 
-/-- The remaining cryptographic break subtype has seven witnesses. -/
+/-- The remaining cryptographic break subtype has nine witnesses. -/
 theorem remainingCryptographicBreak_card :
-    Fintype.card RemainingCryptographicBreak = 7 := by
+    Fintype.card RemainingCryptographicBreak = 9 := by
   rw [Fintype.card_subtype]
   have hEvents :
       ({ breakEvent | IsRemainingCryptographicBreak breakEvent } :
@@ -377,9 +242,8 @@ theorem remainingCryptographicBreak_card :
   exact remainingCryptographicBreakEvents_card
 
 /--
-Finite WS7 closure obligations left after the trace model discharges the two
-structurally impossible break events: the accepted-spend bound itself, plus one
-bound for each remaining cryptographic break.
+Finite WS7 closure obligations: the accepted-spend bound itself, plus one bound
+for each cryptographic break.
 -/
 inductive WS7RemainingClosureObligation
   | acceptedSpendForgeryBound
@@ -391,7 +255,7 @@ def ws7AcceptedSpendClosureObligations :
     Finset WS7RemainingClosureObligation :=
   { WS7RemainingClosureObligation.acceptedSpendForgeryBound }
 
-/-- The seven per-break components of the WS7 remaining-obligation surface. -/
+/-- The nine per-break components of the WS7 remaining-obligation surface. -/
 def ws7RemainingBreakBoundObligations :
     Finset WS7RemainingClosureObligation :=
   Finset.univ.image WS7RemainingClosureObligation.remainingBreakBound
@@ -429,7 +293,7 @@ theorem mem_ws7AcceptedSpendClosureObligations_iff
     simp [ws7AcceptedSpendClosureObligations,
       IsWS7AcceptedSpendClosureObligation]
 
-/-- The remaining-break obligation set matches the seven-break subtype. -/
+/-- The remaining-break obligation set matches the nine-break subtype. -/
 theorem mem_ws7RemainingBreakBoundObligations_iff
     (obligation : WS7RemainingClosureObligation) :
     obligation ∈ ws7RemainingBreakBoundObligations ↔
@@ -443,9 +307,9 @@ theorem ws7AcceptedSpendClosureObligations_card :
     ws7AcceptedSpendClosureObligations.card = 1 := by
   native_decide
 
-/-- The remaining-break part contributes seven WS7 closure obligations. -/
+/-- The remaining-break part contributes nine WS7 closure obligations. -/
 theorem ws7RemainingBreakBoundObligations_card :
-    ws7RemainingBreakBoundObligations.card = 7 := by
+    ws7RemainingBreakBoundObligations.card = 9 := by
   have hInjective :
       Function.Injective
         WS7RemainingClosureObligation.remainingBreakBound := by
@@ -467,9 +331,9 @@ theorem mem_ws7RemainingClosureObligations_iff
       mem_ws7RemainingBreakBoundObligations_iff,
       IsWS7RemainingClosureObligation]
 
-/-- The complete WS7 remaining-obligation surface has eight rows. -/
+/-- The complete WS7 remaining-obligation surface has ten rows. -/
 theorem ws7RemainingClosureObligations_card :
-    ws7RemainingClosureObligations.card = 8 := by
+    ws7RemainingClosureObligations.card = 10 := by
   have hDisjoint :
       Disjoint ws7AcceptedSpendClosureObligations
         ws7RemainingBreakBoundObligations := by
@@ -527,7 +391,7 @@ def SelectedRustWS7RemainingClosureObligationSatisfied
         remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133
 
 /--
-One selected WS7 evidence object supplies exactly the eight remaining closure
+One selected WS7 evidence object supplies exactly the ten remaining closure
 rows: one accepted-spend row and one row for each remaining cryptographic break.
 -/
 structure SelectedRustWS7RemainingClosureEvidence
@@ -546,7 +410,7 @@ namespace SelectedRustWS7RemainingClosureEvidence
 
 /--
 Build first-class WS7 remaining-closure evidence from the accepted-spend row
-and the seven remaining-break rows.
+and the nine remaining-break rows.
 -/
 def ofRemainingBreakBounds
     {Trace : Type} [Fintype Trace]
@@ -675,7 +539,7 @@ theorem remainingBreakBound_le_2pow_neg133
 end SelectedRustWS7RemainingClosureEvidence
 
 /--
-Selected WS7 evidence built from the accepted-spend row and the seven
+Selected WS7 evidence built from the accepted-spend row and the nine
 remaining-break rows.
 -/
 def selectedRustWS7RemainingClosureEvidence_of_remaining_break_bounds
@@ -704,7 +568,7 @@ def selectedRustWS7RemainingClosureEvidence_of_remaining_break_bounds
     acceptedSpendBound_le_2pow_neg129 remainingBreakBound_le_2pow_neg133
 
 /--
-The eight per-event remaining-break rows nonemptily produce the selected WS7
+The ten per-event remaining-break rows nonemptily produce the selected WS7
 evidence object.
 -/
 theorem selectedRustWS7RemainingClosureEvidence_nonempty_of_remaining_break_bounds
@@ -733,24 +597,13 @@ theorem selectedRustWS7RemainingClosureEvidence_nonempty_of_remaining_break_boun
     acceptedSpendBound_le_2pow_neg129 remainingBreakBound_le_2pow_neg133⟩
 
 /--
-Extend caller-supplied remaining-break bounds to the full active break family
-by assigning zero budget to the structurally impossible events.
+Lift caller-supplied bounds on the full cryptographic-break subtype to the
+underlying break family.
 -/
 def remainingCryptographicBreakBound
     (remainingBreakBound : RemainingCryptographicBreak → ℝ) :
     Path2FullSpendGame.BreakEvent → ℝ :=
-  fun breakEvent =>
-    if hQrom :
-        breakEvent =
-          Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak then
-      0
-    else if hLiveSlot :
-        breakEvent =
-          Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak then
-      0
-    else
-      remainingBreakBound
-        ⟨breakEvent, ⟨hQrom, hLiveSlot⟩⟩
+  fun breakEvent => remainingBreakBound ⟨breakEvent, trivial⟩
 
 /--
 The synthesized full-family break-bound map is below the active per-break
@@ -765,23 +618,11 @@ theorem remainingCryptographicBreakBound_le_2pow_neg133
       remainingCryptographicBreakBound remainingBreakBound breakEvent ≤
         (1 : ℝ) / 2 ^ 133 := by
   intro breakEvent
-  by_cases hQrom :
-      breakEvent =
-        Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak
-  · subst breakEvent
-    simp [remainingCryptographicBreakBound]
-  · by_cases hLiveSlot :
-        breakEvent =
-          Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak
-    · subst breakEvent
-      simp [remainingCryptographicBreakBound, hQrom]
-    · simpa [remainingCryptographicBreakBound, hQrom, hLiveSlot] using
-        hBreakBudget ⟨breakEvent, ⟨hQrom, hLiveSlot⟩⟩
+  exact hBreakBudget ⟨breakEvent, trivial⟩
 
 /--
-The faithful concrete game satisfies the synthesized full-family break-bound
-map when the caller supplies bounds for only the remaining cryptographic
-breaks.  The two structural events use their zero-probability proofs.
+The faithful concrete game satisfies the full-family break-bound map when the
+caller supplies a bound for every cryptographic break.
 -/
 theorem concreteBreakProb_le_remainingCryptographicBreakBound
     {Trace : Type*} [Fintype Trace]
@@ -798,29 +639,11 @@ theorem concreteBreakProb_le_remainingCryptographicBreakBound
       (concreteNumericGame C traceDist observe).breakProb breakEvent ≤
         remainingCryptographicBreakBound remainingBreakBound breakEvent := by
   intro breakEvent
-  by_cases hQrom :
-      breakEvent =
-        Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak
-  · subst breakEvent
-    rw [qromBreakProb_eq_zero]
-    simp [remainingCryptographicBreakBound]
-  · by_cases hLiveSlot :
-        breakEvent =
-          Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak
-    · subst breakEvent
-      rw [liveSlotLeakageBreakProb_eq_zero]
-      simp [remainingCryptographicBreakBound, hQrom]
-    · simpa [remainingCryptographicBreakBound, hQrom, hLiveSlot] using
-        hBreak ⟨breakEvent, ⟨hQrom, hLiveSlot⟩⟩
+  exact hBreak ⟨breakEvent, trivial⟩
 
 /--
-Concrete 128-bit closure where the caller supplies bounds only for the seven
-remaining cryptographic named breaks.
-
-The full nine-event budget is synthesized here: the QROM/domain-separation and
-live-slot/keygen slots receive zero budget, matching the already-proven
-zero-probability facts, while every other break consumes the caller's
-cryptographic bound.
+Concrete 128-bit closure where the caller supplies bounds for all nine
+cryptographic named breaks.
 -/
 theorem concreteNumericClosure_of_remaining_break_bounds
     {Trace : Type*} [Fintype Trace]
@@ -919,7 +742,7 @@ theorem ws7RemainingClosureEvidence_componentBudget_le_active128BitTarget
 
 /--
 Constructive break-pricing certificate for the faithful concrete game from
-accepted-spend pricing plus the seven remaining cryptographic break bounds.
+accepted-spend pricing plus the nine cryptographic break bounds.
 -/
 def concreteBreakPricingCertificate_of_remaining_break_bounds
     {Trace : Type*} [Fintype Trace]
@@ -965,7 +788,7 @@ def concreteBreakPricingCertificate_of_remaining_break_bounds
 
 /--
 Packaged priced numeric certificate for the faithful concrete game from the
-accepted-spend bound and seven remaining cryptographic break bounds.
+accepted-spend bound and nine cryptographic break bounds.
 -/
 def concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds
     {Trace : Type} [Fintype Trace]
@@ -1200,7 +1023,7 @@ theorem concretePricedAcceptedSpendNumericCertificate_eq_ws7_constructed_of_rema
 
 /--
 Selected-Rust concrete numeric certificate wrapper built from the faithful
-trace model and the seven remaining cryptographic break bounds.
+trace model and the nine cryptographic break bounds.
 
 The trace support and distribution are still caller supplied; this constructor
 only removes the proof-convenience step of first building an arbitrary
@@ -1407,7 +1230,7 @@ theorem selectedRustConcreteAcceptedSpendNumericCertificate_successProb_le_activ
       traceDist observe E)
 
 /--
-Selected pricing witness built from the faithful trace model and the seven
+Selected pricing witness built from the faithful trace model and the nine
 remaining cryptographic break bounds.
 
 This is the AP2-N003 pricing-witness handoff.  It still requires the real
@@ -1922,54 +1745,8 @@ theorem selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128B
       hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing)
 
 /--
-The trace-model pricing witness exposes that the structural QROM/domain
-separation slot is discharged to zero probability at this layer.
--/
-theorem selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds
-    {Trace : Type} [Fintype Trace]
-    (traceDist : FiniteProbability Trace)
-    (observe : Trace → ConcreteOutcome)
-    (acceptedSpendBound : ℝ)
-    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
-    (hAccept :
-      (concreteNumericGame selectedRustConcreteGameConfig traceDist
-          observe).acceptedSpendProb ≤ acceptedSpendBound)
-    (hBreak :
-      ∀ breakEvent : RemainingCryptographicBreak,
-        (concreteNumericGame selectedRustConcreteGameConfig traceDist
-            observe).breakProb breakEvent.1 ≤
-          remainingBreakBound breakEvent)
-    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
-    (hBreakBudget :
-      ∀ breakEvent : RemainingCryptographicBreak,
-        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
-    (hPriced :
-      (1 : ℝ) / 2 ^ 128 ≤
-        ((2 : ℝ) ^
-          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
-    (hPricing :
-      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete) :
-    let W :=
-      selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
-        traceDist observe acceptedSpendBound remainingBreakBound
-        hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing
-    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
-        W.concreteCertificate.pricedCertificate.Trace
-        W.concreteCertificate.pricedCertificate.Outcome
-        W.concreteCertificate.pricedCertificate.Break
-        W.concreteCertificate.pricedCertificate.traceFintype
-        W.concreteCertificate.pricedCertificate.breakFintype
-        W.concreteCertificate.pricedCertificate.game
-        Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak = 0 := by
-  simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds,
-    selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds,
-    concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds,
-    concreteBreakPricingCertificate_of_remaining_break_bounds] using
-    qromBreakProb_eq_zero selectedRustConcreteGameConfig traceDist observe
-
-/--
-The trace-model pricing witness prices the structural QROM/domain separation
-slot below its active proportional component target because it is zero.
+The trace-model pricing witness keeps the QROM/domain-separation event below
+its active proportional component target using the caller-supplied bound.
 -/
 theorem selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds
     {Trace : Type} [Fintype Trace]
@@ -2008,74 +1785,15 @@ theorem selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_ne
         W.concreteCertificate.pricedCertificate.game
         Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak ≤
       (1 : ℝ) / 2 ^ 133 := by
-  simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds,
-    selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds,
-    concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds,
-    concreteBreakPricingCertificate_of_remaining_break_bounds] using
-    SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_2pow_neg133_of_never
-      (selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
-        traceDist observe acceptedSpendBound remainingBreakBound
-        hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing)
-      Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak
-      (by
-        intro trace
-        simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds,
-          selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds,
-          concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds,
-          concreteBreakPricingCertificate_of_remaining_break_bounds,
-          PricedAcceptedSpendNumericCertificate.namedBreakEvent,
-          PricedAcceptedSpendNumericCertificate.observe] using
-          qromBreak_never selectedRustConcreteGameConfig observe trace)
+  exact le_trans
+    (hBreak
+      ⟨Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak, trivial⟩)
+    (hBreakBudget
+      ⟨Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak, trivial⟩)
 
 /--
-The trace-model pricing witness exposes that the structural live-slot/keygen
-slot is discharged to zero probability at this layer.
--/
-theorem selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds
-    {Trace : Type} [Fintype Trace]
-    (traceDist : FiniteProbability Trace)
-    (observe : Trace → ConcreteOutcome)
-    (acceptedSpendBound : ℝ)
-    (remainingBreakBound : RemainingCryptographicBreak → ℝ)
-    (hAccept :
-      (concreteNumericGame selectedRustConcreteGameConfig traceDist
-          observe).acceptedSpendProb ≤ acceptedSpendBound)
-    (hBreak :
-      ∀ breakEvent : RemainingCryptographicBreak,
-        (concreteNumericGame selectedRustConcreteGameConfig traceDist
-            observe).breakProb breakEvent.1 ≤
-          remainingBreakBound breakEvent)
-    (hAcceptBudget : acceptedSpendBound ≤ (1 : ℝ) / 2 ^ 129)
-    (hBreakBudget :
-      ∀ breakEvent : RemainingCryptographicBreak,
-        remainingBreakBound breakEvent ≤ (1 : ℝ) / 2 ^ 133)
-    (hPriced :
-      (1 : ℝ) / 2 ^ 128 ≤
-        ((2 : ℝ) ^
-          (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹)
-    (hPricing :
-      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete) :
-    let W :=
-      selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
-        traceDist observe acceptedSpendBound remainingBreakBound
-        hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing
-    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
-        W.concreteCertificate.pricedCertificate.Trace
-        W.concreteCertificate.pricedCertificate.Outcome
-        W.concreteCertificate.pricedCertificate.Break
-        W.concreteCertificate.pricedCertificate.traceFintype
-        W.concreteCertificate.pricedCertificate.breakFintype
-        W.concreteCertificate.pricedCertificate.game
-        Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak = 0 := by
-  simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds,
-    selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds,
-    concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds,
-    concreteBreakPricingCertificate_of_remaining_break_bounds] using
-    liveSlotLeakageBreakProb_eq_zero selectedRustConcreteGameConfig traceDist observe
-
-/--
-The trace-model pricing witness prices the structural live-slot/keygen slot
-below its active proportional component target because it is zero.
+The trace-model pricing witness keeps the live-slot/keygen event below its
+active proportional component target using the caller-supplied bound.
 -/
 theorem selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds
     {Trace : Type} [Fintype Trace]
@@ -2114,24 +1832,11 @@ theorem selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb
         W.concreteCertificate.pricedCertificate.game
         Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak ≤
       (1 : ℝ) / 2 ^ 133 := by
-  simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds,
-    selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds,
-    concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds,
-    concreteBreakPricingCertificate_of_remaining_break_bounds] using
-    SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_2pow_neg133_of_never
-      (selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds
-        traceDist observe acceptedSpendBound remainingBreakBound
-        hAccept hBreak hAcceptBudget hBreakBudget hPriced hPricing)
-      Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak
-      (by
-        intro trace
-        simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds,
-          selectedRustConcreteAcceptedSpendNumericCertificate_of_remaining_break_bounds,
-          concretePricedAcceptedSpendNumericCertificate_of_remaining_break_bounds,
-          concreteBreakPricingCertificate_of_remaining_break_bounds,
-          PricedAcceptedSpendNumericCertificate.namedBreakEvent,
-          PricedAcceptedSpendNumericCertificate.observe] using
-          liveSlotLeakageBreak_never selectedRustConcreteGameConfig observe trace)
+  exact le_trans
+    (hBreak
+      ⟨Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak, trivial⟩)
+    (hBreakBudget
+      ⟨Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak, trivial⟩)
 
 section CurrentHardPricingTraceWitnessProjections
 
@@ -2352,32 +2057,7 @@ theorem selectedRustConcreteAcceptedSpendPricingWitness_unionBound_le_active128B
           hHardPricing)
 
 /--
-The current-hard-pricing trace witness exposes the structural QROM/domain
-separation slot as zero probability.
--/
-theorem selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_facts :
-    let W :=
-      selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts
-        traceDist observe acceptedSpendBound remainingBreakBound
-        hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing
-    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
-        W.concreteCertificate.pricedCertificate.Trace
-        W.concreteCertificate.pricedCertificate.Outcome
-        W.concreteCertificate.pricedCertificate.Break
-        W.concreteCertificate.pricedCertificate.traceFintype
-        W.concreteCertificate.pricedCertificate.breakFintype
-        W.concreteCertificate.pricedCertificate.game
-        Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak = 0 := by
-  simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts]
-    using
-      selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds
-        traceDist observe acceptedSpendBound remainingBreakBound
-        hAccept hBreak hAcceptBudget hBreakBudget hPriced
-        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
-          hHardPricing)
-
-/--
-The current-hard-pricing trace witness prices the structural QROM/domain
+The current-hard-pricing trace witness prices the QROM/domain
 separation slot below its active proportional component target.
 -/
 theorem selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts :
@@ -2403,32 +2083,7 @@ theorem selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_le_2pow_ne
           hHardPricing)
 
 /--
-The current-hard-pricing trace witness exposes the structural live-slot/keygen
-slot as zero probability.
--/
-theorem selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds_and_current_hard_pricing_facts :
-    let W :=
-      selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts
-        traceDist observe acceptedSpendBound remainingBreakBound
-        hAccept hBreak hAcceptBudget hBreakBudget hPriced hHardPricing
-    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
-        W.concreteCertificate.pricedCertificate.Trace
-        W.concreteCertificate.pricedCertificate.Outcome
-        W.concreteCertificate.pricedCertificate.Break
-        W.concreteCertificate.pricedCertificate.traceFintype
-        W.concreteCertificate.pricedCertificate.breakFintype
-        W.concreteCertificate.pricedCertificate.game
-        Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak = 0 := by
-  simpa [selectedRustConcreteAcceptedSpendPricingWitness_of_remaining_break_bounds_and_current_hard_pricing_facts]
-    using
-      selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds
-        traceDist observe acceptedSpendBound remainingBreakBound
-        hAccept hBreak hAcceptBudget hBreakBudget hPriced
-        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_pricingFactsComplete_of_hardPricingFactsComplete
-          hHardPricing)
-
-/--
-The current-hard-pricing trace witness prices the structural live-slot/keygen
+The current-hard-pricing trace witness prices the live-slot/keygen
 slot below its active proportional component target.
 -/
 theorem selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_le_2pow_neg133_of_remaining_break_bounds_and_current_hard_pricing_facts :
@@ -2624,7 +2279,7 @@ theorem selectedRustConcreteAcceptedSpendPricingWitness_eq_ws7_constructed_of_re
 Single AP2-N003 hard-half package for selected accepted-spend pricing over the
 faithful remaining-break trace model.
 
-This packages the accepted-spend bound, the seven remaining cryptographic break
+This packages the accepted-spend bound, the nine cryptographic break
 bounds, their proportional budgets, the selected report pricing bits, and the
 real-valued priced-bound security inequality into one object. Constructing this
 package is still the hard production pricing work; consuming it is no longer a
@@ -2709,7 +2364,7 @@ def ofCurrentHardPricingFacts
       hardPricingFactsComplete
 
 /--
-Construct the remaining-break pricing package from the first-class eight-row
+Construct the remaining-break pricing package from the first-class ten-row
 WS7 remaining-obligation evidence.
 -/
 def ofWS7RemainingClosureEvidence
@@ -2908,32 +2563,8 @@ theorem remainingBreakProb_le_active128BitTarget
     (toPricingWitness P) breakEvent.1
 
 /--
-The package exposes that the structural QROM/domain-separation break slot is
-zero probability in the selected trace-model witness.
--/
-theorem qromBreakProb_eq_zero
-    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
-    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
-        (toPricingWitness P).concreteCertificate.pricedCertificate.Trace
-        (toPricingWitness P).concreteCertificate.pricedCertificate.Outcome
-        (toPricingWitness P).concreteCertificate.pricedCertificate.Break
-        (toPricingWitness P).concreteCertificate.pricedCertificate.traceFintype
-        (toPricingWitness P).concreteCertificate.pricedCertificate.breakFintype
-        (toPricingWitness P).concreteCertificate.pricedCertificate.game
-        Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak = 0 := by
-  letI := P.traceFintype
-  simpa [toPricingWitness] using
-    selectedRustConcreteAcceptedSpendPricingWitness_qromBreakProb_eq_zero_of_remaining_break_bounds
-      P.traceDist P.observe P.acceptedSpendBound P.remainingBreakBound
-      P.acceptedSpendProb_le_bound P.remainingBreakProb_le_bound
-      P.acceptedSpendBound_le_2pow_neg129
-      P.remainingBreakBound_le_2pow_neg133
-      P.activePricedBound_le_reportedSecurity
-      P.pricingFactsComplete
-
-/--
-The package exposes that the structural QROM/domain-separation break slot
-meets the active per-break component target because it is zero probability.
+The package exposes that the QROM/domain-separation break slot meets the active
+per-break component target through its explicit cryptographic bound.
 -/
 theorem qromBreakProb_le_2pow_neg133
     (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
@@ -2957,32 +2588,8 @@ theorem qromBreakProb_le_2pow_neg133
       P.pricingFactsComplete
 
 /--
-The package exposes that the structural live-slot/keygen break slot is zero
-probability in the selected trace-model witness.
--/
-theorem liveSlotLeakageBreakProb_eq_zero
-    (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
-    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
-        (toPricingWitness P).concreteCertificate.pricedCertificate.Trace
-        (toPricingWitness P).concreteCertificate.pricedCertificate.Outcome
-        (toPricingWitness P).concreteCertificate.pricedCertificate.Break
-        (toPricingWitness P).concreteCertificate.pricedCertificate.traceFintype
-        (toPricingWitness P).concreteCertificate.pricedCertificate.breakFintype
-        (toPricingWitness P).concreteCertificate.pricedCertificate.game
-        Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak = 0 := by
-  letI := P.traceFintype
-  simpa [toPricingWitness] using
-    selectedRustConcreteAcceptedSpendPricingWitness_liveSlotLeakageBreakProb_eq_zero_of_remaining_break_bounds
-      P.traceDist P.observe P.acceptedSpendBound P.remainingBreakBound
-      P.acceptedSpendProb_le_bound P.remainingBreakProb_le_bound
-      P.acceptedSpendBound_le_2pow_neg129
-      P.remainingBreakBound_le_2pow_neg133
-      P.activePricedBound_le_reportedSecurity
-      P.pricingFactsComplete
-
-/--
-The package exposes that the structural live-slot/keygen break slot meets the
-active per-break component target because it is zero probability.
+The package exposes that the live-slot/keygen break slot meets the active
+per-break component target through its explicit cryptographic bound.
 -/
 theorem liveSlotLeakageBreakProb_le_2pow_neg133
     (P : SelectedRustAcceptedSpendRemainingBreakPricingPackage) :
@@ -6357,7 +5964,7 @@ theorem selectedRustAcceptedSpendNumericSource_eq_ws7_constructed_of_remaining_b
 
 /--
 Selected accepted-spend certificate built from the faithful trace model and the
-seven remaining cryptographic break bounds.
+nine cryptographic break bounds.
 
 The only inputs beyond the pricing witness are the production probability pins
 and the four closure propositions that the full-signature boundary consumes.

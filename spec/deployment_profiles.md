@@ -79,6 +79,42 @@ Mode A must not require Mode B aggregation assumptions. A profile may include
 aggregate-compatible fields only when the direct verifier accepts or rejects
 without relying on aggregate proof soundness.
 
+### Selected Sovereign Direct Admission Slice
+
+The selected theorem-scoped Mode A target is
+`Descender.SovereignRollup.DirectModeA.D2.v1`, under ADR-0009 and ADR-0010. Its
+direct admission namespace uses the exact consensus-state key
+`(account_id, account_state_root_before, slot_authorization_digest)` and stores
+the full canonical admission record: profile id, the three key fields,
+canonical `PrevalidatedSlotLeafV1` bytes, leaf digest, evidence transcript
+digest, the raw canonical proof-bound account-STARK pad-seed nullifier, and
+admission height. The nullifier key is the eight verified field limbs encoded
+little-endian; verifier-version bytes are not part of the uniqueness key.
+
+`Path2SovereignDirectAdmissionStateV1` is the executable reference for this
+slice. The selected account-STARK verifier constructs an opaque
+`Path2VerifiedSovereignCreationAdmissionV1`; consensus admission cannot accept
+a caller-supplied nullifier. Admission preflights the entire candidate block,
+rejects duplicate tuple keys or nullifiers without partial mutation, and permits
+multiple distinct admissions at one block height. The authoritative block
+endpoint advances the head only after every proof and key preflight succeeds;
+admission at or below finality is rejected. Spend reads the record from that
+state, decodes the canonical leaf bytes, and rechecks the key fields plus leaf
+and evidence digests before checked-core verification. Missing records reject;
+corrupt or unavailable records fail closed. Snapshots carry both indexes and
+restore must match a supplied finalized checkpoint/state-digest anchor.
+`reorg_to` permits removal
+only above the D2 finalized head, rebuilds the nullifier index from retained
+records, and rejects rollback below finality.
+
+`Path2DirectAdmissionBoundaryReportV1` and
+`formal/kat/path2_direct_admission_boundary_v1.json` pin this state contract and
+its executable tests. Because the full record is directly stored in selected
+consensus state, data availability is instantiated for this direct theorem
+row. This is not a verified deployment profile: target-chain database binding,
+trusted restore-anchor placement, external storage review, resource limits,
+and independent client integration remain required.
+
 ## Mode B / Rollup / Bridge Profile Requirements
 
 A Mode B profile must add:

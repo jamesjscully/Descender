@@ -73,7 +73,10 @@ fn target_b_mix_and_match_reorder() {
     // (a) Reordered publics + their (different) digest against the ORIGINAL proof:
     //     the proof was bound to `digest`, not `digest_perm` -> reject in STARK.
     let res = verify_account_creation_batch(&digest_perm, &publics_perm, &proof);
-    println!("[B#1 reorder, reproved digest, orig proof] verify = {:?}", res.is_ok());
+    println!(
+        "[B#1 reorder, reproved digest, orig proof] verify = {:?}",
+        res.is_ok()
+    );
     assert!(
         res.is_err(),
         "PER-POSITION BREAK: original proof accepted a REORDERED public list"
@@ -112,7 +115,10 @@ fn target_b_fabricated_tuples_with_unrelated_proof() {
 
     // Adversary claim: "here are accounts publics_b, digest_b, proven by proof_a".
     let res = verify_account_creation_batch(&digest_b, &publics_b, &proof_a);
-    println!("[B#4 fabricated tuples + unrelated valid proof] verify = {:?}", res.is_ok());
+    println!(
+        "[B#4 fabricated tuples + unrelated valid proof] verify = {:?}",
+        res.is_ok()
+    );
     assert!(
         res.is_err(),
         "CRITICAL BREAK: verifier accepted batch B's tuples bound to batch A's proof"
@@ -160,7 +166,10 @@ fn target_b_claim_more_accounts_than_proven() {
     // (a) Inflated list under the ORIGINAL digest: chain recompute over 4 tuples
     //     != the 3-tuple digest -> reject in the recompute step.
     let res = verify_account_creation_batch(&digest, &inflated, &proof);
-    println!("[B#2 inflate count, original digest] verify = {:?}", res.is_ok());
+    println!(
+        "[B#2 inflate count, original digest] verify = {:?}",
+        res.is_ok()
+    );
     assert!(res.is_err(), "COUNT BREAK: inflated tuple list accepted");
 
     // (b) Even with a self-consistent digest for the inflated list (the verifier
@@ -197,8 +206,12 @@ fn target_b_certify_garbage_accounts() {
     // (masked_projection lanes >= q12289, arbitrary commitments), DIFFERENT count.
     let garbage: Vec<AccountCreationPublic> = (0..9u64)
         .map(|k| AccountCreationPublic {
-            pad_source_commitment: core::array::from_fn(|j| Val::from_u32((k as u32) * 1000 + j as u32)),
-            opening_tuple_commitment: core::array::from_fn(|j| Val::from_u32((k as u32) * 31 + j as u32 + 1)),
+            pad_source_commitment: core::array::from_fn(|j| {
+                Val::from_u32((k as u32) * 1000 + j as u32)
+            }),
+            opening_tuple_commitment: core::array::from_fn(|j| {
+                Val::from_u32((k as u32) * 31 + j as u32 + 1)
+            }),
             masked_projection: core::array::from_fn(|_| Val::from_u32(999_999)), // >> q12289
             account_id: [(k as u8).wrapping_add(1); 32],
             slot_id: k.wrapping_mul(7),
@@ -211,15 +224,23 @@ fn target_b_certify_garbage_accounts() {
             relation_id: core::array::from_fn(|j| Val::from_u32(RELATION_ID[j])),
             syndrome: core::array::from_fn(|j| Val::from_u32((k as u32) * 17 + j as u32)),
             packed_witness_commitment: core::array::from_fn(|_| Val::from_u32(0xCAFE)),
-            checked_core_key_commitment: core::array::from_fn(|j| Val::from_u32((k as u32) * 23 + j as u32)),
+            checked_core_key_commitment: core::array::from_fn(|j| {
+                Val::from_u32((k as u32) * 23 + j as u32)
+            }),
         })
         .collect();
 
     // (a) Claim the proof's real digest with garbage tuples: chain recompute over
     //     garbage != real_digest -> reject in the recompute step.
     let res_a = verify_account_creation_batch(&real_digest, &garbage, &proof);
-    println!("[B#4 garbage tuples, real digest] verify = {:?}", res_a.is_ok());
-    assert!(res_a.is_err(), "GARBAGE BREAK: real proof certified garbage tuples");
+    println!(
+        "[B#4 garbage tuples, real digest] verify = {:?}",
+        res_a.is_ok()
+    );
+    assert!(
+        res_a.is_err(),
+        "GARBAGE BREAK: real proof certified garbage tuples"
+    );
 
     // (b) Supply a digest that DOES chain-match the garbage list (so step 1
     //     passes), then the STARK re-check against that digest fails because the
@@ -227,8 +248,14 @@ fn target_b_certify_garbage_accounts() {
     let garbage_digest = chain_digest_of(&garbage);
     assert_ne!(garbage_digest, real_digest);
     let res_b = verify_account_creation_batch(&garbage_digest, &garbage, &proof);
-    println!("[B#4 garbage tuples, matching garbage digest] verify = {:?}", res_b.is_ok());
-    assert!(res_b.is_err(), "GARBAGE BREAK: real proof bound to a garbage chain digest");
+    println!(
+        "[B#4 garbage tuples, matching garbage digest] verify = {:?}",
+        res_b.is_ok()
+    );
+    assert!(
+        res_b.is_err(),
+        "GARBAGE BREAK: real proof bound to a garbage chain digest"
+    );
 }
 
 /// Recompute the library's in-AIR digest chain over a list of publics (mirrors
@@ -287,7 +314,11 @@ fn fix_padding_row_cannot_smuggle_account() {
     let secrets: Vec<_> = (0..n as u64).map(secrets_indexed).collect();
     let (digest, publics, proof) = prove_account_creation_batch(&secrets).expect("prove");
     verify_account_creation_batch(&digest, &publics, &proof).expect("honest verifies");
-    assert_eq!(publics.len(), 3, "only the 3 REAL accounts are returned (no phantom 4th)");
+    assert_eq!(
+        publics.len(),
+        3,
+        "only the 3 REAL accounts are returned (no phantom 4th)"
+    );
 
     // Try to claim the padding row as a real 4th account (replicate the last real
     // tuple). With a self-consistent 4-account chain digest, the proof (bound to
@@ -369,7 +400,10 @@ fn target_a_full_witness_recovery_scan() {
     // A small number of accidental hits among small byte values is possible by
     // chance in the extension field? No: opened values are ~124-bit ext elements;
     // equality to a tiny byte value is overwhelmingly non-accidental.
-    assert_eq!(hits, 0, "HIDING BREAK: an opened OOD value equals a raw witness element");
+    assert_eq!(
+        hits, 0,
+        "HIDING BREAK: an opened OOD value equals a raw witness element"
+    );
 }
 
 // ===========================================================================

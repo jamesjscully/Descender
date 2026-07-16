@@ -1,6 +1,7 @@
 import Descender.Path2FullSpendGame
 import Descender.Path2AcceptedSpendClosure
 import Descender.Path2NativeAccountDesign
+import Descender.Path2HashBudget
 import Mathlib.Data.Fintype.Basic
 import Mathlib.Data.Nat.Pairing
 
@@ -91,6 +92,21 @@ structure ConcreteSignatureBody where
   proofCommitment : Nat
   checkedCoreFrame : Nat
   relationChallenge : Nat
+  checkedCoreProofByteLength : Nat
+  requiredCheckedCoreProofByteLength : Nat
+  checkedCoreProofBytesCanonical : Prop
+  decodedProofCommitment : Nat
+  accountRandomizerCommitment : Nat
+  claimedAuthorizationChallenge : Nat
+  derivedAuthorizationChallenge : Nat
+  actualResponseSyndrome : Nat
+  expectedResponseSyndrome : Nat
+  publicLocalFiberConsistent : Prop
+  publicPadOpeningConsistent : Prop
+  /-- Reduction-game event, not a serialized signature field. -/
+  qromOrDomainSeparationBreak : Prop
+  /-- Reduction-game event, not a serialized signature field. -/
+  liveSlotLeakageOrKeygenBreak : Prop
 
 /-- Consensus lifecycle state for consume-once slot authorization. -/
 structure ConcreteConsumeState where
@@ -2528,6 +2544,156 @@ theorem selectedRustPadSeedGloballyReorgSafeUniqueReduction_v1
     exact padSeed_globally_injective_of_registry
       reg padSeedOf leafIdOf admitted hReg hId hL hL' hSamePad
 
+/--
+Selected sovereign-state contract for the proof-bound account-STARK nullifier.
+
+`verifiedNullifierDeterministic` models the in-circuit
+`Poseidon2(domain, pad_seed, slot)` equality: equal canonical pad-seed/slot
+inputs produce the same verifier output. `verifiedNullifierRegistered` says
+that exact verifier output, rather than a caller-supplied leaf digest, is the
+canonical global registry key. The remaining fields import the selected D2
+finalized-head behavior exercised by the sovereign admission state.
+-/
+structure SelectedRustSovereignVerifiedNullifierRegistryContract
+    (reg : GlobalPadSeedRegistry)
+    (padSeedSlotOf verifiedNullifierOf leafIdOf :
+      ConcretePrevalidatedSlotLeaf → Nat)
+    (admitted : ConcretePrevalidatedSlotLeaf → Prop)
+    (TargetChainFinalityProfileInstantiated
+      LifecycleTransitionProfileVerified
+      ReorgBelowFinalizedRejected
+      PendingWindowReorgFreesAdmissions
+      FinalizedAdmissionsPreserved : Prop) : Prop where
+  verifiedNullifierDeterministic :
+    ∀ {L L' : ConcretePrevalidatedSlotLeaf},
+      padSeedSlotOf L = padSeedSlotOf L' →
+        verifiedNullifierOf L = verifiedNullifierOf L'
+  verifiedNullifierRegistered :
+    ∀ L,
+      admitted L →
+        reg.admittedFor (verifiedNullifierOf L) = some (leafIdOf L)
+  canonicalLeafIdentityInjective : Function.Injective leafIdOf
+  targetChainFinalityProfileInstantiated :
+    TargetChainFinalityProfileInstantiated
+  lifecycleTransitionProfileVerified : LifecycleTransitionProfileVerified
+  reorgBelowFinalizedRejected : ReorgBelowFinalizedRejected
+  pendingWindowReorgFreesAdmissions : PendingWindowReorgFreesAdmissions
+  finalizedAdmissionsPreserved : FinalizedAdmissionsPreserved
+
+/--
+The selected verifier-produced nullifier and sovereign registry instantiate F2.
+
+If two admitted leaves reuse the same canonical `(pad_seed, slot)` input, the
+account AIR gives the same nullifier. Since consensus registers that raw
+verified nullifier globally, registry injectivity identifies the leaves. The
+selected D2 fields supply the finalized and pending-window reorg clauses. This
+is a theorem-scoped state invariant, not deployment or external-review evidence.
+-/
+theorem selectedRustSovereignPadSeedReorgSafeUniqueness_of_verifiedNullifierRegistry_v1
+    (reg : GlobalPadSeedRegistry)
+    (padSeedSlotOf verifiedNullifierOf leafIdOf :
+      ConcretePrevalidatedSlotLeaf → Nat)
+    (admitted : ConcretePrevalidatedSlotLeaf → Prop)
+    (TargetChainFinalityProfileInstantiated
+      LifecycleTransitionProfileVerified
+      ReorgBelowFinalizedRejected
+      PendingWindowReorgFreesAdmissions
+      FinalizedAdmissionsPreserved : Prop)
+    (hContract :
+      SelectedRustSovereignVerifiedNullifierRegistryContract
+        reg
+        padSeedSlotOf
+        verifiedNullifierOf
+        leafIdOf
+        admitted
+        TargetChainFinalityProfileInstantiated
+        LifecycleTransitionProfileVerified
+        ReorgBelowFinalizedRejected
+        PendingWindowReorgFreesAdmissions
+        FinalizedAdmissionsPreserved) :
+    PadSeedGloballyReorgSafeUniqueWith
+      padSeedSlotOf
+      admitted
+      TargetChainFinalityProfileInstantiated
+      LifecycleTransitionProfileVerified
+      ReorgBelowFinalizedRejected
+      PendingWindowReorgFreesAdmissions
+      FinalizedAdmissionsPreserved := by
+  constructor
+  · exact ⟨hContract.targetChainFinalityProfileInstantiated,
+      hContract.lifecycleTransitionProfileVerified,
+      hContract.reorgBelowFinalizedRejected,
+      hContract.pendingWindowReorgFreesAdmissions,
+      hContract.finalizedAdmissionsPreserved⟩
+  · intro L L' hL hL' hSamePadSeedSlot
+    exact padSeed_globally_injective_of_registry
+      reg
+      verifiedNullifierOf
+      leafIdOf
+      admitted
+      hContract.verifiedNullifierRegistered
+      hContract.canonicalLeafIdentityInjective
+      hL
+      hL'
+      (hContract.verifiedNullifierDeterministic hSamePadSeedSlot)
+
+/--
+Fresh-input predicate consumed by the selected account mask-PRF hybrid. The
+canonical frame identifier represents `(MASK_DOMAIN, pad_seed, slot_id)`; the
+domain is fixed, so injectivity reduces to the proof-bound `(pad_seed, slot)`
+identifier registered by the sovereign nullifier state.
+-/
+def SelectedAccountMaskPrfAdmissionFramesFresh
+    (maskPrfFrameOf : ConcretePrevalidatedSlotLeaf → Nat)
+    (admitted : ConcretePrevalidatedSlotLeaf → Prop) : Prop :=
+  ∀ {L L' : ConcretePrevalidatedSlotLeaf},
+    admitted L →
+      admitted L' →
+        maskPrfFrameOf L = maskPrfFrameOf L' →
+          L = L'
+
+/--
+The selected verified-nullifier registry supplies exact C2 input freshness.
+This discharges the repeated-input event in the A2 hybrid at the theorem/state
+boundary; it does not supply Poseidon2 pseudorandomness.
+-/
+theorem selectedRustAccountMaskPrfFramesFresh_of_verifiedNullifierRegistry_v1
+    (reg : GlobalPadSeedRegistry)
+    (padSeedSlotOf verifiedNullifierOf leafIdOf :
+      ConcretePrevalidatedSlotLeaf → Nat)
+    (admitted : ConcretePrevalidatedSlotLeaf → Prop)
+    (TargetChainFinalityProfileInstantiated
+      LifecycleTransitionProfileVerified
+      ReorgBelowFinalizedRejected
+      PendingWindowReorgFreesAdmissions
+      FinalizedAdmissionsPreserved : Prop)
+    (hContract :
+      SelectedRustSovereignVerifiedNullifierRegistryContract
+        reg
+        padSeedSlotOf
+        verifiedNullifierOf
+        leafIdOf
+        admitted
+        TargetChainFinalityProfileInstantiated
+        LifecycleTransitionProfileVerified
+        ReorgBelowFinalizedRejected
+        PendingWindowReorgFreesAdmissions
+        FinalizedAdmissionsPreserved) :
+    SelectedAccountMaskPrfAdmissionFramesFresh padSeedSlotOf admitted := by
+  exact
+    (selectedRustSovereignPadSeedReorgSafeUniqueness_of_verifiedNullifierRegistry_v1
+      reg
+      padSeedSlotOf
+      verifiedNullifierOf
+      leafIdOf
+      admitted
+      TargetChainFinalityProfileInstantiated
+      LifecycleTransitionProfileVerified
+      ReorgBelowFinalizedRejected
+      PendingWindowReorgFreesAdmissions
+      FinalizedAdmissionsPreserved
+      hContract).2
+
 /-- The leaf fields agree with the native public projections of its boundary. -/
 def NativeProjectionCarrierBinding
     (C : ConcreteGameConfig)
@@ -2611,6 +2777,115 @@ def LeafFixedBeforeChallenge
   leaf.frozenAt ≤ challengeTime
 
 /--
+Deterministic production checked-core acceptance facts carried by a successful
+direct verifier call.
+
+The fields mirror `verify_path2_checked_core_authorization`: canonical proof
+bytes, commitment binding, authorization-challenge recomputation, the checked
+core syndrome equation, and both public consistency checks. They do not assert
+QROM security or coded-SIS hardness.
+-/
+structure ConcreteCheckedCoreAuthorizationAcceptance
+    (spend : ConcreteSpendTuple) : Prop where
+  proofByteLengthEq :
+    spend.signatureBody.checkedCoreProofByteLength =
+      spend.signatureBody.requiredCheckedCoreProofByteLength
+  proofBytesCanonical :
+    spend.signatureBody.checkedCoreProofBytesCanonical
+  decodedProofCommitmentEq :
+    spend.signatureBody.decodedProofCommitment =
+      spend.signatureBody.proofCommitment
+  accountRandomizerCommitmentEq :
+    spend.signatureBody.proofCommitment =
+      spend.signatureBody.accountRandomizerCommitment
+  authorizationChallengeEq :
+    spend.signatureBody.claimedAuthorizationChallenge =
+      spend.signatureBody.derivedAuthorizationChallenge
+  responseSyndromeEq :
+    spend.signatureBody.actualResponseSyndrome =
+      spend.signatureBody.expectedResponseSyndrome
+  publicLocalFiberConsistent :
+    spend.signatureBody.publicLocalFiberConsistent
+  publicPadOpeningConsistent :
+    spend.signatureBody.publicPadOpeningConsistent
+
+/-- Independently stated deterministic validity relation for checked-core acceptance. -/
+def ConcreteCheckedCoreAuthorizationValid
+    (spend : ConcreteSpendTuple) : Prop :=
+  spend.signatureBody.checkedCoreProofByteLength =
+      spend.signatureBody.requiredCheckedCoreProofByteLength ∧
+    spend.signatureBody.checkedCoreProofBytesCanonical ∧
+      spend.signatureBody.decodedProofCommitment =
+        spend.signatureBody.proofCommitment ∧
+        spend.signatureBody.proofCommitment =
+          spend.signatureBody.accountRandomizerCommitment ∧
+          spend.signatureBody.claimedAuthorizationChallenge =
+            spend.signatureBody.derivedAuthorizationChallenge ∧
+            spend.signatureBody.actualResponseSyndrome =
+              spend.signatureBody.expectedResponseSyndrome ∧
+              spend.signatureBody.publicLocalFiberConsistent ∧
+                spend.signatureBody.publicPadOpeningConsistent
+
+/-- Concrete parser/canonicality failure for the production checked-core carrier. -/
+def ConcreteCheckedCoreParserBreak
+    (spend : ConcreteSpendTuple) : Prop :=
+  spend.signatureBody.checkedCoreProofByteLength ≠
+      spend.signatureBody.requiredCheckedCoreProofByteLength ∨
+    ¬ spend.signatureBody.checkedCoreProofBytesCanonical ∨
+      spend.signatureBody.decodedProofCommitment ≠
+        spend.signatureBody.proofCommitment
+
+/-- Concrete frame/commitment failure for the production checked-core carrier. -/
+def ConcreteCheckedCoreFrameBreak
+    (spend : ConcreteSpendTuple) : Prop :=
+  spend.signatureBody.proofCommitment ≠
+      spend.signatureBody.accountRandomizerCommitment ∨
+    spend.signatureBody.claimedAuthorizationChallenge ≠
+      spend.signatureBody.derivedAuthorizationChallenge
+
+/-- Concrete equation/public-consistency failure for the checked-core carrier. -/
+def ConcreteCheckedCoreEquationBreak
+    (spend : ConcreteSpendTuple) : Prop :=
+  spend.signatureBody.actualResponseSyndrome ≠
+      spend.signatureBody.expectedResponseSyndrome ∨
+    ¬ spend.signatureBody.publicLocalFiberConsistent ∨
+      ¬ spend.signatureBody.publicPadOpeningConsistent
+
+/-- The deterministic acceptor's concrete valid-or-named-break conclusion. -/
+def ConcreteCheckedCoreValidOrNamedBreak
+    (spend : ConcreteSpendTuple) : Prop :=
+  ConcreteCheckedCoreAuthorizationValid spend ∨
+    ConcreteCheckedCoreEquationBreak spend ∨
+      ConcreteCheckedCoreFrameBreak spend ∨
+        spend.signatureBody.qromOrDomainSeparationBreak ∨
+          ConcreteCheckedCoreParserBreak spend
+
+/-- Production acceptance implies the independently stated deterministic validity relation. -/
+theorem concreteCheckedCoreAuthorizationAcceptance_valid
+    {spend : ConcreteSpendTuple}
+    (hAccept : ConcreteCheckedCoreAuthorizationAcceptance spend) :
+    ConcreteCheckedCoreAuthorizationValid spend := by
+  exact ⟨hAccept.proofByteLengthEq,
+    hAccept.proofBytesCanonical,
+    hAccept.decodedProofCommitmentEq,
+    hAccept.accountRandomizerCommitmentEq,
+    hAccept.authorizationChallengeEq,
+    hAccept.responseSyndromeEq,
+    hAccept.publicLocalFiberConsistent,
+    hAccept.publicPadOpeningConsistent⟩
+
+/--
+The production checked-core deterministic semantics need no soundness callback:
+an accepted authorization is valid under the independent verifier relation, or
+one of the concrete equation/frame/domain/parser breaks is exposed.
+-/
+theorem concreteCheckedCoreAuthorizationAccepted_valid_or_named_break_v1
+    {spend : ConcreteSpendTuple}
+    (hAccept : ConcreteCheckedCoreAuthorizationAcceptance spend) :
+    ConcreteCheckedCoreValidOrNamedBreak spend :=
+  Or.inl (concreteCheckedCoreAuthorizationAcceptance_valid hAccept)
+
+/--
 Checked-core binding of message, state, native boundary, proof commitment, and
 the accepted spend tuple to one frame.
 -/
@@ -2685,9 +2960,9 @@ def ConcreteBreakFor
   | Path2FullSpendGame.BreakEvent.slotReplayOrRollbackBreak =>
       RollbackOrReorgBreak spend
   | Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak =>
-      False
+      spend.signatureBody.qromOrDomainSeparationBreak
   | Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak =>
-      False
+      spend.signatureBody.liveSlotLeakageOrKeygenBreak
 
 /--
 If the selected account-creation residual package is absent, the concrete
@@ -2761,7 +3036,94 @@ def ConcreteSpendVerificationAccepts
   BoundConcretePrevalidatedSlot C spend ∧
     AdmittedConcretePrechallengeLeaf C spend ∧
       CheckedCoreChallengeBindsAcceptedTuple C spend ∧
-        ConcreteConsumeOnceAcceptedTransition C spend
+        ConcreteCheckedCoreAuthorizationAcceptance spend ∧
+          ConcreteConsumeOnceAcceptedTransition C spend
+
+/--
+Local direct leaf-canonical/live support slice.
+
+The concrete accepted-spend predicate carries the accepted leaf's account,
+state-root, slot, public key, live window, and native projection binding through
+the bounded prevalidated slot package.  This gives the direct theorem boundary a
+stable support hook for `direct_obligation_leaf_canonical_live`; frozen leaf KAT
+coverage, lifecycle composition, and deployment readiness remain separate
+fail-closed obligations.
+-/
+theorem leafCanonicalLive_imported_of_concreteSpendAccepts
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hAccept : ConcreteSpendVerificationAccepts C spend) :
+    PrevalidatedSlotLeafCanonicalAndLive C spend :=
+  hAccept.1.1
+
+/--
+Selected-Rust direct leaf-canonical/live support for the accepted tuple.  This
+packages only the local accepted-leaf equality and live-window facts; it does
+not assert frozen KAT completeness, final lifecycle composition, or deployment
+readiness.
+-/
+def SelectedRustDirectLeafCanonicalLiveSupport
+    (spend : ConcreteSpendTuple) : Prop :=
+  PrevalidatedSlotLeafCanonicalAndLive selectedRustConcreteGameConfig spend
+
+theorem selectedRustDirectLeafCanonicalLiveSupport_of_concreteSpendAccepts
+    {spend : ConcreteSpendTuple}
+    (hAccept :
+      ConcreteSpendVerificationAccepts selectedRustConcreteGameConfig spend) :
+    SelectedRustDirectLeafCanonicalLiveSupport spend :=
+  leafCanonicalLive_imported_of_concreteSpendAccepts hAccept
+
+/--
+Local direct evidence/leaf-binding support slice.
+
+The concrete accepted-spend predicate carries the account-creation evidence,
+direct certificate, and leaf digest binding as part of the bounded prevalidated
+slot package.  This gives the direct theorem boundary a stable support hook for
+`direct_obligation_evidence_leaf_bindings`; account-creation proof-boundary
+closure and frozen malformed-field KAT completeness remain separate fail-closed
+obligations.
+-/
+theorem leafEvidenceCertificateBinding_imported_of_concreteSpendAccepts
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hAccept : ConcreteSpendVerificationAccepts C spend) :
+    LeafEvidenceCertificateBinding C spend :=
+  hAccept.1.2.1
+
+/--
+Selected-Rust direct evidence/leaf-binding support for the accepted tuple.
+This packages only the local equality/digest binding fact; it does not assert
+the account-creation proof-boundary is verified or deployment is ready.
+-/
+def SelectedRustDirectEvidenceLeafBindingSupport
+    (spend : ConcreteSpendTuple) : Prop :=
+  LeafEvidenceCertificateBinding selectedRustConcreteGameConfig spend
+
+theorem selectedRustDirectEvidenceLeafBindingSupport_of_concreteSpendAccepts
+    {spend : ConcreteSpendTuple}
+    (hAccept :
+      ConcreteSpendVerificationAccepts selectedRustConcreteGameConfig spend) :
+    SelectedRustDirectEvidenceLeafBindingSupport spend :=
+  leafEvidenceCertificateBinding_imported_of_concreteSpendAccepts hAccept
+
+/--
+Concrete local closure package for the accepted leaf and its creation evidence.
+Executable frozen-frame KAT and lifecycle evidence are imported by the Rust
+boundary report; this Lean package proves the two theorem predicates carried by
+the accepted spend itself.
+-/
+structure SelectedRustDirectLeafAndEvidenceClosure
+    (spend : ConcreteSpendTuple) : Prop where
+  leafCanonicalLive : SelectedRustDirectLeafCanonicalLiveSupport spend
+  evidenceLeafBinding : SelectedRustDirectEvidenceLeafBindingSupport spend
+
+theorem selectedRustDirectLeafAndEvidenceClosure_of_concreteSpendAccepts
+    {spend : ConcreteSpendTuple}
+    (hAccept :
+      ConcreteSpendVerificationAccepts selectedRustConcreteGameConfig spend) :
+    SelectedRustDirectLeafAndEvidenceClosure spend :=
+  ⟨selectedRustDirectLeafCanonicalLiveSupport_of_concreteSpendAccepts hAccept,
+    selectedRustDirectEvidenceLeafBindingSupport_of_concreteSpendAccepts hAccept⟩
 
 /--
 Closed direct-theorem checked-core frame-binding slice.
@@ -2790,6 +3152,45 @@ theorem checkedCoreFrameBinding_frame_eq_of_imported
         spend.signatureBody.proofCommitment :=
   hChecked.2.1
 
+/-- Accepted direct spends carry the deterministic production checked-core result. -/
+theorem checkedCoreAuthorizationAcceptance_imported_of_concreteSpendAccepts
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hAccept : ConcreteSpendVerificationAccepts C spend) :
+    ConcreteCheckedCoreAuthorizationAcceptance spend :=
+  hAccept.2.2.2.1
+
+/--
+Selected-Rust direct checked-core acceptance reaches deterministic validity or
+the concrete equation/frame/domain/parser break taxonomy without importing the
+generic `Path2NativeCheckedCoreAcceptV1Soundness` callback.
+-/
+theorem selectedRustProductionCheckedCoreAccepted_valid_or_named_break_v1
+    {spend : ConcreteSpendTuple}
+    (hAccept :
+      ConcreteSpendVerificationAccepts selectedRustConcreteGameConfig spend) :
+    ConcreteCheckedCoreValidOrNamedBreak spend :=
+  concreteCheckedCoreAuthorizationAccepted_valid_or_named_break_v1
+    (checkedCoreAuthorizationAcceptance_imported_of_concreteSpendAccepts hAccept)
+
+/-- Accepted direct spends carry independently stated deterministic checked-core validity. -/
+theorem selectedRustProductionCheckedCoreAccepted_valid_v1
+    {spend : ConcreteSpendTuple}
+    (hAccept :
+      ConcreteSpendVerificationAccepts selectedRustConcreteGameConfig spend) :
+    ConcreteCheckedCoreAuthorizationValid spend :=
+  concreteCheckedCoreAuthorizationAcceptance_valid
+    (checkedCoreAuthorizationAcceptance_imported_of_concreteSpendAccepts hAccept)
+
+/-- The concrete checked-core domain/QROM branch is the direct trace event. -/
+theorem concreteCheckedCoreDomainQromBreak_couples_to_directGame_v1
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hBreak : spend.signatureBody.qromOrDomainSeparationBreak) :
+    ConcreteBreakFor C spend
+      Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak :=
+  hBreak
+
 /--
 Closed direct-theorem slot-authorization digest slice.
 
@@ -2812,6 +3213,611 @@ theorem slotAuthorizationDigest_eq_leafDigest_of_imported
     (hSlot : SlotAuthorizationDigestFramesLeaf C spend) :
     spend.slotAuthorizationDigest = spend.leaf.leafDigest :=
   Eq.trans hSlot.1 hSlot.2
+
+/--
+Closed local direct-admission namespace membership slice.
+
+The concrete accepted-spend predicate carries exact membership of the accepted
+account/state-root/slot-authorization tuple in the direct admission namespace.
+This gives the direct theorem boundary a stable support hook for the membership
+half of `direct_obligation_admission_namespace`; target-chain data availability
+and broader composition readiness remain separate fail-closed obligations.
+-/
+theorem directAdmissionNamespaceMembership_imported_of_concreteSpendAccepts
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hAccept : ConcreteSpendVerificationAccepts C spend) :
+    DirectAdmissionContains spend.admissionRecord spend.accountId
+      spend.accountStateRootBefore spend.slotAuthorizationDigest spend.leaf :=
+  hAccept.2.1.1
+
+/--
+Selected-Rust direct-admission namespace membership support for the accepted
+tuple.  This packages the exact membership fact only; it does not assert
+target-chain data availability, final composition closure, or deployment
+readiness.
+-/
+def SelectedRustDirectAdmissionNamespaceMembershipSupport
+    (spend : ConcreteSpendTuple) : Prop :=
+  DirectAdmissionContains spend.admissionRecord spend.accountId
+    spend.accountStateRootBefore spend.slotAuthorizationDigest spend.leaf
+
+theorem selectedRustDirectAdmissionNamespaceMembershipSupport_of_concreteSpendAccepts
+    {spend : ConcreteSpendTuple}
+    (hAccept :
+      ConcreteSpendVerificationAccepts selectedRustConcreteGameConfig spend) :
+    SelectedRustDirectAdmissionNamespaceMembershipSupport spend :=
+  directAdmissionNamespaceMembership_imported_of_concreteSpendAccepts hAccept
+
+/--
+The selected sovereign direct record is both an exact namespace member and
+available from canonical consensus state at challenge time.  The Rust boundary
+instantiates `dataAvailable` with directly stored canonical leaf bytes and
+`canonicalAt` with the ADR-0010 finalized-head/reorg state machine.
+-/
+structure SelectedRustDirectAdmissionNamespaceAndDataAvailabilityClosure
+    (spend : ConcreteSpendTuple) : Prop where
+  namespaceMembership :
+    SelectedRustDirectAdmissionNamespaceMembershipSupport spend
+  canonicalConsensusRecordAvailable :
+    ReplayableCertificateDataAvailable selectedRustConcreteGameConfig spend
+
+theorem selectedRustDirectAdmissionNamespaceAndDataAvailabilityClosure_of_concreteSpendAccepts
+    {spend : ConcreteSpendTuple}
+    (hAccept :
+      ConcreteSpendVerificationAccepts selectedRustConcreteGameConfig spend) :
+    SelectedRustDirectAdmissionNamespaceAndDataAvailabilityClosure spend :=
+  ⟨selectedRustDirectAdmissionNamespaceMembershipSupport_of_concreteSpendAccepts hAccept,
+    hAccept.1.2.2.2⟩
+
+/--
+Selected-Rust direct QROM/action theorem support.
+
+This is the local theorem-linkage support slice for
+`direct_obligation_checked_core_acceptance`: it imports the executable
+QROM/action budget bridge, consumes checked-core acceptance from the concrete
+spend predicate, and leaves the concrete `qromOrDomainSeparationBreak` event
+for the external reduction game to price. It is not an external QROM review
+result and does not assert deployment readiness.
+-/
+def SelectedRustDirectQromActionTheoremSupport
+    (C : ConcreteGameConfig)
+    (spend : ConcreteSpendTuple) : Prop :=
+  Path2HashBudget.DirectQromActionBudgetBridge
+      Path2HashBudget.path2DirectQueryBudgetV1 ∧
+    CheckedCoreChallengeBindsAcceptedTuple C spend ∧
+      ConcreteCheckedCoreValidOrNamedBreak spend
+
+/--
+Concrete selected-Rust acceptance imports the local QROM/action support package.
+
+The external QROM/action theorem review remains outside this theorem; this hook
+only proves the accepted spend carries the local budget bridge and checked-core
+acceptance surface that a reviewed theorem must consume.
+-/
+theorem selectedRustDirectQromActionTheoremSupport_of_concreteSpendAccepts
+    {spend : ConcreteSpendTuple}
+    (hAccept :
+      ConcreteSpendVerificationAccepts selectedRustConcreteGameConfig spend) :
+    SelectedRustDirectQromActionTheoremSupport
+      selectedRustConcreteGameConfig spend :=
+  ⟨Path2HashBudget.selectedRustDirectQromActionBudgetBridge_v1,
+    hAccept.2.2.1,
+    selectedRustProductionCheckedCoreAccepted_valid_or_named_break_v1 hAccept⟩
+
+/--
+Direct QROM/action theorem linkage reduced to an explicit review relation.
+
+`QromActionReviewed` is the outside theorem/review surface.  Keeping it as a
+parameter prevents the local budget bridge from being mistaken for reviewed
+QROM/hash framing or deployment readiness.
+-/
+def SelectedRustDirectQromActionTheoremLinkageWith
+    (QromActionReviewed : ConcreteSpendTuple -> Prop)
+    (spend : ConcreteSpendTuple) : Prop :=
+  SelectedRustDirectQromActionTheoremSupport
+      selectedRustConcreteGameConfig spend ∧
+    QromActionReviewed spend
+
+/--
+Selected Rust direct QROM/action linkage reduction hook.
+
+If external theorem/review evidence accepts every selected-Rust spend carrying
+the local QROM/action support slice, then every selected-Rust concrete spend
+acceptance has that reviewed linkage package.  This does not instantiate the
+review relation.
+-/
+theorem selectedRustDirectQromActionTheoremLinkageReduction_v1
+    (QromActionReviewed : ConcreteSpendTuple -> Prop)
+    (hReview :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustDirectQromActionTheoremSupport
+          selectedRustConcreteGameConfig spend ->
+          QromActionReviewed spend) :
+    forall spend : ConcreteSpendTuple,
+      ConcreteSpendVerificationAccepts selectedRustConcreteGameConfig spend ->
+        SelectedRustDirectQromActionTheoremLinkageWith
+          QromActionReviewed spend := by
+  intro spend hAccept
+  have hSupport :=
+    selectedRustDirectQromActionTheoremSupport_of_concreteSpendAccepts
+      hAccept
+  exact ⟨hSupport, hReview spend hSupport⟩
+
+/-- Public result classes exposed by the selected-Rust direct verifier wrapper. -/
+inductive SelectedRustDirectPublicResultClass where
+  | acceptAdmitSlot
+  | acceptSpendSlot
+  | rejectMalformedPublicInput
+  | rejectUnsupportedVersion
+  | rejectBindingMismatch
+  | rejectCreationEvidence
+  | rejectCheckedCore
+  | rejectLifecycleState
+  | rejectPolicy
+  | rejectResourceLimit
+  | internalErrorFailClosed
+  deriving DecidableEq
+
+/-- Public wrapper outcome with the consensus-visible post-call state. -/
+inductive SelectedRustDirectPublicWrapperOutcome (State : Type) where
+  | accepted (slotId : Nat) (state : State)
+  | rejected (resultClass : SelectedRustDirectPublicResultClass) (state : State)
+
+/--
+Pure model of the selected-Rust public-result wrapper.
+
+`none` models a caught panic.  Both explicit verifier errors and caught panics
+restore the exact pre-call state before exposing a public rejection class.
+-/
+def selectedRustDirectPublicWrapperModel
+    {State Error : Type}
+    (classify : Error -> SelectedRustDirectPublicResultClass)
+    (stateBefore : State)
+    (verification : Option (Except Error (Nat × State))) :
+    SelectedRustDirectPublicWrapperOutcome State :=
+  match verification with
+  | some (Except.ok (slotId, stateAfter)) =>
+      SelectedRustDirectPublicWrapperOutcome.accepted slotId stateAfter
+  | some (Except.error err) =>
+      SelectedRustDirectPublicWrapperOutcome.rejected (classify err) stateBefore
+  | none =>
+      SelectedRustDirectPublicWrapperOutcome.rejected
+        SelectedRustDirectPublicResultClass.internalErrorFailClosed stateBefore
+
+/-- Every public rejection path preserves the exact pre-call consensus state. -/
+theorem selectedRustDirectPublicRejectionStatePreserving_v1
+    {State Error : Type}
+    (classify : Error -> SelectedRustDirectPublicResultClass)
+    (stateBefore : State)
+    (verification : Option (Except Error (Nat × State)))
+    {resultClass : SelectedRustDirectPublicResultClass}
+    {rejectedState : State}
+    (hRejected :
+      selectedRustDirectPublicWrapperModel classify stateBefore verification =
+        SelectedRustDirectPublicWrapperOutcome.rejected resultClass rejectedState) :
+    rejectedState = stateBefore := by
+  cases verification with
+  | none =>
+      simp [selectedRustDirectPublicWrapperModel] at hRejected
+      exact hRejected.2.symm
+  | some result =>
+      cases result with
+      | error err =>
+          simp [selectedRustDirectPublicWrapperModel] at hRejected
+          exact hRejected.2.symm
+      | ok accepted =>
+          cases accepted
+          simp [selectedRustDirectPublicWrapperModel] at hRejected
+
+/-- State effects exposed by the selected sovereign-rollup direct client. -/
+inductive SelectedRustSovereignDirectClientStateEffect where
+  | noMutation
+  | admitLiveSlot
+  | consumeLiveSlot
+  deriving DecidableEq
+
+/-- The selected sovereign client preserves the complete public result class. -/
+def selectedRustSovereignDirectClientStateEffect :
+    SelectedRustDirectPublicResultClass ->
+      SelectedRustSovereignDirectClientStateEffect
+  | .acceptAdmitSlot => .admitLiveSlot
+  | .acceptSpendSlot => .consumeLiveSlot
+  | .rejectMalformedPublicInput => .noMutation
+  | .rejectUnsupportedVersion => .noMutation
+  | .rejectBindingMismatch => .noMutation
+  | .rejectCreationEvidence => .noMutation
+  | .rejectCheckedCore => .noMutation
+  | .rejectLifecycleState => .noMutation
+  | .rejectPolicy => .noMutation
+  | .rejectResourceLimit => .noMutation
+  | .internalErrorFailClosed => .noMutation
+
+/-- Predicate selecting exactly the nine public rejection classes. -/
+def selectedRustDirectPublicResultClassIsRejection :
+    SelectedRustDirectPublicResultClass -> Prop
+  | .acceptAdmitSlot => False
+  | .acceptSpendSlot => False
+  | .rejectMalformedPublicInput => True
+  | .rejectUnsupportedVersion => True
+  | .rejectBindingMismatch => True
+  | .rejectCreationEvidence => True
+  | .rejectCheckedCore => True
+  | .rejectLifecycleState => True
+  | .rejectPolicy => True
+  | .rejectResourceLimit => True
+  | .internalErrorFailClosed => True
+
+/-- Every selected sovereign-client rejection maps to no consensus mutation. -/
+theorem selectedRustSovereignDirectClientRejectionMapsToNoMutation_v1
+    (resultClass : SelectedRustDirectPublicResultClass)
+    (hReject : selectedRustDirectPublicResultClassIsRejection resultClass) :
+    selectedRustSovereignDirectClientStateEffect resultClass =
+      SelectedRustSovereignDirectClientStateEffect.noMutation := by
+  cases resultClass <;>
+    simp [selectedRustDirectPublicResultClassIsRejection,
+      selectedRustSovereignDirectClientStateEffect] at hReject ⊢
+
+/--
+Concrete deterministic-public-rejection proposition imported by the selected
+Rust direct composition.  It combines exact wrapper rollback with the exhaustive
+sovereign-client rejection-to-no-mutation map.
+-/
+def SelectedRustDirectDeterministicPublicRejection : Prop :=
+  (forall
+      (State Error : Type)
+      (classify : Error -> SelectedRustDirectPublicResultClass)
+      (stateBefore : State)
+      (verification : Option (Except Error (Nat × State)))
+      (resultClass : SelectedRustDirectPublicResultClass)
+      (rejectedState : State),
+    selectedRustDirectPublicWrapperModel classify stateBefore verification =
+        SelectedRustDirectPublicWrapperOutcome.rejected resultClass rejectedState ->
+      rejectedState = stateBefore) ∧
+  (forall resultClass : SelectedRustDirectPublicResultClass,
+    selectedRustDirectPublicResultClassIsRejection resultClass ->
+      selectedRustSovereignDirectClientStateEffect resultClass =
+        SelectedRustSovereignDirectClientStateEffect.noMutation)
+
+/-- The selected Rust wrapper and sovereign-client map close public rejection. -/
+theorem selectedRustDirectDeterministicPublicRejectionClosed_v1 :
+    SelectedRustDirectDeterministicPublicRejection := by
+  constructor
+  · intro State Error classify stateBefore verification resultClass rejectedState hRejected
+    exact selectedRustDirectPublicRejectionStatePreserving_v1
+      classify stateBefore verification hRejected
+  · exact selectedRustSovereignDirectClientRejectionMapsToNoMutation_v1
+
+/--
+Selected-Rust direct product conclusion with every external review surface named.
+
+The first five fields expose the complete local admission/spend/lifecycle
+composition carried by `ConcreteSpendVerificationAccepts`.  The remaining
+fields prevent that local composition from being mistaken for proof-family,
+QROM, signer, rejection, or coded-SIS review closure.
+-/
+structure SelectedRustDirectProductConclusionWith
+    (AccountCreationProofFamilyReviewed : ConcreteSpendTuple -> Prop)
+    (QromActionReviewed : ConcreteSpendTuple -> Prop)
+    (DeterministicPublicRejection : Prop)
+    (SignerAndKeygenReviewed : Prop)
+    (ExternalCodedSisOrLatticeCoreReviewed : Prop)
+    (spend : ConcreteSpendTuple) where
+  boundSlot :
+    BoundConcretePrevalidatedSlot selectedRustConcreteGameConfig spend
+  admittedPrechallenge :
+    AdmittedConcretePrechallengeLeaf selectedRustConcreteGameConfig spend
+  checkedCoreBinds :
+    CheckedCoreChallengeBindsAcceptedTuple selectedRustConcreteGameConfig spend
+  checkedCoreAuthorizationValid :
+    ConcreteCheckedCoreAuthorizationValid spend
+  consumeOnce :
+    ConcreteConsumeOnceAcceptedTransition selectedRustConcreteGameConfig spend
+  leafAndEvidenceClosed : SelectedRustDirectLeafAndEvidenceClosure spend
+  admissionNamespaceAndDataAvailabilityClosed :
+    SelectedRustDirectAdmissionNamespaceAndDataAvailabilityClosure spend
+  accountCreationProofFamilyReviewed : AccountCreationProofFamilyReviewed spend
+  qromActionReviewed : QromActionReviewed spend
+  deterministicPublicRejection : DeterministicPublicRejection
+  signerAndKeygenReviewed : SignerAndKeygenReviewed
+  externalCodedSisOrLatticeCoreReviewed : ExternalCodedSisOrLatticeCoreReviewed
+
+/--
+The selected-Rust accepted spend exposes the exact account-creation proof
+boundary consumed by the final composition reduction.
+-/
+theorem accountCreationProofBoundaryEvidenceAccepted_of_concreteSpendAccepts
+    {spend : ConcreteSpendTuple}
+    (hAccept :
+      ConcreteSpendVerificationAccepts selectedRustConcreteGameConfig spend) :
+    AccountCreationProofBoundaryEvidenceAccepted
+      selectedRustConcreteGameConfig spend :=
+  hAccept.1.2.1.1.2.2.2.1
+
+/--
+Selected-Rust direct-mode product-theorem reduction.
+
+All locally mechanized admission, checked-core frame, and consume-once facts are
+composed here.  The cryptographic proof-family, QROM, signer, public-rejection,
+and coded-SIS/lattice review surfaces remain explicit assumptions, so this
+theorem is a first-finish composition interface rather than deployment evidence.
+-/
+theorem selectedRustDirectModeAuthorizationTheoremReduction_v1
+    (AccountCreationProofFamilyReviewed : ConcreteSpendTuple -> Prop)
+    (QromActionReviewed : ConcreteSpendTuple -> Prop)
+    (DeterministicPublicRejection : Prop)
+    (SignerAndKeygenReviewed : Prop)
+    (ExternalCodedSisOrLatticeCoreReviewed : Prop)
+    (hProofFamilyReview :
+      forall spend : ConcreteSpendTuple,
+        AccountCreationProofBoundaryEvidenceAccepted
+            selectedRustConcreteGameConfig spend ->
+          AccountCreationProofFamilyReviewed spend)
+    (hQromActionReview :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustDirectQromActionTheoremSupport
+            selectedRustConcreteGameConfig spend ->
+          QromActionReviewed spend)
+    (hPublicRejection : DeterministicPublicRejection)
+    (hSignerAndKeygenReview : SignerAndKeygenReviewed)
+    (hExternalCoreReview : ExternalCodedSisOrLatticeCoreReviewed)
+    {spend : ConcreteSpendTuple}
+    (hAccept :
+      ConcreteSpendVerificationAccepts selectedRustConcreteGameConfig spend) :
+    SelectedRustDirectProductConclusionWith
+      AccountCreationProofFamilyReviewed
+      QromActionReviewed
+      DeterministicPublicRejection
+      SignerAndKeygenReviewed
+      ExternalCodedSisOrLatticeCoreReviewed
+      spend := by
+  have hProofBoundary :=
+    accountCreationProofBoundaryEvidenceAccepted_of_concreteSpendAccepts hAccept
+  have hQromSupport :=
+    selectedRustDirectQromActionTheoremSupport_of_concreteSpendAccepts hAccept
+  exact {
+    boundSlot := hAccept.1
+    admittedPrechallenge := hAccept.2.1
+    checkedCoreBinds := hAccept.2.2.1
+    checkedCoreAuthorizationValid :=
+      selectedRustProductionCheckedCoreAccepted_valid_v1 hAccept
+    consumeOnce := hAccept.2.2.2.2
+    leafAndEvidenceClosed :=
+      selectedRustDirectLeafAndEvidenceClosure_of_concreteSpendAccepts hAccept
+    admissionNamespaceAndDataAvailabilityClosed :=
+      selectedRustDirectAdmissionNamespaceAndDataAvailabilityClosure_of_concreteSpendAccepts
+        hAccept
+    accountCreationProofFamilyReviewed :=
+      hProofFamilyReview spend hProofBoundary
+    qromActionReviewed := hQromActionReview spend hQromSupport
+    deterministicPublicRejection := hPublicRejection
+    signerAndKeygenReviewed := hSignerAndKeygenReview
+    externalCodedSisOrLatticeCoreReviewed := hExternalCoreReview
+  }
+
+/--
+Selected-Rust direct composition with deterministic public rejection discharged
+by the concrete wrapper rollback and sovereign-client mapping theorem.
+-/
+theorem selectedRustDirectModeAuthorizationWithClosedPublicRejectionReduction_v1
+    (AccountCreationProofFamilyReviewed : ConcreteSpendTuple -> Prop)
+    (QromActionReviewed : ConcreteSpendTuple -> Prop)
+    (SignerAndKeygenReviewed : Prop)
+    (ExternalCodedSisOrLatticeCoreReviewed : Prop)
+    (hProofFamilyReview :
+      forall spend : ConcreteSpendTuple,
+        AccountCreationProofBoundaryEvidenceAccepted
+            selectedRustConcreteGameConfig spend ->
+          AccountCreationProofFamilyReviewed spend)
+    (hQromActionReview :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustDirectQromActionTheoremSupport
+            selectedRustConcreteGameConfig spend ->
+          QromActionReviewed spend)
+    (hSignerAndKeygenReview : SignerAndKeygenReviewed)
+    (hExternalCoreReview : ExternalCodedSisOrLatticeCoreReviewed)
+    {spend : ConcreteSpendTuple}
+    (hAccept :
+      ConcreteSpendVerificationAccepts selectedRustConcreteGameConfig spend) :
+    SelectedRustDirectProductConclusionWith
+      AccountCreationProofFamilyReviewed
+      QromActionReviewed
+      SelectedRustDirectDeterministicPublicRejection
+      SignerAndKeygenReviewed
+      ExternalCodedSisOrLatticeCoreReviewed
+      spend := by
+  exact selectedRustDirectModeAuthorizationTheoremReduction_v1
+    AccountCreationProofFamilyReviewed
+    QromActionReviewed
+    SelectedRustDirectDeterministicPublicRejection
+    SignerAndKeygenReviewed
+    ExternalCodedSisOrLatticeCoreReviewed
+    hProofFamilyReview
+    hQromActionReview
+    selectedRustDirectDeterministicPublicRejectionClosed_v1
+    hSignerAndKeygenReview
+    hExternalCoreReview
+    hAccept
+
+/--
+Status-neutral account-creation proof-family package for the final composition
+interface. It carries the five accepted-boundary residual reductions, the named
+post-quantum target, and the selected sovereign F2 state invariant. It does not
+turn these explicit assumptions into production or review status.
+-/
+def SelectedRustAcceptedBoundaryProofFamilyReviewedUnderExplicitAssumptionsWith
+    (SimulatorNoExportSound : ConcreteSpendTuple -> Prop)
+    (FriAokExtractorSound : ConcreteSpendTuple -> Prop)
+    (FriQromTranscriptSound : ConcreteSpendTuple -> Prop)
+    (FrozenPayloadKatsComplete : ConcreteSpendTuple -> Prop)
+    (ProductionGateReviewAccepted : ConcreteSpendTuple -> Prop)
+    (PostQuantumSoundnessTargetMet : Prop)
+    (PadSeedReorgSafeUnique : Prop)
+    (spend : ConcreteSpendTuple) : Prop :=
+  SelectedRustAcceptedBoundaryProofFamilyClosureReductionsWith
+      SimulatorNoExportSound
+      FriAokExtractorSound
+      FriQromTranscriptSound
+      FrozenPayloadKatsComplete
+      ProductionGateReviewAccepted
+      spend ∧
+    PostQuantumSoundnessTargetMet ∧
+      PadSeedReorgSafeUnique
+
+/--
+Final selected-Rust direct-mode composition under exact named assumptions.
+
+The five proof-family residual relations and the post-quantum target remain
+explicit inputs. F2 is supplied internally from the verified account-STARK
+nullifier registry contract. QROM/action, signer/keygen, and external core review
+remain named assumptions, while deterministic public rejection is discharged by
+the concrete wrapper theorem. This capstone is deliberately orthogonal to all
+readiness flags.
+-/
+theorem selectedRustDirectModeAuthorizationClosedUnderExplicitAssumptions_v1
+    (SimulatorNoExportSound : ConcreteSpendTuple -> Prop)
+    (FriAokExtractorSound : ConcreteSpendTuple -> Prop)
+    (FriQromTranscriptSound : ConcreteSpendTuple -> Prop)
+    (FrozenPayloadKatsComplete : ConcreteSpendTuple -> Prop)
+    (ProductionGateReviewAccepted : ConcreteSpendTuple -> Prop)
+    (PostQuantumSoundnessTargetMet : Prop)
+    (QromActionReviewed : ConcreteSpendTuple -> Prop)
+    (SignerAndKeygenReviewed : Prop)
+    (ExternalCodedSisOrLatticeCoreReviewed : Prop)
+    (reg : GlobalPadSeedRegistry)
+    (padSeedSlotOf verifiedNullifierOf leafIdOf :
+      ConcretePrevalidatedSlotLeaf → Nat)
+    (admitted : ConcretePrevalidatedSlotLeaf → Prop)
+    (TargetChainFinalityProfileInstantiated
+      LifecycleTransitionProfileVerified
+      ReorgBelowFinalizedRejected
+      PendingWindowReorgFreesAdmissions
+      FinalizedAdmissionsPreserved : Prop)
+    (hSimulatorNoExport :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustAcceptedBoundaryNoExportSupport spend ->
+          SimulatorNoExportSound spend)
+    (hFriAok :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustAcceptedBoundaryFriAokSupport spend ->
+          FriAokExtractorSound spend)
+    (hFriQrom :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustAcceptedBoundaryFriQromSupport spend ->
+          FriQromTranscriptSound spend)
+    (hFrozenKats :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustAcceptedBoundaryPayloadKatSupport spend ->
+          FrozenPayloadKatsComplete spend)
+    (hProductionGateReview :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustAcceptedBoundaryProductionGateSupport spend ->
+          ProductionGateReviewAccepted spend)
+    (hPostQuantumTarget : PostQuantumSoundnessTargetMet)
+    (hNullifierRegistry :
+      SelectedRustSovereignVerifiedNullifierRegistryContract
+        reg
+        padSeedSlotOf
+        verifiedNullifierOf
+        leafIdOf
+        admitted
+        TargetChainFinalityProfileInstantiated
+        LifecycleTransitionProfileVerified
+        ReorgBelowFinalizedRejected
+        PendingWindowReorgFreesAdmissions
+        FinalizedAdmissionsPreserved)
+    (hQromActionReview :
+      forall spend : ConcreteSpendTuple,
+        SelectedRustDirectQromActionTheoremSupport
+            selectedRustConcreteGameConfig spend ->
+          QromActionReviewed spend)
+    (hSignerAndKeygenReview : SignerAndKeygenReviewed)
+    (hExternalCoreReview : ExternalCodedSisOrLatticeCoreReviewed)
+    {spend : ConcreteSpendTuple}
+    (hAccept :
+      ConcreteSpendVerificationAccepts selectedRustConcreteGameConfig spend) :
+    SelectedRustDirectProductConclusionWith
+      (SelectedRustAcceptedBoundaryProofFamilyReviewedUnderExplicitAssumptionsWith
+        SimulatorNoExportSound
+        FriAokExtractorSound
+        FriQromTranscriptSound
+        FrozenPayloadKatsComplete
+        ProductionGateReviewAccepted
+        PostQuantumSoundnessTargetMet
+        (PadSeedGloballyReorgSafeUniqueWith
+          padSeedSlotOf
+          admitted
+          TargetChainFinalityProfileInstantiated
+          LifecycleTransitionProfileVerified
+          ReorgBelowFinalizedRejected
+          PendingWindowReorgFreesAdmissions
+          FinalizedAdmissionsPreserved))
+      QromActionReviewed
+      SelectedRustDirectDeterministicPublicRejection
+      SignerAndKeygenReviewed
+      ExternalCodedSisOrLatticeCoreReviewed
+      spend := by
+  have hPadSeedUnique :
+      PadSeedGloballyReorgSafeUniqueWith
+        padSeedSlotOf
+        admitted
+        TargetChainFinalityProfileInstantiated
+        LifecycleTransitionProfileVerified
+        ReorgBelowFinalizedRejected
+        PendingWindowReorgFreesAdmissions
+        FinalizedAdmissionsPreserved :=
+    selectedRustSovereignPadSeedReorgSafeUniqueness_of_verifiedNullifierRegistry_v1
+      reg
+      padSeedSlotOf
+      verifiedNullifierOf
+      leafIdOf
+      admitted
+      TargetChainFinalityProfileInstantiated
+      LifecycleTransitionProfileVerified
+      ReorgBelowFinalizedRejected
+      PendingWindowReorgFreesAdmissions
+      FinalizedAdmissionsPreserved
+      hNullifierRegistry
+  exact selectedRustDirectModeAuthorizationWithClosedPublicRejectionReduction_v1
+    (SelectedRustAcceptedBoundaryProofFamilyReviewedUnderExplicitAssumptionsWith
+      SimulatorNoExportSound
+      FriAokExtractorSound
+      FriQromTranscriptSound
+      FrozenPayloadKatsComplete
+      ProductionGateReviewAccepted
+      PostQuantumSoundnessTargetMet
+      (PadSeedGloballyReorgSafeUniqueWith
+        padSeedSlotOf
+        admitted
+        TargetChainFinalityProfileInstantiated
+        LifecycleTransitionProfileVerified
+        ReorgBelowFinalizedRejected
+        PendingWindowReorgFreesAdmissions
+        FinalizedAdmissionsPreserved))
+    QromActionReviewed
+    SignerAndKeygenReviewed
+    ExternalCodedSisOrLatticeCoreReviewed
+    (by
+      intro acceptedSpend hAccepted
+      exact ⟨selectedRustAcceptedBoundaryProofFamilyClosureReductions_v1
+          SimulatorNoExportSound
+          FriAokExtractorSound
+          FriQromTranscriptSound
+          FrozenPayloadKatsComplete
+          ProductionGateReviewAccepted
+          hSimulatorNoExport
+          hFriAok
+          hFriQrom
+          hFrozenKats
+          hProductionGateReview
+          acceptedSpend
+          hAccepted,
+        hPostQuantumTarget,
+        hPadSeedUnique⟩)
+    hQromActionReview
+    hSignerAndKeygenReview
+    hExternalCoreReview
+    hAccept
 
 /-- Full-game predicates for the concrete native carrier. -/
 def concretePredicates
@@ -2861,7 +3867,7 @@ def concreteDirectAcceptedSpendSoundness
     exact Or.inl hAccept.2.2.1
   consume_once_or_break := by
     intro spend hAccept
-    exact Or.inl hAccept.2.2.2
+    exact Or.inl hAccept.2.2.2.2
 
 /--
 Concrete direct-mode theorem: an accepted native Path 2 spend has the admitted
@@ -3154,7 +4160,8 @@ def selectedRustExecutionSucceeds
   BoundConcretePrevalidatedSlot C run.spend ∧
     AdmittedConcretePrechallengeLeaf C run.spend ∧
       CheckedCoreChallengeBindsAcceptedTuple C run.spend ∧
-        ConcreteConsumeOnceAcceptedTransition C run.spend
+        ConcreteCheckedCoreAuthorizationAcceptance run.spend ∧
+          ConcreteConsumeOnceAcceptedTransition C run.spend
 
 /-- Production execution predicate pinned to the selected Rust execution surface. -/
 def selectedRustProductionExecutionSucceeds

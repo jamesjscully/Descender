@@ -213,7 +213,11 @@ pub fn fq12_add(a: &[u16; CC_ROWS], b: &[u16; CC_ROWS]) -> [u16; CC_ROWS] {
 /// supplied directly as syndrome vectors). The full deployed derivation expands `c` from the
 /// challenge (SHA-based) and `w`/`t` from commitments — those input-derivations are NOT performed
 /// here.
-pub fn sigma_expected(t: &[u16; CC_ROWS], c: &[u16; CC_ROWS], w: &[u16; CC_ROWS]) -> [u16; CC_ROWS] {
+pub fn sigma_expected(
+    t: &[u16; CC_ROWS],
+    c: &[u16; CC_ROWS],
+    w: &[u16; CC_ROWS],
+) -> [u16; CC_ROWS] {
     fq12_add(t, &fq12_mul(c, w))
 }
 
@@ -246,7 +250,8 @@ mod tests {
             let mut product: Vec<u16> = vec![0u16; c.len() + w.len() - 1];
             for (i, &x) in c.iter().enumerate() {
                 for (j, &y) in w.iter().enumerate() {
-                    product[i + j] = ((product[i + j] as u32 + (x as u32 * y as u32) % q) % q) as u16;
+                    product[i + j] =
+                        ((product[i + j] as u32 + (x as u32 * y as u32) % q) % q) as u16;
                 }
             }
             while product.len() >= modulus.len() {
@@ -275,9 +280,15 @@ mod tests {
             out
         };
         for seed in 0..8u32 {
-            let c: [u16; CC_ROWS] = core::array::from_fn(|i| (((seed * 131 + i as u32) * 977 + 3) % q) as u16);
-            let w: [u16; CC_ROWS] = core::array::from_fn(|i| (((seed * 17 + i as u32) * 613 + 11) % q) as u16);
-            assert_eq!(fq12_mul(&c, &w), reference(&c, &w), "fq12_mul != iterative reduction");
+            let c: [u16; CC_ROWS] =
+                core::array::from_fn(|i| (((seed * 131 + i as u32) * 977 + 3) % q) as u16);
+            let w: [u16; CC_ROWS] =
+                core::array::from_fn(|i| (((seed * 17 + i as u32) * 613 + 11) % q) as u16);
+            assert_eq!(
+                fq12_mul(&c, &w),
+                reference(&c, &w),
+                "fq12_mul != iterative reduction"
+            );
         }
     }
 
@@ -286,20 +297,26 @@ mod tests {
     #[test]
     fn solve_response_satisfies_system() {
         for seed in 0..8u32 {
-            let expected: [u16; CC_ROWS] =
-                core::array::from_fn(|i| (((seed * 31 + i as u32) * 701 + 13) % CC_Q as u32) as u16);
+            let expected: [u16; CC_ROWS] = core::array::from_fn(|i| {
+                (((seed * 31 + i as u32) * 701 + 13) % CC_Q as u32) as u16
+            });
             let r = solve_response(&expected).expect("system solvable");
             for &v in &r {
                 assert!(v < CC_Q, "response lane non-canonical");
             }
-            assert_eq!(response_syndrome(&r), expected, "H·solve(expected) != expected");
+            assert_eq!(
+                response_syndrome(&r),
+                expected,
+                "H·solve(expected) != expected"
+            );
         }
     }
 
     /// `response_syndrome` reduces mod q and is deterministic.
     #[test]
     fn response_syndrome_is_canonical() {
-        let response: [u16; CC_COLS] = core::array::from_fn(|i| ((i as u32 * 503 + 7) % CC_Q as u32) as u16);
+        let response: [u16; CC_COLS] =
+            core::array::from_fn(|i| ((i as u32 * 503 + 7) % CC_Q as u32) as u16);
         let s = response_syndrome(&response);
         for &v in &s {
             assert!(v < CC_Q);

@@ -16,11 +16,11 @@ mod enabled {
             path2_direct_accepted_spend_tuple_evidence_artifact_v1,
         },
         production_reference::{
-            path2_direct_accepted_composition_evidence_v1,
-            path2_direct_accepted_composition_evidence_v1_digest, PROFILE,
+            PROFILE, path2_direct_accepted_composition_evidence_v1,
+            path2_direct_accepted_composition_evidence_v1_digest,
         },
     };
-    use serde_json::{json, Value};
+    use serde_json::{Value, json};
     use sha2::{Digest, Sha256};
 
     fn hex_encode(bytes: &[u8]) -> String {
@@ -150,6 +150,14 @@ mod enabled {
                     evidence.proof_boundary_digest_matches_direct_theorem,
                 "qrom_action_digest_matches_direct_theorem":
                     evidence.qrom_action_digest_matches_direct_theorem,
+                "qrom_action_budget_bridge_imported":
+                    evidence.qrom_action_budget_bridge_imported,
+                "qrom_action_theorem_linkage_reduction_imported":
+                    evidence.qrom_action_theorem_linkage_reduction_imported,
+                "qrom_action_review_hypothesis_explicit":
+                    evidence.qrom_action_review_hypothesis_explicit,
+                "qrom_action_external_review_still_open":
+                    evidence.qrom_action_external_review_still_open,
                 "lifecycle_digest_matches_direct_theorem":
                     evidence.lifecycle_digest_matches_direct_theorem,
                 "direct_admission_namespace_matches_authorization":

@@ -105,18 +105,18 @@ fn inv_2exp(k: u32) -> F {
 fn internal_diag() -> [F; WIDTH] {
     let half = F::new(2).inverse(); // 1/2
     [
-        F::new(2).neg(),  // -2
-        F::ONE,           // 1
-        F::new(2),        // 2
-        half,             // 1/2
-        F::new(3),        // 3
-        F::new(4),        // 4
-        half.neg(),       // -1/2
-        F::new(3).neg(),  // -3
-        F::new(4).neg(),  // -4
-        inv_2exp(8),      // 1/2^8
-        inv_2exp(3),      // 1/8
-        inv_2exp(24),     // 1/2^24
+        F::new(2).neg(),    // -2
+        F::ONE,             // 1
+        F::new(2),          // 2
+        half,               // 1/2
+        F::new(3),          // 3
+        F::new(4),          // 4
+        half.neg(),         // -1/2
+        F::new(3).neg(),    // -3
+        F::new(4).neg(),    // -4
+        inv_2exp(8),        // 1/2^8
+        inv_2exp(3),        // 1/8
+        inv_2exp(24),       // 1/2^24
         inv_2exp(8).neg(),  // -1/2^8
         inv_2exp(3).neg(),  // -1/8
         inv_2exp(4).neg(),  // -1/16

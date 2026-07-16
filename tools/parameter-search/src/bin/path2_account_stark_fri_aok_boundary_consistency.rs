@@ -6,8 +6,7 @@ use std::{
 use descender_parameter_search::production_reference::{
     path2_account_stark_fri_aok_boundary_report_v1,
     path2_account_stark_fri_aok_boundary_report_v1_digest,
-    path2_account_stark_fri_qrom_residual_report_v1,
-    path2_account_stark_residual_matrix_report_v1,
+    path2_account_stark_fri_qrom_residual_report_v1, path2_account_stark_residual_matrix_report_v1,
     validate_path2_account_stark_fri_aok_boundary_report_v1,
     validate_path2_account_stark_residual_matrix_report_v1,
 };
@@ -27,7 +26,9 @@ fn require_contains(source: &str, needle: &str, label: &str) -> Result<(), Strin
     if source.contains(needle) {
         Ok(())
     } else {
-        Err(format!("FRI/AoK boundary source is missing {label}: {needle}"))
+        Err(format!(
+            "FRI/AoK boundary source is missing {label}: {needle}"
+        ))
     }
 }
 
@@ -231,11 +232,7 @@ fn main() -> Result<(), String> {
         "manifest relation class count",
         json_usize(
             &manifest,
-            &[
-                "manifest",
-                "air_audit_evidence",
-                "air_relation_class_count",
-            ],
+            &["manifest", "air_audit_evidence", "air_relation_class_count"],
         )?,
         report.air_relation_class_count,
     )?;
@@ -273,7 +270,10 @@ fn main() -> Result<(), String> {
     )?;
     check_equal(
         "manifest deployment readiness",
-        json_bool(&manifest, &["manifest", "open_obligations", "deployment_ready"])?,
+        json_bool(
+            &manifest,
+            &["manifest", "open_obligations", "deployment_ready"],
+        )?,
         false,
     )?;
 
@@ -284,7 +284,11 @@ fn main() -> Result<(), String> {
         "No CRITICAL \"false statement accepts\" hole in the AIR.",
         "no-critical-false-accept audit conclusion",
     )?;
-    require_contains(&support, "all 8 relation classes", "AIR relation class coverage")?;
+    require_contains(
+        &support,
+        "all 8 relation classes",
+        "AIR relation class coverage",
+    )?;
     require_contains(&support, "MED-1", "MED-1 remediation")?;
     require_contains(&support, "MED-2", "MED-2 remediation")?;
     require_contains(&support, "MED-3", "MED-3 remediation")?;
@@ -299,16 +303,19 @@ fn main() -> Result<(), String> {
         "FRI argument-of-knowledge note",
     )?;
     require_contains(&support, "p2_sis_extractor", "p2_sis_extractor obligation")?;
-    require_contains(&support, "FRI-IOP extractor", "FRI-IOP extractor obligation")?;
+    require_contains(
+        &support,
+        "FRI-IOP extractor",
+        "FRI-IOP extractor obligation",
+    )?;
 
-    let config = fs::read_to_string(root.join(report.account_stark_config_source)).map_err(
-        |err| {
+    let config =
+        fs::read_to_string(root.join(report.account_stark_config_source)).map_err(|err| {
             format!(
                 "failed to read account-STARK config {}: {err}",
                 report.account_stark_config_source
             )
-        },
-    )?;
+        })?;
     require_contains(
         &config,
         "pub const PROD_LOG_BLOWUP: usize = 4;",
@@ -325,8 +332,9 @@ fn main() -> Result<(), String> {
         "challenge extension field",
     )?;
 
-    let source = fs::read_to_string(root.join("tools/parameter-search/src/production_reference.rs"))
-        .map_err(|err| format!("failed to read production reference source: {err}"))?;
+    let source =
+        fs::read_to_string(root.join("tools/parameter-search/src/production_reference.rs"))
+            .map_err(|err| format!("failed to read production reference source: {err}"))?;
     for marker in [
         "PATH2_ACCOUNT_STARK_FRI_AOK_BOUNDARY_REPORT_DOMAIN",
         "PATH2_ACCOUNT_STARK_FRI_AOK_SUPPORT_FILE",

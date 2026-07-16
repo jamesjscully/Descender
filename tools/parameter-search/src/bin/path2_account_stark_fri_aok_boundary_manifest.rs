@@ -1,8 +1,7 @@
 use descender_parameter_search::production_reference::{
     PROFILE, path2_account_stark_fri_aok_boundary_report_v1,
     path2_account_stark_fri_aok_boundary_report_v1_digest,
-    path2_account_stark_fri_qrom_residual_report_v1,
-    path2_account_stark_residual_matrix_report_v1,
+    path2_account_stark_fri_qrom_residual_report_v1, path2_account_stark_residual_matrix_report_v1,
     validate_path2_account_stark_fri_aok_boundary_report_v1,
     validate_path2_account_stark_residual_matrix_report_v1,
 };

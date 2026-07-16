@@ -26,15 +26,22 @@
       "checked_core_qrom_budget_pinned": true,
       "direct_mode_q_batch_inactive": true,
       "direct_mode_q_chal_active": true,
+      "direct_qrom_action_budget_bridge_bound": true,
+      "direct_qrom_action_budget_bridge_lean_theorem": "selectedRustDirectQromActionBudgetBridge_v1",
+      "direct_qrom_action_local_linkage_reduction_imported": true,
+      "direct_qrom_action_theorem_linkage_reduction_lean_theorem": "selectedRustDirectQromActionTheoremLinkageReduction_v1",
       "negative_control_exceeds_margin": true,
       "optional_aggregation_terms_q_batch_only": true,
+      "production_checked_core_acceptance_semantics_bound": true,
+      "qrom_action_valid_or_named_break_theorem_instantiated": true,
+      "qrom_domain_break_coupled_to_direct_game": true,
       "selected_horizon_within_margin": true
     },
     "digests": {
-      "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
-      "direct_qrom_action_boundary_report_recomputed_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
-      "direct_theorem_boundary_report_digest": "e41dca951ae27430b0d19574c8dd346b235aa4c292731e78a6b08bfae906176c",
-      "direct_theorem_report_qrom_action_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b"
+      "direct_qrom_action_boundary_report_digest": "baea379f808febe913b803d54523a9fde4045f3d721fd6f87391212f92941832",
+      "direct_qrom_action_boundary_report_recomputed_digest": "baea379f808febe913b803d54523a9fde4045f3d721fd6f87391212f92941832",
+      "direct_theorem_boundary_report_digest": "a7ce0800ec71aa0ad17a5033e64458f56f23bf92ec03deb36832601ff6b1f7d9",
+      "direct_theorem_report_qrom_action_digest": "baea379f808febe913b803d54523a9fde4045f3d721fd6f87391212f92941832"
     },
     "frozen_status": "draft_qrom_action_boundary_manifest",
     "generator": {
@@ -63,6 +70,7 @@
       "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
       "deployment_ready": false,
       "external_qrom_review_complete": false,
+      "qrom_action_assumption_instantiated": false,
       "qrom_and_action_bounds_linked_to_theorem": false,
       "theorem_imports_budget": false
     },
@@ -109,5 +117,5 @@
     },
     "schema": "Descender.Path2.DirectQromActionBoundaryManifest.v1"
   },
-  "manifest_digest": "2c40bde72ce4b60139b58fb039209f33232e4ce7ce1fe64b6a11b79ae1b1cabe"
+  "manifest_digest": "2705a539eeb92426c8b00d2381d99c2374607219f6c571b2e7744a5d33db1028"
 }

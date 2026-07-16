@@ -756,6 +756,28 @@ fn main() -> Result<(), String> {
     ] {
         require_bool(corpus, pointer, false)?;
     }
+    for pointer in [
+        "/direct_theorem_report/composition_theorem_reduction_imported",
+        "/direct_theorem_report/composition_external_hypotheses_explicit",
+        "/direct_theorem_report/composition_capstone_under_explicit_named_assumptions_imported",
+        "/direct_theorem_report/direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle",
+        "/direct_theorem_report/direct_evidence_leaf_binding_closed_by_frozen_kat",
+        "/direct_theorem_report/direct_admission_namespace_and_data_availability_imported",
+        "/direct_theorem_report/direct_admission_namespace_closed_by_sovereign_state",
+        "/direct_theorem_report/direct_public_rejection_state_preserving_imported",
+        "/direct_theorem_report/direct_public_rejection_classifier_total",
+        "/direct_theorem_report/direct_public_rejection_all_classes_kat_covered",
+        "/direct_theorem_report/direct_public_rejection_panic_fail_closed_kat_covered",
+        "/direct_theorem_report/direct_public_rejection_all_public_objects_kat_covered",
+        "/direct_theorem_report/direct_public_rejection_target_client_mapping_complete",
+        "/direct_theorem_report/direct_public_rejection_consensus_kat_hypothesis_explicit",
+    ] {
+        if !bool_at(corpus, pointer)? {
+            return Err(format!(
+                "proof-obligation vector corpus lost composition reduction evidence {pointer}"
+            ));
+        }
+    }
     require_str(
         corpus,
         "/fri_qrom_domain_vector_evidence/blocker",
@@ -982,6 +1004,7 @@ fn main() -> Result<(), String> {
         "/evidence/deployed_anchor_masked_projection_bound",
         "/evidence/deployed_anchor_role_root_export_bridge_bound",
         "/evidence/deployed_anchor_packed_witness_commitment_bound",
+        "/evidence/deployed_anchor_pad_seed_nullifier_bound",
         "/evidence/deployed_anchor_fields_match_report",
         "/evidence/account_stark_bundle_nonempty",
         "/evidence/proof_family_obligations_still_open",
@@ -1133,15 +1156,16 @@ fn main() -> Result<(), String> {
                 .to_string(),
         );
     }
-    if !bool_at(corpus, "/proof_boundary_report/proof_obligation_rows_pinned")?
-        || !bool_at(
-            corpus,
-            "/proof_boundary_report/accepted_boundary_production_gate_review_reduction_bound",
-        )?
-        || str_at(
-            corpus,
-            "/proof_boundary_report/accepted_boundary_production_gate_review_reduction_lean_theorem",
-        )? != proof_report.accepted_boundary_production_gate_review_reduction_lean_theorem
+    if !bool_at(
+        corpus,
+        "/proof_boundary_report/proof_obligation_rows_pinned",
+    )? || !bool_at(
+        corpus,
+        "/proof_boundary_report/accepted_boundary_production_gate_review_reduction_bound",
+    )? || str_at(
+        corpus,
+        "/proof_boundary_report/accepted_boundary_production_gate_review_reduction_lean_theorem",
+    )? != proof_report.accepted_boundary_production_gate_review_reduction_lean_theorem
         || !bool_at(
             corpus,
             "/proof_boundary_report/accepted_boundary_proof_family_closure_reductions_bound",

@@ -87,8 +87,8 @@
 //! violated constraint). `all_residuals` returns them all for auditing.
 
 use crate::poseidon2_q12289::{
-    apply_internal, apply_matrix, fq_add, fq_from_u32, fq_sub, sbox, Poseidon2Params, R_F_HALF,
-    R_P, T,
+    Poseidon2Params, R_F_HALF, R_P, T, apply_internal, apply_matrix, fq_add, fq_from_u32, fq_sub,
+    sbox,
 };
 
 #[cfg(test)]
@@ -383,7 +383,7 @@ pub const MAX_DEGREE: u32 = 5;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::poseidon2_q12289::{permute, Q};
+    use crate::poseidon2_q12289::{Q, permute};
 
     /// Small reproducible xorshift PRNG so tests are deterministic.
     fn xorshift(s: &mut u64) -> u64 {
@@ -504,15 +504,27 @@ mod tests {
 
         // Named spot checks.
         // initial full round output is row 2..6; mutate row 3 lane 7.
-        assert!(breaks(3, 7, 1), "mutating an initial full-round lane not caught");
+        assert!(
+            breaks(3, 7, 1),
+            "mutating an initial full-round lane not caught"
+        );
         // partial round output rows are 6..66; lane 0 of row 10.
         assert!(breaks(10, 0, 1), "mutating partial-round lane 0 not caught");
         // partial round NON-zero lane: row 10 lane 13.
-        assert!(breaks(10, 13, 1), "mutating partial-round non-zero lane not caught");
+        assert!(
+            breaks(10, 13, 1),
+            "mutating partial-round non-zero lane not caught"
+        );
         // terminal full round output rows 66..70; mutate row 67 lane 5.
-        assert!(breaks(67, 5, 1), "mutating a terminal full-round lane not caught");
+        assert!(
+            breaks(67, 5, 1),
+            "mutating a terminal full-round lane not caught"
+        );
         // the OUTPUT row (last) lane 0.
-        assert!(breaks(N_ROWS - 1, 0, 1), "mutating the output row not caught");
+        assert!(
+            breaks(N_ROWS - 1, 0, 1),
+            "mutating the output row not caught"
+        );
         // the INPUT row (row 0) lane 4.
         assert!(breaks(0, 4, 1), "mutating the input row not caught");
 

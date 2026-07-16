@@ -5,7 +5,7 @@
 //! The account-creation ZK-STARK proof (`tools/descender-account-stark`, which
 //! depends on Plonky3) derives the per-account projection masks as:
 //!
-//!   `masks[6] = wide_then_reduce( Poseidon2-sponge( pad_seed[32] ‖ slot[8] ) )`
+//!   `masks[6] = wide_then_reduce( Poseidon2-sponge( MASK ‖ pad_seed[32] ‖ slot[8] ) )`
 //!
 //! using Plonky3's `default_koalabear_poseidon2_16` Poseidon2 over KoalaBear. The
 //! signer-side `tools/parameter-search` default builds must NOT depend on
@@ -27,7 +27,7 @@ pub mod field;
 pub mod mask;
 pub mod poseidon2;
 
-pub use mask::{poseidon2_hash_bytes, projection_masks, Q12289};
+pub use mask::{poseidon2_hash_bytes, projection_masks, MASK_PRF_DOMAIN, Q12289};
 
 #[cfg(test)]
 mod tests {
@@ -42,8 +42,8 @@ mod tests {
     fn permutation_matches_plonky3_published_kat() {
         let input: [u32; 16] = [
             894848333, 1437655012, 1200606629, 1690012884, 71131202, 1749206695, 1717947831,
-            120589055, 19776022, 42382981, 1831865506, 724844064, 171220207, 1299207443,
-            227047920, 1783754913,
+            120589055, 19776022, 42382981, 1831865506, 724844064, 171220207, 1299207443, 227047920,
+            1783754913,
         ];
         let expected: [u32; 16] = [
             1934285469, 604889435, 133449501, 1026180808, 1830659359, 176667110, 1391183747,
@@ -75,7 +75,8 @@ mod tests {
     #[test]
     fn masks_in_range() {
         for s in 0u64..64 {
-            let pad: [u8; 32] = core::array::from_fn(|i| (i as u8).wrapping_mul(31).wrapping_add(s as u8));
+            let pad: [u8; 32] =
+                core::array::from_fn(|i| (i as u8).wrapping_mul(31).wrapping_add(s as u8));
             let m = projection_masks(&pad, s);
             for &mj in m.iter() {
                 assert!(mj < Q12289 as u16, "mask {mj} >= q12289");
@@ -83,20 +84,19 @@ mod tests {
         }
     }
 
-    /// WIDE-THEN-REDUCE bias property: a value `W` uniform over `[0, p^5)` reduced
-    /// mod q has statistical distance from uniform `<= q / p^5 ~ 2^-141`. We can't
-    /// observe 2^-141 empirically, but we CAN check the structural premise the
-    /// bound rests on: `p^5` dwarfs `q` by the claimed margin, i.e.
-    /// `log2(p^5 / q) >= 141`. (p = 2^31 - 2^24 + 1, q = 12289.)
+    /// WIDE-THEN-REDUCE deployment margin: each mask reduces a uniform value in
+    /// `[0,p^6)`, and the loose statistical-distance bound is `q/p^6`. Charge
+    /// six masks and the selected 2^32-account horizon; the resulting aggregate
+    /// term must still exceed the 128-bit target.
     #[test]
-    fn wide_reduce_bias_margin_at_least_141_bits() {
-        // p^5 / q, in bits. Use f64 logs (exact enough at this scale).
+    fn wide_reduce_bias_prices_selected_32_bit_account_horizon() {
         let p = field::P as f64;
         let q = Q12289 as f64;
-        let log2_p5_over_q = 5.0 * p.log2() - q.log2();
+        let single_mask_margin = 6.0 * p.log2() - q.log2();
+        let aggregate_margin = single_mask_margin - 32.0 - 6.0_f64.log2();
         assert!(
-            log2_p5_over_q >= 141.0,
-            "wide-reduce bias margin {log2_p5_over_q} bits < 141"
+            aggregate_margin >= 128.0,
+            "wide-reduce aggregate margin {aggregate_margin} bits < 128"
         );
     }
 
@@ -112,8 +112,12 @@ mod tests {
         let bin_width = (Q12289 as usize).div_ceil(BINS);
         let mut hit = [[false; BINS]; mask::NUM_OUTPUTS];
         for s in 0..N {
-            let pad: [u8; 32] =
-                core::array::from_fn(|i| ((i as u64).wrapping_mul(0x9E3779B1).wrapping_add(s.wrapping_mul(7)) & 0xff) as u8);
+            let pad: [u8; 32] = core::array::from_fn(|i| {
+                ((i as u64)
+                    .wrapping_mul(0x9E3779B1)
+                    .wrapping_add(s.wrapping_mul(7))
+                    & 0xff) as u8
+            });
             let m = projection_masks(&pad, s);
             for j in 0..mask::NUM_OUTPUTS {
                 let b = (m[j] as usize / bin_width).min(BINS - 1);
@@ -154,7 +158,10 @@ mod tests {
         input2[0] ^= 1;
         assert_ne!(h1, poseidon2_hash_bytes::<31>(dom, &input2));
         // length sensitivity
-        assert_ne!(h1, poseidon2_hash_bytes::<31>(dom, &input[..input.len() - 1]));
+        assert_ne!(
+            h1,
+            poseidon2_hash_bytes::<31>(dom, &input[..input.len() - 1])
+        );
         // not all-zero
         assert_ne!(h1, [0u8; 31]);
     }

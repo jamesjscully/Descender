@@ -104,9 +104,9 @@ use crate::poseidon2_commit_air_q12289 as c1;
 use crate::poseidon2_opening_tuple_commit_air_q12289 as c6;
 use crate::poseidon2_prf_air_q12289 as c2;
 use crate::poseidon2_q12289::{
-    fq_add, fq_sub, Poseidon2Params, OPENING_TUPLE_BLINDING_BYTES,
-    OPENING_TUPLE_COMMITMENT_LANES, OPENING_TUPLE_LIFECYCLE_ANCHOR_BYTES,
-    PAD_SOURCE_BLINDING_BYTES, PAD_SOURCE_COMMITMENT_LANES, Q,
+    OPENING_TUPLE_BLINDING_BYTES, OPENING_TUPLE_COMMITMENT_LANES,
+    OPENING_TUPLE_LIFECYCLE_ANCHOR_BYTES, PAD_SOURCE_BLINDING_BYTES, PAD_SOURCE_COMMITMENT_LANES,
+    Poseidon2Params, Q, fq_add, fq_sub,
 };
 
 /// Number of projection lanes (mask / account / masked), = 6.
@@ -234,7 +234,10 @@ pub fn generate(
     // C4: range sub-witnesses for each canonical account-projection residue.
     let mut range: Vec<c4::Base128RangeWitness> = Vec::with_capacity(N_LANES);
     for &v in account_projection.iter() {
-        assert!((v as u32) < Q, "account_projection lane must be canonical (< q)");
+        assert!(
+            (v as u32) < Q,
+            "account_projection lane must be canonical (< q)"
+        );
         range.push(c4::Base128RangeWitness::generate(v as u32));
     }
 
@@ -361,7 +364,10 @@ pub fn all_residuals(
     for lane in 0..N_COMMIT_LANES {
         out.push(Residual {
             kind: ResidualKind::CommitBind { lane },
-            value: fq_sub(public_pad_source_commitment[lane], w.pad_source_commitment[lane]),
+            value: fq_sub(
+                public_pad_source_commitment[lane],
+                w.pad_source_commitment[lane],
+            ),
         });
     }
 
@@ -381,7 +387,10 @@ pub fn all_residuals(
     //    (The mask-output boundary inside C2 binds prf.mask_outputs to the
     //    squeezed sponge state.)
     let prf_masks = c2::claimed_masks(&w.prf);
-    for (idx, r) in c2::all_residuals(params, &w.prf, &prf_masks).iter().enumerate() {
+    for (idx, r) in c2::all_residuals(params, &w.prf, &prf_masks)
+        .iter()
+        .enumerate()
+    {
         out.push(Residual {
             kind: ResidualKind::Prf { index: idx },
             value: r.value,
@@ -416,7 +425,10 @@ pub fn all_residuals(
     for lane in 0..N_OPENING_COMMIT_LANES {
         out.push(Residual {
             kind: ResidualKind::OpeningCommitBind { lane },
-            value: fq_sub(public_opening_tuple_commitment[lane], w.opening_tuple_commitment[lane]),
+            value: fq_sub(
+                public_opening_tuple_commitment[lane],
+                w.opening_tuple_commitment[lane],
+            ),
         });
     }
 
@@ -616,8 +628,7 @@ mod tests {
             }
 
             // opening_tuple_commitment == reference over SAME acc+anchor+nonce.
-            let ref_opening =
-                opening_tuple_commitment_poseidon2(&acc, &anchor, &opening_nonce);
+            let ref_opening = opening_tuple_commitment_poseidon2(&acc, &anchor, &opening_nonce);
             for i in 0..N_OPENING_COMMIT_LANES {
                 assert_eq!(
                     w.opening_tuple_commitment[i], ref_opening[i] as u32,
@@ -628,25 +639,47 @@ mod tests {
             // SHARED account_projection: C4 and C6 truly hold the SAME 6 lanes.
             for (i, &v) in acc.iter().enumerate() {
                 assert_eq!(
-                    w.range_reconstructed()[i], v as u32,
+                    w.range_reconstructed()[i],
+                    v as u32,
                     "C4 reconstructed lane {i} != acc"
                 );
                 assert_eq!(
-                    w.c6_account_projection_lanes()[i], v as u32,
+                    w.c6_account_projection_lanes()[i],
+                    v as u32,
                     "C6 account_projection lane {i} != acc"
                 );
             }
 
             // SHARED pad_seed: C1 and C2 truly hold the SAME 32 pad_seed lanes.
-            assert_eq!(w.c1_pad_seed_lanes(), w.c2_pad_seed_lanes(), "C1/C2 pad_seed differ");
+            assert_eq!(
+                w.c1_pad_seed_lanes(),
+                w.c2_pad_seed_lanes(),
+                "C1/C2 pad_seed differ"
+            );
             for (i, &b) in pad.iter().enumerate() {
-                assert_eq!(w.c2_pad_seed_lanes()[i], b as u32, "C2 pad lane {i} != pad byte");
-                assert_eq!(w.c1_pad_seed_lanes()[i], b as u32, "C1 pad lane {i} != pad byte");
+                assert_eq!(
+                    w.c2_pad_seed_lanes()[i],
+                    b as u32,
+                    "C2 pad lane {i} != pad byte"
+                );
+                assert_eq!(
+                    w.c1_pad_seed_lanes()[i],
+                    b as u32,
+                    "C1 pad lane {i} != pad byte"
+                );
             }
 
             // The carrier truly consumes the PRF output and the reconstruction.
-            assert_eq!(w.carrier_mask, w.prf_mask_outputs(), "carrier mask != PRF output");
-            assert_eq!(w.carrier_acc, w.range_reconstructed(), "carrier acc != reconstruction");
+            assert_eq!(
+                w.carrier_mask,
+                w.prf_mask_outputs(),
+                "carrier mask != PRF output"
+            );
+            assert_eq!(
+                w.carrier_acc,
+                w.range_reconstructed(),
+                "carrier acc != reconstruction"
+            );
 
             // ALL residuals zero against ALL THREE public inputs.
             let public = w.masked_projection;
@@ -657,7 +690,13 @@ mod tests {
             for r in &res {
                 assert_eq!(r.value, 0, "honest composed witness violated {r:?}");
             }
-            assert!(is_satisfied(&params, &w, &public, &public_commit, &public_opening));
+            assert!(is_satisfied(
+                &params,
+                &w,
+                &public,
+                &public_commit,
+                &public_opening
+            ));
         }
     }
 
@@ -669,13 +708,26 @@ mod tests {
         let params = Poseidon2Params::new();
         let pad = [5u8; 32];
         let acc = [1u16, 2, 3, 4, 5, 6];
-        let w0 = generate(&pad, 8, &acc, &TEST_NONCE, &TEST_ANCHOR, &TEST_OPENING_NONCE);
+        let w0 = generate(
+            &pad,
+            8,
+            &acc,
+            &TEST_NONCE,
+            &TEST_ANCHOR,
+            &TEST_OPENING_NONCE,
+        );
         let public = w0.masked_projection;
         let public_commit = w0.pad_source_commitment;
         let public_opening = w0.opening_tuple_commitment;
 
         // Baseline honest passes.
-        assert!(is_satisfied(&params, &w0, &public, &public_commit, &public_opening));
+        assert!(is_satisfied(
+            &params,
+            &w0,
+            &public,
+            &public_commit,
+            &public_opening
+        ));
 
         // Tamper ONLY C1's pad_seed byte-lane 17 (the value the commitment opens
         // to). C2's pad_seed lane 17 is unchanged, so they now disagree.
@@ -686,14 +738,16 @@ mod tests {
         let res = all_residuals(&params, &w, &public, &public_commit, &public_opening);
         // SeamPadSeed for byte 17 fires by name.
         assert!(
-            res.iter().any(|r| r.value != 0 && r.kind == ResidualKind::SeamPadSeed { byte: 17 }),
+            res.iter()
+                .any(|r| r.value != 0 && r.kind == ResidualKind::SeamPadSeed { byte: 17 }),
             "SeamPadSeed byte 17 did not fire when C1 pad_seed != C2 pad_seed"
         );
         // And it is byte 17 SPECIFICALLY (other seam bytes stay clean).
         for byte in 0..PAD_SEED_LANES {
             if byte != 17 {
                 assert!(
-                    res.iter().all(|r| !(r.kind == ResidualKind::SeamPadSeed { byte } && r.value != 0)),
+                    res.iter()
+                        .all(|r| !(r.kind == ResidualKind::SeamPadSeed { byte } && r.value != 0)),
                     "unexpected SeamPadSeed fire at byte {byte}"
                 );
             }
@@ -704,7 +758,8 @@ mod tests {
         w2.prf.input_lanes[3] = fq_add(w2.prf.input_lanes[3], 1);
         let res2 = all_residuals(&params, &w2, &public, &public_commit, &public_opening);
         assert!(
-            res2.iter().any(|r| r.value != 0 && r.kind == ResidualKind::SeamPadSeed { byte: 3 }),
+            res2.iter()
+                .any(|r| r.value != 0 && r.kind == ResidualKind::SeamPadSeed { byte: 3 }),
             "SeamPadSeed byte 3 did not fire when C2 pad_seed != C1 pad_seed"
         );
     }
@@ -715,7 +770,14 @@ mod tests {
         let params = Poseidon2Params::new();
         let pad = [19u8; 32];
         let acc = [7u16, 8, 9, 10, 11, 12];
-        let w = generate(&pad, 4, &acc, &TEST_NONCE, &TEST_ANCHOR, &TEST_OPENING_NONCE);
+        let w = generate(
+            &pad,
+            4,
+            &acc,
+            &TEST_NONCE,
+            &TEST_ANCHOR,
+            &TEST_OPENING_NONCE,
+        );
         let public = w.masked_projection;
         let public_opening = w.opening_tuple_commitment;
 
@@ -723,7 +785,8 @@ mod tests {
         forged[6] = fq_add(forged[6], 1);
         let res = all_residuals(&params, &w, &public, &forged, &public_opening);
         assert!(
-            res.iter().any(|r| r.value != 0 && r.kind == ResidualKind::CommitBind { lane: 6 }),
+            res.iter()
+                .any(|r| r.value != 0 && r.kind == ResidualKind::CommitBind { lane: 6 }),
             "forged pad_source_commitment not rejected by CommitBind"
         );
     }
@@ -734,7 +797,14 @@ mod tests {
         let params = Poseidon2Params::new();
         let pad = [19u8; 32];
         let acc = [7u16, 8, 9, 10, 11, 12];
-        let w = generate(&pad, 4, &acc, &TEST_NONCE, &TEST_ANCHOR, &TEST_OPENING_NONCE);
+        let w = generate(
+            &pad,
+            4,
+            &acc,
+            &TEST_NONCE,
+            &TEST_ANCHOR,
+            &TEST_OPENING_NONCE,
+        );
         let public = w.masked_projection;
         let public_commit = w.pad_source_commitment;
 
@@ -742,8 +812,8 @@ mod tests {
         forged[3] = fq_add(forged[3], 1);
         let res = all_residuals(&params, &w, &public, &public_commit, &forged);
         assert!(
-            res.iter().any(|r| r.value != 0
-                && r.kind == ResidualKind::OpeningCommitBind { lane: 3 }),
+            res.iter()
+                .any(|r| r.value != 0 && r.kind == ResidualKind::OpeningCommitBind { lane: 3 }),
             "forged opening_tuple_commitment not rejected by OpeningCommitBind"
         );
     }
@@ -757,13 +827,26 @@ mod tests {
         let params = Poseidon2Params::new();
         let pad = [31u8; 32];
         let acc = [10u16, 20, 30, 40, 50, 60];
-        let w0 = generate(&pad, 3, &acc, &TEST_NONCE, &TEST_ANCHOR, &TEST_OPENING_NONCE);
+        let w0 = generate(
+            &pad,
+            3,
+            &acc,
+            &TEST_NONCE,
+            &TEST_ANCHOR,
+            &TEST_OPENING_NONCE,
+        );
         let public = w0.masked_projection;
         let public_commit = w0.pad_source_commitment;
         let public_opening = w0.opening_tuple_commitment;
 
         // Baseline honest passes.
-        assert!(is_satisfied(&params, &w0, &public, &public_commit, &public_opening));
+        assert!(is_satisfied(
+            &params,
+            &w0,
+            &public,
+            &public_commit,
+            &public_opening
+        ));
 
         // Tamper ONLY C6's account_projection FIELD lane 2 (the value the
         // opening-tuple commitment absorbs). C4's reconstructed residue is
@@ -775,8 +858,8 @@ mod tests {
         let res = all_residuals(&params, &w, &public, &public_commit, &public_opening);
         // SeamOpeningAcc for lane 2 fires by name.
         assert!(
-            res.iter().any(|r| r.value != 0
-                && r.kind == ResidualKind::SeamOpeningAcc { lane: 2 }),
+            res.iter()
+                .any(|r| r.value != 0 && r.kind == ResidualKind::SeamOpeningAcc { lane: 2 }),
             "SeamOpeningAcc lane 2 did not fire when C6 acc != C4 acc"
         );
         // And it is lane 2 SPECIFICALLY (other seam lanes stay clean).
@@ -796,8 +879,8 @@ mod tests {
         w2.range[4] = w2.range[4].mutate_cell(0, fq_add(w2.range[4].v, 1));
         let res2 = all_residuals(&params, &w2, &public, &public_commit, &public_opening);
         assert!(
-            res2.iter().any(|r| r.value != 0
-                && r.kind == ResidualKind::SeamOpeningAcc { lane: 4 }),
+            res2.iter()
+                .any(|r| r.value != 0 && r.kind == ResidualKind::SeamOpeningAcc { lane: 4 }),
             "SeamOpeningAcc lane 4 did not fire when C4 acc != C6 acc"
         );
     }
@@ -809,7 +892,14 @@ mod tests {
         let params = Poseidon2Params::new();
         let pad = [23u8; 32];
         let acc = [1u16, 1, 1, 1, 1, 1];
-        let w0 = generate(&pad, 2, &acc, &TEST_NONCE, &TEST_ANCHOR, &TEST_OPENING_NONCE);
+        let w0 = generate(
+            &pad,
+            2,
+            &acc,
+            &TEST_NONCE,
+            &TEST_ANCHOR,
+            &TEST_OPENING_NONCE,
+        );
         let public = w0.masked_projection;
         let public_commit = w0.pad_source_commitment;
         let public_opening = w0.opening_tuple_commitment;
@@ -821,7 +911,8 @@ mod tests {
         w.commit.input_bits[40] = [0u32; c1::BITS_PER_LANE];
         let res = all_residuals(&params, &w, &public, &public_commit, &public_opening);
         assert!(
-            res.iter().any(|r| r.value != 0 && matches!(r.kind, ResidualKind::Commit { .. })),
+            res.iter()
+                .any(|r| r.value != 0 && matches!(r.kind, ResidualKind::Commit { .. })),
             "out-of-range blinding-nonce lane not rejected by C1"
         );
     }
@@ -834,7 +925,14 @@ mod tests {
         let params = Poseidon2Params::new();
         let pad = [7u8; 32];
         let acc = [11u16, 22, 33, 44, 55, 66];
-        let w0 = generate(&pad, 9, &acc, &TEST_NONCE, &TEST_ANCHOR, &TEST_OPENING_NONCE);
+        let w0 = generate(
+            &pad,
+            9,
+            &acc,
+            &TEST_NONCE,
+            &TEST_ANCHOR,
+            &TEST_OPENING_NONCE,
+        );
         let public = w0.masked_projection;
         let public_commit = w0.pad_source_commitment;
         let public_opening = w0.opening_tuple_commitment;
@@ -846,12 +944,14 @@ mod tests {
 
         // The seam-equality for lane 2 must fire by name.
         assert!(
-            res.iter().any(|r| r.value != 0 && r.kind == ResidualKind::SeamMask { lane: 2 }),
+            res.iter()
+                .any(|r| r.value != 0 && r.kind == ResidualKind::SeamMask { lane: 2 }),
             "SeamMask lane 2 did not fire on carrier-mask tamper"
         );
         // And the PRF sub-witness is untouched (still proves the real PRF).
         assert!(
-            res.iter().all(|r| !(matches!(r.kind, ResidualKind::Prf { .. }) && r.value != 0)),
+            res.iter()
+                .all(|r| !(matches!(r.kind, ResidualKind::Prf { .. }) && r.value != 0)),
             "PRF residuals should be clean (only the seam was tampered)"
         );
     }
@@ -863,7 +963,14 @@ mod tests {
         let params = Poseidon2Params::new();
         let pad = [3u8; 32];
         let acc = [100u16, 200, 300, 400, 500, 600];
-        let w0 = generate(&pad, 1, &acc, &TEST_NONCE, &TEST_ANCHOR, &TEST_OPENING_NONCE);
+        let w0 = generate(
+            &pad,
+            1,
+            &acc,
+            &TEST_NONCE,
+            &TEST_ANCHOR,
+            &TEST_OPENING_NONCE,
+        );
         let public = w0.masked_projection;
         let public_commit = w0.pad_source_commitment;
         let public_opening = w0.opening_tuple_commitment;
@@ -874,11 +981,13 @@ mod tests {
         let res = all_residuals(&params, &w, &public, &public_commit, &public_opening);
 
         assert!(
-            res.iter().any(|r| r.value != 0 && r.kind == ResidualKind::SeamAcc { lane: 4 }),
+            res.iter()
+                .any(|r| r.value != 0 && r.kind == ResidualKind::SeamAcc { lane: 4 }),
             "SeamAcc lane 4 did not fire on carrier-acc tamper"
         );
         assert!(
-            res.iter().all(|r| !(matches!(r.kind, ResidualKind::Range { .. }) && r.value != 0)),
+            res.iter()
+                .all(|r| !(matches!(r.kind, ResidualKind::Range { .. }) && r.value != 0)),
             "Range residuals should be clean (only the seam was tampered)"
         );
     }
@@ -898,7 +1007,14 @@ mod tests {
         let params = Poseidon2Params::new();
         let pad = [21u8; 32];
         let acc = [1u16, 2, 3, 4, 5, 6];
-        let w = generate(&pad, 42, &acc, &TEST_NONCE, &TEST_ANCHOR, &TEST_OPENING_NONCE);
+        let w = generate(
+            &pad,
+            42,
+            &acc,
+            &TEST_NONCE,
+            &TEST_ANCHOR,
+            &TEST_OPENING_NONCE,
+        );
         let public_commit = w.pad_source_commitment;
         let public_opening = w.opening_tuple_commitment;
 
@@ -907,7 +1023,8 @@ mod tests {
         forged[0] = fq_add(forged[0], 7); // not PRF[0]+acc[0]
         let res = all_residuals(&params, &w, &forged, &public_commit, &public_opening);
         assert!(
-            res.iter().any(|r| r.value != 0 && r.kind == ResidualKind::PublicBind { lane: 0 }),
+            res.iter()
+                .any(|r| r.value != 0 && r.kind == ResidualKind::PublicBind { lane: 0 }),
             "forged public target not rejected by public-binding constraint"
         );
 
@@ -921,10 +1038,15 @@ mod tests {
         w2.masked_projection[0] = forged[0];
         w2.carrier_mask[0] = fq_add(w2.carrier_mask[0], 7); // balance local sum
         // local carrier sum now balances:
-        assert_eq!(carrier_residual_for_lane(&w2, 0), 0, "fabricated local carrier balances");
+        assert_eq!(
+            carrier_residual_for_lane(&w2, 0),
+            0,
+            "fabricated local carrier balances"
+        );
         let res2 = all_residuals(&params, &w2, &forged, &public_commit, &public_opening);
         assert!(
-            res2.iter().any(|r| r.value != 0 && r.kind == ResidualKind::SeamMask { lane: 0 }),
+            res2.iter()
+                .any(|r| r.value != 0 && r.kind == ResidualKind::SeamMask { lane: 0 }),
             "fabricated forged witness not caught by SeamMask"
         );
     }
@@ -938,7 +1060,14 @@ mod tests {
         let pad = [13u8; 32];
         // honest residues; lane 3 will be corrupted to a non-canonical rep.
         let acc = [5u16, 6, 7, 8, 9, 10];
-        let mut w = generate(&pad, 5, &acc, &TEST_NONCE, &TEST_ANCHOR, &TEST_OPENING_NONCE);
+        let mut w = generate(
+            &pad,
+            5,
+            &acc,
+            &TEST_NONCE,
+            &TEST_ANCHOR,
+            &TEST_OPENING_NONCE,
+        );
 
         // Overwrite lane 3's range witness with the BEST adversarial
         // non-canonical witness for field value 5: d_hi=96, d_lo=6, is96=1.
@@ -970,7 +1099,11 @@ mod tests {
         // The C4 canonical edge constraint (is96 * d_lo) fires for lane 3.
         assert!(
             res.iter().any(|r| r.value != 0
-                && r.kind == ResidualKind::Range { lane: 3, sub: c4::residual_index::EDGE_HI96_LO0 }),
+                && r.kind
+                    == ResidualKind::Range {
+                        lane: 3,
+                        sub: c4::residual_index::EDGE_HI96_LO0
+                    }),
             "non-canonical acc (d_hi=96,d_lo=6) not rejected by C4 canonical edge"
         );
     }
@@ -983,71 +1116,111 @@ mod tests {
         let params = Poseidon2Params::new();
         let pad = [29u8; 32];
         let acc = [12u16, 345, 6789, 0, 11000, 1];
-        let w = generate(&pad, 77, &acc, &TEST_NONCE, &TEST_ANCHOR, &TEST_OPENING_NONCE);
+        let w = generate(
+            &pad,
+            77,
+            &acc,
+            &TEST_NONCE,
+            &TEST_ANCHOR,
+            &TEST_OPENING_NONCE,
+        );
         let public = w.masked_projection;
         let pc = w.pad_source_commitment;
         let po = w.opening_tuple_commitment;
-        assert!(is_satisfied(&params, &w, &public, &pc, &po), "baseline honest");
+        assert!(
+            is_satisfied(&params, &w, &public, &pc, &po),
+            "baseline honest"
+        );
 
         // (1) flip a PRF sub-trace cell.
         {
             let mut m = w.clone();
             m.prf.subs[2].rows[10][3] = fq_add(m.prf.subs[2].rows[10][3], 1);
-            assert!(!is_satisfied(&params, &m, &public, &pc, &po), "PRF cell flip not caught");
+            assert!(
+                !is_satisfied(&params, &m, &public, &pc, &po),
+                "PRF cell flip not caught"
+            );
         }
         // (1b) flip a C1 commitment sub-trace cell.
         {
             let mut m = w.clone();
             m.commit.subs[3].rows[12][4] = fq_add(m.commit.subs[3].rows[12][4], 1);
-            assert!(!is_satisfied(&params, &m, &public, &pc, &po), "C1 commit cell flip not caught");
+            assert!(
+                !is_satisfied(&params, &m, &public, &pc, &po),
+                "C1 commit cell flip not caught"
+            );
         }
         // (1c) flip a C6 opening-tuple commitment sub-trace cell.
         {
             let mut m = w.clone();
             m.opening.subs[4].rows[8][6] = fq_add(m.opening.subs[4].rows[8][6], 1);
-            assert!(!is_satisfied(&params, &m, &public, &pc, &po), "C6 opening cell flip not caught");
+            assert!(
+                !is_satisfied(&params, &m, &public, &pc, &po),
+                "C6 opening cell flip not caught"
+            );
         }
         // (2) flip a range-witness cell on each lane (the residue v).
         for lane in 0..N_LANES {
             let mut m = w.clone();
             m.range[lane] = m.range[lane].mutate_cell(0, fq_add(m.range[lane].v, 1));
-            assert!(!is_satisfied(&params, &m, &public, &pc, &po), "range v flip lane {lane} not caught");
+            assert!(
+                !is_satisfied(&params, &m, &public, &pc, &po),
+                "range v flip lane {lane} not caught"
+            );
         }
         // (3) flip a carrier mask cell.
         {
             let mut m = w.clone();
             m.carrier_mask[1] = fq_add(m.carrier_mask[1], 1);
-            assert!(!is_satisfied(&params, &m, &public, &pc, &po), "carrier_mask flip not caught");
+            assert!(
+                !is_satisfied(&params, &m, &public, &pc, &po),
+                "carrier_mask flip not caught"
+            );
         }
         // (4) flip a carrier acc cell.
         {
             let mut m = w.clone();
             m.carrier_acc[5] = fq_add(m.carrier_acc[5], 1);
-            assert!(!is_satisfied(&params, &m, &public, &pc, &po), "carrier_acc flip not caught");
+            assert!(
+                !is_satisfied(&params, &m, &public, &pc, &po),
+                "carrier_acc flip not caught"
+            );
         }
         // (5) flip the public masked target.
         {
             let mut bad = public;
             bad[2] = fq_add(bad[2], 1);
-            assert!(!is_satisfied(&params, &w, &bad, &pc, &po), "public target flip not caught");
+            assert!(
+                !is_satisfied(&params, &w, &bad, &pc, &po),
+                "public target flip not caught"
+            );
         }
         // (5b) flip the public pad_source_commitment target.
         {
             let mut bad = pc;
             bad[1] = fq_add(bad[1], 1);
-            assert!(!is_satisfied(&params, &w, &public, &bad, &po), "public commitment flip not caught");
+            assert!(
+                !is_satisfied(&params, &w, &public, &bad, &po),
+                "public commitment flip not caught"
+            );
         }
         // (5c) flip the public opening_tuple_commitment target.
         {
             let mut bad = po;
             bad[7] = fq_add(bad[7], 1);
-            assert!(!is_satisfied(&params, &w, &public, &pc, &bad), "public opening commitment flip not caught");
+            assert!(
+                !is_satisfied(&params, &w, &public, &pc, &bad),
+                "public opening commitment flip not caught"
+            );
         }
         // (6) flip a witness masked cell (breaks the public-binding carrier).
         {
             let mut m = w.clone();
             m.masked_projection[0] = fq_add(m.masked_projection[0], 1);
-            assert!(!is_satisfied(&params, &m, &public, &pc, &po), "witness masked flip not caught");
+            assert!(
+                !is_satisfied(&params, &m, &public, &pc, &po),
+                "witness masked flip not caught"
+            );
         }
     }
 
@@ -1057,7 +1230,14 @@ mod tests {
         let params = Poseidon2Params::new();
         let pad = [1u8; 32];
         let acc = [0u16; N_LANES];
-        let w = generate(&pad, 0, &acc, &TEST_NONCE, &TEST_ANCHOR, &TEST_OPENING_NONCE);
+        let w = generate(
+            &pad,
+            0,
+            &acc,
+            &TEST_NONCE,
+            &TEST_ANCHOR,
+            &TEST_OPENING_NONCE,
+        );
         let res = all_residuals(
             &params,
             &w,
@@ -1072,13 +1252,20 @@ mod tests {
         let c4_n = N_LANES * c4::CONSTRAINTS_PER_RESIDUE;
         let c6_n = c6::n_constraints();
         println!("path2_creation_relation report:");
-        println!("  PUBLIC : masked_projection[6], pad_source_commitment[{N_COMMIT_LANES}], opening_tuple_commitment[{N_OPENING_COMMIT_LANES}]");
-        println!("  HIDDEN : pad_seed[32], slot_id(u64), account_projection[6], blinding_nonce[{PAD_SOURCE_BLINDING_BYTES}], lifecycle_anchor[{OPENING_TUPLE_LIFECYCLE_ANCHOR_BYTES}], opening_blinding_nonce[{OPENING_TUPLE_BLINDING_BYTES}]");
+        println!(
+            "  PUBLIC : masked_projection[6], pad_source_commitment[{N_COMMIT_LANES}], opening_tuple_commitment[{N_OPENING_COMMIT_LANES}]"
+        );
+        println!(
+            "  HIDDEN : pad_seed[32], slot_id(u64), account_projection[6], blinding_nonce[{PAD_SOURCE_BLINDING_BYTES}], lifecycle_anchor[{OPENING_TUPLE_LIFECYCLE_ANCHOR_BYTES}], opening_blinding_nonce[{OPENING_TUPLE_BLINDING_BYTES}]"
+        );
         println!("  C1 commitment constraints = {c1_n}");
         println!("  commit public-bind        = {N_COMMIT_LANES}");
         println!("  SEAM-pad_seed (C1<->C2)   = {PAD_SEED_LANES}");
         println!("  C2 PRF constraints        = {c2_n}");
-        println!("  C4 range constraints      = {c4_n}  (6 lanes x {})", c4::CONSTRAINTS_PER_RESIDUE);
+        println!(
+            "  C4 range constraints      = {c4_n}  (6 lanes x {})",
+            c4::CONSTRAINTS_PER_RESIDUE
+        );
         println!("  C6 opening-tuple constr.  = {c6_n}");
         println!("  opening commit public-bind= {N_OPENING_COMMIT_LANES}");
         println!("  SEAM-acc (C4<->C6)        = {OPENING_ACC_SEAM_LANES}");
@@ -1090,7 +1277,9 @@ mod tests {
         println!("  shared pad_seed: C1.input_lanes[0..32] == C2.input_lanes[0..32]");
         println!("                   enforced by {PAD_SEED_LANES} SeamPadSeed constraints.");
         println!("  shared account_projection: C4.range[i].v == C6.input_lanes[0..6]");
-        println!("                   enforced by {OPENING_ACC_SEAM_LANES} SeamOpeningAcc constraints.");
+        println!(
+            "                   enforced by {OPENING_ACC_SEAM_LANES} SeamOpeningAcc constraints."
+        );
         assert_eq!(MAX_DEGREE, 5);
     }
 }

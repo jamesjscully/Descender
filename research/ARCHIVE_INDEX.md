@@ -140,13 +140,13 @@ kept now and what must be true before it can be removed or relocated.
 | `research/path2_account_stark_air_soundness_audit.md` | `ACTIVE_SUPPORT` | account-creation STARK soundness audit supporting the active Poseidon2/Plonky3 account-creation path |
 | `research/path2_account_stark_arithmetization_soundness_theorem_v1.md` | `ACTIVE_SUPPORT` | positive clause-by-clause arithmetization-soundness theorem (trace ⊨ AIR ⟹ R_air) supporting `DIR-STARK-001` and the active Poseidon2/Plonky3 account-creation path |
 | `research/path2_account_stark_simulator_no_export_theorem_v1.md` | `ACTIVE_SUPPORT` | simulator / no-export theorem for `Path2AccountStarkCreationPayloadV1` supporting `DIR-PAYLOAD-001`/`DIR-CREATE-001` and the no-export boundary target |
-| `research/path2_account_stark_transcript_qrom_theorem_v1.md` | `ACTIVE_SUPPORT` | account-STARK Fiat–Shamir/QROM transcript-soundness theorem and classical+quantum pricing supporting `DIR-QROM-001`/`DIR-PROOF-001` |
+| `research/path2_account_stark_transcript_qrom_theorem_v1.md` | `ACTIVE_SUPPORT` | candidate account-STARK Fiat-Shamir/QROM reduction boundary, primary-source loss formula, and open bounded-query pricing work supporting `DIR-QROM-001`/`DIR-PROOF-001` |
 | `research/path2_account_stark_replay_anchor_binding_theorem_v1.md` | `ACTIVE_SUPPORT` | theorem-level replay-payload + deployed-anchor binding (`R_wiring`) supporting `DIR-BIND-001` |
 | `research/path2_authorization_class_binding_theorem_v1.md` | `ACTIVE_SUPPORT` | authorization-class binding theorem (typed compatibility + field-completeness) supporting `DIR-AUTHCLASS-001` |
 | `research/path2_honest_create_sampler_timing_theorem_v1.md` | `ACTIVE_SUPPORT` | honest-create sampler soundness + no-postchallenge timing (anti-circularity) theorem supporting `DIR-CREATE-001` |
 | `research/path2_account_stark_payload_injectivity_rejection_completeness_v1.md` | `ACTIVE_SUPPORT` | payload byte-model parser-injectivity + rejection-class completeness supporting `DIR-STARK-001`/`DIR-REJECT-001` |
 | `research/path2_lifecycle_finality_theorem_v1.md` | `ACTIVE_SUPPORT` | consume-once lifecycle theorem with profiled reorg/finality assumption supporting `DIR-LIFE-001` |
-| `research/path2_economic_deployment_architecture_v1.md` | `ACTIVE_SUPPORT` | economic deployment-architecture decision analysis (4.75 MB creation proof ⇒ PQ validity rollup + native STARK recursion) supporting `AGG-ROLLUP-001`/`ADOPT-ETH-ROLLUP-001` |
+| `research/path2_economic_deployment_architecture_v1.md` | `ACTIVE_SUPPORT` | economic deployment-architecture decision analysis (12.14 MB active creation proof ⇒ PQ validity rollup + native STARK recursion) supporting `AGG-ROLLUP-001`/`ADOPT-ETH-ROLLUP-001` |
 | `research/path2_q128_build_status_and_architecture_v1.md` | `ACTIVE_SUPPORT` | consolidated q128 implementation status and architecture map supporting `AGG-ROLLUP-001` |
 | `research/path2_quantum128_parameterization_v1.md` | `ACTIVE_SUPPORT` | exact atomic quantum-128 parameter set (queries 120, rate 7/cap 9, digest 13) implementing `ADR-0008`, supporting `DIR-QROM-001`/`DIR-STARK-001`/`ADOPT-128-001` |
 | `research/slot_authorization_handle_v1_spec.md` | `ACTIVE_SUPPORT` | normalized spend-time authorization handle interface |
@@ -166,6 +166,7 @@ kept now and what must be true before it can be removed or relocated.
 | `research/account_creation_proof_mechanism_decision.md` | `ACTIVE_SUPPORT` | proof-mechanism selection note for the first Path 2 theorem pass |
 | `research/account_creation_aggregation_readiness_contract.md` | `ACTIVE_SUPPORT` | optional aggregation mode contract |
 | `research/path2_proof_side_closure_status_v1.md` | `ACTIVE_SUPPORT` | proof-side status of active native Path 2 shape |
+| `research/path2_first_finish_closure_map_v1.md` | `ACTIVE_SUPPORT` | subordinate rank-1/rank-2 proof-finish closure map |
 | `research/path2_payload_proof_candidate_decision.md` | `ACTIVE_SUPPORT` | active account-creation payload proof candidate note |
 | `research/path2_descent_native_vs_stark_creation_verdict.md` | `ACTIVE_SUPPORT` | analysis supporting the STARK/recursion account-creation route |
 | `research/path2_active_native_account_design_v1.md` | `ACTIVE_SUPPORT` | active native-account semantic boundary design note |

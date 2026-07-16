@@ -10,7 +10,7 @@
 //! `poseidon2_q12289` (`fq_add`, `fq_sub`, `fq_mul`, `fq_from_u32`, `Q`); this
 //! module introduces NO new field code.
 
-use crate::poseidon2_q12289::{fq_add, fq_from_u32, fq_mul, fq_sub, Q};
+use crate::poseidon2_q12289::{Q, fq_add, fq_from_u32, fq_mul, fq_sub};
 
 /// Maximum supported log2 domain size. q - 1 = 2^12 * 3 ⇒ 2-adicity 12.
 pub const MAX_LOG2N: u32 = 12;
@@ -48,9 +48,7 @@ pub fn generator() -> u32 {
     let prime_divisors = [2u64, 3u64];
     let mut g = 2u32;
     loop {
-        let is_gen = prime_divisors
-            .iter()
-            .all(|&p| fq_pow(g, qm1 / p) != 1);
+        let is_gen = prime_divisors.iter().all(|&p| fq_pow(g, qm1 / p) != 1);
         if is_gen {
             return g;
         }
@@ -167,7 +165,11 @@ pub fn interpolate(evals_on_subgroup: &[u32]) -> Vec<u32> {
 /// Evaluate: given a coefficient vector, produce evaluations on the subgroup
 /// `<root_of_unity(log2n)>`. This is exactly the forward NTT.
 pub fn evaluate(coeffs: &[u32], log2n: u32) -> Vec<u32> {
-    assert_eq!(coeffs.len(), 1usize << log2n, "coeffs.len() must equal 2^log2n");
+    assert_eq!(
+        coeffs.len(),
+        1usize << log2n,
+        "coeffs.len() must equal 2^log2n"
+    );
     let mut out = coeffs.to_vec();
     ntt(&mut out, log2n);
     out
@@ -232,7 +234,11 @@ mod tests {
     #[test]
     fn generator_order_is_exactly_q_minus_1() {
         let g = generator();
-        assert_eq!(mult_order(g), (Q - 1) as u64, "generator order must be 12288");
+        assert_eq!(
+            mult_order(g),
+            (Q - 1) as u64,
+            "generator order must be 12288"
+        );
         // smallest generator for q=12289 is 11 (documented anchor below).
         assert_eq!(g, 11, "smallest generator of Fq* for q=12289 is 11");
     }
@@ -243,23 +249,39 @@ mod tests {
         // omega^4096 == 1
         assert_eq!(fq_pow(w, 1 << MAX_LOG2N), 1, "omega^4096 must be 1");
         // omega^2048 != 1  (so order is not a proper divisor)
-        assert_ne!(fq_pow(w, 1 << (MAX_LOG2N - 1)), 1, "omega^2048 must not be 1");
+        assert_ne!(
+            fq_pow(w, 1 << (MAX_LOG2N - 1)),
+            1,
+            "omega^2048 must not be 1"
+        );
         // exact order
-        assert_eq!(mult_order(w), 1 << MAX_LOG2N, "omega order must be exactly 4096");
+        assert_eq!(
+            mult_order(w),
+            1 << MAX_LOG2N,
+            "omega order must be exactly 4096"
+        );
     }
 
     #[test]
     fn root_of_unity_has_exact_order_for_each_k() {
         for k in 1..=MAX_LOG2N {
             let r = root_of_unity(k);
-            assert_eq!(fq_pow(r, 1u64 << k), 1, "root_of_unity({k})^(2^{k}) must be 1");
+            assert_eq!(
+                fq_pow(r, 1u64 << k),
+                1,
+                "root_of_unity({k})^(2^{k}) must be 1"
+            );
             assert_ne!(
                 fq_pow(r, 1u64 << (k - 1)),
                 1,
                 "root_of_unity({k})^(2^{}) must not be 1 (order not exact)",
                 k - 1
             );
-            assert_eq!(mult_order(r), 1u64 << k, "root_of_unity({k}) order must be exactly 2^{k}");
+            assert_eq!(
+                mult_order(r),
+                1u64 << k,
+                "root_of_unity({k}) order must be exactly 2^{k}"
+            );
         }
     }
 

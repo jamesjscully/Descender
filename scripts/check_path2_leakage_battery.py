@@ -84,6 +84,10 @@ EXPECTED_STORAGE_FIXED_SHAPE_FUNCTIONS = (
     "chain_state_file_stores_lifecycle_save_failure_is_fail_closed_after_ledger_persist",
 )
 
+EXPECTED_ENTROPY_FIXED_SHAPE_FUNCTIONS = (
+    "path2_native_os_entropy_boundary_audit_pins_sanitized_source_boundary",
+)
+
 EXPECTED_PUBLIC_RESULT_CLASSES = (
     "accept_admit_slot",
     "accept_spend_slot",
@@ -376,6 +380,7 @@ def main() -> None:
             "direct_spend_public_result_fixed_shape",
             "deployment_callback_boundary_fixed_shape",
             "chain_state_storage_failure_fail_closed",
+            "os_entropy_failure_boundary_fixed_shape",
         ),
         "fixed-shape failure row set/order drifted",
     )
@@ -462,6 +467,29 @@ def main() -> None:
             require(
                 any("ledger write failure before durable spent-slot record" in case for case in open_cases),
                 f"{row_id}: ledger-write failure must remain open",
+            )
+        elif row_id == "os_entropy_failure_boundary_fixed_shape":
+            require(
+                tuple(row.get("required_test_functions", [])) == EXPECTED_ENTROPY_FIXED_SHAPE_FUNCTIONS,
+                f"{row_id}: entropy fixed-shape test function set drifted",
+            )
+            for test_fn in EXPECTED_ENTROPY_FIXED_SHAPE_FUNCTIONS:
+                require(f"fn {test_fn}(" in source, f"{row_id}: missing entropy fixed-shape test function {test_fn}")
+            require(
+                not row.get("required_public_result_classes"),
+                f"{row_id}: entropy row must not pretend to close public result-class coverage",
+            )
+            require(
+                any("OS entropy root" in case for case in covered_cases),
+                f"{row_id}: OS entropy root coverage must be explicit",
+            )
+            require(
+                any("fixed public rejection code" in case for case in covered_cases),
+                f"{row_id}: fixed public rejection coverage must be explicit",
+            )
+            require(
+                any("hardware" in case or "HSM" in case for case in open_cases),
+                f"{row_id}: hardware/HSM entropy review must remain open",
             )
         else:  # pragma: no cover - row id set is checked above
             raise SystemExit(f"unknown fixed-shape row {row_id}")

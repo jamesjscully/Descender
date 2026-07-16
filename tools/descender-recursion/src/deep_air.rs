@@ -120,7 +120,11 @@ const fn pow_base(j: usize) -> usize {
 /// builder can only emit honest rows; tamper tests mutate the matrix afterwards).
 pub fn pack_check(zeta: Challenge, q: Challenge, c: Challenge, log_degree: usize) -> Vec<Val> {
     let zh = crate::deep::vanishing_poly_at(zeta, log_degree);
-    assert_eq!(c, zh * q, "pack_check requires the honest constraint eval c = Z_H(zeta)*q");
+    assert_eq!(
+        c,
+        zh * q,
+        "pack_check requires the honest constraint eval c = Z_H(zeta)*q"
+    );
     let mut row = vec![Val::ZERO; n_cols(log_degree)];
     row[C_ZETA..C_ZETA + D].copy_from_slice(&limbs(zeta));
     row[C_Q..C_Q + D].copy_from_slice(&limbs(q));
@@ -278,9 +282,7 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for DeepAir {
             let c_committed = block(lb + leaf_c_committed(k));
             // C == C_partial + C_committed (limb-for-limb).
             for i in 0..D {
-                builder.assert_zero(
-                    c[i].clone() - (c_partial[i].clone() + c_committed[i].clone()),
-                );
+                builder.assert_zero(c[i].clone() - (c_partial[i].clone() + c_committed[i].clone()));
             }
         }
     }
@@ -320,11 +322,19 @@ mod tests {
     fn tower_reproduces_native_vanishing_poly() {
         for k in [1usize, 4, 8, 12] {
             let zeta = ext_multi(7 + k as u32);
-            let row = pack_check(zeta, ext_multi(99), {
-                vanishing_poly_at(zeta, k) * ext_multi(99)
-            }, k);
-            let powk = Challenge::from_basis_coefficients_slice(&row[pow_base(k)..pow_base(k) + D]).unwrap();
-            assert_eq!(powk - Challenge::ONE, vanishing_poly_at(zeta, k), "tower Z_H != native at k={k}");
+            let row = pack_check(
+                zeta,
+                ext_multi(99),
+                vanishing_poly_at(zeta, k) * ext_multi(99),
+                k,
+            );
+            let powk = Challenge::from_basis_coefficients_slice(&row[pow_base(k)..pow_base(k) + D])
+                .unwrap();
+            assert_eq!(
+                powk - Challenge::ONE,
+                vanishing_poly_at(zeta, k),
+                "tower Z_H != native at k={k}"
+            );
         }
     }
 
@@ -337,13 +347,31 @@ mod tests {
             // base-only
             let m = matrix(ext(123_457), ext(98_765), k);
             assert!(
-                check_all_constraints(&DeepAir { log_degree: k, wire_leaf: false }, &m, &[], None).is_ok(),
+                check_all_constraints(
+                    &DeepAir {
+                        log_degree: k,
+                        wire_leaf: false
+                    },
+                    &m,
+                    &[],
+                    None
+                )
+                .is_ok(),
                 "honest base-only OOD row rejected at k={k}"
             );
             // multi-limb (exercises the X^8 = W wraparound in the tower + product)
             let m2 = matrix(ext_multi(10 + k as u32), ext_multi(40 + k as u32), k);
             assert!(
-                check_all_constraints(&DeepAir { log_degree: k, wire_leaf: false }, &m2, &[], None).is_ok(),
+                check_all_constraints(
+                    &DeepAir {
+                        log_degree: k,
+                        wire_leaf: false
+                    },
+                    &m2,
+                    &[],
+                    None
+                )
+                .is_ok(),
                 "honest multi-limb OOD row rejected at k={k}"
             );
         }
@@ -357,7 +385,16 @@ mod tests {
         let k = 10;
         let mut m = matrix(ext(777), ext(42), k);
         m.values[C_C + 1] += Val::ONE; // tamper a C limb
-        assert!(!check_all_constraints(&DeepAir { log_degree: k, wire_leaf: false }, &m, &[], None).is_ok());
+        assert!(!check_all_constraints(
+            &DeepAir {
+                log_degree: k,
+                wire_leaf: false
+            },
+            &m,
+            &[],
+            None
+        )
+        .is_ok());
     }
 
     /// Forgery — WRONG Q(zeta): a quotient ≠ C/Z_H is rejected (the relation binds both sides).
@@ -366,7 +403,16 @@ mod tests {
         let k = 12;
         let mut m = matrix(ext_multi(3), ext_multi(5), k);
         m.values[C_Q + 4] += Val::ONE; // tamper a high Q limb
-        assert!(!check_all_constraints(&DeepAir { log_degree: k, wire_leaf: false }, &m, &[], None).is_ok());
+        assert!(!check_all_constraints(
+            &DeepAir {
+                log_degree: k,
+                wire_leaf: false
+            },
+            &m,
+            &[],
+            None
+        )
+        .is_ok());
     }
 
     /// Forgery — WRONG zeta / Z_H: changing the OOD point breaks the tower base (pow[0] != zeta)
@@ -377,7 +423,16 @@ mod tests {
         let k = 8;
         let mut m = matrix(ext_multi(11), ext_multi(13), k);
         m.values[C_ZETA + 2] += Val::ONE; // tower base no longer matches zeta; Z_H also wrong
-        assert!(!check_all_constraints(&DeepAir { log_degree: k, wire_leaf: false }, &m, &[], None).is_ok());
+        assert!(!check_all_constraints(
+            &DeepAir {
+                log_degree: k,
+                wire_leaf: false
+            },
+            &m,
+            &[],
+            None
+        )
+        .is_ok());
     }
 
     /// Forgery — a tampered INTERMEDIATE tower power (a forged `zeta^{2^j}`) ⇒ the squaring
@@ -389,7 +444,16 @@ mod tests {
         let mut m = matrix(ext_multi(21), ext_multi(22), k);
         // corrupt pow[6] (a middle of the tower); breaks pow[6]==pow[5]^2 and pow[7]==pow[6]^2.
         m.values[pow_base(6) + 0] += Val::ONE;
-        assert!(!check_all_constraints(&DeepAir { log_degree: k, wire_leaf: false }, &m, &[], None).is_ok());
+        assert!(!check_all_constraints(
+            &DeepAir {
+                log_degree: k,
+                wire_leaf: false
+            },
+            &m,
+            &[],
+            None
+        )
+        .is_ok());
     }
 
     /// Forgery — a tampered FINAL tower power `zeta^{2^k}` (hence a forged Z_H) with C/Q left
@@ -399,7 +463,16 @@ mod tests {
         let k = 10;
         let mut m = matrix(ext_multi(31), ext_multi(32), k);
         m.values[pow_base(k) + 3] += Val::ONE;
-        assert!(!check_all_constraints(&DeepAir { log_degree: k, wire_leaf: false }, &m, &[], None).is_ok());
+        assert!(!check_all_constraints(
+            &DeepAir {
+                log_degree: k,
+                wire_leaf: false
+            },
+            &m,
+            &[],
+            None
+        )
+        .is_ok());
     }
 
     /// A multi-row trace of independent honest OOD checks (one per row) at a fixed log_degree
@@ -414,7 +487,16 @@ mod tests {
         }
         let m = RowMajorMatrix::new(flat, nc);
         assert!(
-            check_all_constraints(&DeepAir { log_degree: k, wire_leaf: false }, &m, &[], None).is_ok(),
+            check_all_constraints(
+                &DeepAir {
+                    log_degree: k,
+                    wire_leaf: false
+                },
+                &m,
+                &[],
+                None
+            )
+            .is_ok(),
             "honest multi-row OOD trace rejected"
         );
     }
@@ -429,14 +511,32 @@ mod tests {
         let c = vanishing_poly_at(zeta, k) * q;
         assert!(crate::deep::verify_quotient_relation(c, q, zeta, k));
         let m = RowMajorMatrix::new(pack_check(zeta, q, c, k), n_cols(k));
-        assert!(check_all_constraints(&DeepAir { log_degree: k, wire_leaf: false }, &m, &[], None).is_ok());
+        assert!(check_all_constraints(
+            &DeepAir {
+                log_degree: k,
+                wire_leaf: false
+            },
+            &m,
+            &[],
+            None
+        )
+        .is_ok());
 
         // tamper C -> reference rejects, AIR rejects.
         let c_bad = c + Challenge::ONE;
         assert!(!crate::deep::verify_quotient_relation(c_bad, q, zeta, k));
         let mut m_bad = RowMajorMatrix::new(pack_check(zeta, q, c, k), n_cols(k));
         m_bad.values[C_C] += Val::ONE; // make C = c+1 in the matrix
-        assert!(!check_all_constraints(&DeepAir { log_degree: k, wire_leaf: false }, &m_bad, &[], None).is_ok());
+        assert!(!check_all_constraints(
+            &DeepAir {
+                log_degree: k,
+                wire_leaf: false
+            },
+            &m_bad,
+            &[],
+            None
+        )
+        .is_ok());
     }
 
     // =======================================================================
@@ -452,7 +552,10 @@ mod tests {
     }
 
     fn leaf_air(k: usize) -> DeepAir {
-        DeepAir { log_degree: k, wire_leaf: true }
+        DeepAir {
+            log_degree: k,
+            wire_leaf: true,
+        }
     }
 
     /// GOLDEN (positive): a leaf-WIRED honest row accepts — both the OOD identity `C == Z_H·Q` AND
@@ -461,7 +564,13 @@ mod tests {
     fn leaf_wired_honest_accepts() {
         for &k in &[1usize, 6, 12] {
             let cells = leaf_cells(7 + k as u32);
-            let row = pack_check_leaf(ext_multi(50 + k as u32), &cells, ext_multi(3), ext_multi(9), k);
+            let row = pack_check_leaf(
+                ext_multi(50 + k as u32),
+                &cells,
+                ext_multi(3),
+                ext_multi(9),
+                k,
+            );
             let m = RowMajorMatrix::new(row, n_cols_cfg(k, true));
             assert!(
                 check_all_constraints(&leaf_air(k), &m, &[], None).is_ok(),
@@ -482,11 +591,11 @@ mod tests {
         // tamper representative cells of each mirrored class (C4 v/d_lo/bit/is96/inv, acc, pad, c6,
         // relation_id) — each must reject end-to-end.
         let targets = [
-            lc::L_CELLS + 0 * D,                       // C4 lane0 v
-            lc::L_CELLS + 1 * D,                       // C4 lane0 d_lo
-            lc::L_CELLS + 24 * D,                      // C4 lane0 is96
-            lc::L_CELLS + 25 * D,                      // C4 lane0 inv
-            lc::L_CELLS + (5 * lc::C4_CELLS) * D,      // C4 lane5 v
+            lc::L_CELLS + 0 * D,                  // C4 lane0 v
+            lc::L_CELLS + 1 * D,                  // C4 lane0 d_lo
+            lc::L_CELLS + 24 * D,                 // C4 lane0 is96
+            lc::L_CELLS + 25 * D,                 // C4 lane0 inv
+            lc::L_CELLS + (5 * lc::C4_CELLS) * D, // C4 lane5 v
         ];
         let lb = leaf_base(k);
         for &within in &targets {
@@ -514,16 +623,19 @@ mod tests {
         // honest leaf-wired row accepts.
         let row_ok = pack_check_leaf(ext_multi(90), &cells, ext_multi(3), ext_multi(11), k);
         let m_ok = RowMajorMatrix::new(row_ok, n_cols_cfg(k, true));
-        assert!(check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(), "honest C1 row rejected");
+        assert!(
+            check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(),
+            "honest C1 row rejected"
+        );
 
         // tamper representative C1 cells; each must reject end-to-end.
         let targets = [
-            lc::c1_out_cell_idx(0),                  // forged pad_source_commitment lane 0
-            lc::c1_out_cell_idx(9),                  // forged pad_source_commitment lane 9 (squeeze perm)
-            lc::c1_input_cell_idx(0),                // tampered absorbed pad_seed byte 0
-            lc::c1_input_cell_idx(47),               // tampered absorbed nonce byte
-            lc::c1_perm_cell_idx(0, C_BEGIN_POST),   // tampered interior perm post (perm 0)
-            lc::c1_perm_cell_idx(6, IP_OUTPUT + 1),  // tampered last-absorb output (squeeze source)
+            lc::c1_out_cell_idx(0),   // forged pad_source_commitment lane 0
+            lc::c1_out_cell_idx(9),   // forged pad_source_commitment lane 9 (squeeze perm)
+            lc::c1_input_cell_idx(1), // tampered absorbed pad_seed byte 0 (after PADS domain)
+            lc::c1_input_cell_idx(lc::C1_INPUT_LANES - 1), // tampered absorbed nonce byte
+            lc::c1_perm_cell_idx(0, C_BEGIN_POST), // tampered interior perm post (perm 0)
+            lc::c1_perm_cell_idx(6, IP_OUTPUT + 1), // tampered last-absorb output (squeeze source)
         ];
         let lb = leaf_base(k);
         for &cell_idx in &targets {
@@ -552,16 +664,19 @@ mod tests {
         // honest leaf-wired row accepts.
         let row_ok = pack_check_leaf(ext_multi(90), &cells, ext_multi(3), ext_multi(11), k);
         let m_ok = RowMajorMatrix::new(row_ok, n_cols_cfg(k, true));
-        assert!(check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(), "honest C6 row rejected");
+        assert!(
+            check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(),
+            "honest C6 row rejected"
+        );
 
         // tamper representative C6 cells; each must reject end-to-end.
         let targets = [
-            lc::c6_out_cell_idx(0),                  // forged opening_tuple_commitment lane 0
-            lc::c6_out_cell_idx(9),                  // forged opening_tuple_commitment lane 9 (squeeze perm)
-            lc::c6_byte_cell_idx(0),                 // tampered absorbed lifecycle byte 0
-            lc::c6_byte_cell_idx(48),                // tampered absorbed account_id byte
-            lc::c6_field_cell_idx(2),                // tampered absorbed FIELD (account_projection) lane
-            lc::c6_perm_cell_idx(0, C_BEGIN_POST),   // tampered interior perm post (perm 0)
+            lc::c6_out_cell_idx(0),   // forged opening_tuple_commitment lane 0
+            lc::c6_out_cell_idx(9),   // forged opening_tuple_commitment lane 9 (squeeze perm)
+            lc::c6_byte_cell_idx(0),  // tampered absorbed lifecycle byte 0
+            lc::c6_byte_cell_idx(48), // tampered absorbed account_id byte
+            lc::c6_field_cell_idx(2), // tampered absorbed FIELD (account_projection) lane
+            lc::c6_perm_cell_idx(0, C_BEGIN_POST), // tampered interior perm post (perm 0)
             lc::c6_perm_cell_idx(10, IP_OUTPUT + 1), // tampered last-absorb output (squeeze source)
         ];
         let lb = leaf_base(k);
@@ -592,17 +707,20 @@ mod tests {
         // honest leaf-wired row accepts.
         let row_ok = pack_check_leaf(ext_multi(90), &cells, ext_multi(3), ext_multi(11), k);
         let m_ok = RowMajorMatrix::new(row_ok, n_cols_cfg(k, true));
-        assert!(check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(), "honest role-root row rejected");
+        assert!(
+            check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(),
+            "honest role-root row rejected"
+        );
 
         // tamper representative role-root cells; each must reject end-to-end.
         let targets = [
-            lc::role_out_cell_idx(0),                  // forged role_root lane 0
-            lc::role_out_cell_idx(7),                  // forged role_root lane 7
-            lc::role_masked_cell_idx(2),               // tampered masked_projection input lane
-            lc::role_perm_cell_idx(0, C_BEGIN_POST),   // tampered interior perm post (perm 0)
-            lc::role_perm_cell_idx(3, IP_OUTPUT + 1),  // tampered last-absorb output (squeeze source)
-            lc::c1_out_chain_cell_idx(0),              // CHAINING: tampered C1 output feeding role absorb
-            lc::c6_out_cell_idx(9),                    // CHAINING: tampered C6 output feeding role absorb
+            lc::role_out_cell_idx(0),                 // forged role_root lane 0
+            lc::role_out_cell_idx(7),                 // forged role_root lane 7
+            lc::role_masked_cell_idx(2),              // tampered masked_projection input lane
+            lc::role_perm_cell_idx(0, C_BEGIN_POST),  // tampered interior perm post (perm 0)
+            lc::role_perm_cell_idx(3, IP_OUTPUT + 1), // tampered last-absorb output (squeeze source)
+            lc::c1_out_chain_cell_idx(0), // CHAINING: tampered C1 output feeding role absorb
+            lc::c6_out_cell_idx(9),       // CHAINING: tampered C6 output feeding role absorb
         ];
         let lb = leaf_base(k);
         for &cell_idx in &targets {
@@ -632,7 +750,10 @@ mod tests {
         // honest leaf-wired row accepts.
         let row_ok = pack_check_leaf(ext_multi(90), &cells, ext_multi(3), ext_multi(11), k);
         let m_ok = RowMajorMatrix::new(row_ok, n_cols_cfg(k, true));
-        assert!(check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(), "honest C2/reduce row rejected");
+        assert!(
+            check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(),
+            "honest C2/reduce row rejected"
+        );
 
         // representative cells across the C2 sponge, reduce gadget, and carrier.
         let last_step_r = {
@@ -641,13 +762,13 @@ mod tests {
             step0 + (lc::HORNER_STEPS - 1) * lc::STEP_CELLS + lc::StepOff::R
         };
         let targets = [
-            lc::c2_slot_cell_idx(0),                       // tampered C2 absorbed slot_id lane
-            lc::c2_perm_cell_idx(0, C_BEGIN_POST),         // tampered interior C2 perm post (perm 0)
-            lc::c2_perm_cell_idx(5, IP_OUTPUT + 1),        // tampered last-absorb output (squeeze src)
-            lc::c2_squeeze_output_cell_idx(15),            // forged squeezed lane 15 (reduce input)
+            lc::c2_slot_cell_idx(0),                // tampered C2 absorbed slot_id lane
+            lc::c2_perm_cell_idx(0, C_BEGIN_POST),  // tampered interior C2 perm post (perm 0)
+            lc::c2_perm_cell_idx(5, IP_OUTPUT + 1), // tampered last-absorb output (squeeze src)
+            lc::c2_squeeze_output_cell_idx(15),     // forged squeezed lane 15 (reduce input)
             lc::reduce_cell_idx(2 * lc::PER_MASK_CELLS + last_step_r), // forged mask (lane 2)
             lc::reduce_cell_idx(3 * lc::PER_MASK_CELLS + lc::LANES_PER_MASK + lc::StepOff::C0), // limb/carry
-            lc::carrier_masked_cell_idx(4),                // forged masked_projection lane 4
+            lc::carrier_masked_cell_idx(4), // forged masked_projection lane 4
             lc::carrier_modq_cell_idx(1, lc::MODQ_CELLS - 1), // tampered carrier wrap bit (lane 1)
         ];
         let lb = leaf_base(k);
@@ -677,17 +798,20 @@ mod tests {
         // honest leaf-wired row accepts.
         let row_ok = pack_check_leaf(ext_multi(90), &cells, ext_multi(3), ext_multi(11), k);
         let m_ok = RowMajorMatrix::new(row_ok, n_cols_cfg(k, true));
-        assert!(check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(), "honest chain row rejected");
+        assert!(
+            check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(),
+            "honest chain row rejected"
+        );
 
         let targets = [
-            lc::chain_enable_cell_idx(),                              // enable selector
-            lc::chain_pubio_cell_idx(0),                             // absorbed pubio lane 0
-            lc::chain_in_cell_idx(3),                                // chain_in lane 3
-            lc::chain_perm_cell_idx(0, C_BEGIN_POST),                // interior perm post (perm 0)
+            lc::chain_enable_cell_idx(),              // enable selector
+            lc::chain_pubio_cell_idx(0),              // absorbed pubio lane 0
+            lc::chain_in_cell_idx(3),                 // chain_in lane 3
+            lc::chain_perm_cell_idx(0, C_BEGIN_POST), // interior perm post (perm 0)
             lc::chain_perm_cell_idx(lc::CHAIN_NPERMS - 1, IP_OUTPUT + 2), // last-perm fold source lane 2
-            lc::chain_out_cell_idx(0),                               // running-digest lane 0
-            lc::chain_count_cell_idx(),                              // count accumulator
-            lc::chain_prev_out_cell_idx(5),                          // CROSS-ROW: swapped prior-row digest
+            lc::chain_out_cell_idx(0),                                    // running-digest lane 0
+            lc::chain_count_cell_idx(),                                   // count accumulator
+            lc::chain_prev_out_cell_idx(5), // CROSS-ROW: swapped prior-row digest
         ];
         let lb = leaf_base(k);
         for &cell_idx in &targets {
@@ -715,7 +839,10 @@ mod tests {
         // honest leaf-wired row accepts.
         let row_ok = pack_check_leaf(ext_multi(90), &cells, ext_multi(3), ext_multi(11), k);
         let m_ok = RowMajorMatrix::new(row_ok, n_cols_cfg(k, true));
-        assert!(check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(), "honest byterange row rejected");
+        assert!(
+            check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(),
+            "honest byterange row rejected"
+        );
 
         // probe one lane per sponge (C1 idx 0, C2 idx 48+35, C6 idx 48+40+40); for each, tamper
         // (a) a bit cell (non-boolean) and (b) the absorbed lane cell (recompose mismatch).
@@ -726,7 +853,8 @@ mod tests {
             {
                 let row = pack_check_leaf(ext_multi(90), &cells, ext_multi(3), ext_multi(11), k);
                 let mut m = RowMajorMatrix::new(row, n_cols_cfg(k, true));
-                m.values[lb + lc::L_CELLS + lc::byterange_bit_cell_idx(g, 1) * D] += Val::from_u32(2);
+                m.values[lb + lc::L_CELLS + lc::byterange_bit_cell_idx(g, 1) * D] +=
+                    Val::from_u32(2);
                 assert!(
                     !check_all_constraints(&leaf_air(k), &m, &[], None).is_ok(),
                     "non-boolean byte-range bit (lane {g}) NOT rejected end-to-end"
@@ -762,14 +890,17 @@ mod tests {
         // honest leaf-wired row accepts.
         let row_ok = pack_check_leaf(ext_multi(90), &cells, ext_multi(3), ext_multi(11), k);
         let m_ok = RowMajorMatrix::new(row_ok, n_cols_cfg(k, true));
-        assert!(check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(), "honest pubio-bind row rejected");
+        assert!(
+            check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(),
+            "honest pubio-bind row rejected"
+        );
 
         // one binding index per commitment output (C1, C6, masked, role).
         let bind_ks = [
-            0usize,                            // C1 pad_source_commitment lane 0
-            N_COMMIT_LANES + 4,                // C6 opening_tuple_commitment lane 4
-            2 * N_COMMIT_LANES + 1,            // masked_projection lane 1
-            2 * N_COMMIT_LANES + N_LANES + 6,  // role_root lane 6
+            0usize,                           // C1 pad_source_commitment lane 0
+            N_COMMIT_LANES + 4,               // C6 opening_tuple_commitment lane 4
+            2 * N_COMMIT_LANES + 1,           // masked_projection lane 1
+            2 * N_COMMIT_LANES + N_LANES + 6, // role_root lane 6
         ];
         let lb = leaf_base(k);
         for &bk in &bind_ks {
@@ -835,11 +966,26 @@ mod tests {
         let cells0 = leaf_cells(11);
         let cells1 = leaf_cells(22);
         let mut flat = Vec::new();
-        flat.extend_from_slice(&pack_check_leaf(ext_multi(80), &cells0, ext_multi(1), ext_multi(3), k));
-        flat.extend_from_slice(&pack_check_leaf(ext_multi(81), &cells1, ext_multi(1), ext_multi(3), k));
+        flat.extend_from_slice(&pack_check_leaf(
+            ext_multi(80),
+            &cells0,
+            ext_multi(1),
+            ext_multi(3),
+            k,
+        ));
+        flat.extend_from_slice(&pack_check_leaf(
+            ext_multi(81),
+            &cells1,
+            ext_multi(1),
+            ext_multi(3),
+            k,
+        ));
         // honest 2-row trace accepts.
         let m_ok = RowMajorMatrix::new(flat.clone(), nc);
-        assert!(check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(), "honest 2-row rejected");
+        assert!(
+            check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(),
+            "honest 2-row rejected"
+        );
         // tamper row 1's C4 lane0 v only.
         flat[nc + leaf_base(k) + lc::L_CELLS] += Val::ONE;
         let m_bad = RowMajorMatrix::new(flat, nc);

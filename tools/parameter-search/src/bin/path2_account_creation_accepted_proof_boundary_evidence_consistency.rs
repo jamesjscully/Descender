@@ -16,7 +16,7 @@ mod enabled {
             validate_path2_account_creation_accepted_proof_boundary_evidence_v1,
         },
     };
-    use serde_json::{to_value, Value};
+    use serde_json::{Value, to_value};
     use sha2::{Digest, Sha256};
     use std::{
         fs,
@@ -227,10 +227,8 @@ mod enabled {
             .map_err(|err| format!("serialize accepted requirement evidence rows: {err}"))?;
         if u64_at(body, "/evidence/accepted_requirement_evidence_count")?
             != evidence.accepted_requirement_evidence_count as u64
-            || u64_at(
-                body,
-                "/evidence/accepted_path_applicable_requirement_count",
-            )? != evidence.accepted_path_applicable_requirement_count as u64
+            || u64_at(body, "/evidence/accepted_path_applicable_requirement_count")?
+                != evidence.accepted_path_applicable_requirement_count as u64
             || u64_at(body, "/evidence/accepted_path_requirement_evidence_count")?
                 != evidence.accepted_path_requirement_evidence_count as u64
             || u64_at(
@@ -400,6 +398,7 @@ mod enabled {
             "/evidence/deployed_anchor_masked_projection_bound",
             "/evidence/deployed_anchor_role_root_export_bridge_bound",
             "/evidence/deployed_anchor_packed_witness_commitment_bound",
+            "/evidence/deployed_anchor_pad_seed_nullifier_bound",
             "/evidence/deployed_anchor_fields_match_report",
             "/evidence/account_stark_bundle_nonempty",
             "/evidence/proof_family_obligations_still_open",

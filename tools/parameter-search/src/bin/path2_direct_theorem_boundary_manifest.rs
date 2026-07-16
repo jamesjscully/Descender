@@ -17,6 +17,8 @@ use descender_parameter_search::{
         path2_account_creation_proof_boundary_report_v1_digest,
         path2_account_creation_sampler_timing_report_v1,
         path2_account_creation_sampler_timing_report_v1_digest,
+        path2_direct_admission_boundary_report_v1,
+        path2_direct_admission_boundary_report_v1_digest,
         path2_direct_lifecycle_boundary_report_v1,
         path2_direct_lifecycle_boundary_report_v1_digest,
         path2_direct_qrom_action_boundary_report_v1,
@@ -41,6 +43,7 @@ fn manifest_body() -> Result<Value, String> {
     let direct_report = path2_direct_theorem_boundary_report_v1();
     let qrom_action_report = path2_direct_qrom_action_boundary_report_v1();
     let lifecycle_report = path2_direct_lifecycle_boundary_report_v1();
+    let admission_report = path2_direct_admission_boundary_report_v1();
     let query_budget = path2_direct_query_budget_v1();
     let proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
     let sampler_timing_report = path2_account_creation_sampler_timing_report_v1();
@@ -75,6 +78,11 @@ fn manifest_body() -> Result<Value, String> {
     if recomputed_lifecycle_digest != lifecycle_report.digest {
         return Err("direct lifecycle boundary report digest mismatch".to_string());
     }
+    let recomputed_admission_digest =
+        path2_direct_admission_boundary_report_v1_digest(&admission_report);
+    if recomputed_admission_digest != admission_report.digest {
+        return Err("direct admission boundary report digest mismatch".to_string());
+    }
     let recomputed_proof_boundary_digest =
         path2_account_creation_proof_boundary_report_v1_digest(&proof_boundary_report);
     if recomputed_proof_boundary_digest != proof_boundary_report.digest {
@@ -100,6 +108,11 @@ fn manifest_body() -> Result<Value, String> {
             "direct theorem report is not bound to the current lifecycle report".to_string(),
         );
     }
+    if direct_report.direct_admission_boundary_report_digest != admission_report.digest {
+        return Err(
+            "direct theorem report is not bound to the current admission report".to_string(),
+        );
+    }
     if proof_boundary_report.sampler_timing_report_digest != sampler_timing_report.digest {
         return Err(
             "proof boundary report is not bound to the current sampler/timing report".to_string(),
@@ -120,11 +133,13 @@ fn manifest_body() -> Result<Value, String> {
             "direct_report_domain": direct_report.domain,
             "direct_qrom_action_boundary_report_domain": qrom_action_report.domain,
             "direct_lifecycle_boundary_report_domain": lifecycle_report.domain,
+            "direct_admission_boundary_report_domain": admission_report.domain,
             "account_creation_proof_boundary_report_domain": proof_boundary_report.domain,
             "account_creation_sampler_timing_report_domain": sampler_timing_report.domain,
             "direct_theorem_blocker": direct_report.blocker,
             "direct_qrom_action_blocker": qrom_action_report.blocker,
             "direct_lifecycle_blocker": lifecycle_report.blocker,
+            "direct_admission_blocker": admission_report.blocker,
             "account_creation_proof_boundary_blocker": proof_boundary_report.blocker,
             "sampler_timing_blocker": sampler_timing_report.blocker,
             "direct_theorem_target": direct_report.theorem_target,
@@ -173,6 +188,15 @@ fn manifest_body() -> Result<Value, String> {
             "direct_theorem_report_lifecycle_digest": hex_encode(
                 &direct_report.direct_lifecycle_boundary_report_digest
             ),
+            "direct_admission_boundary_report_digest": hex_encode(
+                &admission_report.digest
+            ),
+            "direct_admission_boundary_report_recomputed_digest": hex_encode(
+                &recomputed_admission_digest
+            ),
+            "direct_theorem_report_admission_digest": hex_encode(
+                &direct_report.direct_admission_boundary_report_digest
+            ),
             "account_creation_proof_boundary_report_digest": hex_encode(
                 &proof_boundary_report.digest
             ),
@@ -196,6 +220,9 @@ fn manifest_body() -> Result<Value, String> {
                 ),
                 "direct_lifecycle_boundary_report_digest": hex_encode(
                     &direct_report.direct_lifecycle_boundary_report_digest
+                ),
+                "direct_admission_boundary_report_digest": hex_encode(
+                    &direct_report.direct_admission_boundary_report_digest
                 ),
                 "accepted_tuple_field_count": direct_report.accepted_tuple_fields.len(),
                 "acceptance_hypothesis_count": direct_report.acceptance_hypotheses.len(),
@@ -233,16 +260,90 @@ fn manifest_body() -> Result<Value, String> {
                 "acceptance_hypotheses_pinned":
                     direct_report.acceptance_hypotheses_pinned,
                 "named_break_classes_pinned": direct_report.named_break_classes_pinned,
+                "composition_theorem_reduction_lean_theorem":
+                    direct_report.composition_theorem_reduction_lean_theorem,
+                "composition_theorem_reduction_imported":
+                    direct_report.composition_theorem_reduction_imported,
+                "composition_external_hypotheses_explicit":
+                    direct_report.composition_external_hypotheses_explicit,
+                "composition_capstone_under_explicit_named_assumptions_lean_theorem":
+                    direct_report
+                        .composition_capstone_under_explicit_named_assumptions_lean_theorem,
+                "composition_capstone_under_explicit_named_assumptions_imported":
+                    direct_report
+                        .composition_capstone_under_explicit_named_assumptions_imported,
                 "composition_theorem_instantiated":
                     direct_report.composition_theorem_instantiated,
                 "account_creation_proof_boundary_verified":
                     direct_report.account_creation_proof_boundary_verified,
+                "direct_leaf_canonical_live_lean_theorem":
+                    direct_report.direct_leaf_canonical_live_lean_theorem,
+                "direct_leaf_canonical_live_imported":
+                    direct_report.direct_leaf_canonical_live_imported,
+                "direct_leaf_canonical_live_lifecycle_and_kat_hypothesis_explicit":
+                    direct_report
+                        .direct_leaf_canonical_live_lifecycle_and_kat_hypothesis_explicit,
+                "direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle":
+                    direct_report
+                        .direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle,
                 "checked_core_frame_binding_imported":
                     direct_report.checked_core_frame_binding_imported,
                 "slot_authorization_digest_imported":
                     direct_report.slot_authorization_digest_imported,
+                "direct_evidence_leaf_binding_lean_theorem":
+                    direct_report.direct_evidence_leaf_binding_lean_theorem,
+                "direct_evidence_leaf_binding_imported":
+                    direct_report.direct_evidence_leaf_binding_imported,
+                "direct_evidence_leaf_binding_proof_boundary_hypothesis_explicit":
+                    direct_report
+                        .direct_evidence_leaf_binding_proof_boundary_hypothesis_explicit,
+                "direct_evidence_leaf_binding_closed_by_frozen_kat":
+                    direct_report.direct_evidence_leaf_binding_closed_by_frozen_kat,
+                "direct_admission_namespace_membership_lean_theorem":
+                    direct_report.direct_admission_namespace_membership_lean_theorem,
+                "direct_admission_namespace_membership_imported":
+                    direct_report.direct_admission_namespace_membership_imported,
+                "direct_admission_namespace_data_availability_hypothesis_explicit":
+                    direct_report
+                        .direct_admission_namespace_data_availability_hypothesis_explicit,
+                "direct_admission_namespace_and_data_availability_lean_theorem":
+                    direct_report
+                        .direct_admission_namespace_and_data_availability_lean_theorem,
+                "direct_admission_namespace_and_data_availability_imported":
+                    direct_report
+                        .direct_admission_namespace_and_data_availability_imported,
+                "direct_admission_namespace_closed_by_sovereign_state":
+                    direct_report.direct_admission_namespace_closed_by_sovereign_state,
+                "direct_public_rejection_state_preserving_lean_theorem":
+                    direct_report.direct_public_rejection_state_preserving_lean_theorem,
+                "direct_public_rejection_state_preserving_imported":
+                    direct_report.direct_public_rejection_state_preserving_imported,
+                "direct_public_rejection_classifier_total":
+                    direct_report.direct_public_rejection_classifier_total,
+                "direct_public_rejection_class_kat_test":
+                    direct_report.direct_public_rejection_class_kat_test,
+                "direct_public_rejection_all_classes_kat_covered":
+                    direct_report.direct_public_rejection_all_classes_kat_covered,
+                "direct_public_rejection_panic_fail_closed_kat_covered":
+                    direct_report.direct_public_rejection_panic_fail_closed_kat_covered,
+                "direct_public_rejection_all_public_objects_kat_covered":
+                    direct_report.direct_public_rejection_all_public_objects_kat_covered,
+                "direct_public_rejection_target_client_mapping_complete":
+                    direct_report.direct_public_rejection_target_client_mapping_complete,
+                "direct_public_rejection_consensus_kat_hypothesis_explicit":
+                    direct_report.direct_public_rejection_consensus_kat_hypothesis_explicit,
                 "lifecycle_transition_profile_verified":
                     direct_report.lifecycle_transition_profile_verified,
+                "qrom_action_budget_bridge_lean_theorem":
+                    direct_report.qrom_action_budget_bridge_lean_theorem,
+                "qrom_action_budget_bridge_imported":
+                    direct_report.qrom_action_budget_bridge_imported,
+                "qrom_action_theorem_linkage_reduction_lean_theorem":
+                    direct_report.qrom_action_theorem_linkage_reduction_lean_theorem,
+                "qrom_action_theorem_linkage_reduction_imported":
+                    direct_report.qrom_action_theorem_linkage_reduction_imported,
+                "qrom_action_review_hypothesis_explicit":
+                    direct_report.qrom_action_review_hypothesis_explicit,
                 "qrom_and_action_bounds_linked_to_theorem":
                     direct_report.qrom_and_action_bounds_linked_to_theorem,
                 "deployment_ready": direct_report.deployment_ready,
@@ -288,6 +389,10 @@ fn manifest_body() -> Result<Value, String> {
                     qrom_action_report.selected_horizon_within_margin,
                 "negative_control_exceeds_margin":
                     qrom_action_report.negative_control_exceeds_margin,
+                "direct_qrom_action_budget_bridge_lean_theorem":
+                    qrom_action_report.direct_qrom_action_budget_bridge_lean_theorem,
+                "direct_qrom_action_budget_bridge_bound":
+                    qrom_action_report.direct_qrom_action_budget_bridge_bound,
                 "theorem_imports_budget": qrom_action_report.theorem_imports_budget,
                 "external_qrom_review_complete":
                     qrom_action_report.external_qrom_review_complete,
@@ -393,6 +498,75 @@ fn manifest_body() -> Result<Value, String> {
                 lifecycle_profile_review_evidence,
             "target_chain_lifecycle_profile_verification_evidence":
                 lifecycle_profile_verification_evidence
+        },
+        "direct_admission_boundary": {
+            "coverage": {
+                "exact_namespace_tuple_key_pinned":
+                    admission_report.exact_namespace_tuple_key_pinned,
+                "canonical_leaf_bytes_stored_directly":
+                    admission_report.canonical_leaf_bytes_stored_directly,
+                "leaf_and_evidence_digests_rechecked":
+                    admission_report.leaf_and_evidence_digests_rechecked,
+                "spend_reads_canonical_consensus_record":
+                    admission_report.spend_reads_canonical_consensus_record,
+                "missing_record_rejected": admission_report.missing_record_rejected,
+                "corrupt_record_fails_closed": admission_report.corrupt_record_fails_closed,
+                "duplicate_admission_rejected": admission_report.duplicate_admission_rejected,
+                "d2_finalized_head_reorg_semantics":
+                    admission_report.d2_finalized_head_reorg_semantics,
+                "verified_creation_nullifier_anchor_bound":
+                    admission_report.verified_creation_nullifier_anchor_bound,
+                "sovereign_nullifier_registry_consensus_wired":
+                    admission_report.sovereign_nullifier_registry_consensus_wired,
+                "sovereign_nullifier_block_atomic":
+                    admission_report.sovereign_nullifier_block_atomic,
+                "sovereign_nullifier_d2_reorg_index_rebuild_verified":
+                    admission_report.sovereign_nullifier_d2_reorg_index_rebuild_verified,
+                "pad_seed_reorg_safe_uniqueness_selected_state_reduction_imported":
+                    admission_report
+                        .pad_seed_reorg_safe_uniqueness_selected_state_reduction_imported,
+                "snapshot_restores_nullifier_registry":
+                    admission_report.snapshot_restores_nullifier_registry,
+                "snapshot_restore_anchor_bound":
+                    admission_report.snapshot_restore_anchor_bound,
+                "target_chain_data_availability_instantiated":
+                    admission_report.target_chain_data_availability_instantiated,
+                "admission_closure_lean_imported":
+                    admission_report.admission_closure_lean_imported,
+                "external_storage_review_complete":
+                    admission_report.external_storage_review_complete,
+                "deployment_ready": admission_report.deployment_ready,
+                "blocker": admission_report.blocker
+            },
+            "profile_id": admission_report.profile_id,
+            "architecture_authority": admission_report.architecture_authority,
+            "lifecycle_authority": admission_report.lifecycle_authority,
+            "storage_class": admission_report.storage_class,
+            "namespace_key_fields": admission_report.namespace_key_fields,
+            "record_value_fields": admission_report.record_value_fields,
+            "admission_state_type": admission_report.admission_state_type,
+            "admission_record_type": admission_report.admission_record_type,
+            "admission_endpoint": admission_report.admission_endpoint,
+            "verified_public_anchors_type": admission_report.verified_public_anchors_type,
+            "verified_nullifier_decode_endpoint":
+                admission_report.verified_nullifier_decode_endpoint,
+            "verified_admission_candidate_type":
+                admission_report.verified_admission_candidate_type,
+            "verified_admission_candidate_endpoint":
+                admission_report.verified_admission_candidate_endpoint,
+            "nullifier_registry_key_type": admission_report.nullifier_registry_key_type,
+            "nullifier_encoding": admission_report.nullifier_encoding,
+            "nullifier_block_admission_endpoint":
+                admission_report.nullifier_block_admission_endpoint,
+            "restore_anchor_type": admission_report.restore_anchor_type,
+            "restore_anchor_endpoint": admission_report.restore_anchor_endpoint,
+            "restore_endpoint": admission_report.restore_endpoint,
+            "available_record_endpoint": admission_report.available_record_endpoint,
+            "spend_endpoint": admission_report.spend_endpoint,
+            "executable_tests": admission_report.executable_tests,
+            "admission_closure_lean_theorem": admission_report.admission_closure_lean_theorem,
+            "pad_seed_reorg_safe_uniqueness_lean_theorem":
+                admission_report.pad_seed_reorg_safe_uniqueness_lean_theorem
         },
         "account_creation_proof_boundary": {
             "coverage": {

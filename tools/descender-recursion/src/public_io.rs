@@ -31,7 +31,9 @@ mod tests {
     use p3_field::PrimeCharacteristicRing;
 
     fn pubs(seed: u32, n: usize) -> Vec<Val> {
-        (0..n as u32).map(|i| Val::from_u32(seed.wrapping_add(i))).collect()
+        (0..n as u32)
+            .map(|i| Val::from_u32(seed.wrapping_add(i)))
+            .collect()
     }
 
     /// Honest: re-exposed public matches the FS-observed public.

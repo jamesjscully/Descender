@@ -13,7 +13,7 @@
 //!      the proof's reference C2 derivation
 //!      (`descender_account_stark::reference_projection_mask_prf`, which delegates
 //!      to the SAME private trace primitives the prover uses) for many random
-//!      (pad_seed, slot) — including the intermediate 30 squeezed lanes.
+//!      (pad_seed, slot) — including the intermediate 36 squeezed lanes.
 //!
 //! If ANY constant or layout in the standalone crate diverges from Plonky3 /
 //! the proof, one of these assertions fails. There is therefore no way for the
@@ -81,9 +81,8 @@ fn standalone_permutation_byte_identical_to_plonky3() {
 
     // Also pin the published Plonky3 KAT explicitly.
     let kat_in: [u32; 16] = [
-        894848333, 1437655012, 1200606629, 1690012884, 71131202, 1749206695, 1717947831,
-        120589055, 19776022, 42382981, 1831865506, 724844064, 171220207, 1299207443, 227047920,
-        1783754913,
+        894848333, 1437655012, 1200606629, 1690012884, 71131202, 1749206695, 1717947831, 120589055,
+        19776022, 42382981, 1831865506, 724844064, 171220207, 1299207443, 227047920, 1783754913,
     ];
     let mut p3_state: [KoalaBear; 16] = core::array::from_fn(|i| KoalaBear::from_u32(kat_in[i]));
     perm.permute_mut(&mut p3_state);
@@ -92,7 +91,7 @@ fn standalone_permutation_byte_identical_to_plonky3() {
 }
 
 /// (2) Standalone projection_masks == the proof's in-circuit C2 derivation,
-/// including the intermediate 30 squeezed lanes.
+/// including the intermediate 36 squeezed lanes.
 #[test]
 fn standalone_masks_byte_identical_to_proof() {
     let mut rng = XorShift64::new(0xDEAD_BEEF_FEED_FACE);

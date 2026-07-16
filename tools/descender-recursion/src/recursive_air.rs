@@ -93,8 +93,8 @@
 //!      absorbed block ([`tests::air_rejects_prefix_forged_absorbed_block`]), a forged `state_K →
 //!      prior_state` link ([`tests::air_rejects_prefix_forged_final_link`]), and a public-transcript
 //!      mismatch ([`tests::air_prefix_blocks_bound_to_public_transcript`]). This is a BOUNDED prefix
-//!      (each round absorbs RATE = 8 elements); the full ~190-elem transcript needs
-//!      ⌈(8 cap + ~190 IO)/8⌉ ≈ 25 rounds (see remaining below).
+//!      (each full round absorbs RATE = 7 elements); the full production transcript needs
+//!      the real proof stream chunked into full and trailing-partial rounds (see remaining below).
 //!  14. **(FS-αζ) SQUEEZE alpha + zeta** (NEW; `fs_alpha_zeta`): the DEEP/batch combination challenge
 //!      `alpha` and the OOD point `zeta` are SQUEEZED from the inline duplex challenger in the EXACT
 //!      p3-uni-stark order — observe(metadata ‖ main-trace commitment ‖ public values) → SAMPLE alpha
@@ -125,7 +125,8 @@
 //!      challenger.sample_algebra_element()` AFTER zeta and BEFORE the first commit-phase observe,
 //!      with NO observe in between. Since zeta drained the output buffer, this is a SQUEEZE-ONLY
 //!      duplexing (`n == 0`: no rate overwrite, no length tag) of the post-zeta state; alpha is its
-//!      top-8 LIFO pops. When enabled, the (FS-β) beta chain's state_0 CONTINUES from THIS permute
+//!      rate-7 LIFO pops plus the constrained refill needed for limb eight. When enabled, the
+//!      (FS-β) beta chain's state_0 CONTINUES from the final squeeze permute
 //!      output (the draw-count shift), so DEEP alpha, zeta, the batch-combo alpha, and ALL betas come
 //!      from ONE ordered sponge. Fidelity-PINned against the native `DuplexChallenger`
 //!      ([`tests::fs_batch_combo_alpha_and_betas_match_native_duplex_challenger`] — alpha AND every
@@ -156,14 +157,11 @@
 //!   `state_0 == 0` (zero boundary), `state_k == permute(absorb(state_{k-1}, block_k, RATE))`, with
 //!   `state_K` bound into `prior_state`. So `prior_state` is NO LONGER a free entry point — it is the
 //!   constrained output of `sponge_prefix_rounds` absorb-permute rounds from the `new()` boundary.
-//!   What remains is SCALE + transcript-IDENTITY: this wires a BOUNDED prefix (tested at 1–3 rounds =
-//!   8–24 absorbed elements; the absorbed blocks are bound to public values only when
-//!   `prefix_blocks_public`). The FULL leaf transcript is the ~8-elem commitment caps + ~190-elem
-//!   public IO + the quotient/commit-phase caps absorbed at rate 8 ⇒ ≈25+ rounds, AND those blocks
-//!   must be bound to the proof's ACTUAL committed transcript columns (commitment caps + the (c-pub)
-//!   public-IO block), and partial-fill / non-RATE-aligned final absorbs (the leaf's 19-elem IO
-//!   leaves a non-aligned buffer — a final `n < RATE` round, the building block of which is the
-//!   existing (a-FS++) `sponge_absorb_n`) must be threaded. The
+//!   This older generic prefix remains useful for bounded standalone draw programs. The production
+//!   alpha/zeta path now has its own full-plus-partial pre-alpha and quotient chains, and the real
+//!   proof capstone constraint-checks those blocks against supplied transcript values. What remains
+//!   is assembly of every actual inner-proof transcript column — especially the cost-heavy OOD
+//!   stream — into the production settlement member window rather than test/public-value adapters. The
 //!   [`crate::challenger::air::ChallengerAir`] op-program (observe → sample sequencing, in/out buffer
 //!   one-hots) is the reference for the exact absorb/sample interleaving (the prefix here assumes
 //!   pure FULL-rate absorbs feeding one final draw-phase). The FRI commit-phase betas are NOW
@@ -177,12 +175,11 @@
 //!   query-INDEX draw now CONTINUES the post-last-beta state after observing the final polynomial +
 //!   log-arity schedule + query-PoW witness (item 17, `fs_final_blocks`) — REPLACING the separate
 //!   (a-FS) `C_DRAW_OUT` zero-boundary squeeze chain. REMAINING within this scope: the post-beta
-//!   observe stream is modeled as RATE-aligned FULL-rate observe rounds (`fs_final_blocks` blocks);
-//!   the leaf's ACTUAL final_poly/log_arity/PoW-witness byte stream is presented to this AIR already
-//!   RATE-chunked (the recursion picks the chunking) — a non-RATE-aligned final partial absorb
-//!   (`n < RATE`, the existing (a-FS++) `sponge_absorb_n` building block) and binding these blocks to
+//!   observe stream supports RATE-aligned full rounds plus a trailing partial absorb
+//!   (`fs_final_partial`); the leaf's ACTUAL final_poly/log_arity/PoW-witness byte stream must still
+//!   be bound to
 //!   the proof's ACTUAL committed final-polynomial / grinding-witness columns (beyond the optional
-//!   `fs_final_blocks_public` public-value pin) are the next refinements. Per-round commit-phase PoW
+//!   `fs_final_blocks_public` public-value pin) is the next refinement. Per-round commit-phase PoW
 //!   (`commit_proof_of_work_bits`) and query PoW (`query_proof_of_work_bits`) are modeled as zero-bit
 //!   (`check_witness(0, _)` short-circuits with NO observe / NO sample); a nonzero-bit PoW would add an
 //!   `observe(witness)` before the relevant sample (a bounded extra observe round).
@@ -222,7 +219,7 @@
 //!      ONLY the tie catches it), altered quotient reduced-opening contribution, tampered `zps`.
 //! - **(QO) scope**: ONE query, the quotient bucket sharing the trace log-height (its contribution
 //!   folds into the SAME round-0 `e0`); the random-codeword hiding columns, the per-chunk separate
-//!   log-height bucketing for unequal heights, and the 56-query fan-out stay deferred.
+//!   log-height bucketing for unequal heights, and production 120-query composition stay deferred.
 //! - **deferred leaf C(zeta)**: the DEEP block opens `C(zeta)` / `Q(zeta)` as committed values and
 //!   constrains the QUOTIENT RELATION; the full `C(zeta) =` leaf-AIR-constraint-polynomial
 //!   evaluation (re-expressing the entire leaf folder) + the DEEP linear-combination / chunk
@@ -230,7 +227,7 @@
 //! - **(DR) scope**: the reduced opening is modeled for ONE query, the SINGLE main-trace matrix, opened
 //!   at `zeta` (+ optional `zeta_next`); the quotient-CHUNK openings' contribution to the reduced
 //!   opening + the chunk OOD recombination are NOW handled by item 19 (QO); the random-codeword
-//!   matrices and the 56-query fan-out stay deferred.
+//!   matrices and production 120-query composition stay deferred.
 
 use crate::challenger::RATE;
 use crate::fri_fold::{fold_pair, fold_point};
@@ -239,7 +236,7 @@ use crate::fs_observe::fs_squeeze_betas_digest; // q128 FS β squeeze over DIGES
 use crate::index_bus::{assert_canonical_pub, FIELD_BITS};
 use crate::inlined_perm::{self, eval_perm, ConstantsExpr, PermCells, C_OUTPUT, PERM_COLS};
 use crate::leaf_constraint_air as lc;
-use crate::leaf_hash::LEAF_HASH_RATE; // leaf-row hash (MyHash) rate = 7 at q128 (vs challenger RATE = 8)
+use crate::leaf_hash::LEAF_HASH_RATE; // leaf-row hash and FS challenger both use rate 7 at q128
 use crate::merkle_air::{eval_node, node_blocks, ABSORB_LEN, N_PERM};
 use crate::spend_constraint_air as sc;
 use descender_account_stark::{Challenge, Val, DIGEST_ELEMS, SALT_ELEMS, WIDTH};
@@ -264,7 +261,8 @@ pub struct RecursiveConfig {
     /// (a) Number of Merkle path levels inlined in the window (0 = no Merkle block). Each level's
     /// index bit is bound to `bit_level` of the bus decomposition.
     pub merkle_levels: usize,
-    /// (b) Bind the round-`beta` limbs to challenger `SampleDraw` columns (8 draws per challenge).
+    /// (b) Bind the round-`beta` limbs to challenger `SampleDraw` columns (8 draws across rate-7
+    /// output blocks per challenge).
     pub bind_beta_to_draws: bool,
     /// (c) Number of commit-phase descent rounds threaded in the window (0/1 = single fold; the
     /// chaining transitions apply for r → r+1 within the window). Each extra round adds an
@@ -334,29 +332,43 @@ pub struct RecursiveConfig {
     /// the inline Fiat–Shamir challenger, in the EXACT p3-uni-stark / leaf verifier order:
     ///   observe(metadata + main-trace commitment + public values) → SAMPLE alpha →
     ///   observe(quotient-chunks commitment) → SAMPLE zeta.
-    /// When `true` the window carries an FS block: `fs_pre_alpha_rounds` FULL-rate absorb-permute
-    /// rounds from the `new()` zero boundary (the observed transcript prefix producing the
+    /// When `true` the window carries an FS block: full pre-alpha absorb-permute rounds plus an
+    /// optional trailing partial round from the `new()` zero boundary (the observed transcript producing the
     /// pre-alpha state) ‖ `alpha[D]` (bound limb-for-limb to the last pre-alpha permute's LIFO
-    /// squeeze pops, EXACTLY `sample_algebra_element` = 8 base draws) ‖ a quotient-observe
-    /// absorb-permute round (FULL-rate absorb of the quotient commitment into the post-alpha-squeeze
-    /// sponge state) ‖ `zeta[D]` (bound to that round's LIFO squeeze pops). Then `alpha`/`zeta` are
+    /// squeeze pops across two rate-7 output blocks, exactly `sample_algebra_element`) ‖ full
+    /// quotient/random-commitment rounds plus an optional trailing partial round into the
+    /// post-alpha-squeeze sponge state ‖ `zeta[D]` (bound to the last round's LIFO squeeze pops).
+    /// Then `alpha`/`zeta` are
     /// CONSTRAINED to equal the DEEP folder's `deep_alpha`/`deep_zeta` cells (residual
     /// `deep_alpha − squeezed_alpha == 0`, `deep_zeta − squeezed_zeta == 0`), so they are NO LONGER
     /// free inputs. Requires `deep_log_degree` (the consumer). The honest builder DERIVES alpha/zeta
     /// from the transcript so the bus carries the genuine FS challenges.
     pub fs_alpha_zeta: bool,
-    /// (FS-αζ) Number of FULL-rate (RATE=8 elements) absorb-permute rounds in the pre-alpha observed
+    /// (FS-αζ) Number of full rate-7 absorb-permute rounds in the pre-alpha observed
     /// transcript prefix (metadata ‖ main-trace commitment ‖ public values), from the zero boundary.
     /// The last round's squeeze produces `alpha`. MUST be >= 1 (the native challenger always permutes
     /// before the first sample, so the alpha squeeze source is always `permute(absorb(...))`, never
     /// the un-permuted zero boundary). Only consumed when `fs_alpha_zeta`.
     pub fs_pre_alpha_rounds: usize,
-    /// (FS-αζ) bind each FS round's absorbed block (the `fs_pre_alpha_rounds` pre-alpha rounds plus
-    /// the single quotient-observe round) to public-value columns (the committed transcript), exactly
+    /// (FS-αζ-partial) Number of rate lanes (`0..RATE`) in one trailing partial pre-alpha
+    /// observe round after the full `fs_pre_alpha_rounds`. The native challenger buffers these
+    /// leftovers and absorbs them when sampling alpha. Zero means the pre-alpha stream is
+    /// rate-aligned. The partial block is the next entry in `WindowInputs::fs_blocks`.
+    pub fs_pre_alpha_partial: usize,
+    /// (FS-αζ) Number of full rate-7 quotient/random-commitment observe rounds between alpha
+    /// and zeta. The production ZK proof observes more than one digest-width commitment here.
+    /// Must be at least one when `fs_alpha_zeta` unless a trailing partial round is present.
+    pub fs_quotient_rounds: usize,
+    /// (FS-αζ-partial) Number of rate lanes (`0..RATE`) in one trailing partial quotient
+    /// observe round after `fs_quotient_rounds` full rounds. Zero means the quotient stream is
+    /// rate-aligned. Its block is the final entry in `WindowInputs::fs_blocks`.
+    pub fs_quotient_partial: usize,
+    /// (FS-αζ) bind each FS round's absorbed block (all full/partial pre-alpha and quotient
+    /// rounds) to public-value columns (the committed transcript), exactly
     /// like `prefix_blocks_public` does for the index-draw chain. When `true` and the public-values
-    /// vector is exactly `(fs_pre_alpha_rounds + 1) * RATE` long, element `r*RATE + i` pins FS round
-    /// `r`'s absorbed block lane `i` (rounds `0..fs_pre_alpha_rounds` are the pre-alpha prefix, round
-    /// `fs_pre_alpha_rounds` is the quotient commitment). Ties the FS squeeze to the ACTUAL observed
+    /// vector is exactly `fs_total_rounds * RATE` long, element `r*RATE + i` pins FS round
+    /// `r`'s absorbed block lane `i` (all configured pre-alpha rounds followed by quotient rounds).
+    /// Ties the FS squeeze to the ACTUAL observed
     /// inner commitments + public digest, so a forger cannot fix alpha/zeta independent of the
     /// statement. Off ⇒ blocks committed-but-unbound (the squeeze mechanics are still constrained).
     pub fs_blocks_public: bool,
@@ -380,7 +392,7 @@ pub struct RecursiveConfig {
     /// squeeze to the ACTUAL observed fold-round commitments. Off ⇒ blocks committed-but-unbound (the
     /// squeeze mechanics are still constrained).
     pub fs_betas_public: bool,
-    /// (FS-ood) Number of FULL-rate (RATE=8 elements) OOD opened-values OBSERVE rounds inserted
+    /// (FS-ood) Number of full rate-7 OOD opened-values observe rounds inserted
     /// BETWEEN the zeta squeeze and the FRI batch-combination alpha squeeze. p3-uni-stark's pcs.verify
     /// observes the ENTIRE opened-values (OOD) stream — trace OOD openings at zeta (+ g·zeta),
     /// quotient-chunk OOD openings, and the ZK random-codeword openings — AFTER sampling zeta and
@@ -404,10 +416,16 @@ pub struct RecursiveConfig {
     /// start state is THIS partial-absorb permute output. `0` ⇒ no trailing partial. Requires
     /// `fs_alpha_zeta`.
     pub fs_ood_partial: usize,
+    /// Use a vertically proven OOD transcript stream. The member window carries only the public
+    /// terminal sponge state; its start is constrained to the post-zeta state and its endpoint
+    /// binding is folded into the verified member root. Mutually exclusive with horizontal
+    /// `fs_ood_observe_len/fs_ood_partial` rounds.
+    pub fs_ood_external: bool,
     /// (FS-bca) model the FRI BATCH-COMBINATION alpha (p3-fri-0.6.1 verifier.rs:195): the
     /// `sample_algebra_element()` taken AFTER zeta and BEFORE the first commit-phase observe, with NO
     /// observe in between. Because zeta drained the output buffer, this sample triggers a SQUEEZE-ONLY
-    /// duplexing of the post-zeta state; the batch-combo alpha is its top-8 LIFO pops. When `true` the
+    /// duplexing of the post-zeta state; the batch-combo alpha spans the buffered rate-7 outputs and
+    /// the next constrained refill. When `true` the
     /// window carries (after the FS-αζ block, before the FS-β block) a `perm[PERM_COLS] ‖ alpha[D]`
     /// squeeze block, and the (FS-β) beta chain CONTINUES FROM THIS permute output instead of straight
     /// from the post-zeta state — the draw-count shift the betas must thread to stay native-correct.
@@ -469,7 +487,7 @@ pub struct RecursiveConfig {
     /// commit-phase round `r = 0..layer_open_rounds`, the window carries that round's FRI-layer
     /// commitment `layer_commit_r[DIGEST_ELEMS]` (a BOUND recursion input, like `inner_main_commit`)
     /// plus the full [`crate::fri_layer_air::FriLayerOpenAir`] residual — flattened arity-2 pair,
-    /// salt, the `MyHash(pair ‖ salt)` leaf-hash perms, and `layer_open_levels` Merkle path levels —
+    /// salt, the `MyHash(pair ‖ salt)` leaf-hash perms, and the round's configured Merkle path levels —
     /// authenticating round `r`'s opened SIBLING at the FS query index shifted by `r`
     /// (`folded_index_r = FS_index >> r`; per-level selectors bound to FS-index bits) against
     /// `layer_commit_r`. The authenticated `e_fold` is bound to the descent's `round_e0(r)` and the
@@ -478,10 +496,16 @@ pub struct RecursiveConfig {
     /// `layer_commit_r` != the real round-r commitment rejects; cross-round confusion (round `r`'s
     /// sibling/commit used in round `r'`) rejects. 0 = off. Requires `num_rounds >= layer_open_rounds`.
     pub layer_open_rounds: usize,
-    /// (LO) Number of Merkle path levels per per-round layer open (the FRI-layer tree depth). Each
-    /// level's selector bit is bound to FS-index bit `r+1+level`. Only consumed when
-    /// `layer_open_rounds > 0`.
+    /// (LO) Number of Merkle path levels in round 0. Each level's selector bit is bound to
+    /// FS-index bit `r+1+level`. Later rounds use
+    /// `layer_open_levels - r * layer_open_level_step`; production binary FRI therefore sets
+    /// `(layer_open_levels, layer_open_level_step) = (log_height - 1, 1)` and authenticates the
+    /// real decreasing tree depths rather than padding a shorter path to the first round's depth.
+    /// Only consumed when `layer_open_rounds > 0`.
     pub layer_open_levels: usize,
+    /// (LO) Per-round decrease in the FRI-layer Merkle depth. Zero preserves the fixed-depth test
+    /// and compatibility profiles; one matches the production binary-fold schedule.
+    pub layer_open_level_step: usize,
     /// (FP) ENFORCE the FRI final-polynomial check INSIDE the descent: bind the fully-folded value
     /// after the last commit-phase round (`round_folded(rounds-1)`) to a committed final polynomial
     /// evaluated at a query point `x` (p3-fri verifier.rs:402-409, `folded == Σ coeff·x^k`). When
@@ -490,14 +514,14 @@ pub struct RecursiveConfig {
     /// tampered final-poly coefficient, rejects. 0 = off.
     pub final_poly_len: usize,
     /// (b-hash) DERIVE the Merkle level-0 leaf digest IN-AIR as `MyHash(opened_row ‖ salt)` via the
-    /// inlined Poseidon2 `PaddingFreeSponge` (`config::MyHash = PaddingFreeSponge<Perm,16,8,8>`),
+    /// inlined Poseidon2 `PaddingFreeSponge` (`config::MyHash = PaddingFreeSponge<Perm,16,7,13>`),
     /// instead of accepting the level-0 running as a free supplied digest. When `> 0` it is the
     /// length of the opened main-trace ROW (in `Val` elements); the window carries a leaf-hash block
     /// (the `leaf_row_len` row cells ‖ `SALT_ELEMS` salt cells ‖ one Poseidon2 perm per sponge
     /// absorb-permute) and CONSTRAINS the sponge output digest (8 lanes) EQUAL to the Merkle level-0
     /// running, limb-for-limb. The sponge is the deployed `MerkleTreeHidingMmcs` leaf hashing
     /// EXACTLY: state starts all-zero, input is `row ‖ salt` (the hiding MMCS appends `SALT_ELEMS`
-    /// salt elems after the row), absorbed in RATE=8 overwrite blocks, permuted after each full
+    /// salt elems after the row), absorbed in leaf-hash-rate overwrite blocks, permuted after each full
     /// block, with a final permute for a trailing partial block. Requires `merkle_levels > 0`. With
     /// `bind_merkle_leaf_to_e0` this means the value FRI folds (e0) is `MyHash(row)` of the opened
     /// row — the Merkle path authenticates `H(row)`, not a free digest. 0 = off (the level-0 running
@@ -662,11 +686,15 @@ impl RecursiveConfig {
             bind_merkle_leaf_to_e0: false,
             fs_alpha_zeta: false,
             fs_pre_alpha_rounds: 0,
+            fs_pre_alpha_partial: 0,
+            fs_quotient_rounds: 1,
+            fs_quotient_partial: 0,
             fs_blocks_public: false,
             fs_beta_rounds: 0,
             fs_betas_public: false,
             fs_ood_observe_len: 0,
             fs_ood_partial: 0,
+            fs_ood_external: false,
             fs_batch_combo_alpha: false,
             fs_final_blocks: 0,
             fs_final_blocks_public: false,
@@ -675,6 +703,7 @@ impl RecursiveConfig {
             bind_root_to_main_commit: false,
             layer_open_rounds: 0,
             layer_open_levels: 0,
+            layer_open_level_step: 0,
             final_poly_len: 0,
             leaf_row_len: 0,
             deep_e0_combine: 0,
@@ -711,12 +740,13 @@ impl RecursiveConfig {
 /// post-final-observe permute, then `ceil(N/RATE) - 1` squeeze-only refill permutes P1..P_{k-1} (each
 /// PINned to the deployed perm via `eval_perm`), and binds row r's index to
 /// `P_{r/RATE}.output[RATE-1-(r%RATE)]` via the one-hot over `draw_offset`. The refill chain is shared
-/// across rows (bound once, pinned equal). For `PROD_NUM_QUERIES = 56` this is `ceil(56/8) = 7` buckets
-/// (6 refill permutes). Honest end-to-end `check_all_constraints` validation is at `N = 16` (2 full
-/// buckets, crossing the 8→9 refill); the cross-bucket index FIDELITY-PIN vs the native
-/// `DuplexChallenger` is at `N = 12, 16`; the structure parameterizes to 56 (see
+/// across rows (bound once, pinned equal). For the deployed `PROD_NUM_QUERIES = 120` this is
+/// `ceil(120/7) = 18` buckets (17 refill permutes). Honest end-to-end
+/// `check_all_constraints` validation is at `N = 14` (2 full
+/// buckets, crossing the 7→8 refill); the cross-bucket index FIDELITY-PIN vs the native
+/// `DuplexChallenger` is at `N = 12, 16`; the structure parameterizes to the deployed count (see
 /// `fan_out_multi_refill_parameterizes_to_prod`).
-pub const PROD_NUM_QUERIES: usize = 56;
+pub const PROD_NUM_QUERIES: usize = descender_account_stark::PROD_NUM_QUERIES;
 
 // ----- shared monolithic column layout (one query window per row) -----
 //
@@ -906,16 +936,20 @@ fn public_io_base(cfg: &RecursiveConfig) -> usize {
 // Layout (appended after the public-IO block):
 //   [pre-alpha round 0]  block[RATE] ‖ perm[PERM_COLS]
 //   ...
-//   [pre-alpha round R-1] block[RATE] ‖ perm[PERM_COLS]      (R = fs_pre_alpha_rounds)
+//   [pre-alpha round R-1] block[RATE] ‖ perm[PERM_COLS]      (R = full + optional partial)
+//   alpha-squeeze perm[PERM_COLS]                             (limb 8 refill)
 //   alpha[D]                                                  (the SAMPLE alpha)
-//   [quotient round]      block[RATE] ‖ perm[PERM_COLS]       (observe quotient commitment)
+//   [quotient rounds]     block[RATE] ‖ perm[PERM_COLS]       (full + optional partial observes)
+//   zeta-squeeze perm[PERM_COLS]                              (limb 8 refill)
 //   zeta[D]                                                   (the SAMPLE zeta)
 //
-// Each round is a FULL-rate (n == RATE) absorb-permute, EXACTLY like the index-draw prefix chain
-// (`prefix_round_state`). `state_0 == ZERO` (new() boundary); `state_k == permute(absorb(...))`.
-// alpha is the LIFO squeeze of the last pre-alpha round's permute (8 base draws =
-// `sample_algebra_element`); the quotient round absorbs into THAT permute's output sponge state
-// (sampling does not change sponge_state); zeta is the LIFO squeeze of the quotient round's permute.
+// Each round is an absorb-permute with n == RATE for full rounds and the configured n < RATE for a
+// trailing partial round. `state_0 == ZERO` (new() boundary); `state_k == permute(absorb(...))`.
+// A degree-8 challenge spans two rate-7 output blocks. Limbs 0..7 are the LIFO
+// pops of the last absorb-permute; limb 7 is the first LIFO pop of a constrained
+// squeeze-only permutation. The quotient round therefore absorbs into the
+// post-alpha-squeeze state, and later transcript blocks continue from the
+// post-zeta-squeeze state.
 
 /// One FS round sub-block: `block[RATE] ‖ perm[PERM_COLS]` (reuses the prefix-chain shape).
 const FS_BLOCK: usize = 0;
@@ -927,36 +961,69 @@ fn fs_base(cfg: &RecursiveConfig) -> usize {
     public_io_base(cfg) + cfg.public_io_len * PIO_STRIDE
 }
 
-/// Total FS rounds laid out: `fs_pre_alpha_rounds` pre-alpha rounds + 1 quotient-observe round.
-fn fs_total_rounds(cfg: &RecursiveConfig) -> usize {
-    cfg.fs_pre_alpha_rounds + 1
+fn fs_pre_total_rounds(cfg: &RecursiveConfig) -> usize {
+    cfg.fs_pre_alpha_rounds + usize::from(cfg.fs_pre_alpha_partial > 0)
 }
 
-/// Sub-offset of FS round `r` (0-based: rounds `0..fs_pre_alpha_rounds` are the pre-alpha prefix,
-/// round `fs_pre_alpha_rounds` is the quotient-observe round) within the FS block.
+fn fs_quot_total_rounds(cfg: &RecursiveConfig) -> usize {
+    cfg.fs_quotient_rounds + usize::from(cfg.fs_quotient_partial > 0)
+}
+
+fn fs_pre_round_n(cfg: &RecursiveConfig, r: usize) -> usize {
+    if cfg.fs_pre_alpha_partial > 0 && r == cfg.fs_pre_alpha_rounds {
+        cfg.fs_pre_alpha_partial
+    } else {
+        RATE
+    }
+}
+
+fn fs_quot_round_n(cfg: &RecursiveConfig, r: usize) -> usize {
+    if cfg.fs_quotient_partial > 0 && r == cfg.fs_quotient_rounds {
+        cfg.fs_quotient_partial
+    } else {
+        RATE
+    }
+}
+
+/// Total FS rounds laid out across pre-alpha and quotient observation streams.
+fn fs_total_rounds(cfg: &RecursiveConfig) -> usize {
+    fs_pre_total_rounds(cfg) + fs_quot_total_rounds(cfg)
+}
+
+/// Sub-offset of pre-alpha FS round `r` within the FS block.
 fn fs_round_base(cfg: &RecursiveConfig, r: usize) -> usize {
     fs_base(cfg) + r * FS_ROUND
 }
 
 /// Sub-offset of the `alpha[D]` cell (after the pre-alpha rounds, before the quotient round).
 fn fs_alpha(cfg: &RecursiveConfig) -> usize {
-    fs_base(cfg) + cfg.fs_pre_alpha_rounds * FS_ROUND
+    fs_alpha_squeeze(cfg) + PERM_COLS
 }
 
-/// Sub-offset of the quotient-observe round (after the alpha cell).
-fn fs_quot_round_base(cfg: &RecursiveConfig) -> usize {
-    fs_alpha(cfg) + D
+/// Squeeze-only permutation supplying alpha limb 7.
+fn fs_alpha_squeeze(cfg: &RecursiveConfig) -> usize {
+    fs_base(cfg) + fs_pre_total_rounds(cfg) * FS_ROUND
+}
+
+/// Sub-offset of quotient-observe round `r` (after the alpha cell).
+fn fs_quot_round_base(cfg: &RecursiveConfig, r: usize) -> usize {
+    fs_alpha(cfg) + D + r * FS_ROUND
 }
 
 /// Sub-offset of the `zeta[D]` cell (after the quotient round).
 fn fs_zeta(cfg: &RecursiveConfig) -> usize {
-    fs_quot_round_base(cfg) + FS_ROUND
+    fs_zeta_squeeze(cfg) + PERM_COLS
+}
+
+/// Squeeze-only permutation supplying zeta limb 7.
+fn fs_zeta_squeeze(cfg: &RecursiveConfig) -> usize {
+    fs_quot_round_base(cfg, fs_quot_total_rounds(cfg))
 }
 
 /// Size of the (FS-αζ) block: (R+1) rounds + alpha[D] + zeta[D].
 fn fs_size(cfg: &RecursiveConfig) -> usize {
     if cfg.fs_alpha_zeta {
-        fs_total_rounds(cfg) * FS_ROUND + 2 * D
+        fs_total_rounds(cfg) * FS_ROUND + 2 * PERM_COLS + 2 * D
     } else {
         0
     }
@@ -1016,7 +1083,7 @@ fn food_round_n(cfg: &RecursiveConfig, r: usize) -> usize {
 /// Whether the (FS-ood) OOD observe block is present (any full or partial round).
 #[allow(dead_code)]
 fn food_present(cfg: &RecursiveConfig) -> bool {
-    food_total_rounds(cfg) > 0
+    food_total_rounds(cfg) > 0 || cfg.fs_ood_external
 }
 
 /// Size of the (FS-ood) block: `food_total_rounds` rounds.
@@ -1030,10 +1097,12 @@ fn food_size(cfg: &RecursiveConfig) -> usize {
 /// the post-zeta state (the quotient-observe round's perm output; sampling zeta is non-mutating).
 #[allow(dead_code)]
 fn pre_bca_state_out_base(cfg: &RecursiveConfig) -> usize {
-    if food_present(cfg) {
+    if cfg.fs_ood_external {
+        eood_base(cfg) + EOOD_END
+    } else if food_total_rounds(cfg) > 0 {
         food_round_base(cfg, food_total_rounds(cfg) - 1) + FOOD_PERM + C_OUTPUT
     } else {
-        fs_quot_round_base(cfg) + FS_PERM + C_OUTPUT
+        fs_zeta_squeeze(cfg) + C_OUTPUT
     }
 }
 
@@ -1043,8 +1112,10 @@ fn pre_bca_state_out_base(cfg: &RecursiveConfig) -> usize {
 //   perm[PERM_COLS] ‖ alpha[D]
 // `perm`'s input is the post-OOD-observe state UNCHANGED (no rate overwrite, no length tag — a
 // squeeze, not an absorb); when no OOD observe is configured this is the post-zeta state. alpha is the
-// LIFO squeeze of `perm`'s output rate. The (FS-β) beta chain's state_0 is THIS perm output — the
-// draw-count shift.
+// rate-7 alpha limbs first consume the currently buffered output (seven values
+// after OOD observe, or the six values left by zeta when the legacy no-OOD
+// model is selected); the remaining limb(s) come from this permutation. The
+// (FS-β) beta chain's state_0 is THIS perm output.
 const BCA_PERM: usize = 0;
 const BCA_ALPHA: usize = BCA_PERM + PERM_COLS;
 const BCA_SIZE: usize = BCA_ALPHA + D;
@@ -1071,10 +1142,10 @@ fn bca_size(cfg: &RecursiveConfig) -> usize {
 // where state_0 is the post-BATCH-COMBO-ALPHA state (when `fs_batch_combo_alpha`) or the post-zeta
 // state (otherwise) and state_{r+1} is round r's perm output; beta_r is the LIFO squeeze of round r's
 // perm output rate. Each beta_r is bound to the (c) descent round_beta(r) cell.
-// q128: a FRI commit-phase commitment is a DIGEST_ELEMS-wide Merkle root observed over the rate-8
-// challenger as a FULL rate block + a trailing PARTIAL block (FB_NPERM = ceil(13/8) = 2 permutes per
-// round), mirroring `fs_observe::fs_squeeze_betas_digest`. beta_r is the LIFO squeeze of the LAST
-// permute's rate. (Deployed digest-8 used ONE rate block / one permute per round.)
+// q128: a FRI commit-phase commitment is a DIGEST_ELEMS-wide Merkle root observed over the rate-7
+// challenger as a full block plus a trailing partial block (FB_NPERM = ceil(13/7) = 2 absorb
+// permutes), followed by one squeeze-only permutation for extension limb eight. This mirrors
+// `fs_observe::fs_squeeze_betas_digest`.
 const FB_COMMIT: usize = 0;
 const FB_PERM0: usize = FB_COMMIT + DIGEST_ELEMS;
 /// Number of absorb-permutes per round = full RATE blocks + a trailing partial (if any).
@@ -1082,7 +1153,9 @@ const FB_NPERM: usize = DIGEST_ELEMS.div_ceil(RATE);
 /// Number of full RATE blocks; the remaining `FB_REM` elements are the trailing partial absorb.
 const FB_FULL: usize = DIGEST_ELEMS / RATE;
 const FB_REM: usize = DIGEST_ELEMS % RATE;
-const FB_BETA: usize = FB_PERM0 + FB_NPERM * PERM_COLS;
+/// Squeeze-only permutation supplying beta limb 7 after the digest absorb.
+const FB_SQUEEZE: usize = FB_PERM0 + FB_NPERM * PERM_COLS;
+const FB_BETA: usize = FB_SQUEEZE + PERM_COLS;
 const FB_ROUND: usize = FB_BETA + D;
 
 /// Absolute sub-offset of round-`r` permute block `k` (relative to the round base).
@@ -1091,6 +1164,11 @@ const fn fb_perm(k: usize) -> usize {
 }
 /// Sub-offset of the round's post-state (last permute output) relative to the round base.
 const fn fb_post_perm_output() -> usize {
+    FB_SQUEEZE + C_OUTPUT
+}
+
+/// Output of the final digest-absorb permutation, which supplies beta limbs 0..6.
+const fn fb_sample_source_output() -> usize {
     FB_PERM0 + (FB_NPERM - 1) * PERM_COLS + C_OUTPUT
 }
 /// Absorb length of round-block `k`: full `RATE`, except the trailing partial block (`FB_REM`).
@@ -1279,9 +1357,21 @@ fn lo_base(cfg: &RecursiveConfig) -> usize {
     mc_base(cfg) + mc_size(cfg)
 }
 
+/// Merkle depth of FRI commit-phase opening `r`.
+pub const fn layer_open_levels_for_round(cfg: &RecursiveConfig, r: usize) -> usize {
+    cfg.layer_open_levels
+        .saturating_sub(r.saturating_mul(cfg.layer_open_level_step))
+}
+
 /// Base of layer-open round `r`'s sub-block within the window.
 fn lo_round_base(cfg: &RecursiveConfig, r: usize) -> usize {
-    lo_base(cfg) + r * lo_round_size(cfg.layer_open_levels)
+    let mut offset = lo_base(cfg);
+    let mut round = 0;
+    while round < r {
+        offset += lo_round_size(layer_open_levels_for_round(cfg, round));
+        round += 1;
+    }
+    offset
 }
 
 /// Offset of layer-open round `r`'s Merkle level `level`.
@@ -1292,7 +1382,13 @@ fn lo_level_base(cfg: &RecursiveConfig, r: usize, level: usize) -> usize {
 /// Size of the (LO) block: `layer_open_rounds` sub-blocks. 0 unless enabled.
 fn lo_size(cfg: &RecursiveConfig) -> usize {
     if cfg.layer_open_rounds > 0 {
-        cfg.layer_open_rounds * lo_round_size(cfg.layer_open_levels)
+        let mut size = 0;
+        let mut round = 0;
+        while round < cfg.layer_open_rounds {
+            size += lo_round_size(layer_open_levels_for_round(cfg, round));
+            round += 1;
+        }
+        size
     } else {
         0
     }
@@ -1368,12 +1464,52 @@ pub fn final_poly_eval(x: Val, coeffs: &[Challenge]) -> Challenge {
     eval
 }
 
-/// The (alpha, zeta) the inline FS challenger squeezes for `fs_blocks` (the observed transcript:
+/// Sample one degree-8 extension element when `state[..RATE]` is a freshly
+/// refilled duplex output buffer. ADR-0011 uses RATE=7, so limbs 0..6 are
+/// popped from `state[6..=0]`, limb 7 triggers one squeeze-only permutation,
+/// and the returned continuation state is that permutation's output.
+pub fn squeeze_extension_from_ready(state: [Val; WIDTH]) -> (Challenge, [Val; WIDTH]) {
+    debug_assert_eq!(RATE, 7, "ADR-0011 recursive transcript must use rate 7");
+    debug_assert_eq!(D, 8, "account challenge extension degree must remain 8");
+    let next = squeeze_permute_state(state);
+    let challenge = Challenge::from_basis_coefficients_fn(|i| {
+        if i < RATE {
+            state[RATE - 1 - i]
+        } else {
+            next[RATE - 1 - (i - RATE)]
+        }
+    });
+    (challenge, next)
+}
+
+/// Sample a degree-8 extension element with `available` LIFO outputs still
+/// buffered from `state`. The remaining limbs come from one constrained
+/// squeeze-only permutation. This covers the no-observe zeta→BCA handoff,
+/// where zeta leaves six outputs, as well as a freshly refilled output buffer.
+pub fn squeeze_extension_with_available(
+    state: [Val; WIDTH],
+    available: usize,
+) -> (Challenge, [Val; WIDTH]) {
+    assert!((1..=RATE).contains(&available));
+    assert!(D - available <= RATE);
+    let next = squeeze_permute_state(state);
+    let challenge = Challenge::from_basis_coefficients_fn(|i| {
+        if i < available {
+            state[available - 1 - i]
+        } else {
+            next[RATE - 1 - (i - available)]
+        }
+    });
+    (challenge, next)
+}
+
+/// Legacy full-block convenience wrapper for the (alpha, zeta) the inline FS challenger squeezes
+/// for `fs_blocks` (the observed transcript:
 /// `fs_pre_alpha_rounds` pre-alpha FULL-rate blocks + 1 quotient-commitment block), in p3 order:
 /// observe pre-alpha prefix → SAMPLE alpha → observe quotient → SAMPLE zeta. The single source the
 /// honest builder DERIVES alpha/zeta from and the (FS-αζ) AIR binding is checked against. The 8
-/// `sample()` calls of `sample_algebra_element` map to LIFO pops `output[RATE-1-i]` (challenge limb
-/// `i` = `sample()` call `i`).
+/// `sample()` calls of `sample_algebra_element` map to LIFO pops across the initial rate-7 output
+/// and its constrained squeeze refill.
 pub fn fs_squeeze_alpha_zeta(
     pre_alpha_blocks: &[[Val; RATE]],
     quot_block: [Val; RATE],
@@ -1388,11 +1524,11 @@ pub fn fs_squeeze_alpha_zeta(
     );
     // pre-alpha absorb chain from the zero boundary.
     let pre_state = prefix_chain_state(pre_alpha_blocks);
-    // alpha = squeeze of the last pre-alpha permute = the rate of pre_state (LIFO pops).
-    let alpha = Challenge::from_basis_coefficients_fn(|i| pre_state[RATE - 1 - i]);
-    // observe(quotient): one FULL-rate absorb-permute into pre_state (sampling did not change it).
-    let post_state = prefix_round_state(pre_state, quot_block);
-    let zeta = Challenge::from_basis_coefficients_fn(|i| post_state[RATE - 1 - i]);
+    let (alpha, post_alpha_state) = squeeze_extension_from_ready(pre_state);
+    // observe(quotient) clears alpha's six buffered outputs, absorbs into the
+    // post-alpha squeeze state, and refills a fresh rate-7 output buffer.
+    let quotient_state = prefix_round_state(post_alpha_state, quot_block);
+    let (zeta, _) = squeeze_extension_from_ready(quotient_state);
     (alpha, zeta)
 }
 
@@ -1411,7 +1547,46 @@ pub fn fs_post_zeta_state(
         "fs_post_zeta_state requires >= 1 pre-alpha round"
     );
     let pre_state = prefix_chain_state(pre_alpha_blocks);
-    prefix_round_state(pre_state, quot_block)
+    let (_, post_alpha_state) = squeeze_extension_from_ready(pre_state);
+    let quotient_state = prefix_round_state(post_alpha_state, quot_block);
+    squeeze_extension_from_ready(quotient_state).1
+}
+
+/// Generalized alpha/zeta transcript for the monolithic AIR. `fs_blocks` is ordered as all
+/// pre-alpha full blocks, optional trailing pre-alpha partial block, all quotient full blocks, and
+/// optional trailing quotient partial block. Returns `(alpha, zeta, post_zeta_state)`.
+fn fs_alpha_zeta_from_config(
+    cfg: &RecursiveConfig,
+    fs_blocks: &[[Val; RATE]],
+) -> (Challenge, Challenge, [Val; WIDTH]) {
+    assert!(cfg.fs_pre_alpha_partial < RATE);
+    assert!(cfg.fs_quotient_partial < RATE);
+    let pre_total = fs_pre_total_rounds(cfg);
+    let quot_total = fs_quot_total_rounds(cfg);
+    assert!(
+        pre_total > 0,
+        "FS alpha requires a non-empty pre-alpha stream"
+    );
+    assert!(
+        quot_total > 0,
+        "FS zeta requires a non-empty quotient stream"
+    );
+    assert_eq!(
+        fs_blocks.len(),
+        pre_total + quot_total,
+        "fs_blocks must contain every full/partial pre-alpha and quotient round"
+    );
+
+    let mut state = [Val::ZERO; WIDTH];
+    for (r, block) in fs_blocks[..pre_total].iter().enumerate() {
+        state = absorb_round_state(state, *block, fs_pre_round_n(cfg, r));
+    }
+    let (alpha, mut state) = squeeze_extension_from_ready(state);
+    for (r, block) in fs_blocks[pre_total..].iter().enumerate() {
+        state = absorb_round_state(state, *block, fs_quot_round_n(cfg, r));
+    }
+    let (zeta, state) = squeeze_extension_from_ready(state);
+    (alpha, zeta, state)
 }
 
 /// The post-OOD-OBSERVE sponge state — the bca / first-beta-round continuation point when the OOD
@@ -1459,17 +1634,20 @@ pub fn squeeze_permute_state(state: [Val; WIDTH]) -> [Val; WIDTH] {
 }
 
 /// The FRI batch-combination alpha (p3-fri-0.6.1 verifier.rs:195) and the post-alpha sponge state,
-/// CONTINUING from the post-zeta state. The PCS samples zeta (8 LIFO pops, draining the output
-/// buffer), then the FRI verifier IMMEDIATELY samples `alpha = challenger.sample_algebra_element()`
+/// CONTINUING from the post-zeta state. The PCS samples zeta (eight limbs across the rate-7 output
+/// and one squeeze-only refill), then the FRI verifier IMMEDIATELY samples
+/// `alpha = challenger.sample_algebra_element()`
 /// with NO observe in between. Because the output buffer is empty (zeta drained it) AND the input
 /// buffer is empty (zeta drained that on its first pop), this `sample()` triggers a SQUEEZE-ONLY
-/// duplexing of the post-zeta state; the batch-combo alpha is the 8 LIFO pops of THAT permute's rate.
+/// duplexing of the post-zeta state; the batch-combo alpha is eight limbs across THAT rate-7 output
+/// and its constrained squeeze-only refill.
 /// The returned state is `permute(post_zeta_state)` — the new continuation point for the betas (the
 /// "draw-count shift" the betas must thread, since beta_0 now absorbs into THIS state, not post-zeta).
 pub fn fs_squeeze_batch_combo_alpha(post_zeta_state: [Val; WIDTH]) -> (Challenge, [Val; WIDTH]) {
-    let state = squeeze_permute_state(post_zeta_state);
-    let alpha = Challenge::from_basis_coefficients_fn(|i| state[RATE - 1 - i]);
-    (alpha, state)
+    // Zeta consumed one limb from `post_zeta_state` and left RATE-1 outputs
+    // buffered. With no intervening observe, the batch-combination challenge
+    // consumes those six outputs before the next squeeze-only permutation.
+    squeeze_extension_with_available(post_zeta_state, RATE - (D - RATE))
 }
 
 /// SQUEEZE the FRI commit-phase folding challenges `beta_0 .. beta_{R-1}` CONTINUING from
@@ -1493,10 +1671,9 @@ pub fn fs_squeeze_betas(
     for block in commit_blocks {
         // observe(commit_phase_commit_r): one FULL-rate absorb-permute into the carried state.
         state = prefix_round_state(state, *block);
-        // sample beta_r: LIFO squeeze of this round's permute output rate.
-        betas.push(Challenge::from_basis_coefficients_fn(|i| {
-            state[RATE - 1 - i]
-        }));
+        let (beta, post_beta_state) = squeeze_extension_from_ready(state);
+        betas.push(beta);
+        state = post_beta_state;
     }
     (betas, state)
 }
@@ -1576,7 +1753,7 @@ pub fn fs_squeeze_query_p0_state(
 // ----- (b-hash) leaf-row hashing block (PaddingFreeSponge MyHash) -----
 //
 // Appended AFTER the (a-root) block. Computes the Merkle level-0 leaf digest IN-AIR as
-// `MyHash(opened_row ‖ salt)` (the deployed `PaddingFreeSponge<Perm,16,8,8>` over the salted leaf
+// `MyHash(opened_row ‖ salt)` (the deployed `PaddingFreeSponge<Perm,16,7,13>` over the salted leaf
 // row), so the level-0 running is no longer a free supplied digest. Layout:
 //   row[leaf_row_len] ‖ salt[SALT_ELEMS] ‖ perm_0[PERM_COLS] ‖ ... ‖ perm_{P-1}[PERM_COLS]
 // where `P = lh_perms(...)` is the sponge's absorb-permute count. Perm k's input is the absorbed
@@ -1949,7 +2126,7 @@ pub fn quotient_reduced_e0(
 // output this row's query index is). Constrained to 0 on the first row and to increment by 1 each
 // transition.
 //
-// MULTI-REFILL squeeze chain (the within-RATE → 56-query scale): p3-fri samples the N query indices as
+// MULTI-REFILL squeeze chain (the within-RATE → production-query scale): p3-fri samples the N query indices as
 // N successive `sample_bits` draws off the SAME post-grinding `DuplexChallenger` (verifier.rs:351-353).
 // Each `sample()` pops the output buffer LIFO; WHEN THE BUFFER EMPTIES (every RATE pops) the next
 // `sample()` triggers a SQUEEZE-ONLY `duplexing()` (permute the sponge state with an EMPTY input buffer
@@ -2030,9 +2207,41 @@ fn pow_bits_size(cfg: &RecursiveConfig) -> usize {
     }
 }
 
+// ----- external vertical OOD endpoint binding -----------------------------------------------
+// start[16] ‖ end[16] ‖ MyHash(start ‖ end) perms ‖
+// Merkle-node(root ‖ endpoint_digest) perms. The final node digest is the verified member root
+// consumed by BlockRecursiveAir when `fs_ood_external` is enabled.
+const EOOD_START: usize = 0;
+const EOOD_END: usize = EOOD_START + WIDTH;
+const EOOD_HASH: usize = EOOD_END + WIDTH;
+const EOOD_INPUT_LEN: usize = 2 * WIDTH;
+const EOOD_HASH_PERMS: usize = EOOD_INPUT_LEN.div_ceil(LEAF_HASH_RATE);
+const EOOD_AUGMENT: usize = EOOD_HASH + EOOD_HASH_PERMS * PERM_COLS;
+const EOOD_SIZE: usize = EOOD_AUGMENT + N_PERM * PERM_COLS;
+
+fn eood_base(cfg: &RecursiveConfig) -> usize {
+    pow_bits_base(cfg) + pow_bits_size(cfg)
+}
+
+fn eood_size(cfg: &RecursiveConfig) -> usize {
+    usize::from(cfg.fs_ood_external) * EOOD_SIZE
+}
+
+fn eood_hash_perm(k: usize) -> usize {
+    EOOD_HASH + k * PERM_COLS
+}
+
+fn eood_digest_col(cfg: &RecursiveConfig) -> usize {
+    eood_base(cfg) + EOOD_HASH + (EOOD_HASH_PERMS - 1) * PERM_COLS + C_OUTPUT
+}
+
+fn eood_verified_root_col(cfg: &RecursiveConfig) -> usize {
+    eood_base(cfg) + EOOD_AUGMENT + (N_PERM - 1) * PERM_COLS + C_OUTPUT
+}
+
 /// Total column count for a window with this config.
 pub fn n_cols(cfg: &RecursiveConfig) -> usize {
-    pow_bits_base(cfg) + pow_bits_size(cfg)
+    eood_base(cfg) + eood_size(cfg)
 }
 
 /// The `j`-th tower column (`sp[j]`).
@@ -2091,9 +2300,10 @@ pub struct WindowInputs<'a> {
     /// DERIVED from the FS transcript (`fs_squeeze_alpha_zeta`), so the bus carries the genuine FS
     /// challenges. When `fs_alpha_zeta` is off this is the committed alpha (unconstrained by FS).
     pub deep_alpha: Challenge,
-    /// (FS-αζ) the observed transcript blocks for the FS squeeze: `fs_pre_alpha_rounds` pre-alpha
-    /// FULL-rate blocks (metadata ‖ trace commitment ‖ public values) followed by ONE quotient-
-    /// commitment block. Length must equal `fs_pre_alpha_rounds + 1` when `fs_alpha_zeta`. The
+    /// (FS-αζ) the observed transcript blocks for the FS squeeze: configured full pre-alpha
+    /// blocks plus an optional trailing partial, followed by configured full quotient/random-
+    /// commitment blocks plus an optional trailing partial. Length must equal `fs_total_rounds`
+    /// when `fs_alpha_zeta`. Unused lanes of a partial block must be zero. The
     /// honest builder DERIVES alpha/zeta + the per-round perm blocks from these. Unused otherwise.
     pub fs_blocks: &'a [[Val; RATE]],
     /// (a-FS) the pre-squeeze sponge state whose permutation produces the index draw. When
@@ -2300,7 +2510,13 @@ pub fn absorb_state(prior_state: [Val; WIDTH], absorbed: [Val; RATE], n: usize) 
 /// [`crate::challenger::RowChallenger::observe`] triggers when the input buffer fills to RATE. The
 /// returned state is the post-permute sponge (the `state_k` carried into the next round).
 pub fn prefix_round_state(state_prev: [Val; WIDTH], block: [Val; RATE]) -> [Val; WIDTH] {
-    let pre = absorb_state(state_prev, block, RATE);
+    absorb_round_state(state_prev, block, RATE)
+}
+
+/// One full or partial duplex absorb-permute round. This is the host reference used for transcript
+/// segments whose final buffered block has `n < RATE` elements.
+pub fn absorb_round_state(state_prev: [Val; WIDTH], block: [Val; RATE], n: usize) -> [Val; WIDTH] {
+    let pre = absorb_state(state_prev, block, n);
     let consts = inlined_perm::Constants::pinned();
     let cols = inlined_perm::generate_perm_cols(pre, &consts);
     inlined_perm::perm_output(&cols)
@@ -2345,7 +2561,7 @@ pub fn squeeze_draws(sponge_in: [Val; WIDTH], count: usize) -> Vec<Val> {
         .collect()
 }
 
-/// The `PaddingFreeSponge` (`config::MyHash = PaddingFreeSponge<Perm,16,8,8>`) absorb-permute
+/// The `PaddingFreeSponge` (`config::MyHash = PaddingFreeSponge<Perm,16,7,13>`) absorb-permute
 /// schedule over the salted leaf input `input` (= `opened_row ‖ salt`), mirroring
 /// `p3-symmetric` `PaddingFreeSponge::hash_iter` (sponge.rs:172-204) CONSTANT-FOR-CONSTANT:
 ///
@@ -2422,6 +2638,27 @@ pub fn pack_window_query(
     inp: &WindowInputs,
     query_ordinal: usize,
 ) -> Vec<Val> {
+    pack_window_query_inner(cfg, inp, query_ordinal, None)
+}
+
+/// Pack a member window whose production OOD transcript is proven vertically. `external_ood_end`
+/// is the terminal state exported by [`crate::ood_transcript_air::OodTranscriptAir`].
+pub fn pack_window_external_ood(
+    cfg: &RecursiveConfig,
+    inp: &WindowInputs,
+    query_ordinal: usize,
+    external_ood_end: [Val; WIDTH],
+) -> Vec<Val> {
+    assert!(cfg.fs_ood_external, "external OOD config required");
+    pack_window_query_inner(cfg, inp, query_ordinal, Some(external_ood_end))
+}
+
+fn pack_window_query_inner(
+    cfg: &RecursiveConfig,
+    inp: &WindowInputs,
+    query_ordinal: usize,
+    external_ood_end: Option<[Val; WIDTH]>,
+) -> Vec<Val> {
     let h = cfg.log_height;
     // (a-FS+++) when a transcript-prefix absorb chain feeds the duplex step, the duplex step's
     // prior_state is the chained output of absorbing the prefix blocks from the zero boundary; it
@@ -2459,12 +2696,25 @@ pub fn pack_window_query(
             cfg.fs_beta_rounds,
             "fs_beta_blocks must have fs_beta_rounds entries"
         );
-        let (pre, quot) = inp.fs_blocks.split_at(cfg.fs_pre_alpha_rounds);
-        let post_zeta = fs_post_zeta_state(pre, quot[0]);
-        let beta_start = if cfg.fs_batch_combo_alpha {
-            fs_squeeze_batch_combo_alpha(post_zeta).1
+        let post_zeta = fs_alpha_zeta_from_config(cfg, inp.fs_blocks).2;
+        let post_ood = if cfg.fs_ood_external {
+            external_ood_end.expect("external OOD terminal state required")
         } else {
-            post_zeta
+            fs_ood_observe_state(
+                post_zeta,
+                inp.fs_ood_blocks,
+                inp.fs_ood_partial_block,
+                cfg.fs_ood_partial,
+            )
+        };
+        let beta_start = if cfg.fs_batch_combo_alpha {
+            if food_present(cfg) {
+                squeeze_extension_from_ready(post_ood).1
+            } else {
+                fs_squeeze_batch_combo_alpha(post_zeta).1
+            }
+        } else {
+            post_ood
         };
         fs_squeeze_betas_digest(beta_start, inp.fs_beta_blocks)
     } else {
@@ -2598,11 +2848,11 @@ pub fn pack_window_query(
     let (deep_alpha, deep_zeta) = if cfg.fs_alpha_zeta {
         assert_eq!(
             inp.fs_blocks.len(),
-            cfg.fs_pre_alpha_rounds + 1,
-            "fs_blocks must have fs_pre_alpha_rounds + 1 entries"
+            fs_total_rounds(cfg),
+            "fs_blocks must contain all configured pre-alpha and quotient rounds"
         );
-        let (pre, quot) = inp.fs_blocks.split_at(cfg.fs_pre_alpha_rounds);
-        fs_squeeze_alpha_zeta(pre, quot[0])
+        let (alpha, zeta, _) = fs_alpha_zeta_from_config(cfg, inp.fs_blocks);
+        (alpha, zeta)
     } else {
         (inp.deep_alpha, inp.deep_zeta)
     };
@@ -2874,84 +3124,147 @@ pub fn pack_window_query(
         }
     }
 
-    // (FS-αζ) alpha/zeta FS-squeeze block: pre-alpha absorb chain ‖ alpha ‖ quotient round ‖ zeta.
-    // The same FULL-rate absorb-permute primitive as the index-draw prefix chain, but its squeezes
+    // (FS-αζ) alpha/zeta FS-squeeze block: pre-alpha observes ‖ alpha ‖ quotient observes ‖ zeta.
+    // Full rounds plus optional trailing partial rounds use the native duplex absorb semantics; their squeezes
     // produce the DEEP/batch combination challenge alpha (after the pre-alpha prefix) and the OOD
     // point zeta (after observing the quotient commitment), mirroring p3-uni-stark's FS order.
     if cfg.fs_alpha_zeta {
+        assert!(cfg.fs_pre_alpha_partial < RATE);
+        assert!(cfg.fs_quotient_partial < RATE);
+        let pre_total = fs_pre_total_rounds(cfg);
+        let quot_total = fs_quot_total_rounds(cfg);
         assert!(
-            cfg.fs_pre_alpha_rounds >= 1,
-            "fs_pre_alpha_rounds must be >= 1"
+            pre_total > 0,
+            "FS alpha requires a non-empty pre-alpha stream"
+        );
+        assert!(
+            quot_total > 0,
+            "FS zeta requires a non-empty quotient stream"
         );
         assert_eq!(
             inp.fs_blocks.len(),
-            cfg.fs_pre_alpha_rounds + 1,
-            "fs_blocks must have fs_pre_alpha_rounds + 1 entries"
+            pre_total + quot_total,
+            "fs_blocks must contain every full/partial pre-alpha and quotient round"
         );
         let consts = inlined_perm::Constants::pinned();
-        // pre-alpha rounds: state_0 = ZERO, state_k = permute(absorb(state_{k-1}, block_k, RATE)).
+        // Pre-alpha rounds start at the zero boundary; the optional final round uses n < RATE.
         let mut state = [Val::ZERO; WIDTH];
-        for r in 0..cfg.fs_pre_alpha_rounds {
+        for r in 0..pre_total {
             let block = inp.fs_blocks[r];
-            let pre = absorb_state(state, block, RATE);
+            let pre = absorb_state(state, block, fs_pre_round_n(cfg, r));
             let perm_cols = inlined_perm::generate_perm_cols(pre, &consts);
             let rb = fs_round_base(cfg, r);
             row[rb + FS_BLOCK..rb + FS_BLOCK + RATE].copy_from_slice(&block);
             row[rb + FS_PERM..rb + FS_PERM + PERM_COLS].copy_from_slice(&perm_cols);
             state = inlined_perm::perm_output(&perm_cols);
         }
-        // alpha = LIFO squeeze of the pre-alpha state's rate (the 8 sample() pops).
-        let alpha = Challenge::from_basis_coefficients_fn(|i| state[RATE - 1 - i]);
+        // alpha spans the pre-alpha output plus one constrained squeeze-only permutation.
+        let alpha_squeeze = inlined_perm::generate_perm_cols(state, &consts);
+        let asb = fs_alpha_squeeze(cfg);
+        row[asb..asb + PERM_COLS].copy_from_slice(&alpha_squeeze);
+        let alpha_post = inlined_perm::perm_output(&alpha_squeeze);
+        let alpha = Challenge::from_basis_coefficients_fn(|i| {
+            if i < RATE {
+                state[RATE - 1 - i]
+            } else {
+                alpha_post[RATE - 1 - (i - RATE)]
+            }
+        });
         let ab = fs_alpha(cfg);
         row[ab..ab + D].copy_from_slice(&limbs(alpha));
-        // quotient-observe round: absorb the quotient commitment into the (unchanged) post-alpha
-        // sponge state (sampling does not mutate sponge_state), then permute.
-        let quot_block = inp.fs_blocks[cfg.fs_pre_alpha_rounds];
-        let pre_q = absorb_state(state, quot_block, RATE);
-        let q_perm = inlined_perm::generate_perm_cols(pre_q, &consts);
-        let qb = fs_quot_round_base(cfg);
-        row[qb + FS_BLOCK..qb + FS_BLOCK + RATE].copy_from_slice(&quot_block);
-        row[qb + FS_PERM..qb + FS_PERM + PERM_COLS].copy_from_slice(&q_perm);
-        let post = inlined_perm::perm_output(&q_perm);
-        // zeta = LIFO squeeze of the quotient round's state rate.
-        let zeta = Challenge::from_basis_coefficients_fn(|i| post[RATE - 1 - i]);
+        // Quotient/random-commitment observes continue from the post-alpha squeeze state.
+        let mut post = alpha_post;
+        for r in 0..quot_total {
+            let block = inp.fs_blocks[pre_total + r];
+            let pre_q = absorb_state(post, block, fs_quot_round_n(cfg, r));
+            let q_perm = inlined_perm::generate_perm_cols(pre_q, &consts);
+            let qb = fs_quot_round_base(cfg, r);
+            row[qb + FS_BLOCK..qb + FS_BLOCK + RATE].copy_from_slice(&block);
+            row[qb + FS_PERM..qb + FS_PERM + PERM_COLS].copy_from_slice(&q_perm);
+            post = inlined_perm::perm_output(&q_perm);
+        }
+        let zeta_squeeze = inlined_perm::generate_perm_cols(post, &consts);
+        let zsb = fs_zeta_squeeze(cfg);
+        row[zsb..zsb + PERM_COLS].copy_from_slice(&zeta_squeeze);
+        let zeta_post = inlined_perm::perm_output(&zeta_squeeze);
+        let zeta = Challenge::from_basis_coefficients_fn(|i| {
+            if i < RATE {
+                post[RATE - 1 - i]
+            } else {
+                zeta_post[RATE - 1 - (i - RATE)]
+            }
+        });
         let zb = fs_zeta(cfg);
         row[zb..zb + D].copy_from_slice(&limbs(zeta));
         debug_assert_eq!(
             (alpha, zeta),
             {
-                let (pre, quot) = inp.fs_blocks.split_at(cfg.fs_pre_alpha_rounds);
-                fs_squeeze_alpha_zeta(pre, quot[0])
+                let (a, z, _) = fs_alpha_zeta_from_config(cfg, inp.fs_blocks);
+                (a, z)
             },
-            "FS block pack != fs_squeeze_alpha_zeta reference"
+            "FS block pack != generalized alpha/zeta transcript reference"
         );
     }
 
-    // (FS-bca) FRI batch-combination alpha squeeze block: a SINGLE squeeze-only permute (n == 0) of
-    // the post-zeta state, with NO observe (verifier.rs:195). alpha is its top-8 LIFO pops; the permute
-    // output is the new continuation point for the betas. Computed before the FS-β block so the betas
-    // thread from it.
+    // (FS-ood) Observe the opened-values stream after zeta. Any observe clears
+    // zeta's leftover output buffer; the final full/partial duplex output is the
+    // fresh source for the FRI batch-combination challenge.
     let beta_start_state: [Val; WIDTH] = if cfg.fs_beta_rounds > 0 {
-        let (pre, quot) = inp.fs_blocks.split_at(cfg.fs_pre_alpha_rounds);
-        let post_zeta = fs_post_zeta_state(pre, quot[0]);
+        let post_zeta = fs_alpha_zeta_from_config(cfg, inp.fs_blocks).2;
+        assert_eq!(
+            inp.fs_ood_blocks.len(),
+            cfg.fs_ood_observe_len,
+            "fs_ood_blocks must have fs_ood_observe_len entries"
+        );
+        let consts = inlined_perm::Constants::pinned();
+        let mut pre_bca = if cfg.fs_ood_external {
+            external_ood_end.expect("external OOD terminal state required")
+        } else {
+            post_zeta
+        };
+        for r in 0..food_total_rounds(cfg) {
+            let n = food_round_n(cfg, r);
+            let block = if cfg.fs_ood_partial > 0 && r == cfg.fs_ood_observe_len {
+                inp.fs_ood_partial_block
+            } else {
+                inp.fs_ood_blocks[r]
+            };
+            let perm_cols =
+                inlined_perm::generate_perm_cols(absorb_state(pre_bca, block, n), &consts);
+            let rb = food_round_base(cfg, r);
+            row[rb + FOOD_BLOCK..rb + FOOD_BLOCK + RATE].copy_from_slice(&block);
+            row[rb + FOOD_PERM..rb + FOOD_PERM + PERM_COLS].copy_from_slice(&perm_cols);
+            pre_bca = inlined_perm::perm_output(&perm_cols);
+        }
+
         if cfg.fs_batch_combo_alpha {
-            let consts = inlined_perm::Constants::pinned();
-            // squeeze-only permute: input == post_zeta state UNCHANGED (n == 0).
-            let pre_in = absorb_state(post_zeta, [Val::ZERO; RATE], 0);
+            // With OOD observe, all RATE outputs of `pre_bca` are available.
+            // Without it, zeta left RATE-1 outputs in its second squeeze block.
+            let available = if food_present(cfg) {
+                RATE
+            } else {
+                RATE - (D - RATE)
+            };
+            let pre_in = absorb_state(pre_bca, [Val::ZERO; RATE], 0);
             let perm_cols = inlined_perm::generate_perm_cols(pre_in, &consts);
             let bb = bca_base(cfg);
             row[bb + BCA_PERM..bb + BCA_PERM + PERM_COLS].copy_from_slice(&perm_cols);
             let state = inlined_perm::perm_output(&perm_cols);
-            let alpha = Challenge::from_basis_coefficients_fn(|i| state[RATE - 1 - i]);
+            let alpha = Challenge::from_basis_coefficients_fn(|i| {
+                if i < available {
+                    pre_bca[available - 1 - i]
+                } else {
+                    state[RATE - 1 - (i - available)]
+                }
+            });
             row[bb + BCA_ALPHA..bb + BCA_ALPHA + D].copy_from_slice(&limbs(alpha));
             debug_assert_eq!(
                 (alpha, state),
-                fs_squeeze_batch_combo_alpha(post_zeta),
-                "FS-bca block != fs_squeeze_batch_combo_alpha reference"
+                squeeze_extension_with_available(pre_bca, available)
             );
             state
         } else {
-            post_zeta
+            pre_bca
         }
     } else {
         [Val::ZERO; WIDTH]
@@ -2978,12 +3291,22 @@ pub fn pack_window_query(
                 row[rb + fb_perm(k)..rb + fb_perm(k) + PERM_COLS].copy_from_slice(&perm_cols);
                 state = inlined_perm::perm_output(&perm_cols);
             }
-            let beta_r = Challenge::from_basis_coefficients_fn(|i| state[RATE - 1 - i]);
+            let squeeze_cols = inlined_perm::generate_perm_cols(state, &consts);
+            row[rb + FB_SQUEEZE..rb + FB_SQUEEZE + PERM_COLS].copy_from_slice(&squeeze_cols);
+            let beta_post = inlined_perm::perm_output(&squeeze_cols);
+            let beta_r = Challenge::from_basis_coefficients_fn(|i| {
+                if i < RATE {
+                    state[RATE - 1 - i]
+                } else {
+                    beta_post[RATE - 1 - (i - RATE)]
+                }
+            });
             row[rb + FB_BETA..rb + FB_BETA + D].copy_from_slice(&limbs(beta_r));
             debug_assert_eq!(
                 beta_r, fs_betas[r],
                 "FS-β block beta_r != fs_squeeze_betas reference"
             );
+            state = beta_post;
         }
         // `state` is now the post-last-beta state — the query-index continuation point.
 
@@ -3051,9 +3374,13 @@ pub fn pack_window_query(
             cfg.layer_open_rounds,
             "layer_opens must have layer_open_rounds entries"
         );
-        let levels = cfg.layer_open_levels;
         let consts = inlined_perm::Constants::pinned();
         for r in 0..cfg.layer_open_rounds {
+            let levels = layer_open_levels_for_round(cfg, r);
+            assert!(
+                levels > 0 && r + levels < cfg.log_height,
+                "layer open round {r}: path depth must fit the FS index"
+            );
             let lo = &inp.layer_opens[r];
             assert_eq!(
                 lo.merkle_siblings.len(),
@@ -3428,6 +3755,41 @@ pub fn pack_window_query(
         }
     }
 
+    if cfg.fs_ood_external {
+        assert!(cfg.fs_alpha_zeta, "external OOD requires FS alpha/zeta");
+        assert!(
+            cfg.merkle_levels > 0,
+            "external OOD requires a verified member root"
+        );
+        assert_eq!(cfg.fs_ood_observe_len, 0);
+        assert_eq!(cfg.fs_ood_partial, 0);
+        let end = external_ood_end.expect("external OOD terminal state required");
+        let start = fs_alpha_zeta_from_config(cfg, inp.fs_blocks).2;
+        let eb = eood_base(cfg);
+        row[eb + EOOD_START..eb + EOOD_START + WIDTH].copy_from_slice(&start);
+        row[eb + EOOD_END..eb + EOOD_END + WIDTH].copy_from_slice(&end);
+
+        let mut endpoint_input = Vec::with_capacity(EOOD_INPUT_LEN);
+        endpoint_input.extend_from_slice(&start);
+        endpoint_input.extend_from_slice(&end);
+        let consts = inlined_perm::Constants::pinned();
+        let pre_states = leaf_hash_pre_states(&endpoint_input);
+        debug_assert_eq!(pre_states.len(), EOOD_HASH_PERMS);
+        for (k, pre) in pre_states.into_iter().enumerate() {
+            let perm = inlined_perm::generate_perm_cols(pre, &consts);
+            let pb = eb + eood_hash_perm(k);
+            row[pb..pb + PERM_COLS].copy_from_slice(&perm);
+        }
+        let endpoint_digest: [Val; DIGEST_ELEMS] =
+            core::array::from_fn(|i| row[eood_digest_col(cfg) + i]);
+        let member_root = window_merkle_root(cfg, &row);
+        let mut combined = [Val::ZERO; ABSORB_LEN];
+        combined[..DIGEST_ELEMS].copy_from_slice(&member_root);
+        combined[DIGEST_ELEMS..].copy_from_slice(&endpoint_digest);
+        let (node, _) = node_blocks(&combined, &consts);
+        row[eb + EOOD_AUGMENT..eb + EOOD_AUGMENT + N_PERM * PERM_COLS].copy_from_slice(&node);
+    }
+
     row
 }
 
@@ -3438,6 +3800,36 @@ pub fn window_merkle_root(cfg: &RecursiveConfig, row: &[Val]) -> [Val; DIGEST_EL
     let mut out = [Val::ZERO; DIGEST_ELEMS];
     out.copy_from_slice(&row[off..off + DIGEST_ELEMS]);
     out
+}
+
+/// Root folded by block settlement. With an external vertical OOD proof this is
+/// `Compress(verified_merkle_root, MyHash(post_zeta_state || ood_terminal_state))`; otherwise it is
+/// the verified Merkle root itself.
+pub fn window_verified_root(cfg: &RecursiveConfig, row: &[Val]) -> [Val; DIGEST_ELEMS] {
+    let off = window_verified_root_col(cfg);
+    core::array::from_fn(|i| row[off + i])
+}
+
+pub fn window_verified_root_col(cfg: &RecursiveConfig) -> usize {
+    if cfg.fs_ood_external {
+        eood_verified_root_col(cfg)
+    } else {
+        window_root_col(cfg)
+    }
+}
+
+/// External vertical-OOD start state committed by a packed member window.
+pub fn window_external_ood_start(cfg: &RecursiveConfig, row: &[Val]) -> [Val; WIDTH] {
+    assert!(cfg.fs_ood_external, "external OOD config required");
+    let off = eood_base(cfg) + EOOD_START;
+    core::array::from_fn(|i| row[off + i])
+}
+
+/// External vertical-OOD terminal state committed by a packed member window.
+pub fn window_external_ood_end(cfg: &RecursiveConfig, row: &[Val]) -> [Val; WIDTH] {
+    assert!(cfg.fs_ood_external, "external OOD config required");
+    let off = eood_base(cfg) + EOOD_END;
+    core::array::from_fn(|i| row[off + i])
 }
 
 /// Absolute column offset of a window's reconstructed Merkle root (the last Merkle level's node
@@ -3459,6 +3851,88 @@ pub fn window_leaf_row_col(cfg: &RecursiveConfig) -> usize {
 /// Decode the bus index value of a packed window.
 pub fn window_index(row: &[Val]) -> u32 {
     row[C_INDEX].as_canonical_u32()
+}
+
+// Exact transcript/consumer column accessors used by the anchored fan-out
+// wrapper.  Keep the layout arithmetic here, beside the private column
+// constants, rather than duplicating offsets in a second AIR.
+pub(crate) const fn window_index_col() -> usize {
+    C_INDEX
+}
+
+pub(crate) fn window_fan_out_ordinal_col(cfg: &RecursiveConfig) -> usize {
+    assert!(cfg.fan_out_queries > 0, "fan-out config required");
+    fo_base(cfg) + FO_DRAW_OFFSET
+}
+
+pub(crate) fn window_bca_alpha_col(cfg: &RecursiveConfig) -> usize {
+    assert!(cfg.fs_batch_combo_alpha, "batch-combination alpha required");
+    bca_base(cfg) + BCA_ALPHA
+}
+
+pub(crate) fn window_fs_zeta_col(cfg: &RecursiveConfig) -> usize {
+    assert!(cfg.fs_alpha_zeta, "Fiat-Shamir alpha/zeta block required");
+    fs_zeta(cfg)
+}
+
+pub(crate) fn window_fri_beta_col(cfg: &RecursiveConfig, round: usize) -> usize {
+    assert!(round < cfg.fs_beta_rounds, "FRI beta round out of range");
+    fb_round_base(cfg, round) + FB_BETA
+}
+
+pub(crate) fn window_pre_alpha_stream_col(cfg: &RecursiveConfig, index: usize) -> usize {
+    let stream_len = cfg.fs_pre_alpha_rounds * RATE + cfg.fs_pre_alpha_partial;
+    assert!(index < stream_len, "pre-alpha stream index out of range");
+    let round = index / RATE;
+    let lane = index % RATE;
+    fs_round_base(cfg, round) + FS_BLOCK + lane
+}
+
+pub(crate) fn window_quotient_stream_col(cfg: &RecursiveConfig, index: usize) -> usize {
+    let stream_len = cfg.fs_quotient_rounds * RATE + cfg.fs_quotient_partial;
+    assert!(index < stream_len, "quotient stream index out of range");
+    let round = index / RATE;
+    let lane = index % RATE;
+    fs_quot_round_base(cfg, round) + FS_BLOCK + lane
+}
+
+pub(crate) fn window_final_stream_col(cfg: &RecursiveConfig, index: usize) -> usize {
+    let stream_len = cfg.fs_final_blocks * RATE + cfg.fs_final_partial;
+    assert!(index < stream_len, "post-beta stream index out of range");
+    let round = index / RATE;
+    let lane = index % RATE;
+    fq_round_base(cfg, round) + FQ_BLOCK + lane
+}
+
+pub(crate) fn window_main_commit_col(cfg: &RecursiveConfig) -> usize {
+    assert!(
+        cfg.bind_root_to_main_commit,
+        "main commitment consumer required"
+    );
+    mc_base(cfg) + MC_MAIN_COMMIT
+}
+
+pub(crate) fn window_quotient_commit_col(cfg: &RecursiveConfig) -> usize {
+    assert!(cfg.quot_chunks > 0, "quotient commitment consumer required");
+    qo_base(cfg) + QO_COMMIT
+}
+
+pub(crate) fn window_final_poly_coeff_col(cfg: &RecursiveConfig, coeff: usize) -> usize {
+    assert!(
+        coeff < cfg.final_poly_len,
+        "final polynomial coefficient out of range"
+    );
+    fp_base(cfg) + fp_coeff_base(coeff)
+}
+
+pub(crate) fn window_external_ood_start_col(cfg: &RecursiveConfig) -> usize {
+    assert!(cfg.fs_ood_external, "external OOD endpoint required");
+    eood_base(cfg) + EOOD_START
+}
+
+pub(crate) fn window_external_ood_end_col(cfg: &RecursiveConfig) -> usize {
+    assert!(cfg.fs_ood_external, "external OOD endpoint required");
+    eood_base(cfg) + EOOD_END
 }
 
 /// Public values layout for the Merkle block: `leaf(DIGEST_ELEMS) ‖ root(DIGEST_ELEMS)`. Present
@@ -3902,8 +4376,8 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
             let consts = ConstantsExpr::<AB>::pinned();
             let cells = WindowCells::<AB> { row: local.clone() };
             let one = AB::Expr::ONE;
-            let levels = cfg.layer_open_levels;
             for r in 0..cfg.layer_open_rounds {
+                let levels = layer_open_levels_for_round(&cfg, r);
                 let rb = lo_round_base(&cfg, r);
                 // parity = FS index bit r (the in-group bit of start_index = FS_index >> r).
                 let parity = bits[r].clone();
@@ -4055,7 +4529,7 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
 
         // ===== (b-hash) DERIVE the Merkle level-0 leaf digest as MyHash(opened_row ‖ salt) =====
         // The level-0 running is no longer a free supplied digest: it is CONSTRAINED to be the output
-        // of a real `PaddingFreeSponge<Perm,16,8,8>` (the deployed `MyHash`) over the salted opened
+        // of a real `PaddingFreeSponge<Perm,16,7,13>` (the deployed `MyHash`) over the salted opened
         // row. Each absorb-permute is the inlined Poseidon2 (`eval_perm`); the rate lanes are
         // OVERWRITTEN with the row/salt cells (and, for a trailing partial block, the un-absorbed
         // lanes + capacity are CARRIED from the previous permute), exactly the no-padding overwrite
@@ -4581,18 +5055,17 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
         //   alpha = sample_algebra_element()                            [SAMPLE alpha]
         //   observe(quotient-chunks commitment)                        [quotient-observe round]
         //   zeta  = sample_algebra_element()                           [SAMPLE zeta]
-        // Each round is a FULL-rate (n == RATE) absorb-permute from the new() zero boundary (the same
-        // primitive as the index-draw prefix chain). alpha/zeta are the LIFO squeeze pops of the
-        // last pre-alpha / quotient permute (challenge limb i == sample() call i == output[RATE-1-i],
-        // matching sample_algebra_element = from_basis_coefficients_fn(|_| self.sample())). The
+        // Each stream is full-rate rounds plus an optional trailing partial absorb. alpha/zeta are
+        // the LIFO squeeze pops of the
+        // last pre-alpha / quotient permute and the constrained refill needed for limb eight. The
         // squeezed alpha/zeta are then CONSTRAINED to equal the DEEP folder's alpha/zeta cells, so
         // those are NO LONGER free inputs — a forger cannot pick alpha/zeta independent of the
         // observed (inner commitments + public digest) transcript.
         if cfg.fs_alpha_zeta {
             let consts = ConstantsExpr::<AB>::pinned();
             let cells = WindowCells::<AB> { row: local.clone() };
-            let rate_expr = AB::Expr::from(AB::F::from_u8(RATE as u8));
-            let pre_rounds = cfg.fs_pre_alpha_rounds;
+            let pre_rounds = fs_pre_total_rounds(&cfg);
+            let quot_rounds = fs_quot_total_rounds(&cfg);
 
             // state_{r} reader: r == 0 is the new() zero boundary; else FS round (r-1)'s perm output.
             let fs_state_prev = |r: usize, i: usize| -> AB::Expr {
@@ -4603,16 +5076,20 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                     l(pp + FS_PERM + C_OUTPUT + i)
                 }
             };
-            // Constrain each pre-alpha FULL-rate absorb-permute round.
+            // Constrain each pre-alpha full/partial absorb-permute round.
             for r in 0..pre_rounds {
+                let n = fs_pre_round_n(&cfg, r);
+                let n_expr = AB::Expr::from(AB::F::from_u8(n as u8));
                 let rb = fs_round_base(&cfg, r);
                 let inb = rb + FS_PERM + inlined_perm::C_INPUTS;
-                // FULL-rate absorb: rate lanes [0..RATE] == block_r (overwrite).
-                for i in 0..RATE {
+                for i in 0..n {
                     builder.assert_zero(l(inb + i) - l(rb + FS_BLOCK + i));
                 }
-                // capacity slot RATE == state_{r}[RATE] + RATE (length tag, n == RATE).
-                builder.assert_zero(l(inb + RATE) - fs_state_prev(r, RATE) - rate_expr.clone());
+                for i in n..RATE {
+                    builder.assert_zero(l(rb + FS_BLOCK + i));
+                    builder.assert_zero(l(inb + i));
+                }
+                builder.assert_zero(l(inb + RATE) - fs_state_prev(r, RATE) - n_expr);
                 // remaining capacity slots [RATE+1..WIDTH] carried from state_{r}.
                 for i in (RATE + 1)..WIDTH {
                     builder.assert_zero(l(inb + i) - fs_state_prev(r, i));
@@ -4625,29 +5102,67 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
             // output, or the zero boundary if there are no pre-alpha rounds.
             let pre_alpha_out = |i: usize| -> AB::Expr { fs_state_prev(pre_rounds, i) };
 
-            // alpha == LIFO squeeze of the pre-alpha state's rate: alpha_limb[i] == out[RATE-1-i].
+            // Alpha consumes all seven pre-alpha outputs, then limb 7 comes from a
+            // constrained squeeze-only permutation.
+            let asb = fs_alpha_squeeze(&cfg);
+            let ain = asb + inlined_perm::C_INPUTS;
+            for i in 0..WIDTH {
+                builder.assert_zero(l(ain + i) - pre_alpha_out(i));
+            }
+            eval_perm::<AB, _>(builder, &cells, asb, &consts);
             let ab = fs_alpha(&cfg);
             for i in 0..D {
-                builder.assert_zero(l(ab + i) - pre_alpha_out(RATE - 1 - i));
+                let source = if i < RATE {
+                    pre_alpha_out(RATE - 1 - i)
+                } else {
+                    l(asb + C_OUTPUT + (RATE - 1 - (i - RATE)))
+                };
+                builder.assert_zero(l(ab + i) - source);
             }
 
-            // quotient-observe round: absorb the quotient commitment into the (UNCHANGED, sampling
-            // does not mutate sponge_state) pre-alpha state, then permute. Its squeeze is zeta.
-            let qb = fs_quot_round_base(&cfg);
-            let qinb = qb + FS_PERM + inlined_perm::C_INPUTS;
-            for i in 0..RATE {
-                builder.assert_zero(l(qinb + i) - l(qb + FS_BLOCK + i));
+            // Quotient observes clear alpha's leftover buffer and continue from the post-alpha
+            // squeeze state; the final configured round may be partial.
+            let quot_state_prev = |r: usize, i: usize| -> AB::Expr {
+                if r == 0 {
+                    l(asb + C_OUTPUT + i)
+                } else {
+                    l(fs_quot_round_base(&cfg, r - 1) + FS_PERM + C_OUTPUT + i)
+                }
+            };
+            for r in 0..quot_rounds {
+                let n = fs_quot_round_n(&cfg, r);
+                let n_expr = AB::Expr::from(AB::F::from_u8(n as u8));
+                let qb = fs_quot_round_base(&cfg, r);
+                let qinb = qb + FS_PERM + inlined_perm::C_INPUTS;
+                for i in 0..n {
+                    builder.assert_zero(l(qinb + i) - l(qb + FS_BLOCK + i));
+                }
+                for i in n..RATE {
+                    builder.assert_zero(l(qb + FS_BLOCK + i));
+                    builder.assert_zero(l(qinb + i));
+                }
+                builder.assert_zero(l(qinb + RATE) - quot_state_prev(r, RATE) - n_expr);
+                for i in (RATE + 1)..WIDTH {
+                    builder.assert_zero(l(qinb + i) - quot_state_prev(r, i));
+                }
+                eval_perm::<AB, _>(builder, &cells, qb + FS_PERM, &consts);
             }
-            builder.assert_zero(l(qinb + RATE) - pre_alpha_out(RATE) - rate_expr.clone());
-            for i in (RATE + 1)..WIDTH {
-                builder.assert_zero(l(qinb + i) - pre_alpha_out(i));
-            }
-            eval_perm::<AB, _>(builder, &cells, qb + FS_PERM, &consts);
 
-            // zeta == LIFO squeeze of the quotient round's state rate: zeta_limb[i] == out[RATE-1-i].
+            // Zeta likewise spans the quotient output and one squeeze-only permutation.
+            let zsb = fs_zeta_squeeze(&cfg);
+            let zin = zsb + inlined_perm::C_INPUTS;
+            for i in 0..WIDTH {
+                builder.assert_zero(l(zin + i) - quot_state_prev(quot_rounds, i));
+            }
+            eval_perm::<AB, _>(builder, &cells, zsb, &consts);
             let zb = fs_zeta(&cfg);
             for i in 0..D {
-                builder.assert_zero(l(zb + i) - l(qb + FS_PERM + C_OUTPUT + (RATE - 1 - i)));
+                let source = if i < RATE {
+                    quot_state_prev(quot_rounds, RATE - 1 - i)
+                } else {
+                    l(zsb + C_OUTPUT + (RATE - 1 - (i - RATE)))
+                };
+                builder.assert_zero(l(zb + i) - source);
             }
 
             // ----- BIND the FS-squeezed alpha/zeta to the DEEP folder's consumer cells -----
@@ -4662,8 +5177,8 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
             }
 
             // (FS-αζ) optionally bind each round's absorbed block to the PUBLIC transcript: public
-            // value r*RATE + i == FS round r's block (rounds 0..pre_rounds = pre-alpha prefix, round
-            // pre_rounds = quotient commitment). This ties the squeeze to the ACTUAL observed inner
+            // value r*RATE + i == FS round r's block (pre-alpha rounds followed by quotient rounds).
+            // This ties the squeeze to the ACTUAL observed inner
             // commitments + public digest, so a forger cannot fix alpha/zeta independent of the
             // statement.
             if cfg.fs_blocks_public {
@@ -4672,7 +5187,7 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                     .iter()
                     .map(|p| (*p).into())
                     .collect();
-                let total = pre_rounds + 1;
+                let total = pre_rounds + quot_rounds;
                 if pubs.len() == total * RATE {
                     for r in 0..pre_rounds {
                         let rb = fs_round_base(&cfg, r);
@@ -4680,10 +5195,13 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                             builder.assert_zero(l(rb + FS_BLOCK + i) - pubs[r * RATE + i].clone());
                         }
                     }
-                    for i in 0..RATE {
-                        builder.assert_zero(
-                            l(qb + FS_BLOCK + i) - pubs[pre_rounds * RATE + i].clone(),
-                        );
+                    for r in 0..quot_rounds {
+                        let qb = fs_quot_round_base(&cfg, r);
+                        for i in 0..RATE {
+                            builder.assert_zero(
+                                l(qb + FS_BLOCK + i) - pubs[(pre_rounds + r) * RATE + i].clone(),
+                            );
+                        }
                     }
                 }
             }
@@ -4702,29 +5220,57 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
         if cfg.fs_beta_rounds > 0 {
             let consts = ConstantsExpr::<AB>::pinned();
             let cells = WindowCells::<AB> { row: local.clone() };
-            let qb = fs_quot_round_base(&cfg);
+            let zeta_post = fs_zeta_squeeze(&cfg) + C_OUTPUT;
+
+            // ===== (FS-ood) opened-values observations between zeta and BCA =====
+            let food_state_prev = |r: usize, i: usize| -> AB::Expr {
+                if r == 0 {
+                    l(zeta_post + i)
+                } else {
+                    l(food_round_base(&cfg, r - 1) + FOOD_PERM + C_OUTPUT + i)
+                }
+            };
+            for r in 0..food_total_rounds(&cfg) {
+                let n = food_round_n(&cfg, r);
+                let rb = food_round_base(&cfg, r);
+                let inb = rb + FOOD_PERM + inlined_perm::C_INPUTS;
+                for i in 0..n {
+                    builder.assert_zero(l(inb + i) - l(rb + FOOD_BLOCK + i));
+                }
+                for i in n..RATE {
+                    builder.assert_zero(l(inb + i));
+                }
+                let n_expr = AB::Expr::from(AB::F::from_u8(n as u8));
+                builder.assert_zero(l(inb + RATE) - food_state_prev(r, RATE) - n_expr);
+                for i in (RATE + 1)..WIDTH {
+                    builder.assert_zero(l(inb + i) - food_state_prev(r, i));
+                }
+                eval_perm::<AB, _>(builder, &cells, rb + FOOD_PERM, &consts);
+            }
 
             // ===== (FS-bca) FRI batch-combination alpha (verifier.rs:195) =====
-            // A SINGLE squeeze-only permute taken after zeta with NO observe: because zeta drained the
-            // output buffer, the FRI verifier's `sample_algebra_element()` triggers a SQUEEZE-ONLY
-            // duplexing (n == 0) of the post-zeta state — NO rate overwrite, NO length tag, the whole
-            // state carried into the permute. alpha is its top-8 LIFO pops. The beta chain's state_0 is
-            // THIS permute output (the draw-count shift). Omitting/reordering it shifts every beta.
+            // The BCA consumes the currently buffered rate-7 outputs and then a
+            // squeeze-only permutation supplies the remaining limb(s).
             if cfg.fs_batch_combo_alpha {
                 let bb = bca_base(&cfg);
                 let binb = bb + BCA_PERM + inlined_perm::C_INPUTS;
-                // squeeze-only: the permute input is the post-zeta state UNCHANGED (every lane copied,
-                // including capacity slot RATE — NO length tag added since n == 0).
+                let pre_bca = pre_bca_state_out_base(&cfg);
                 for i in 0..WIDTH {
-                    builder.assert_zero(l(binb + i) - l(qb + FS_PERM + C_OUTPUT + i));
+                    builder.assert_zero(l(binb + i) - l(pre_bca + i));
                 }
-                // full Poseidon2 permutation over the batch-combo perm block.
                 eval_perm::<AB, _>(builder, &cells, bb + BCA_PERM, &consts);
-                // alpha == LIFO squeeze of the batch-combo permute's output rate.
+                let available = if food_present(&cfg) {
+                    RATE
+                } else {
+                    RATE - (D - RATE)
+                };
                 for i in 0..D {
-                    builder.assert_zero(
-                        l(bb + BCA_ALPHA + i) - l(bb + BCA_PERM + C_OUTPUT + (RATE - 1 - i)),
-                    );
+                    let source = if i < available {
+                        l(pre_bca + (available - 1 - i))
+                    } else {
+                        l(bb + BCA_PERM + C_OUTPUT + (RATE - 1 - (i - available)))
+                    };
+                    builder.assert_zero(l(bb + BCA_ALPHA + i) - source);
                 }
             }
 
@@ -4736,7 +5282,7 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                     if cfg.fs_batch_combo_alpha {
                         l(bca_base(&cfg) + BCA_PERM + C_OUTPUT + i)
                     } else {
-                        l(qb + FS_PERM + C_OUTPUT + i)
+                        l(pre_bca_state_out_base(&cfg) + i)
                     }
                 } else {
                     let pp = fb_round_base(&cfg, r - 1);
@@ -4775,10 +5321,21 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                     }
                     eval_perm::<AB, _>(builder, &cells, rb + fb_perm(k), &consts);
                 }
-                // beta_r == LIFO squeeze of the LAST permute's output rate: beta_r[i] == out[RATE-1-i].
-                let post = rb + fb_post_perm_output();
+                // The digest-observe output supplies beta limbs 0..6; a constrained
+                // squeeze-only permutation supplies limb 7 and becomes the carried state.
+                let sample_source = rb + fb_sample_source_output();
+                let squeeze_in = rb + FB_SQUEEZE + inlined_perm::C_INPUTS;
+                for i in 0..WIDTH {
+                    builder.assert_zero(l(squeeze_in + i) - l(sample_source + i));
+                }
+                eval_perm::<AB, _>(builder, &cells, rb + FB_SQUEEZE, &consts);
                 for i in 0..D {
-                    builder.assert_zero(l(rb + FB_BETA + i) - l(post + (RATE - 1 - i)));
+                    let source = if i < RATE {
+                        l(sample_source + (RATE - 1 - i))
+                    } else {
+                        l(rb + FB_SQUEEZE + C_OUTPUT + (RATE - 1 - (i - RATE)))
+                    };
+                    builder.assert_zero(l(rb + FB_BETA + i) - source);
                 }
                 // BIND beta_r to the (c) descent round_beta(r) cell — the FRI fold uses THIS challenge.
                 let consumer = round_beta(r);
@@ -4972,6 +5529,56 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
             }
         }
 
+        // ===== external vertical OOD endpoint binding =====
+        if cfg.fs_ood_external {
+            assert!(cfg.fs_alpha_zeta);
+            assert!(cfg.merkle_levels > 0);
+            assert_eq!(cfg.fs_ood_observe_len, 0);
+            assert_eq!(cfg.fs_ood_partial, 0);
+            let eb = eood_base(&cfg);
+            let consts = ConstantsExpr::<AB>::pinned();
+            let cells = WindowCells::<AB> { row: local.clone() };
+            let zeta_post = fs_zeta_squeeze(&cfg) + C_OUTPUT;
+            for i in 0..WIDTH {
+                builder.assert_zero(l(eb + EOOD_START + i) - l(zeta_post + i));
+            }
+
+            let endpoint_input = |g: usize| -> AB::Expr {
+                if g < WIDTH {
+                    l(eb + EOOD_START + g)
+                } else {
+                    l(eb + EOOD_END + g - WIDTH)
+                }
+            };
+            for k in 0..EOOD_HASH_PERMS {
+                let pb = eb + eood_hash_perm(k);
+                for i in 0..WIDTH {
+                    let g = k * LEAF_HASH_RATE + i;
+                    let input = l(pb + inlined_perm::C_INPUTS + i);
+                    if i < LEAF_HASH_RATE && g < EOOD_INPUT_LEN {
+                        builder.assert_zero(input - endpoint_input(g));
+                    } else if k == 0 {
+                        builder.assert_zero(input);
+                    } else {
+                        let prev = eb + eood_hash_perm(k - 1);
+                        builder.assert_zero(input - l(prev + C_OUTPUT + i));
+                    }
+                }
+                eval_perm::<AB, _>(builder, &cells, pb, &consts);
+            }
+
+            let root_col = window_root_col(&cfg);
+            let digest_col = eood_digest_col(&cfg);
+            let combined = |g: usize| -> AB::Expr {
+                if g < DIGEST_ELEMS {
+                    l(root_col + g)
+                } else {
+                    l(digest_col + g - DIGEST_ELEMS)
+                }
+            };
+            eval_node::<AB, _, _>(builder, &cells, eb + EOOD_AUGMENT, combined, &consts);
+        }
+
         // ===== (FAN-OUT) multi-query: per-row index ordinal + shared-value equality across rows =====
         // Each ROW verifies an INDEPENDENT FRI query (the full per-row window above). On top of that:
         //   (i)  draw_offset is pinned to the row ordinal: first row 0, next == local + 1. Composed
@@ -5138,7 +5745,7 @@ mod tests {
         type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
         type DftT = Radix2DitParallel<Val>;
         type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
-        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 7>;
         type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
 
         let perm: Perm = default_koalabear_poseidon2_16();
@@ -5220,7 +5827,7 @@ mod tests {
         type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
         type DftT = Radix2DitParallel<Val>;
         type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
-        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 7>;
         type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
 
         let perm: Perm = default_koalabear_poseidon2_16();
@@ -6098,8 +6705,8 @@ mod tests {
 
         // The DEPLOYED node layer, reconstructed from the re-exported `Perm` (the SAME
         // `default_koalabear_poseidon2_16` the inlined perm + `merkle::compressor()` are pinned to).
-        // These const params (`16,8,8` / `2,8,16`) are byte-identical to `config::MyHash`/`MyCompress`
-        // (cross-checked: account-stark `config.rs` declares the same aliases over the same `Perm`).
+        // These const params (`16,7,13`) are byte-identical to `config::MyHash`; `NodeCompress`
+        // delegates to the same digest-13 sponge compression as `config::MyCompress`.
         type LeafHash = PaddingFreeSponge<Perm, 16, 7, DIGEST_ELEMS>;
         type NodeCompress =
             descender_account_stark::sponge_compression::SpongeCompression<LeafHash>;
@@ -6955,7 +7562,7 @@ mod tests {
     /// reference `squeeze_draws`.
     #[test]
     fn air_accepts_multi_draw_off_one_permute() {
-        for draws in [2usize, 4, 8] {
+        for draws in [2usize, 4, RATE] {
             let h = 8usize;
             let cfg = cfg_sponge_draws(h, draws);
             for seed in [0u32, 7, 0xABCD, 0x9999] {
@@ -7116,7 +7723,7 @@ mod tests {
     /// committed prior_state + absorbed values + the length tag, exactly per challenger::duplexing.
     #[test]
     fn air_accepts_absorb_fed_sponge() {
-        for n in [0usize, 1, 3, 8] {
+        for n in [0usize, 1, 3, RATE] {
             for h in [5usize, 8] {
                 let cfg = cfg_sponge_absorb(h, n);
                 // prior_state: a representative pre-absorb sponge (e.g. mid-transcript); for n>0 the
@@ -7392,7 +7999,7 @@ mod tests {
     #[test]
     fn air_accepts_prefix_absorb_chain() {
         for rounds in [1usize, 2, 3] {
-            for n in [0usize, 3, 8] {
+            for n in [0usize, 3, RATE] {
                 let h = 8usize;
                 let cfg = cfg_prefix(h, n, rounds);
                 let blocks: Vec<[Val; RATE]> = (0..rounds as u32)
@@ -7887,7 +8494,7 @@ mod tests {
     }
 
     /// PIN: the in-AIR `leaf_hash_digest` (the inlined `PaddingFreeSponge` schedule) matches a REAL
-    /// `p3_symmetric::PaddingFreeSponge<Perm,16,8,8>` (the deployed `config::MyHash`) over the same
+    /// `p3_symmetric::PaddingFreeSponge<Perm,16,7,13>` (the deployed `config::MyHash`) over the same
     /// salted input, ACROSS row lengths spanning the partial-block, exact-multiple, and multi-block
     /// cases. A wrong absorb schedule / wrong perm would diverge here — attempted equality, not
     /// assumption.
@@ -8579,7 +9186,11 @@ mod tests {
         })
     }
 
-    fn fs_window(cfg: &RecursiveConfig, blocks: &[[Val; RATE]], q: Challenge) -> Vec<Val> {
+    pub(super) fn fs_window(
+        cfg: &RecursiveConfig,
+        blocks: &[[Val; RATE]],
+        q: Challenge,
+    ) -> Vec<Val> {
         let inp = WindowInputs {
             draw_out: Val::from_u32(0xABCDE),
             e0: ext_multi(1),
@@ -8627,6 +9238,142 @@ mod tests {
         pack_window(cfg, &inp)
     }
 
+    fn external_ood_window(
+        cfg: &RecursiveConfig,
+        blocks: &[[Val; RATE]],
+        beta_blocks: &[[Val; DIGEST_ELEMS]],
+        tree: &RefTree,
+        leaf: Digest,
+        index: usize,
+        end: [Val; WIDTH],
+    ) -> Vec<Val> {
+        let siblings = tree.auth_path(index);
+        let inp = WindowInputs {
+            draw_out: Val::from_usize(index),
+            e0: ext_multi(1),
+            e1: ext_multi(2),
+            beta: ext_multi(3),
+            descent: &[],
+            merkle_leaf: leaf,
+            merkle_siblings: &siblings,
+            deep_zeta: Challenge::ZERO,
+            deep_q: ext_multi(4),
+            deep_alpha: Challenge::ZERO,
+            fs_blocks: blocks,
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
+            public_io: &[],
+            fs_beta_blocks: beta_blocks,
+            fs_ood_blocks: &[],
+            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[],
+            fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[],
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[],
+            dr_value_at_zeta_next: &[],
+            dr_x: Val::ZERO,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
+            sc_value_at_zeta: &[],
+            sc_public_values: &[],
+            sc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[],
+            quot_at_zeta: &[],
+            quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO,
+            quot_siblings: &[],
+        };
+        pack_window_external_ood(cfg, &inp, 0, end)
+    }
+
+    #[test]
+    fn external_ood_endpoint_is_fs_bound_and_changes_verified_member_root() {
+        let levels = 2usize;
+        let cfg = RecursiveConfig {
+            merkle_levels: levels,
+            deep_log_degree: Some(levels),
+            fs_alpha_zeta: true,
+            fs_pre_alpha_rounds: 2,
+            fs_beta_rounds: 1,
+            fs_batch_combo_alpha: true,
+            fs_ood_external: true,
+            ..RecursiveConfig::single_window(levels)
+        };
+        let blocks: Vec<[Val; RATE]> = (0..3).map(|r| fs_block(700 + r)).collect();
+        let beta_blocks = [core::array::from_fn(|i| Val::from_usize(9000 + i))];
+        let leaves: Vec<Digest> = (0..1usize << levels)
+            .map(|i| digest(100 + i as u32))
+            .collect();
+        let tree = RefTree::new(leaves.clone());
+        let index = 1usize;
+        let end = core::array::from_fn(|i| Val::from_usize(12000 + i));
+        let row = external_ood_window(
+            &cfg,
+            &blocks,
+            &beta_blocks,
+            &tree,
+            leaves[index],
+            index,
+            end,
+        );
+        let public = pubs(leaves[index], tree.root());
+        assert!(check_all_constraints(
+            &air(cfg.clone()),
+            &RowMajorMatrix::new(row.clone(), n_cols(&cfg)),
+            &public,
+            None
+        )
+        .is_ok());
+
+        let mut tampered = row.clone();
+        tampered[eood_base(&cfg) + EOOD_END] += Val::ONE;
+        assert!(!check_all_constraints(
+            &air(cfg.clone()),
+            &RowMajorMatrix::new(tampered, n_cols(&cfg)),
+            &public,
+            None
+        )
+        .is_ok());
+
+        let mut changed_end = end;
+        changed_end[0] += Val::ONE;
+        let changed = external_ood_window(
+            &cfg,
+            &blocks,
+            &beta_blocks,
+            &tree,
+            leaves[index],
+            index,
+            changed_end,
+        );
+        assert_ne!(
+            window_verified_root(&cfg, &row),
+            window_verified_root(&cfg, &changed)
+        );
+
+        let members = vec![row, changed];
+        let block_flat = crate::block_recursive_air::build_trace(&cfg, &members);
+        let block_root = crate::block_recursive_air::trace_root(&cfg, members.len(), &block_flat);
+        let block_matrix =
+            RowMajorMatrix::new(block_flat, crate::block_recursive_air::n_cols(&cfg));
+        assert!(check_all_constraints(
+            &crate::block_recursive_air::BlockRecursiveAir { cfg: cfg.clone() },
+            &block_matrix,
+            &block_root,
+            None
+        )
+        .is_ok());
+    }
+
     /// FIDELITY-PIN: `fs_squeeze_alpha_zeta` (and hence the packed bus) reproduces the SAME alpha
     /// and zeta a REAL `DuplexChallenger` produces for the SAME observations in the SAME p3 order —
     /// observe pre-alpha prefix → sample_algebra_element (alpha) → observe quotient → sample (zeta).
@@ -8642,7 +9389,7 @@ mod tests {
             let pre: Vec<[Val; RATE]> = (0..pre_rounds as u32).map(|r| fs_block(10 + r)).collect();
             let quot = fs_block(900);
 
-            // native: observe each pre-alpha block (RATE elems each, auto-duplexing on the 8th),
+            // native: observe each pre-alpha block (RATE elems each, auto-duplexing on the 7th),
             // sample alpha (extension = 8 base draws), observe quotient block, sample zeta.
             let mut ch = Challenger::new(default_koalabear_poseidon2_16());
             for block in &pre {
@@ -8668,6 +9415,83 @@ mod tests {
                 "FS zeta diverges from native challenger (pre={pre_rounds})"
             );
         }
+    }
+
+    fn chunk_fs_stream(stream: &[Val]) -> (Vec<[Val; RATE]>, usize, usize) {
+        let full = stream.len() / RATE;
+        let partial = stream.len() % RATE;
+        let mut blocks: Vec<[Val; RATE]> = (0..full)
+            .map(|r| core::array::from_fn(|i| stream[r * RATE + i]))
+            .collect();
+        if partial > 0 {
+            let mut block = [Val::ZERO; RATE];
+            block[..partial].copy_from_slice(&stream[full * RATE..]);
+            blocks.push(block);
+        }
+        (blocks, full, partial)
+    }
+
+    /// Production-shape fidelity pin: non-aligned pre-alpha and quotient streams are represented by
+    /// full rounds plus one trailing partial round each. The generalized host schedule matches the
+    /// native challenger and the same blocks satisfy the AIR.
+    #[test]
+    fn air_accepts_partial_pre_alpha_and_quotient_transcript_matching_native() {
+        let pre_stream: Vec<Val> = (0..17).map(|i| Val::from_u32(0x1000 + i)).collect();
+        let quot_stream: Vec<Val> = (0..12).map(|i| Val::from_u32(0x2000 + i)).collect();
+        let (mut blocks, pre_full, pre_partial) = chunk_fs_stream(&pre_stream);
+        let (quot_blocks, quot_full, quot_partial) = chunk_fs_stream(&quot_stream);
+        blocks.extend_from_slice(&quot_blocks);
+        let cfg = RecursiveConfig {
+            fs_pre_alpha_rounds: pre_full,
+            fs_pre_alpha_partial: pre_partial,
+            fs_quotient_rounds: quot_full,
+            fs_quotient_partial: quot_partial,
+            ..cfg_fs(10, 8, pre_full)
+        };
+
+        let mut native = Challenger::new(default_koalabear_poseidon2_16());
+        for &value in &pre_stream {
+            native.observe(value);
+        }
+        let alpha_native = Challenge::from_basis_coefficients_fn(|_| -> Val { native.sample() });
+        for &value in &quot_stream {
+            native.observe(value);
+        }
+        let zeta_native = Challenge::from_basis_coefficients_fn(|_| -> Val { native.sample() });
+        let (alpha, zeta, _) = fs_alpha_zeta_from_config(&cfg, &blocks);
+        assert_eq!(alpha, alpha_native);
+        assert_eq!(zeta, zeta_native);
+
+        let row = fs_window(&cfg, &blocks, ext_multi(0x55));
+        let matrix = RowMajorMatrix::new(row, n_cols(&cfg));
+        let report = check_all_constraints(&air(cfg), &matrix, &[], None);
+        assert!(report.is_ok(), "partial FS transcript rejected: {report:?}");
+    }
+
+    /// A partial transcript block has a canonical zero tail. Otherwise prover-chosen cells outside
+    /// the length-tagged observe stream would remain unconstrained.
+    #[test]
+    fn air_rejects_nonzero_tail_in_partial_fs_block() {
+        let cfg = RecursiveConfig {
+            fs_pre_alpha_rounds: 1,
+            fs_pre_alpha_partial: 3,
+            fs_quotient_rounds: 1,
+            fs_quotient_partial: 2,
+            ..cfg_fs(10, 8, 1)
+        };
+        let mut blocks = vec![
+            fs_block(1),
+            [Val::ZERO; RATE],
+            fs_block(2),
+            [Val::ZERO; RATE],
+        ];
+        blocks[1][..3].copy_from_slice(&fs_block(3)[..3]);
+        blocks[3][..2].copy_from_slice(&fs_block(4)[..2]);
+        let mut row = fs_window(&cfg, &blocks, ext_multi(0x66));
+        let partial = fs_round_base(&cfg, cfg.fs_pre_alpha_rounds);
+        row[partial + FS_BLOCK + cfg.fs_pre_alpha_partial] = Val::ONE;
+        let matrix = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(!check_all_constraints(&air(cfg), &matrix, &[], None).is_ok());
     }
 
     /// GOLDEN (positive): an honest FS-αζ window — pre-alpha absorb chain ‖ alpha squeeze ‖ quotient
@@ -8827,7 +9651,7 @@ mod tests {
         let blocks: Vec<[Val; RATE]> = (0..2u32).map(|r| fs_block(70 + r)).collect();
         let mut row = fs_window(&cfg, &blocks, ext_multi(15));
         // corrupt the quotient round's perm input capacity length-tag slot.
-        let qb = fs_quot_round_base(&cfg);
+        let qb = fs_quot_round_base(&cfg, 0);
         row[qb + FS_PERM + inlined_perm::C_INPUTS + RATE] += Val::ONE;
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         assert!(!check_all_constraints(&air(cfg), &m, &[], None).is_ok());
@@ -8858,9 +9682,8 @@ mod tests {
         let mut row = fs_window(&cfg, &blocks, ext_multi(19));
         // set the DEEP alpha cell to the QUOTIENT round's squeeze (= zeta) — the "alpha after observe
         // quotient" wrong order. Honest alpha is the pre-alpha squeeze, so this differs ⇒ reject.
-        let qb = fs_quot_round_base(&cfg);
-        let wrong_alpha: [Val; D] =
-            core::array::from_fn(|i| row[qb + FS_PERM + C_OUTPUT + (RATE - 1 - i)]);
+        let zb = fs_zeta(&cfg);
+        let wrong_alpha: [Val; D] = core::array::from_fn(|i| row[zb + i]);
         let db = deep_base(&cfg);
         row[db + DEEP_ALPHA..db + DEEP_ALPHA + D].copy_from_slice(&wrong_alpha);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -8972,6 +9795,26 @@ mod tests {
         final_blocks: &[[Val; RATE]],
         q: Challenge,
     ) -> Vec<Val> {
+        fb_window_streams(
+            cfg,
+            fs_blocks,
+            beta_blocks,
+            &[],
+            [Val::ZERO; RATE],
+            final_blocks,
+            q,
+        )
+    }
+
+    fn fb_window_streams(
+        cfg: &RecursiveConfig,
+        fs_blocks: &[[Val; RATE]],
+        beta_blocks: &[[Val; DIGEST_ELEMS]],
+        ood_blocks: &[[Val; RATE]],
+        ood_partial_block: [Val; RATE],
+        final_blocks: &[[Val; RATE]],
+        q: Challenge,
+    ) -> Vec<Val> {
         // descent e1 siblings for rounds 1..num_rounds (beta is overridden, so any value works).
         let descent: Vec<(Challenge, Challenge)> = (1..cfg.rounds())
             .map(|r| (ext_multi(500 + r as u32), Challenge::ZERO))
@@ -8994,8 +9837,8 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: beta_blocks,
-            fs_ood_blocks: &[],
-            fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_ood_blocks: ood_blocks,
+            fs_ood_partial_block: ood_partial_block,
             fs_final_blocks: final_blocks,
             fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
@@ -9114,6 +9957,96 @@ mod tests {
                 );
             }
         }
+    }
+
+    /// ADR-0011 fidelity pin for the monolithic OOD handoff: zeta leaves six
+    /// buffered outputs, the OOD observe stream clears them and ends in a
+    /// partial duplex, BCA spans two rate-7 output blocks, and beta continues
+    /// from the BCA squeeze state. The AIR cells match the native challenger.
+    #[test]
+    fn air_accepts_c9_ood_bca_beta_transcript_and_matches_native() {
+        use descender_account_stark::Challenger as NativeChallenger;
+        use p3_challenger::{CanObserve, CanSample};
+        use p3_koala_bear::default_koalabear_poseidon2_16;
+
+        let cfg = RecursiveConfig {
+            fs_batch_combo_alpha: true,
+            fs_ood_observe_len: 2,
+            fs_ood_partial: 3,
+            ..cfg_fb(12, 8, 2, 1)
+        };
+        let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(700 + r)).collect();
+        let comms = vec![fb_block(800)];
+        let ood: Vec<[Val; RATE]> = (0..2u32).map(|r| fs_block(900 + r)).collect();
+        let partial = fs_block(999);
+        let row = fb_window_streams(&cfg, &fs_blocks, &comms, &ood, partial, &[], ext_multi(77));
+        let matrix = RowMajorMatrix::new(row.clone(), n_cols(&cfg));
+        assert!(
+            check_all_constraints(&air(cfg), &matrix, &[], None).is_ok(),
+            "honest c9 OOD→BCA→beta transcript rejected"
+        );
+
+        let mut native = NativeChallenger::new(default_koalabear_poseidon2_16());
+        for block in &fs_blocks[..2] {
+            for &value in block {
+                native.observe(value);
+            }
+        }
+        let _: Challenge = native.sample();
+        for &value in &fs_blocks[2] {
+            native.observe(value);
+        }
+        let _: Challenge = native.sample();
+        for block in &ood {
+            for &value in block {
+                native.observe(value);
+            }
+        }
+        for &value in &partial[..cfg.fs_ood_partial] {
+            native.observe(value);
+        }
+        let native_bca: Challenge = native.sample();
+        for &value in &comms[0] {
+            native.observe(value);
+        }
+        let native_beta: Challenge = native.sample();
+
+        let got_bca = Challenge::from_basis_coefficients_slice(
+            &row[bca_base(&cfg) + BCA_ALPHA..bca_base(&cfg) + BCA_ALPHA + D],
+        )
+        .unwrap();
+        let got_beta = Challenge::from_basis_coefficients_slice(
+            &row[fb_round_base(&cfg, 0) + FB_BETA..fb_round_base(&cfg, 0) + FB_BETA + D],
+        )
+        .unwrap();
+        assert_eq!(got_bca, native_bca);
+        assert_eq!(got_beta, native_beta);
+    }
+
+    #[test]
+    fn air_rejects_tampered_c9_ood_permutation() {
+        let cfg = RecursiveConfig {
+            fs_batch_combo_alpha: true,
+            fs_ood_observe_len: 1,
+            fs_ood_partial: 2,
+            ..cfg_fb(12, 8, 2, 1)
+        };
+        let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(1000 + r)).collect();
+        let comms = vec![fb_block(1100)];
+        let ood = vec![fs_block(1200)];
+        let mut row = fb_window_streams(
+            &cfg,
+            &fs_blocks,
+            &comms,
+            &ood,
+            fs_block(1300),
+            &[],
+            ext_multi(88),
+        );
+        let partial_round = food_round_base(&cfg, cfg.fs_ood_observe_len);
+        row[partial_round + FOOD_PERM + inlined_perm::C_BEGIN_POST] += Val::ONE;
+        let matrix = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(!check_all_constraints(&air(cfg), &matrix, &[], None).is_ok());
     }
 
     /// (FS-β) FORGERY — a FOLD using a beta != the squeezed beta_r is rejected. We keep the FS-β
@@ -10282,7 +11215,7 @@ mod tests {
     #[test]
     fn fan_out_indices_are_independent_native_draws() {
         let h = 12usize;
-        let n = 6usize; // within RATE = 8.
+        let n = 6usize; // within RATE = 7.
         let cfg = cfg_fan_out(h, n);
         let (m, fs, c, f, _q) = fan_out_matrix(&cfg, n);
         let native = native_fan_out_indices(&fs, &c, &f, h, n);
@@ -10428,8 +11361,8 @@ mod tests {
 
     /// SCALE — the fan-out is parameterized by `fan_out_queries`; the per-row constraints are IDENTICAL
     /// for every row, so the structure scales to `PROD_NUM_QUERIES`. We validate the honest matrix
-    /// across N = 2..=8 (the full within-RATE range: one output-buffer refill). At N = RATE the matrix
-    /// uses all 8 LIFO pops of the shared permute output as the 8 distinct query indices.
+    /// across N = 2..=RATE (the full within-RATE range: no output-buffer refill). At N = RATE the
+    /// matrix uses all 7 LIFO pops of the shared permute output as 7 distinct query indices.
     #[test]
     fn fan_out_scales_within_rate() {
         for n in 2..=RATE {
@@ -10452,7 +11385,7 @@ mod tests {
     // =================================================================================
 
     /// GOLDEN (positive, CROSS-BUCKET): an honest N-row fan-out matrix at N crossing >= 1 refill
-    /// boundary (N = 12 spans buckets 0 and 1; N = 16 spans exactly 2 full buckets) ACCEPTS via the real
+    /// boundary (N = 12 spans buckets 0 and 1; N = 16 spans three buckets) ACCEPTS via the real
     /// `check_all_constraints`. This exercises the squeeze-only refill chain end-to-end.
     #[test]
     fn fan_out_multi_refill_honest_accepts() {
@@ -10474,7 +11407,7 @@ mod tests {
 
     /// FIDELITY-PIN (CROSS-BUCKET) — each fan-out row's index (`C_INDEX`) equals the r-th `sample_bits`
     /// draw of a REAL `DuplexChallenger` driven through the full transcript, for r spanning >= 2 buckets
-    /// (N = 16 ⇒ buckets 0 and 1, crossing the 8→9 refill). The refill permute MUST reproduce the native
+    /// (N = 16 ⇒ buckets 0, 1, and 2, crossing the 7→8 and 14→15 refills). The refill permute MUST reproduce the native
     /// challenger's post-empty re-permute EXACTLY or this fails. NOT constants.
     #[test]
     fn fan_out_multi_refill_indices_match_native_across_buckets() {
@@ -10569,24 +11502,25 @@ mod tests {
         );
     }
 
-    /// SCALE to PROD_NUM_QUERIES — the multi-refill structure parameterizes to N = 56 (7 buckets,
-    /// ceil(56/8)). We assert the structural layout (bucket count, refill perm count) is correct for
-    /// PROD_NUM_QUERIES, and (cost permitting) that a SMALL representative cross-bucket N validates. The
-    /// per-row constraints + refill chain are IDENTICAL for every bucket, so N=16 validation (2 full
-    /// buckets) + the structural check ⇒ the structure scales to 56. (A full 56-row check_all_constraints
-    /// is heavy; the end-to-end honest validation is flagged at N=16.)
+    /// SCALE to PROD_NUM_QUERIES — the multi-refill structure parameterizes to the deployed N = 120
+    /// (18 buckets, `ceil(120/7)`). We assert the structural layout (bucket count, refill perm count)
+    /// is correct for PROD_NUM_QUERIES, and (cost permitting) that a SMALL representative
+    /// cross-bucket N validates. The per-row constraints + refill chain are IDENTICAL for every
+    /// bucket, so N=16 validation (2 full buckets) + the structural check establishes that the
+    /// layout scales to the deployed count. (A full 120-row `check_all_constraints` is heavy; the
+    /// end-to-end honest validation is flagged at N=16.)
     #[test]
     fn fan_out_multi_refill_parameterizes_to_prod() {
         let cfg = cfg_fan_out(12, PROD_NUM_QUERIES);
         assert_eq!(fan_out_buckets(&cfg), PROD_NUM_QUERIES.div_ceil(RATE));
-        assert_eq!(fan_out_buckets(&cfg), 7, "ceil(56/8) == 7 buckets");
+        assert_eq!(fan_out_buckets(&cfg), 18, "ceil(120/7) == 18 buckets");
         assert_eq!(
             fan_out_refill_perms(&cfg),
-            6,
-            "6 squeeze-only refill permutes (P1..P6) for 56 queries"
+            17,
+            "17 squeeze-only refill permutes (P1..P17) for 120 queries"
         );
-        // structural: the (FAN-OUT) block sizes to draw_offset + 6 refill perms.
-        assert_eq!(fo_size(&cfg), 1 + 6 * PERM_COLS);
+        // structural: the (FAN-OUT) block sizes to draw_offset + 17 refill perms.
+        assert_eq!(fo_size(&cfg), 1 + 17 * PERM_COLS);
     }
 
     /// (FS-bca) FORGERY — the batch-combo alpha is the SQUEEZE-ONLY permute of the post-zeta state:
@@ -10874,7 +11808,6 @@ mod tests {
     ) {
         let h0 = cfg.log_height;
         let rounds = cfg.rounds();
-        let levels = cfg.layer_open_levels;
         let coeffs: Vec<Challenge> = (0..(1u32 << rounds)).map(|k| ext_multi(k + 1)).collect();
         let betas: Vec<Challenge> = (0..rounds as u32).map(|r| ext_multi(100 + r)).collect();
         let index = (index_draw.as_canonical_u32() as usize) & ((1 << h0) - 1);
@@ -10910,14 +11843,15 @@ mod tests {
             folded
         };
 
-        // the path consumes only `levels` node-selector bits, so a `levels`-deep tree authenticates the
-        // node at `(start_index >> 1) & ((1<<levels)-1)` — exactly the selectors the AIR reads from the
-        // FS bits (bit r+1+level).
-        let n_nodes = 1usize << levels;
+        // Each path consumes its round-specific number of node-selector bits, so the tree
+        // authenticates `(start_index >> 1) & ((1<<levels_r)-1)` using exactly the FS bits
+        // `r+1 .. r+1+levels_r`. Production uses decreasing depths (5,4).
         let mut metas: Vec<([Val; DIGEST_ELEMS], Challenge, Challenge, usize)> = Vec::new();
         let mut owned_sibs: Vec<Vec<[Val; DIGEST_ELEMS]>> = Vec::new();
         let mut owned_salts: Vec<[Val; SALT_ELEMS]> = Vec::new();
         for r in 0..cfg.layer_open_rounds {
+            let levels = layer_open_levels_for_round(cfg, r);
+            let n_nodes = 1usize << levels;
             let (e_fold, e_sib) = round_pairs[r];
             let start_index = index >> r;
             let parity = (start_index & 1) == 1;
@@ -11021,6 +11955,31 @@ mod tests {
                 );
             }
         }
+    }
+
+    /// PRODUCTION SHAPE: binary FRI commits after every fold, so a log-height-six query opens
+    /// trees of depths five and four. The monolithic window must allocate and constrain those
+    /// exact heterogeneous paths; treating both rounds as depth five cannot represent the native
+    /// second commitment.
+    #[test]
+    fn layer_open_descent_accepts_production_decreasing_depths() {
+        let cfg = RecursiveConfig {
+            layer_open_level_step: 1,
+            ..cfg_lo(6, 2, 5, true)
+        };
+        assert_eq!(layer_open_levels_for_round(&cfg, 0), 5);
+        assert_eq!(layer_open_levels_for_round(&cfg, 1), 4);
+
+        let (row, _) = lo_window(&cfg, Val::from_u32(0x2D));
+        let mut matrix = RowMajorMatrix::new(row.clone(), n_cols(&cfg));
+        assert!(check_all_constraints(&air(cfg), &matrix, &[], None).is_ok());
+
+        // The shorter second-round path remains load-bearing at its own dynamic offset.
+        matrix.values[lo_level_base(&cfg, 1, 3) + LO_ML_SIBLING] += Val::ONE;
+        assert!(
+            !check_all_constraints(&air(cfg), &matrix, &[], None).is_ok(),
+            "tampered final node of the depth-four production path was accepted"
+        );
     }
 
     /// FIDELITY-PIN (round 0, real p3 MMCS): build a real arity-2 FRI commit-phase layer, commit a real
@@ -12451,7 +13410,7 @@ mod tests {
         type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
         type DftT = Radix2DitParallel<Val>;
         type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
-        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 7>;
         type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
 
         let perm: Perm = default_koalabear_poseidon2_16();
@@ -13626,19 +14585,24 @@ mod tests {
 // on the REAL proof's real commitments / public values / FRI commit-phase commitments /
 // final polynomial / PoW witnesses to extract the REAL alpha / zeta / batch-combo-alpha /
 // betas / query-indices (ground truth — and `verify_account_creation` accepting the same
-// proof proves these ARE the challenges the proof was bound to), and (3) replays the SAME
+// proof proves these ARE the challenges the proof was bound to), (3) replays the SAME
 // real flat observe-stream through the recursion crate's OWN duplex primitives (`absorb_state`
 // + the inlined Poseidon2 perm — the exact pieces the in-AIR FS blocks are built from) and
 // asserts that replay reproduces the ground-truth challenges + indices, AND that the
-// recursion's published `fs_squeeze_*` helpers reproduce them on the RATE-aligned segments.
+// recursion's published `fs_squeeze_*` helpers reproduce them on the RATE-aligned segments, and
+// (4) materializes the real OOD stream through the constant-width vertical OOD accumulator AIR.
 //
 // HONEST SCOPE (see the report): this module binds the FS-challenge + query-index side to a
-// real proof (alpha, zeta, batch-combo alpha, every beta, all 56 query indices). It does NOT
-// run the leaf C(zeta) fold or Merkle/FRI opening verification on the real proof's openings via
-// `check_all_constraints` — those stay COST-DEFERRED (the OOD opened-values stream alone is
-// ~145k field elements, and the full-fold + opening arithmetic is already covered by the
-// pre-existing SYNTHETIC `check_all_constraints` PINs). What is proven here is FS-transcript
-// fidelity end-to-end on ONE genuine proof.
+// real proof (alpha, zeta, batch-combo alpha, every beta, all 120 query indices). It now runs the
+// production OOD opened-values stream through `check_all_constraints` vertically, avoiding the
+// unusable width of a horizontal member layout. It independently reconstructs the PCS claim order
+// and enforces element-for-element equality with the transcript stream. The block-wide companion
+// and settlement envelope bind that ordered stream into the member/root chain. What remains is
+// proving every Merkle/FRI opening from the real proof in one economical composed proof. The capstone
+// now materializes all 120 complete query statements (including recomputed MMCS roots and FRI
+// terminals), while only query zero crosses the five-component proof boundary. What is proven here
+// is transcript arithmetic, ordered claim equality, production-stream fidelity, exact all-query
+// statement materialization, and one full component envelope—not the remaining aggregate theorem.
 // =====================================================================================
 #[cfg(test)]
 mod real_proof_capstone {
@@ -13647,9 +14611,50 @@ mod real_proof_capstone {
         prove_account_creation_with_seed, verify_account_creation, AccountCreationSecrets,
         Challenge, Challenger, Val, N_LANES, SYNDROME_LANES,
     };
+    use p3_air::check_all_constraints;
     use p3_challenger::{CanObserve, CanSample, CanSampleBits, GrindingChallenger};
     use p3_field::{BasedVectorSpace, PrimeCharacteristicRing, PrimeField32};
     use p3_koala_bear::default_koalabear_poseidon2_16;
+    use p3_matrix::dense::RowMajorMatrix;
+    use p3_symmetric::Permutation;
+
+    const EXPECTED_ALL_QUERY_TRANSCRIPT_ANCHOR_ROOT_V1: [u32; DIGEST_ELEMS] = [
+        388_966_703,
+        1_597_752_601,
+        1_182_766_932,
+        1_087_369_876,
+        2_047_530_678,
+        1_610_795_401,
+        998_635_236,
+        1_261_927_568,
+        1_588_649_335,
+        2_074_501_591,
+        673_990_036,
+        797_892_112,
+        1_819_995_322,
+    ];
+    const EXPECTED_ALL_QUERY_STATEMENT_ROOT_V1: [u32; DIGEST_ELEMS] = [
+        743_707_966,
+        1_628_690_519,
+        1_889_230_926,
+        1_721_908_629,
+        628_304_068,
+        370_313_435,
+        2_037_860_876,
+        1_200_330_507,
+        51_208_022,
+        1_093_143_143,
+        1_528_801_889,
+        1_842_129_271,
+        949_922_941,
+    ];
+    const EXPECTED_ALL_QUERY_INDICES_V1: [usize; 120] = [
+        9, 62, 50, 1, 54, 47, 37, 27, 31, 33, 26, 53, 38, 14, 0, 53, 6, 60, 19, 43, 55, 34, 29, 28,
+        61, 6, 57, 49, 12, 59, 63, 43, 36, 44, 35, 24, 51, 50, 42, 12, 15, 39, 2, 33, 43, 13, 47, 33,
+        13, 52, 11, 16, 12, 34, 61, 36, 61, 39, 1, 63, 35, 50, 31, 49, 29, 51, 25, 3, 7, 29, 24, 23,
+        50, 9, 41, 40, 31, 7, 46, 40, 2, 62, 0, 53, 56, 28, 54, 36, 38, 14, 16, 57, 57, 32, 24, 35,
+        35, 13, 47, 6, 0, 40, 5, 52, 15, 24, 62, 17, 36, 50, 26, 46, 1, 10, 27, 62, 47, 7, 15, 10,
+    ];
 
     /// A minimal but VALID account-creation witness (canonical q12289 lanes), deterministic so
     /// the whole capstone is reproducible.
@@ -13675,7 +14680,8 @@ mod real_proof_capstone {
     /// feed to p3 (mirrors `descender_account_stark::public_values_vec`, which is private). The
     /// field order is fixed by the AIR's public-value layout: pad_source ‖ opening_tuple ‖
     /// masked_projection ‖ context(account_id‖slot‖vv‖state_root‖lifecycle) ‖ role_root ‖
-    /// relation_id ‖ syndrome ‖ packed_witness_commitment.
+    /// nullifier ‖ relation_id ‖ syndrome ‖ packed_witness_commitment ‖
+    /// checked_core_key_commitment.
     fn public_values_vec(p: &descender_account_stark::AccountCreationPublic) -> Vec<Val> {
         let mut v = Vec::new();
         v.extend_from_slice(&p.pad_source_commitment);
@@ -13702,9 +14708,11 @@ mod real_proof_capstone {
         );
         v.extend(p.lifecycle_anchor.iter().map(|&b| Val::from_u32(b as u32)));
         v.extend_from_slice(&p.role_root);
+        v.extend_from_slice(&p.nullifier);
         v.extend_from_slice(&p.relation_id);
         v.extend_from_slice(&p.syndrome);
         v.extend_from_slice(&p.packed_witness_commitment);
+        v.extend_from_slice(&p.checked_core_key_commitment);
         v
     }
 
@@ -13951,6 +14959,82 @@ mod real_proof_capstone {
         }
     }
 
+    /// Independently flatten the PCS verifier's claimed `p_at_z` values in its commitment / matrix /
+    /// point order. This deliberately does not reuse `RealChallenges::ood_stream`: the vertical AIR
+    /// receives this sequence through its PCS-side columns and enforces ordered equality against the
+    /// challenger-observe sequence reconstructed above.
+    fn flatten_pcs_ood_claims(proof: &descender_account_stark::Proof) -> Vec<Val> {
+        let (random_openings, _) = &proof.opening_proof;
+        let opened = &proof.opened_values;
+        let mut stream = Vec::new();
+        let push_extension = |out: &mut Vec<Val>, value: &Challenge| {
+            out.extend_from_slice(value.as_basis_coefficients_slice());
+        };
+
+        // `coms_to_verify` order in uni-stark: random (when ZK), trace, quotient chunks.
+        if let Some(random_values) = &opened.random {
+            for value in random_values {
+                push_extension(&mut stream, value);
+            }
+            if let Some(round) = random_openings.first() {
+                for matrix in round {
+                    for point in matrix {
+                        for value in point {
+                            push_extension(&mut stream, value);
+                        }
+                    }
+                }
+            }
+        }
+
+        let trace_round = usize::from(opened.random.is_some());
+        for value in &opened.trace_local {
+            push_extension(&mut stream, value);
+        }
+        if let Some(matrix) = random_openings
+            .get(trace_round)
+            .and_then(|round| round.first())
+        {
+            if let Some(point) = matrix.first() {
+                for value in point {
+                    push_extension(&mut stream, value);
+                }
+            }
+        }
+        if let Some(trace_next) = &opened.trace_next {
+            for value in trace_next {
+                push_extension(&mut stream, value);
+            }
+            if let Some(point) = random_openings
+                .get(trace_round)
+                .and_then(|round| round.first())
+                .and_then(|matrix| matrix.get(1))
+            {
+                for value in point {
+                    push_extension(&mut stream, value);
+                }
+            }
+        }
+
+        let quotient_round = trace_round + 1;
+        for (chunk_index, chunk) in opened.quotient_chunks.iter().enumerate() {
+            for value in chunk {
+                push_extension(&mut stream, value);
+            }
+            if let Some(matrix) = random_openings
+                .get(quotient_round)
+                .and_then(|round| round.get(chunk_index))
+            {
+                for point in matrix {
+                    for value in point {
+                        push_extension(&mut stream, value);
+                    }
+                }
+            }
+        }
+        stream
+    }
+
     /// A faithful re-implementation of `DuplexChallenger` over the recursion crate's OWN duplex
     /// primitives (`absorb_state` + the inlined Poseidon2 perm via `prefix`-style rounds). This is
     /// the EXACT arithmetic the in-AIR FS blocks are constrained to; if it reproduces a real
@@ -14043,6 +15127,475 @@ mod real_proof_capstone {
         );
     }
 
+    /// PCS REDUCTION CAPSTONE: feed one REAL production query's MMCS-opened `p_at_x` rows and the
+    /// independently reconstructed REAL production OOD `p_at_z` claims through the constant-width
+    /// vertical `open_input` reducer.  This exercises all 23,254 terms in Plonky3's actual
+    /// batch/matrix/point/column order, with the real FS batch-combination alpha, zeta, and query
+    /// point, prove its five-component envelope, then materialize and root the exact statements for
+    /// all 120 native queries. It closes arithmetic/shape fidelity and the all-query compact input
+    /// contract; proving those 120 statements in one economical aggregate remains separate.
+    #[test]
+    fn real_proof_query_runs_through_vertical_opening_reduction() {
+        use crate::pcs_opening_reduction_air::{
+            build_trace as build_reduction_trace, public_values as reduction_public_values,
+            reduce_opening_terms, OpeningReductionTerm, PcsOpeningReductionAir,
+        };
+        use crate::pcs_opening_shape::PRODUCTION_OPENING_TERMS_V1;
+        use p3_field::TwoAdicField;
+
+        let secrets = capstone_secrets();
+        // The query-PoW grinder uses parallel find-any semantics.  A fixed
+        // proof-randomness seed therefore does not freeze the witness (and all
+        // subsequent query indices) unless KAT production is single-threaded.
+        let kat_pool = rayon::ThreadPoolBuilder::new()
+            .num_threads(1)
+            .build()
+            .expect("deterministic single-thread all-query KAT pool");
+        let (public, proof) = kat_pool
+            .install(|| prove_account_creation_with_seed(&secrets, 0xA11C_E055))
+            .expect("production proof succeeds");
+        verify_account_creation(&public, &proof).expect("production proof verifies");
+        let real = extract_real_challenges(&proof, &public_values_vec(&public));
+
+        // `input_proof` is exactly the three `open_input` batches: random, trace, quotient.
+        // Flatten every matrix's authenticated base-field row in that order.
+        let query = &proof.opening_proof.1.query_proofs[0];
+        assert_eq!(query.input_proof.len(), 3);
+        let mut p_at_x = Vec::with_capacity(PRODUCTION_OPENING_TERMS_V1);
+        for batch in &query.input_proof {
+            for matrix in &batch.opened_values {
+                p_at_x.extend_from_slice(matrix);
+            }
+        }
+        assert_eq!(p_at_x.len(), PRODUCTION_OPENING_TERMS_V1);
+        assert_eq!(query.input_proof[0].opened_values.len(), 1);
+        assert_eq!(query.input_proof[0].opened_values[0].len(), 12);
+        assert_eq!(query.input_proof[1].opened_values.len(), 1);
+        assert_eq!(
+            query.input_proof[1].opened_values[0].len(),
+            crate::pcs_opening_shape::TRACE_MATRIX_WIDTH_V1
+        );
+        assert_eq!(query.input_proof[2].opened_values.len(), 8);
+        assert!(query.input_proof[2]
+            .opened_values
+            .iter()
+            .all(|row| row.len() == crate::pcs_opening_shape::QUOTIENT_MATRIX_WIDTH_V1));
+
+        let p_at_z_base = flatten_pcs_ood_claims(&proof);
+        assert_eq!(p_at_z_base.len(), PRODUCTION_OPENING_TERMS_V1 * D);
+        let p_at_z: Vec<Challenge> = p_at_z_base
+            .chunks_exact(D)
+            .map(|chunk| {
+                Challenge::from_basis_coefficients_slice(chunk).expect("eight-limb OOD claim")
+            })
+            .collect();
+
+        // All production input matrices share LDE log height `degree_bits + log_blowup`.
+        let log_height = proof.degree_bits + descender_account_stark::PROD_LOG_BLOWUP;
+        let reversed = crate::fri_fold::reverse_bits_len(real.indices[0], log_height);
+        let x = Val::GENERATOR * Val::two_adic_generator(log_height).exp_u64(reversed as u64);
+        let terms: Vec<OpeningReductionTerm> = p_at_x
+            .iter()
+            .copied()
+            .zip(p_at_z.iter().copied())
+            .map(|(p_at_x, p_at_z)| OpeningReductionTerm {
+                z: real.zeta,
+                x,
+                p_at_x,
+                p_at_z,
+            })
+            .collect();
+
+        let expected = reduce_opening_terms(real.bca, &terms);
+        let (trace, reduced) = build_reduction_trace(real.bca, &terms);
+        assert_eq!(reduced, expected);
+        let pubs = reduction_public_values(real.bca, expected);
+        let report = check_all_constraints(
+            &PcsOpeningReductionAir::new(terms.len()),
+            &trace,
+            &pubs,
+            None,
+        );
+        assert!(
+            report.is_ok(),
+            "real production opening reduction rejected: {} failures",
+            report.failures.len()
+        );
+
+        // The genuine proof must exercise the source-pinned production height, not a toy prefix.
+        assert_eq!(terms.len(), PRODUCTION_OPENING_TERMS_V1);
+        assert_eq!(
+            PcsOpeningReductionAir::new(terms.len()).trace_height(),
+            32_768
+        );
+
+        // One proof-enforced query link now uses the SAME p_at_x cells for the salted leaf hash
+        // and the open_input reduction, while replaying the p_at_z limbs from the genuine
+        // post-zeta challenger state and deriving the real batch-combination alpha from its end.
+        let mut model = ModelChallenger::new();
+        model.observe_slice(&real.pre_alpha_stream);
+        let _leaf_alpha = model.sample_ext();
+        model.observe_slice(&real.quot_stream);
+        assert_eq!(model.sample_ext(), real.zeta);
+        let ood_start = model.state;
+        let query_batches = query
+            .input_proof
+            .iter()
+            .map(|batch| {
+                let salts = batch
+                    .opening_proof
+                    .0
+                    .iter()
+                    .map(|salt| {
+                        <[Val; descender_account_stark::SALT_ELEMS]>::try_from(salt.as_slice())
+                            .expect("production MMCS salt width")
+                    })
+                    .collect();
+                crate::pcs_query_air::PcsQueryBatchInput {
+                    opened_values: batch.opened_values.clone(),
+                    salts,
+                }
+            })
+            .collect();
+        let query_input = crate::pcs_query_air::PcsQueryInput {
+            batches: query_batches,
+            p_at_z: p_at_z.clone(),
+            z: real.zeta,
+            index: real.indices[0],
+            ood_start,
+        };
+        let query_air = crate::pcs_query_air::PcsQueryAir::production(log_height);
+        let (query_trace, query_output) =
+            crate::pcs_query_air::build_trace(&query_air, &query_input);
+        assert_eq!(query_output.alpha, real.bca);
+        assert_eq!(query_output.x, x);
+        assert_eq!(query_output.reduced_opening, expected);
+        assert_eq!(
+            query_output.ood_end,
+            crate::block_ood_binding_air::terminal_state(ood_start, &p_at_z_base)
+        );
+        let query_public =
+            crate::pcs_query_air::public_values(&query_air, &query_input, &query_output);
+        let query_report = check_all_constraints(&query_air, &query_trace, &query_public, None);
+        assert!(
+            query_report.is_ok(),
+            "real production PCS query link rejected: {} failures",
+            query_report.failures.len()
+        );
+
+        // The public terminal reducer value is now the first row of the full real FRI
+        // commit-phase fold chain.  This is a proof constraint, not a host assertion: changing
+        // the public reduced opening while leaving the real chain fixed is rejected below.
+        let fri_proof = &proof.opening_proof.1;
+        assert_eq!(query.commit_phase_openings.len(), real.betas.len());
+        let native_layer_depths: Vec<_> = query
+            .commit_phase_openings
+            .iter()
+            .map(|opening| opening.opening_proof.1.len())
+            .collect();
+        assert_eq!(
+            native_layer_depths,
+            vec![log_height - 1, log_height - 2],
+            "relation-v3 FRI layer depths must follow the binary-fold production schedule"
+        );
+        let fri_siblings: Vec<Challenge> = query
+            .commit_phase_openings
+            .iter()
+            .map(|opening| {
+                assert_eq!(opening.log_arity, 1);
+                assert_eq!(opening.sibling_values.len(), 1);
+                opening.sibling_values[0]
+            })
+            .collect();
+        let fri_chain = crate::fri_chain_air::build_query_chain_from_opening(
+            query_output.reduced_opening,
+            &fri_siblings,
+            &real.betas,
+            log_height,
+            real.indices[0],
+        );
+        let terminal_offset =
+            (real.betas.len() - 1) * crate::fri_chain_air::N_COLS + crate::fri_chain_air::C_FOLDED;
+        let terminal_fold = Challenge::from_basis_coefficients_slice(
+            &fri_chain[terminal_offset..terminal_offset + D],
+        )
+        .expect("real FRI terminal fold limbs");
+        assert_eq!(fri_proof.final_poly.len(), 1);
+        assert_eq!(terminal_fold, fri_proof.final_poly[0]);
+        let fri_public = crate::fri_chain_air::public_values(
+            query_output.reduced_opening,
+            real.indices[0] & 1 == 1,
+            terminal_fold,
+            &real.betas,
+        );
+        let fri_air = crate::fri_chain_air::FriChainAir::new(real.betas.len());
+        let fri_trace = RowMajorMatrix::new(fri_chain, crate::fri_chain_air::N_COLS);
+        assert!(check_all_constraints(&fri_air, &fri_trace, &fri_public, None,).is_ok());
+        let mut wrong_reduced = fri_public.clone();
+        wrong_reduced[crate::fri_chain_air::PV_INITIAL_E0] += Val::ONE;
+        assert!(
+            !check_all_constraints(&fri_air, &fri_trace, &wrong_reduced, None,).is_ok(),
+            "real FRI chain accepted a public initial value different from the PCS reducer"
+        );
+
+        // Authenticate the SAME query's three p_at_x batches with their genuine hiding salts and
+        // Merkle paths.  `HidingMmcs::verify_batch` forms each leaf by concatenating
+        // `(opened_matrix_row || salt)` for all same-height matrices; mirror that ordering exactly.
+        let roots = [
+            proof
+                .commitments
+                .random
+                .as_ref()
+                .expect("ZK random commitment")[0],
+            proof.commitments.trace[0],
+            proof.commitments.quotient_chunks[0],
+        ];
+        for (batch_index, (batch, expected_root)) in query.input_proof.iter().zip(roots).enumerate()
+        {
+            let (salts, siblings) = &batch.opening_proof;
+            assert_eq!(salts.len(), batch.opened_values.len());
+            let mut salted_leaf = Vec::new();
+            for (opened, salt) in batch.opened_values.iter().zip(salts) {
+                assert_eq!(salt.len(), descender_account_stark::SALT_ELEMS);
+                salted_leaf.extend_from_slice(opened);
+                salted_leaf.extend_from_slice(salt);
+            }
+            let (mmcs_trace, root) =
+                crate::vertical_mmcs_air::build_trace(&salted_leaf, real.indices[0], siblings);
+            assert_eq!(
+                root, expected_root,
+                "vertical MMCS root mismatch for production batch {batch_index}"
+            );
+            let mmcs_air = crate::vertical_mmcs_air::VerticalMmcsOpeningAir::new(
+                salted_leaf.len(),
+                siblings.len(),
+            );
+            let mmcs_pubs = crate::vertical_mmcs_air::public_values(
+                expected_root,
+                real.indices[0],
+                siblings.len(),
+                crate::leaf_hash::leaf_hash_digest(&salted_leaf),
+            );
+            assert_eq!(
+                query_output.leaf_digests[batch_index],
+                crate::leaf_hash::leaf_hash_digest(&salted_leaf),
+                "query-link leaf digest != authenticated MMCS leaf for batch {batch_index}"
+            );
+            let mmcs_report = check_all_constraints(&mmcs_air, &mmcs_trace, &mmcs_pubs, None);
+            assert!(
+                mmcs_report.is_ok(),
+                "real production MMCS batch {batch_index} rejected: {} failures",
+                mmcs_report.failures.len()
+            );
+        }
+
+        // The production statement now crosses the actual settlement API: one q128
+        // query-link proof, three q128 MMCS proofs, and the beta-bound q128 FRI-chain
+        // proof are verified against the exact same typed statement.
+        let settlement_profile =
+            crate::pcs_query_settlement::PcsQuerySettlementProfileV1::production();
+        assert_eq!(settlement_profile.log_height as usize, log_height);
+        assert_eq!(settlement_profile.fri_rounds as usize, real.betas.len());
+        let input_siblings =
+            core::array::from_fn(|batch| query.input_proof[batch].opening_proof.1.clone());
+        let settlement_witness = crate::pcs_query_settlement::PcsQuerySettlementWitnessV1 {
+            query_input: query_input.clone(),
+            input_siblings,
+            fri_betas: real.betas.clone(),
+            fri_siblings,
+            final_poly: fri_proof.final_poly[0],
+        };
+        let settlement_config = crate::settlement::prod_config();
+        let envelope = crate::pcs_query_settlement::prove_pcs_query_settlement_v1(
+            &settlement_config,
+            &settlement_profile,
+            settlement_witness,
+        )
+        .expect("genuine production query settlement envelope proves");
+        let expected_statement = envelope.statement.clone();
+        crate::pcs_query_settlement::verify_pcs_query_settlement_v1(
+            &settlement_config,
+            &settlement_profile,
+            0,
+            &envelope,
+            &expected_statement,
+        )
+        .expect("genuine production query settlement envelope verifies");
+
+        // Materialize the compact settlement input contract for EVERY native
+        // query from this one verified relation-v3 proof. Evaluate and drop all
+        // five generated component AIR traces per query, keeping memory bounded
+        // while checking all 600 traces. This deliberately avoids calling those
+        // host-side checks the uneconomical 600 component proofs.
+        let all_witnesses: Vec<_> = fri_proof
+            .query_proofs
+            .iter()
+            .enumerate()
+            .map(|(ordinal, native_query)| {
+                let batches = native_query
+                    .input_proof
+                    .iter()
+                    .map(|batch| {
+                        let salts = batch
+                            .opening_proof
+                            .0
+                            .iter()
+                            .map(|salt| {
+                                <[Val; descender_account_stark::SALT_ELEMS]>::try_from(
+                                    salt.as_slice(),
+                                )
+                                .expect("production MMCS salt width")
+                            })
+                            .collect();
+                        crate::pcs_query_air::PcsQueryBatchInput {
+                            opened_values: batch.opened_values.clone(),
+                            salts,
+                        }
+                    })
+                    .collect();
+                let fri_siblings = native_query
+                    .commit_phase_openings
+                    .iter()
+                    .map(|opening| {
+                        assert_eq!(opening.log_arity, 1);
+                        assert_eq!(opening.sibling_values.len(), 1);
+                        opening.sibling_values[0]
+                    })
+                    .collect();
+                crate::pcs_query_settlement::PcsQuerySettlementWitnessV1 {
+                    query_input: crate::pcs_query_air::PcsQueryInput {
+                        batches,
+                        p_at_z: p_at_z.clone(),
+                        z: real.zeta,
+                        index: real.indices[ordinal],
+                        ood_start,
+                    },
+                    input_siblings: core::array::from_fn(|batch| {
+                        native_query.input_proof[batch].opening_proof.1.clone()
+                    }),
+                    fri_betas: real.betas.clone(),
+                    fri_siblings,
+                    final_poly: fri_proof.final_poly[0],
+                }
+            })
+            .collect();
+        let all_statements =
+            crate::pcs_query_settlement::materialize_all_pcs_query_statements_constraint_checked_v1(
+                settlement_profile.clone(),
+                all_witnesses,
+            )
+            .expect(
+                "all 120 genuine production query statements materialize and all 600 component AIR traces satisfy constraints",
+            );
+        assert_eq!(
+            all_statements.statements.len(),
+            descender_account_stark::PROD_NUM_QUERIES
+        );
+        assert_eq!(all_statements.statements[0], expected_statement);
+        assert_eq!(
+            crate::pcs_query_settlement::statement_roots_v1(&all_statements.statements),
+            (
+                all_statements.transcript_anchor_root,
+                all_statements.statement_root
+            )
+        );
+        assert_eq!(real.indices, EXPECTED_ALL_QUERY_INDICES_V1);
+        assert_eq!(
+            all_statements.transcript_anchor_root,
+            EXPECTED_ALL_QUERY_TRANSCRIPT_ANCHOR_ROOT_V1.map(Val::from_u32),
+            "deterministic all-query transcript-anchor KAT drift"
+        );
+        assert_eq!(
+            all_statements.statement_root,
+            EXPECTED_ALL_QUERY_STATEMENT_ROOT_V1.map(Val::from_u32),
+            "deterministic all-query complete-statement KAT drift"
+        );
+
+        // GENUINE ANCHOR SOURCE MAP: place every real proof/query statement in
+        // the exact recursive transcript/consumer columns selected by the
+        // production 120->128 fan-out wrapper.  Its extracted 116-field
+        // preimage must equal the native compact statement contract's canonical
+        // preimage element-for-element. This pins the source map on all genuine
+        // relation-v3 queries without pretending that all 120 heavyweight
+        // recursive windows have already been proven.
+        let stream_shape = |len: usize| (len / RATE, len % RATE);
+        let (pre_full, pre_partial) = stream_shape(real.pre_alpha_stream.len());
+        let (quot_full, quot_partial) = stream_shape(real.quot_stream.len());
+        let (final_full, final_partial) = stream_shape(real.post_beta_stream.len());
+        let anchor_cfg = RecursiveConfig {
+            log_height,
+            merkle_levels: log_height,
+            fs_alpha_zeta: true,
+            fs_pre_alpha_rounds: pre_full,
+            fs_pre_alpha_partial: pre_partial,
+            fs_quotient_rounds: quot_full,
+            fs_quotient_partial: quot_partial,
+            fs_batch_combo_alpha: true,
+            fs_beta_rounds: real.betas.len(),
+            fs_final_blocks: final_full,
+            fs_final_partial: final_partial,
+            fs_ood_external: true,
+            bind_root_to_main_commit: true,
+            layer_open_rounds: real.betas.len(),
+            layer_open_levels: log_height - 1,
+            layer_open_level_step: 1,
+            final_poly_len: fri_proof.final_poly.len(),
+            quot_chunks: proof.opened_values.quotient_chunks.len(),
+            quot_merkle_levels: log_height,
+            fan_out_queries: descender_account_stark::PROD_NUM_QUERIES,
+            ..RecursiveConfig::single_window(log_height)
+        };
+        let anchor_air = crate::fanout_anchor_air::FanOutAnchorAirV1::production(anchor_cfg)
+            .expect("genuine proof has the production anchor profile");
+        for (ordinal, statement) in all_statements.statements.iter().enumerate() {
+            let mut anchor_window = vec![Val::ZERO; n_cols(&anchor_air.cfg)];
+            anchor_window[window_fan_out_ordinal_col(&anchor_air.cfg)] = Val::from_usize(ordinal);
+            anchor_window[window_index_col()] = Val::from_usize(real.indices[ordinal]);
+            anchor_window
+                [window_bca_alpha_col(&anchor_air.cfg)..window_bca_alpha_col(&anchor_air.cfg) + D]
+                .copy_from_slice(&limbs(real.bca));
+            anchor_window
+                [window_fs_zeta_col(&anchor_air.cfg)..window_fs_zeta_col(&anchor_air.cfg) + D]
+                .copy_from_slice(&limbs(real.zeta));
+            anchor_window[window_external_ood_start_col(&anchor_air.cfg)
+                ..window_external_ood_start_col(&anchor_air.cfg) + WIDTH]
+                .copy_from_slice(&query_input.ood_start);
+            anchor_window[window_external_ood_end_col(&anchor_air.cfg)
+                ..window_external_ood_end_col(&anchor_air.cfg) + WIDTH]
+                .copy_from_slice(&query_output.ood_end);
+            for i in 0..DIGEST_ELEMS {
+                anchor_window[window_quotient_stream_col(&anchor_air.cfg, DIGEST_ELEMS + i)] =
+                    roots[0][i];
+                anchor_window[window_pre_alpha_stream_col(&anchor_air.cfg, 3 + i)] = roots[1][i];
+                anchor_window[window_quotient_stream_col(&anchor_air.cfg, i)] = roots[2][i];
+                anchor_window[window_main_commit_col(&anchor_air.cfg) + i] = roots[1][i];
+                anchor_window[window_quotient_commit_col(&anchor_air.cfg) + i] = roots[2][i];
+            }
+            for (round, beta) in real.betas.iter().enumerate() {
+                anchor_window[window_fri_beta_col(&anchor_air.cfg, round)
+                    ..window_fri_beta_col(&anchor_air.cfg, round) + D]
+                    .copy_from_slice(&limbs(*beta));
+            }
+            anchor_window[window_final_stream_col(&anchor_air.cfg, 0)
+                ..window_final_stream_col(&anchor_air.cfg, 0) + RATE]
+                .copy_from_slice(&real.post_beta_stream[..RATE]);
+            // The first eight stream elements span one full block plus the first
+            // lane of the trailing block, so set that final limb explicitly.
+            anchor_window[window_final_stream_col(&anchor_air.cfg, RATE)] =
+                real.post_beta_stream[RATE];
+            anchor_window[window_final_poly_coeff_col(&anchor_air.cfg, 0)
+                ..window_final_poly_coeff_col(&anchor_air.cfg, 0) + D]
+                .copy_from_slice(&limbs(fri_proof.final_poly[0]));
+            assert_eq!(
+                anchor_air
+                    .transcript_anchor_preimage_from_window(&anchor_window)
+                    .expect("genuine anchor window width"),
+                crate::pcs_query_settlement::transcript_anchor_preimage_v1(ordinal, statement),
+                "recursive source-map preimage != genuine settlement statement preimage at query {ordinal}"
+            );
+        }
+    }
+
     /// CAPSTONE PIN: the recursion crate's own duplex primitives reproduce the REAL proof's
     /// actual Fiat-Shamir challenges (alpha, zeta, batch-combo alpha, every beta) AND every query
     /// index — extracted by driving a native `DuplexChallenger` through p3's EXACT verify
@@ -14059,6 +15612,73 @@ mod real_proof_capstone {
         let pv = public_values_vec(&public);
         let real = extract_real_challenges(&proof, &pv);
 
+        // The monolithic AIR's generalized alpha/zeta block now represents these REAL non-aligned
+        // streams as full rate-7 rounds plus one trailing partial round per segment.
+        let chunk = |stream: &[Val]| -> (Vec<[Val; RATE]>, usize, usize) {
+            let full = stream.len() / RATE;
+            let partial = stream.len() % RATE;
+            let mut blocks: Vec<[Val; RATE]> = (0..full)
+                .map(|r| core::array::from_fn(|i| stream[r * RATE + i]))
+                .collect();
+            if partial > 0 {
+                let mut block = [Val::ZERO; RATE];
+                block[..partial].copy_from_slice(&stream[full * RATE..]);
+                blocks.push(block);
+            }
+            (blocks, full, partial)
+        };
+        let (mut fs_blocks, pre_full, pre_partial) = chunk(&real.pre_alpha_stream);
+        let (quot_blocks, quot_full, quot_partial) = chunk(&real.quot_stream);
+        fs_blocks.extend_from_slice(&quot_blocks);
+        let fs_cfg = RecursiveConfig {
+            fs_alpha_zeta: true,
+            deep_log_degree: Some(proof.degree_bits),
+            fs_pre_alpha_rounds: pre_full,
+            fs_pre_alpha_partial: pre_partial,
+            fs_quotient_rounds: quot_full,
+            fs_quotient_partial: quot_partial,
+            fs_blocks_public: true,
+            ..RecursiveConfig::single_window(1)
+        };
+        let (air_alpha, air_zeta, _) = fs_alpha_zeta_from_config(&fs_cfg, &fs_blocks);
+        assert_eq!(
+            air_alpha, real.alpha,
+            "generalized AIR alpha schedule != real proof"
+        );
+        assert_eq!(
+            air_zeta, real.zeta,
+            "generalized AIR zeta schedule != real proof"
+        );
+        let row = super::tests::fs_window(&fs_cfg, &fs_blocks, Challenge::ZERO);
+        let transcript_public: Vec<Val> = fs_blocks.iter().flatten().copied().collect();
+        let matrix = RowMajorMatrix::new(row.clone(), n_cols(&fs_cfg));
+        let report = check_all_constraints(
+            &RecursiveAir { cfg: fs_cfg },
+            &matrix,
+            &transcript_public,
+            None,
+        );
+        assert!(
+            report.is_ok(),
+            "real pre-alpha/quotient transcript rejected by generalized AIR: {} failures",
+            report.failures.len()
+        );
+        // Public transcript identity is load-bearing: a changed observed block with the original
+        // supplied transcript must reject.
+        let mut bad = row;
+        bad[fs_round_base(&fs_cfg, 0) + FS_BLOCK] += Val::ONE;
+        let bad_matrix = RowMajorMatrix::new(bad, n_cols(&fs_cfg));
+        assert!(
+            !check_all_constraints(
+                &RecursiveAir { cfg: fs_cfg },
+                &bad_matrix,
+                &transcript_public,
+                None
+            )
+            .is_ok(),
+            "real transcript block was not bound to its supplied value"
+        );
+
         // (2) Replay the SAME real flat observe-stream through the recursion crate's OWN duplex
         //     primitives and assert it reproduces the ground-truth challenges + indices.
         let mut m = ModelChallenger::new();
@@ -14074,6 +15694,55 @@ mod real_proof_capstone {
         assert_eq!(
             m_zeta, real.zeta,
             "recursion-primitive zeta != real proof zeta"
+        );
+
+        // The production OOD stream is too large to lay out horizontally in one recursive member
+        // window. The vertical OOD accumulator materializes the ACTUAL stream at constant width,
+        // constrains every rate-7 Poseidon2 duplex round, and binds its start/end states publicly.
+        // This is the production-shape arithmetic used by the block-wide companion. The separately
+        // reconstructed claim-side order is equated below; authenticating those claim values through
+        // the full PCS opening-reduction consumer remains a distinct obligation.
+        let post_zeta_state = m.state;
+        let pcs_ood_stream = flatten_pcs_ood_claims(&proof);
+        eprintln!(
+            "production OOD stream: {} field elements, {} rate-7 rounds",
+            real.ood_stream.len(),
+            real.ood_stream.len().div_ceil(RATE)
+        );
+        let (ood_matrix, ood_end) = crate::ood_transcript_air::build_bound_trace(
+            post_zeta_state,
+            &real.ood_stream,
+            &pcs_ood_stream,
+        );
+        let ood_air = crate::ood_transcript_air::OodTranscriptAir::new(real.ood_stream.len());
+        let ood_public = crate::ood_transcript_air::public_values(post_zeta_state, ood_end);
+        let ood_report = check_all_constraints(&ood_air, &ood_matrix, &ood_public, None);
+        assert!(
+            ood_report.is_ok(),
+            "real production OOD transcript rejected by vertical AIR: {} failures",
+            ood_report.failures.len()
+        );
+        assert_eq!(
+            real.ood_stream.len(),
+            crate::block_ood_binding_air::PRODUCTION_OOD_STREAM_ELEMS_V1,
+            "production OOD stream shape drift requires explicit companion sizing/KAT update"
+        );
+        assert!(
+            ood_air.rounds > 1_000,
+            "capstone must exercise the production-sized OOD stream"
+        );
+        let mut native_ood_end = post_zeta_state;
+        let native_perm = default_koalabear_poseidon2_16();
+        for chunk in real.ood_stream.chunks(RATE) {
+            let n = chunk.len();
+            native_ood_end[..n].copy_from_slice(chunk);
+            native_ood_end[n..RATE].fill(Val::ZERO);
+            native_ood_end[RATE] += Val::from_usize(n);
+            native_perm.permute_mut(&mut native_ood_end);
+        }
+        assert_eq!(
+            ood_end, native_ood_end,
+            "vertical OOD accumulator terminal state != native duplexing"
         );
 
         // pcs.verify observes ALL opened-point value vectors (public ‖ merged random codewords)
@@ -14120,19 +15789,19 @@ mod real_proof_capstone {
 
     /// CAPSTONE PIN (published helpers): the recursion's PUBLISHED `fs_squeeze_*` functions — the
     /// EXACT helpers the in-AIR FS blocks are derived from — reproduce the REAL proof's betas and
-    /// query index, fed the REAL proof's RATE-aligned commit-phase commitments + post-beta stream,
+    /// query index, fed the REAL proof's digest-width commit-phase commitments + post-beta stream,
     /// continued from the REAL post-batch-combo-alpha sponge state.
     ///
-    /// SCOPE NOTE (honest): the commit-phase commitment segments are each exactly RATE (8) and the
-    /// betas chain from a single carried state, so the published `fs_squeeze_betas` applies
-    /// directly to real data. The pre-alpha (201 elems) and post-beta (11 elems) segments are NOT
-    /// RATE-aligned, so the published full-block `fs_squeeze_alpha_zeta` / RATE-aligned
-    /// `fs_squeeze_query_index` do NOT model those real segments; the faithful duplex replay
-    /// (`recursion_primitives_reproduce_real_proof_challenges`) covers them via the partial-absorb
-    /// primitive. Also: the real proof observes the entire opened-values (OOD) stream BETWEEN zeta
-    /// and the FRI batch-combo alpha (p3 pcs.verify -> verify_fri), so the published
-    /// `fs_squeeze_batch_combo_alpha`'s "no observe between zeta and bca" model does NOT hold for
-    /// this proof — the real bca's continuation state is taken from the faithful replay here.
+    /// SCOPE NOTE (honest): each commit-phase commitment is one 13-element digest; the published
+    /// `fs_squeeze_betas_digest` applies its rate-7 full/partial/squeeze schedule directly to real
+    /// data. The post-beta 11-element segment is likewise covered by the published partial-query
+    /// helper. The generalized monolithic alpha/zeta block now represents the non-aligned pre-alpha
+    /// and quotient segments and the preceding real-proof capstone constraint-checks them; this
+    /// second capstone retains the legacy published full-block helper only for compatibility. The real
+    /// proof also observes the entire opened-values (OOD) stream between zeta and FRI batch alpha;
+    /// although the AIR now has a full/partial OOD block, this cost-deferred real-proof capstone
+    /// obtains its continuation state from the faithful replay rather than materializing ~145k
+    /// OOD field elements in one test row.
     #[test]
     fn published_fs_helpers_reproduce_real_proof_betas_and_index() {
         let s = capstone_secrets();
@@ -14154,7 +15823,8 @@ mod real_proof_capstone {
         assert_eq!(m_bca, real.bca);
         let post_bca_state = m.state; // == fs_squeeze_batch_combo_alpha's returned state
 
-        // PUBLISHED helper: each comm stream is exactly RATE -> one RATE block.
+        // PUBLISHED helper: each commitment stream is one DIGEST_ELEMS-wide digest. The helper
+        // performs the required rate-7 full absorb, trailing partial absorb, and eighth-limb refill.
         let comm_blocks: Vec<[Val; DIGEST_ELEMS]> = real
             .comm_streams
             .iter()

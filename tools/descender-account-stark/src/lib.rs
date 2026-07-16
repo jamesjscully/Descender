@@ -13,9 +13,9 @@
 //! ## What the relation proves (in zero knowledge)
 //!
 //! Given the secret [`AccountCreationSecrets`], there exists a witness such that:
-//!   * `pad_source_commitment   = Poseidon2-commit(pad_seed ‖ nonce_c1)`        (C1)
-//!   * `masks[6]                = Poseidon2-PRF(pad_seed ‖ slot) mod q12289`      (C2)
-//!   * `opening_tuple_commitment = Poseidon2-commit(account_projection ‖
+//!   * `pad_source_commitment   = Poseidon2-commit(PADS ‖ pad_seed ‖ nonce_c1)` (C1)
+//!   * `masks[6]                = Poseidon2-PRF(MASK ‖ pad_seed ‖ slot) mod q12289` (C2)
+//!   * `opening_tuple_commitment = Poseidon2-commit(OPEN ‖ account_projection ‖
 //!                                  lifecycle_anchor ‖ nonce_c6 ‖ account_id)`    (C6)
 //!   * `masked_projection[j]    = (account_projection[j] + masks[j]) mod q12289` (C4)
 //!     a CANONICAL q12289 residue (witnessed mod-q reduction), with
@@ -52,19 +52,19 @@
 //! [`proof_size_bytes`] for a compact-binary size estimate.
 
 mod air;
+pub mod checked_core; // Phase-2 — SPEND checked-core SIS matrix H + response->syndrome map (signature relation)
 mod config;
 mod counting_serializer;
-pub mod reduce_gadget;
-pub mod sponge_compression;
 pub mod pad_seed_registry; // F2 — global reorg-safe pad-seed admission registry (mask-PRF single-use, persistent across reorgs)
-pub mod checked_core; // Phase-2 — SPEND checked-core SIS matrix H + response->syndrome map (signature relation)
 pub mod poseidon2_sponge; // shared in-AIR Poseidon2 sponge primitives (free-function form; spend/recursion reuse)
-pub mod spend_air; // Phase-2 — SPEND leaf AIR (core): packed-witness consumption + canonical residues + statement
+pub mod reduce_gadget;
+pub mod spend_air;
+pub mod sponge_compression; // Phase-2 — SPEND leaf AIR (core): packed-witness consumption + canonical residues + statement
 
 use p3_field::{PrimeCharacteristicRing, PrimeField32};
 use p3_uni_stark::{prove as p3_prove, verify as p3_verify};
-use rand::rngs::SmallRng;
-use rand::SeedableRng;
+use rand::{Rng, SeedableRng};
+use sha2::{Digest, Sha256};
 
 use p3_fri::FriParameters;
 
@@ -79,27 +79,37 @@ use air::{
 };
 
 pub use air::{
-    reference_c2_mask_prf, BATCH_PUBLIC_VALUES, CHAIN_ABSORB_LEN, CHAIN_DIGEST_ELEMS,
-    CHAIN_PERMS_PER_ROW, CHAIN_RATE, CHECKED_CORE_ELEMS, CONTEXT_ELEMS, KEY_COMMITMENT_BYTES,
-    PUBIO_KEY_COMMITMENT_OFF, N_COMMIT_LANES, N_LANES,
-    PACKED_LANE_BITS, PACKED_WITNESS_COMMITMENT_BYTES, PACKED_WITNESS_RESIDUES, PERM_WIDTH,
-    PUBIO_ELEMS, PUBIO_NULLIFIER_OFF,
-    PUBIO_ROLE_ROOT_OFF, RELATION_ID, RELATION_ID_ELEMS, ROLE_ROOT_ELEMS, SYNDROME_LANES,
-    NULLIFIER_DOMAIN, NULLIFIER_ELEMS,
+    reference_c2_mask_prf, BATCH_PUBLIC_VALUES, C1_BYTE_LANES, C1_INPUT_LANES, C2_INPUT_LANES,
+    C6_BYTE_LANES, C6_DOMAIN_LANES, C6_FIELD_LANES, C6_INPUT_LANES, CHAIN_ABSORB_LEN,
+    CHAIN_DIGEST_ELEMS, CHAIN_PERMS_PER_ROW, CHAIN_RATE, CHECKED_CORE_ELEMS,
+    COMMITMENT_NONCE_BYTES, CONTEXT_ELEMS, KEY_COMMITMENT_BYTES, MASK_PRF_DOMAIN, NULLIFIER_DOMAIN,
+    NULLIFIER_ELEMS, N_COMMIT_LANES, N_LANES, OPENING_COMMITMENT_DOMAIN, PACKED_LANE_BITS,
+    PACKED_WITNESS_COMMITMENT_BYTES, PACKED_WITNESS_RESIDUES, PAD_COMMITMENT_DOMAIN, PERM_WIDTH,
+    PUBIO_ELEMS, PUBIO_KEY_COMMITMENT_OFF, PUBIO_NULLIFIER_OFF, PUBIO_ROLE_ROOT_OFF, RELATION_ID,
+    RELATION_ID_ELEMS, ROLE_ROOT_ELEMS, SYNDROME_LANES,
 };
 pub use config::{
     Challenge, Challenger, MyCompress, MyHash, Perm, Val, DIGEST_ELEMS, NUM_RANDOM_CODEWORDS,
-    PROD_LOG_BLOWUP, PROD_NUM_QUERIES, PROD_QUERY_POW_BITS, PROD_SOUNDNESS_BITS, SALT_ELEMS, WIDTH,
+    PROD_LOG_BLOWUP, PROD_NUM_QUERIES, PROD_QUERY_POW_BITS, PROD_SOUNDNESS_BITS, SALT_ELEMS,
+    SINGLE_PROOF_TRACE_ROWS, WIDTH,
 };
 
 use config::{
-    Dft, HidingChallengeMmcs, HidingValMmcs, LinLayers, ZkConfig, ZkPcs,
+    Dft, HidingChallengeMmcs, HidingValMmcs, LinLayers, ZkConfig, ZkCryptoRng, ZkPcs,
     HALF_FULL_ROUNDS, PARTIAL_ROUNDS, PROD_COMMIT_POW_BITS, SBOX_DEGREE, SBOX_REGISTERS,
 };
+use reduce_gadget::NUM_SQUEEZE;
 
 /// The concrete account-creation relation AIR (pinned KoalaBear Poseidon2 params).
-type RelationAir =
-    FullRelationAir<Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS>;
+type RelationAir = FullRelationAir<
+    Val,
+    LinLayers,
+    WIDTH,
+    SBOX_DEGREE,
+    SBOX_REGISTERS,
+    HALF_FULL_ROUNDS,
+    PARTIAL_ROUNDS,
+>;
 
 /// A re-exported Plonky3 STARK proof for the pinned config. `serde`-serializable.
 pub type Proof = p3_uni_stark::Proof<ZkConfig>;
@@ -124,10 +134,10 @@ pub struct AccountCreationSecrets {
     pub account_projection: [u16; N_LANES],
     /// 32-byte lifecycle anchor (C6 commitment input). PUBLIC CONTEXT (bound in-circuit).
     pub lifecycle_anchor: [u8; 32],
-    /// C1 commitment blinding nonce (16 bytes). HIDDEN.
-    pub c1_nonce: [u8; 16],
-    /// C6 commitment blinding nonce (16 bytes). HIDDEN.
-    pub c6_nonce: [u8; 16],
+    /// C1 commitment blinding nonce (40 bytes). HIDDEN.
+    pub c1_nonce: [u8; COMMITMENT_NONCE_BYTES],
+    /// C6 commitment blinding nonce (40 bytes). HIDDEN.
+    pub c6_nonce: [u8; COMMITMENT_NONCE_BYTES],
     /// 32-byte account identity, folded into the C6 opening-tuple preimage.
     /// PUBLIC CONTEXT (opening-tuple-account-binding, bound in-circuit).
     pub account_id: [u8; 32],
@@ -219,14 +229,23 @@ pub struct AccountCreationPublic {
 fn context_field_elems(p: &AccountCreationPublic) -> Vec<Val> {
     let mut v = Vec::with_capacity(air::CONTEXT_ELEMS);
     v.extend(p.account_id.iter().map(|&b| Val::from_u32(b as u32)));
-    v.extend(p.slot_id.to_le_bytes().iter().map(|&b| Val::from_u32(b as u32)));
+    v.extend(
+        p.slot_id
+            .to_le_bytes()
+            .iter()
+            .map(|&b| Val::from_u32(b as u32)),
+    );
     v.extend(
         p.verifier_version
             .to_le_bytes()
             .iter()
             .map(|&b| Val::from_u32(b as u32)),
     );
-    v.extend(p.account_state_root.iter().map(|&b| Val::from_u32(b as u32)));
+    v.extend(
+        p.account_state_root
+            .iter()
+            .map(|&b| Val::from_u32(b as u32)),
+    );
     v.extend(p.lifecycle_anchor.iter().map(|&b| Val::from_u32(b as u32)));
     v
 }
@@ -270,7 +289,7 @@ fn build_air(batch: bool) -> RelationAir {
 
 /// REFERENCE projection-mask PRF under the PINNED production config, fully
 /// concretized (KoalaBear / `default_koalabear_poseidon2_16` / the in-proof C2
-/// sponge + wide-then-reduce). Returns `(squeezed_lanes[30], masks[6])`.
+/// sponge + wide-then-reduce). Returns `(squeezed_lanes[36], masks[6])`.
 ///
 /// This is the authoritative in-proof derivation the standalone
 /// `descender-mask-prf` crate must match byte-for-byte — see
@@ -282,24 +301,63 @@ fn build_air(batch: bool) -> RelationAir {
 pub fn reference_projection_mask_prf(
     pad_seed: &[u8; 32],
     slot_id: u64,
-) -> ([u32; 30], [u32; N_LANES]) {
+) -> ([u32; NUM_SQUEEZE], [u32; N_LANES]) {
     let air = build_air(false);
     reference_c2_mask_prf::<
-        Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+        Val,
+        LinLayers,
+        WIDTH,
+        SBOX_DEGREE,
+        SBOX_REGISTERS,
+        HALF_FULL_ROUNDS,
+        PARTIAL_ROUNDS,
     >(pad_seed, slot_id, air.constants())
 }
 
-/// Build a ZK STARK config under a given mask seed. The mask seed drives the ZK
-/// randomness ONLY (hiding-Merkle salt RNG + HidingFriPcs codeword/R(X) RNG); the
-/// hash instance and FRI knobs are PINNED and identical across seeds.
-fn build_config(perm: &Perm, hash: &MyHash, compress: &MyCompress, mask_seed: u64) -> ZkConfig {
-    let hiding_val_mmcs = HidingValMmcs::new(
+/// Derive independent 256-bit CSPRNG streams for each hiding surface.
+fn derive_zk_rng_seed(master_seed: &[u8; 32], domain: &[u8]) -> [u8; 32] {
+    let mut hash = Sha256::new();
+    hash.update(b"DESCENDER_PATH2_ACCOUNT_STARK_ZK_RNG_V1");
+    hash.update((domain.len() as u64).to_le_bytes());
+    hash.update(domain);
+    hash.update(master_seed);
+    hash.finalize().into()
+}
+
+fn deterministic_zk_seed_from_u64(seed: u64) -> [u8; 32] {
+    let mut hash = Sha256::new();
+    hash.update(b"DESCENDER_PATH2_ACCOUNT_STARK_DETERMINISTIC_TEST_SEED_V1");
+    hash.update(seed.to_le_bytes());
+    hash.finalize().into()
+}
+
+fn with_fresh_commitment_nonces(secrets: &AccountCreationSecrets) -> AccountCreationSecrets {
+    let mut randomized = secrets.clone();
+    let mut rng = rand::rng();
+    rng.fill_bytes(&mut randomized.c1_nonce);
+    rng.fill_bytes(&mut randomized.c6_nonce);
+    randomized
+}
+
+fn build_config(
+    perm: &Perm,
+    hash: &MyHash,
+    compress: &MyCompress,
+    master_seed: [u8; 32],
+) -> ZkConfig {
+    let input_hiding_val_mmcs = HidingValMmcs::new(
         hash.clone(),
         compress.clone(),
         0,
-        SmallRng::seed_from_u64(mask_seed),
+        ZkCryptoRng::from_seed(derive_zk_rng_seed(&master_seed, b"input-mmcs")),
     );
-    let hiding_challenge_mmcs = HidingChallengeMmcs::new(hiding_val_mmcs.clone());
+    let fri_hiding_val_mmcs = HidingValMmcs::new(
+        hash.clone(),
+        compress.clone(),
+        0,
+        ZkCryptoRng::from_seed(derive_zk_rng_seed(&master_seed, b"fri-mmcs")),
+    );
+    let hiding_challenge_mmcs = HidingChallengeMmcs::new(fri_hiding_val_mmcs);
     let fri_params = FriParameters {
         log_blowup: PROD_LOG_BLOWUP,
         log_final_poly_len: 0,
@@ -311,10 +369,10 @@ fn build_config(perm: &Perm, hash: &MyHash, compress: &MyCompress, mask_seed: u6
     };
     let pcs = ZkPcs::new(
         Dft::default(),
-        hiding_val_mmcs,
+        input_hiding_val_mmcs,
         fri_params,
         NUM_RANDOM_CODEWORDS,
-        SmallRng::seed_from_u64(mask_seed ^ 0xABCD_EF01),
+        ZkCryptoRng::from_seed(derive_zk_rng_seed(&master_seed, b"hiding-fri-pcs")),
     );
     ZkConfig::new(pcs, Challenger::new(perm.clone()))
 }
@@ -402,15 +460,19 @@ fn public_values_vec(p: &AccountCreationPublic) -> Vec<Val> {
 
 /// Prove one account-creation instance under the pinned production config (ZK on).
 ///
-/// Returns the public statement and the STARK proof. `mask_seed` supplies the ZK
-/// randomness (hiding-Merkle salts plus HidingFriPcs codewords/R(X)). Use a fresh
-/// random `mask_seed` per proof in deployment. Fixed-seed KATs that pin serialized
-/// proof bytes must also make proof-of-work witness selection deterministic; the
-/// active account-STARK KAT generator does this by running the proof inside a
-/// single-thread Rayon pool.
+/// Deterministic test/KAT entry point. The `u64` is domain-expanded to a 256-bit
+/// master seed before it reaches the ChaCha20 hiding RNGs. Deployment code must
+/// use [`prove_account_creation`], which draws a fresh 256-bit master seed.
 pub fn prove_account_creation_with_seed(
     secrets: &AccountCreationSecrets,
     mask_seed: u64,
+) -> Result<(AccountCreationPublic, Proof), Error> {
+    prove_account_creation_with_zk_seed(secrets, deterministic_zk_seed_from_u64(mask_seed))
+}
+
+fn prove_account_creation_with_zk_seed(
+    secrets: &AccountCreationSecrets,
+    mask_seed: [u8; 32],
 ) -> Result<(AccountCreationPublic, Proof), Error> {
     let full = to_full_secrets(secrets)?;
     let perm: Perm = default_koalabear_poseidon2_16();
@@ -420,21 +482,32 @@ pub fn prove_account_creation_with_seed(
 
     // Single-instance trace: 2 identical honest rows (power-of-two minimum).
     let (trace, inst) = generate_full_trace::<
-        Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
-    >(&full, air.constants(), 2);
+        Val,
+        LinLayers,
+        WIDTH,
+        SBOX_DEGREE,
+        SBOX_REGISTERS,
+        HALF_FULL_ROUNDS,
+        PARTIAL_ROUNDS,
+    >(&full, air.constants(), SINGLE_PROOF_TRACE_ROWS);
     let public = public_from_instance(&inst, secrets);
     let pv = full_public_values(&inst);
 
     let cfg = build_config(&perm, &hash, &compress, mask_seed);
     let proof = p3_prove(&cfg, &air, trace, &pv);
+    debug_assert_eq!(
+        proof.degree_bits,
+        SINGLE_PROOF_TRACE_ROWS.ilog2() as usize + 1,
+        "HidingFriPcs single-leaf degree no longer matches the published-RBR budget"
+    );
     Ok((public, proof))
 }
 
 /// Prove one account-creation instance (ZK on), drawing FRESH cryptographic
-/// randomness per proof for the ZK hiding channel.
+/// randomness per proof for the ZK hiding channel and both 40-byte commitment nonces.
 ///
 /// This is the DEPLOYMENT path. The ZK mask seed is drawn from
-/// [`fresh_mask_seed`] — a fresh 64-bit value from the OS-seeded ChaCha12 CSPRNG
+/// [`fresh_mask_seed`] — a fresh 256-bit value from the OS-seeded ChaCha12 CSPRNG
 /// ([`rand::rng`]) on every call — so two proofs of the SAME witness+context are
 /// decorrelated (the fixed-seed `_with_seed` path is NOT). For deterministic
 /// proof-byte KATs, use [`prove_account_creation_with_seed`] under an explicitly
@@ -442,19 +515,20 @@ pub fn prove_account_creation_with_seed(
 pub fn prove_account_creation(
     secrets: &AccountCreationSecrets,
 ) -> Result<(AccountCreationPublic, Proof), Error> {
-    prove_account_creation_with_seed(secrets, fresh_mask_seed())
+    let randomized = with_fresh_commitment_nonces(secrets);
+    prove_account_creation_with_zk_seed(&randomized, fresh_mask_seed())
 }
 
-/// Draw a fresh 64-bit ZK mask seed from a cryptographic RNG.
+/// Draw a fresh 256-bit ZK master seed from a cryptographic RNG.
 ///
 /// Uses [`rand::rng`] (rand 0.10 `ThreadRng`: a ChaCha12 CSPRNG seeded from the
-/// operating-system entropy source via `getrandom`). This replaces the old fixed
-/// `DEFAULT_MASK_SEED` non-CSPRNG path. NOTE: the 64-bit seed only diversifies the
-/// ZK randomness (hiding-Merkle salt RNG + HidingFriPcs codeword/R(X) RNG); it is
-/// NOT key material and does not affect the proven statement.
-pub fn fresh_mask_seed() -> u64 {
-    use rand::RngExt;
-    rand::rng().random()
+/// operating-system entropy source via `getrandom`). Independent SHA-256-derived
+/// sub-seeds drive the input MMCS, FRI MMCS, and HidingFriPcs streams. This seed
+/// is not statement or key material.
+pub fn fresh_mask_seed() -> [u8; 32] {
+    let mut seed = [0_u8; 32];
+    rand::rng().fill_bytes(&mut seed);
+    seed
 }
 
 /// Check the CLASS-B `relation_id` of a public statement equals the pinned
@@ -473,17 +547,16 @@ fn check_relation_id(p: &AccountCreationPublic) -> Result<(), Error> {
 }
 
 /// Verify one account-creation proof against its public statement.
-pub fn verify_account_creation(
-    public: &AccountCreationPublic,
-    proof: &Proof,
-) -> Result<(), Error> {
+pub fn verify_account_creation(public: &AccountCreationPublic, proof: &Proof) -> Result<(), Error> {
     // CLASS B: the relation_id must be the pinned id (checked before the STARK).
     check_relation_id(public)?;
     let perm: Perm = default_koalabear_poseidon2_16();
     let hash = MyHash::new(perm.clone());
     let compress = MyCompress::new(MyHash::new(perm.clone()));
     let air = build_air(false);
-    let cfg = build_config(&perm, &hash, &compress, /*verify mask seed irrelevant*/ 0);
+    let cfg = build_config(
+        &perm, &hash, &compress, /* verifier RNG is unused */ [0_u8; 32],
+    );
     let pv = public_values_vec(public);
     p3_verify(&cfg, &air, proof, &pv).map_err(|e| Error::Verification(format!("{e:?}")))
 }
@@ -528,17 +601,38 @@ fn build_spend_air() -> spend_air::SpendAir {
 /// `generate_spend_trace`).
 fn spend_public_values(p: &SpendPublic) -> Vec<Val> {
     let mut v = Vec::with_capacity(spend_air::SPEND_N_PUBLIC);
-    v.extend(p.packed_witness_commitment.iter().map(|&b| Val::from_u32(b as u32)));
+    v.extend(
+        p.packed_witness_commitment
+            .iter()
+            .map(|&b| Val::from_u32(b as u32)),
+    );
     v.extend(p.account_id.iter().map(|&b| Val::from_u32(b as u32)));
-    v.extend(p.slot_id.to_le_bytes().iter().map(|&b| Val::from_u32(b as u32)));
-    v.extend(p.account_state_root.iter().map(|&b| Val::from_u32(b as u32)));
+    v.extend(
+        p.slot_id
+            .to_le_bytes()
+            .iter()
+            .map(|&b| Val::from_u32(b as u32)),
+    );
+    v.extend(
+        p.account_state_root
+            .iter()
+            .map(|&b| Val::from_u32(b as u32)),
+    );
     v.extend(p.message_digest.iter().map(|&b| Val::from_u32(b as u32)));
     v.extend(p.frame_digest.iter().copied());
-    v.extend(spend_air::SPEND_RELATION_ID.iter().map(|&id| Val::from_u32(id)));
+    v.extend(
+        spend_air::SPEND_RELATION_ID
+            .iter()
+            .map(|&id| Val::from_u32(id)),
+    );
     v.extend(p.sigma_c.iter().copied());
     v.extend(p.sigma_w.iter().copied());
     v.extend(p.sigma_t.iter().copied());
-    v.extend(p.witness_commitment.iter().map(|&b| Val::from_u32(b as u32)));
+    v.extend(
+        p.witness_commitment
+            .iter()
+            .map(|&b| Val::from_u32(b as u32)),
+    );
     v.extend(p.proof_commitment.iter().map(|&b| Val::from_u32(b as u32)));
     v
 }
@@ -547,6 +641,13 @@ fn spend_public_values(p: &SpendPublic) -> Vec<Val> {
 pub fn prove_spend_authorization_with_seed(
     w: &SpendWitness,
     mask_seed: u64,
+) -> Result<(SpendPublic, Proof), Error> {
+    prove_spend_authorization_with_zk_seed(w, deterministic_zk_seed_from_u64(mask_seed))
+}
+
+fn prove_spend_authorization_with_zk_seed(
+    w: &SpendWitness,
+    mask_seed: [u8; 32],
 ) -> Result<(SpendPublic, Proof), Error> {
     let perm: Perm = default_koalabear_poseidon2_16();
     let hash = MyHash::new(perm.clone());
@@ -574,7 +675,7 @@ pub fn prove_spend_authorization_with_seed(
 
 /// Prove one SPEND authorization (production config), fresh ZK randomness per proof.
 pub fn prove_spend_authorization(w: &SpendWitness) -> Result<(SpendPublic, Proof), Error> {
-    prove_spend_authorization_with_seed(w, fresh_mask_seed())
+    prove_spend_authorization_with_zk_seed(w, fresh_mask_seed())
 }
 
 /// Verify one SPEND authorization proof against its public statement.
@@ -583,7 +684,7 @@ pub fn verify_spend_authorization(public: &SpendPublic, proof: &Proof) -> Result
     let hash = MyHash::new(perm.clone());
     let compress = MyCompress::new(MyHash::new(perm.clone()));
     let air = build_spend_air();
-    let cfg = build_config(&perm, &hash, &compress, 0);
+    let cfg = build_config(&perm, &hash, &compress, [0_u8; 32]);
     let pv = spend_public_values(public);
     p3_verify(&cfg, &air, proof, &pv).map_err(|e| Error::Verification(format!("{e:?}")))
 }
@@ -706,7 +807,13 @@ fn pubio_tuple(p: &AccountCreationPublic) -> [Val; PUBIO_ELEMS] {
 fn compute_digest(air: &RelationAir, publics: &[AccountCreationPublic]) -> BatchDigest {
     let pubios: Vec<[Val; PUBIO_ELEMS]> = publics.iter().map(pubio_tuple).collect();
     chain_digest::<
-        Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+        Val,
+        LinLayers,
+        WIDTH,
+        SBOX_DEGREE,
+        SBOX_REGISTERS,
+        HALF_FULL_ROUNDS,
+        PARTIAL_ROUNDS,
     >(&pubios, air.constants())
 }
 
@@ -744,6 +851,13 @@ pub fn prove_account_creation_batch_with_seed(
     secrets: &[AccountCreationSecrets],
     mask_seed: u64,
 ) -> Result<(BatchDigest, Vec<AccountCreationPublic>, Proof), Error> {
+    prove_account_creation_batch_with_zk_seed(secrets, deterministic_zk_seed_from_u64(mask_seed))
+}
+
+fn prove_account_creation_batch_with_zk_seed(
+    secrets: &[AccountCreationSecrets],
+    mask_seed: [u8; 32],
+) -> Result<(BatchDigest, Vec<AccountCreationPublic>, Proof), Error> {
     if secrets.is_empty() {
         return Err(Error::InvalidWitness("empty batch".into()));
     }
@@ -758,7 +872,13 @@ pub fn prove_account_creation_batch_with_seed(
     let air = build_air(true);
 
     let (trace, insts, digest, n) = generate_batch_trace::<
-        Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+        Val,
+        LinLayers,
+        WIDTH,
+        SBOX_DEGREE,
+        SBOX_REGISTERS,
+        HALF_FULL_ROUNDS,
+        PARTIAL_ROUNDS,
     >(&full, air.constants());
 
     let publics: Vec<AccountCreationPublic> = insts
@@ -777,7 +897,8 @@ pub fn prove_account_creation_batch_with_seed(
     Ok((digest, publics, proof))
 }
 
-/// Batch prove (ZK on), drawing FRESH cryptographic randomness per proof.
+/// Batch prove (ZK on), drawing FRESH cryptographic randomness per proof and fresh
+/// 40-byte C1/C6 commitment nonces independently for every row.
 ///
 /// Deployment path: the ZK mask seed comes from [`fresh_mask_seed`] (OS-seeded
 /// CSPRNG) so batch proofs are decorrelated across calls. Use
@@ -785,7 +906,9 @@ pub fn prove_account_creation_batch_with_seed(
 pub fn prove_account_creation_batch(
     secrets: &[AccountCreationSecrets],
 ) -> Result<(BatchDigest, Vec<AccountCreationPublic>, Proof), Error> {
-    prove_account_creation_batch_with_seed(secrets, fresh_mask_seed())
+    let randomized: Vec<AccountCreationSecrets> =
+        secrets.iter().map(with_fresh_commitment_nonces).collect();
+    prove_account_creation_batch_with_zk_seed(&randomized, fresh_mask_seed())
 }
 
 /// Verify a batch proof: (a) the STARK verifies (every committed row is a valid
@@ -807,7 +930,7 @@ pub fn verify_account_creation_batch(
     let hash = MyHash::new(perm.clone());
     let compress = MyCompress::new(MyHash::new(perm.clone()));
     let air = build_air(true);
-    let cfg = build_config(&perm, &hash, &compress, 0);
+    let cfg = build_config(&perm, &hash, &compress, [0_u8; 32]);
 
     // (1) Recompute the chain digest over the SUPPLIED tuples (in order). This
     //     must equal the supplied digest — otherwise the caller's tuples are not
@@ -861,7 +984,7 @@ pub fn padseed_witness_column(k: usize) -> usize {
     assert!(k < 32, "pad_seed has 32 bytes");
     let air = build_air(false);
     let lay = FullLayout::new(air.layout().perm_cols);
-    lay.c1_off + lay.c1_lanes_off() + k
+    lay.c1_off + lay.c1_lanes_off() + 1 + k
 }
 
 // ===========================================================================
@@ -877,6 +1000,42 @@ pub fn padseed_witness_column(k: usize) -> usize {
 #[cfg(test)]
 mod small_config_classc_tests {
     use super::*;
+
+    #[test]
+    fn hiding_rng_substreams_are_domain_separated() {
+        let master = deterministic_zk_seed_from_u64(0x5eed);
+        let input = derive_zk_rng_seed(&master, b"input-mmcs");
+        let fri = derive_zk_rng_seed(&master, b"fri-mmcs");
+        let pcs = derive_zk_rng_seed(&master, b"hiding-fri-pcs");
+        assert_ne!(input, fri);
+        assert_ne!(input, pcs);
+        assert_ne!(fri, pcs);
+    }
+
+    #[test]
+    fn deployment_commitment_nonces_are_fresh_and_preserve_semantic_inputs() {
+        let original = small_secrets();
+        let a = with_fresh_commitment_nonces(&original);
+        let b = with_fresh_commitment_nonces(&original);
+        assert_ne!(a.c1_nonce, original.c1_nonce);
+        assert_ne!(a.c6_nonce, original.c6_nonce);
+        assert_ne!(a.c1_nonce, b.c1_nonce);
+        assert_ne!(a.c6_nonce, b.c6_nonce);
+        assert_eq!(a.pad_seed, original.pad_seed);
+        assert_eq!(a.account_projection, original.account_projection);
+        assert_eq!(a.account_id, original.account_id);
+        assert_eq!(a.slot_id, original.slot_id);
+    }
+
+    #[test]
+    fn commitment_nonce_qrom_budget_prices_selected_horizon() {
+        const TARGET_LOG2: usize = 32 + 1; // two commitments for each of 2^32 accounts
+        const QUERY_SQUARED_LOG2: usize = 2 * 54;
+        const RESIDUAL_LOG2: usize = COMMITMENT_NONCE_BYTES * 8 - TARGET_LOG2 - QUERY_SQUARED_LOG2;
+        assert_eq!(COMMITMENT_NONCE_BYTES, 40);
+        assert_eq!(RESIDUAL_LOG2, 179);
+        assert!(RESIDUAL_LOG2 >= 128);
+    }
     use config::{HidingChallengeMmcs, HidingValMmcs, MyCompress, MyHash, Perm};
 
     fn small_secrets() -> AccountCreationSecrets {
@@ -889,9 +1048,13 @@ mod small_config_classc_tests {
             c6_nonce: core::array::from_fn(|i| (i as u8).wrapping_mul(9).wrapping_add(1)),
             account_id: core::array::from_fn(|i| (i as u8).wrapping_mul(13).wrapping_add(3)),
             verifier_version: 0x0102_0304,
-            account_state_root: core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(7)),
+            account_state_root: core::array::from_fn(|i| {
+                (i as u8).wrapping_mul(17).wrapping_add(7)
+            }),
             syndrome: core::array::from_fn(|i| ((i as u32 * 1009 + 17) % 12289) as u16),
-            checked_core_key_commitment: core::array::from_fn(|i| (i as u8).wrapping_mul(19).wrapping_add(2)),
+            checked_core_key_commitment: core::array::from_fn(|i| {
+                (i as u8).wrapping_mul(19).wrapping_add(2)
+            }),
         }
     }
 
@@ -906,7 +1069,10 @@ mod small_config_classc_tests {
         use sha2::{Digest, Sha256};
         let s = small_secrets();
         let digest_once = || -> [u8; 32] {
-            let pool = rayon::ThreadPoolBuilder::new().num_threads(1).build().unwrap();
+            let pool = rayon::ThreadPoolBuilder::new()
+                .num_threads(1)
+                .build()
+                .unwrap();
             let (_public, proof) = pool
                 .install(|| prove_account_creation_with_seed(&s, 0xF20D_2026_u64))
                 .expect("prove");
@@ -917,25 +1083,43 @@ mod small_config_classc_tests {
         };
         let d1 = digest_once();
         let d2 = digest_once();
-        assert_eq!(d1, d2, "q128 leaf proof is not deterministic under single-thread PoW");
+        assert_eq!(
+            d1, d2,
+            "q128 leaf proof is not deterministic under single-thread PoW"
+        );
         let hex: String = d1.iter().map(|b| format!("{b:02x}")).collect();
         eprintln!("FROZEN-KAT q128 leaf proof sha256 = {hex}");
         // PINNED frozen q128 KAT digest (single-thread, seed 0xF20D_2026, `small_secrets`).
         // Re-pinned 2026-06-27 when CLASS A-2 (the F2 single-use `nullifier` public output) was
         // added to the leaf relation — the new public value changes the proof bytes by design.
         // Re-pinned 2026-06-28 when CLASS A-3 (the `checked_core_key_commitment` registration) landed.
-        const PINNED: &str = "b79c7375484b78a5d00579e1d02b93eda1ea04cffc70923a0164887bbe82b4a0";
-        assert_eq!(hex, PINNED, "q128 leaf proof bytes drifted from the frozen KAT");
+        // Re-pinned 2026-07-10 for relation v3: domain-separated PADS/MASK/OPEN frames,
+        // 40-byte commitment nonces, six-digit reduction, and the 120-query schedule.
+        const PINNED: &str = "b4c9e522f599cc4cd574a7387a6f7300d7d23a1215b83f2a5a667657d4a6e4a0";
+        assert_eq!(
+            hex, PINNED,
+            "q128 leaf proof bytes drifted from the frozen KAT"
+        );
     }
 
     /// Build a DELIBERATELY SMALL ZK config: log_blowup=2 (the ZK minimum) and only
     /// 2 FRI queries, query-PoW off. NOT production sound — for completeness/RAM
     /// only.
     fn small_config(perm: &Perm, hash: &MyHash, compress: &MyCompress) -> ZkConfig {
-        let mask_seed = 0xC0FF_EEu64;
-        let hiding_val_mmcs =
-            HidingValMmcs::new(hash.clone(), compress.clone(), 0, SmallRng::seed_from_u64(mask_seed));
-        let hiding_challenge_mmcs = HidingChallengeMmcs::new(hiding_val_mmcs.clone());
+        let master_seed = deterministic_zk_seed_from_u64(0xC0FF_EE_u64);
+        let input_hiding_val_mmcs = HidingValMmcs::new(
+            hash.clone(),
+            compress.clone(),
+            0,
+            ZkCryptoRng::from_seed(derive_zk_rng_seed(&master_seed, b"input-mmcs")),
+        );
+        let fri_hiding_val_mmcs = HidingValMmcs::new(
+            hash.clone(),
+            compress.clone(),
+            0,
+            ZkCryptoRng::from_seed(derive_zk_rng_seed(&master_seed, b"fri-mmcs")),
+        );
+        let hiding_challenge_mmcs = HidingChallengeMmcs::new(fri_hiding_val_mmcs);
         let fri_params = FriParameters {
             log_blowup: 2,
             log_final_poly_len: 0,
@@ -947,10 +1131,10 @@ mod small_config_classc_tests {
         };
         let pcs = ZkPcs::new(
             Dft::default(),
-            hiding_val_mmcs,
+            input_hiding_val_mmcs,
             fri_params,
             NUM_RANDOM_CODEWORDS,
-            SmallRng::seed_from_u64(mask_seed ^ 0xABCD_EF01),
+            ZkCryptoRng::from_seed(derive_zk_rng_seed(&master_seed, b"hiding-fri-pcs")),
         );
         ZkConfig::new(pcs, Challenger::new(perm.clone()))
     }
@@ -966,7 +1150,13 @@ mod small_config_classc_tests {
 
         // Smallest power-of-two trace (2 identical honest rows).
         let (trace, inst) = generate_full_trace::<
-            Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+            Val,
+            LinLayers,
+            WIDTH,
+            SBOX_DEGREE,
+            SBOX_REGISTERS,
+            HALF_FULL_ROUNDS,
+            PARTIAL_ROUNDS,
         >(&full, air.constants(), 2);
         let pv = full_public_values(&inst);
 
@@ -980,7 +1170,10 @@ mod small_config_classc_tests {
         // Sanity: the public statement carries the CLASS-C values.
         let public = public_from_instance(&inst, &s);
         assert_eq!(public.syndrome.len(), SYNDROME_LANES);
-        assert_eq!(public.packed_witness_commitment.len(), PACKED_WITNESS_COMMITMENT_BYTES);
+        assert_eq!(
+            public.packed_witness_commitment.len(),
+            PACKED_WITNESS_COMMITMENT_BYTES
+        );
     }
 
     /// Phase-2 SPEND leaf AIR: a real small-config STARK prove/verify of the spend core — the spend
@@ -1014,7 +1207,9 @@ mod small_config_classc_tests {
             projection: core::array::from_fn(|i| ((i as u32 * 211 + 5) % 12289) as u16),
             account_id: core::array::from_fn(|i| (i as u8).wrapping_mul(13).wrapping_add(3)),
             slot_id: 0x0000_0000_0000_0042,
-            account_state_root: core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(7)),
+            account_state_root: core::array::from_fn(|i| {
+                (i as u8).wrapping_mul(17).wrapping_add(7)
+            }),
             message_digest: core::array::from_fn(|i| (i as u8).wrapping_mul(7).wrapping_add(1)),
         };
         let (trace, pv, _frame_digest) = generate_spend_trace(&air, &w);
@@ -1054,12 +1249,21 @@ mod small_config_classc_tests {
         // the statement + commitments, then syndrome = t + c⊛w. The creation leaf commits THAT
         // syndrome (its checked-core public input = the signature target).
         let s0 = small_secrets();
-        let message: [u8; 32] = core::array::from_fn(|i| (i as u8).wrapping_mul(11).wrapping_add(2));
+        let message: [u8; 32] =
+            core::array::from_fn(|i| (i as u8).wrapping_mul(11).wrapping_add(2));
         let sigma_w: [u16; 12] = core::array::from_fn(|i| ((i as u32 * 149 + 29) % 12289) as u16);
         let sigma_t: [u16; 12] = core::array::from_fn(|i| ((i as u32 * 71 + 5) % 12289) as u16);
         let wc = pack_syndrome_digest(&sigma_w);
         let pc = pack_syndrome_digest(&sigma_t);
-        let c = derive_challenge(&sair, &message, &s0.account_id, s0.slot_id, &s0.account_state_root, &wc, &pc);
+        let c = derive_challenge(
+            &sair,
+            &message,
+            &s0.account_id,
+            s0.slot_id,
+            &s0.account_state_root,
+            &wc,
+            &pc,
+        );
         let syndrome = sigma_expected(&sigma_t, &c, &sigma_w);
 
         let mut s = s0;
@@ -1071,7 +1275,13 @@ mod small_config_classc_tests {
         // ---- Creation proof (small config) + its public statement.
         let cair = build_air(false);
         let (ctrace, cinst) = generate_full_trace::<
-            Val, LinLayers, WIDTH, SBOX_DEGREE, SBOX_REGISTERS, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+            Val,
+            LinLayers,
+            WIDTH,
+            SBOX_DEGREE,
+            SBOX_REGISTERS,
+            HALF_FULL_ROUNDS,
+            PARTIAL_ROUNDS,
         >(&full, cair.constants(), 2);
         let cpublic = public_from_instance(&cinst, &s);
         let cpv = full_public_values(&cinst);
@@ -1091,12 +1301,21 @@ mod small_config_classc_tests {
             message_digest: message,
         };
         let d = spend_derive(&sair, &w);
-        assert_eq!(d.syndrome, syndrome, "spend-derived syndrome != creation syndrome");
+        assert_eq!(
+            d.syndrome, syndrome,
+            "spend-derived syndrome != creation syndrome"
+        );
         // The spend's derived packed witness reproduces the creation's published commitment.
-        let creation_packed: Vec<u32> =
-            cpublic.packed_witness_commitment.iter().map(|v| v.as_canonical_u32()).collect();
+        let creation_packed: Vec<u32> = cpublic
+            .packed_witness_commitment
+            .iter()
+            .map(|v| v.as_canonical_u32())
+            .collect();
         let spend_packed: Vec<u32> = d.packed.iter().map(|&b| b as u32).collect();
-        assert_eq!(creation_packed, spend_packed, "spend packer != creation packed witness");
+        assert_eq!(
+            creation_packed, spend_packed,
+            "spend packer != creation packed witness"
+        );
 
         // ---- Spend proof (small config): full spend relation verified in-circuit (incl. rehosted c).
         let (strace, spv, frame_digest) = generate_spend_trace(&sair, &w);
@@ -1154,7 +1373,9 @@ mod small_config_classc_tests {
             projection: core::array::from_fn(|i| ((i as u32 * 211 + 5) % 12289) as u16),
             account_id: core::array::from_fn(|i| (i as u8).wrapping_mul(13).wrapping_add(3)),
             slot_id: 0x0000_0000_0000_0042,
-            account_state_root: core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(7)),
+            account_state_root: core::array::from_fn(|i| {
+                (i as u8).wrapping_mul(17).wrapping_add(7)
+            }),
             message_digest: core::array::from_fn(|i| (i as u8).wrapping_mul(7).wrapping_add(1)),
         }
     }
@@ -1186,7 +1407,10 @@ mod small_config_classc_tests {
         use sha2::{Digest, Sha256};
         let w = sample_spend_witness();
         let digest_once = || -> [u8; 32] {
-            let pool = rayon::ThreadPoolBuilder::new().num_threads(1).build().unwrap();
+            let pool = rayon::ThreadPoolBuilder::new()
+                .num_threads(1)
+                .build()
+                .unwrap();
             let (_public, proof) = pool
                 .install(|| prove_spend_authorization_with_seed(&w, 0x5E_4D_2026))
                 .expect("prove");
@@ -1197,12 +1421,18 @@ mod small_config_classc_tests {
         };
         let d1 = digest_once();
         let d2 = digest_once();
-        assert_eq!(d1, d2, "q128 spend proof is not deterministic under single-thread PoW");
+        assert_eq!(
+            d1, d2,
+            "q128 spend proof is not deterministic under single-thread PoW"
+        );
         let hex: String = d1.iter().map(|b| format!("{b:02x}")).collect();
         eprintln!("FROZEN-KAT q128 spend proof sha256 = {hex}");
         // PINNED frozen q128 SPEND KAT digest (single-thread, seed 0x5E_4D_2026, sample_spend_witness).
         // Re-pinned 2026-06-27 when the rehosted in-AIR Poseidon2 challenge region landed.
         const PINNED: &str = "297df18647c3c9f3f2a286a4e2d33beb38bac3448031ccfdfc8635d3f0ce4e24";
-        assert_eq!(hex, PINNED, "q128 spend proof bytes drifted from the frozen KAT");
+        assert_eq!(
+            hex, PINNED,
+            "q128 spend proof bytes drifted from the frozen KAT"
+        );
     }
 }

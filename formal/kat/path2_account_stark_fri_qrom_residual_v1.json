@@ -12,12 +12,14 @@
       "classical_hash_query_bound_log2": 33,
       "hardening_bits": 64,
       "max_target_count_log2_at_128_bits": 54,
-      "qrom_domain_vector_case_count": 5,
+      "qrom_domain_vector_case_count": 7,
       "qrom_domain_vector_case_ids": [
         "fri_qrom_selected_proof_family_domain",
         "fri_qrom_poseidon2_width_and_sponge_floor",
         "fri_qrom_challenge_field_and_schedule",
         "fri_qrom_checked_core_budget_import",
+        "fri_qrom_conditional_bcs_budget",
+        "fri_qrom_published_rbr_single_leaf_budget",
         "fri_qrom_open_theorem_flags_fail_closed"
       ],
       "quantum_hash_query_bound_log2": 16,
@@ -32,11 +34,45 @@
       ],
       "total_transcript_bits": 246
     },
+    "conditional_bcs_qrom_budget": {
+      "candidate_output_bits": 247,
+      "dimensions_bound": true,
+      "dimensions_lean_theorem": "selectedAccountStarkFriQromDimensions_v1",
+      "multi_target_horizon_log2": 32,
+      "normalized_budget_lean_theorem": "selectedAccountStarkFriQromNormalizedBudget_le_q128_v1",
+      "normalized_budget_q128_bound": true,
+      "oracle_term_bound": true,
+      "oracle_term_bound_bits": 130,
+      "oracle_term_lean_theorem": "selectedAccountStarkFriQromBcsOracleTerm_le_q130_v1",
+      "qrom_error_shape": "C_qrom * Q * (Q * epsilon_rbr + 3 * (Q^2 + 1) / 2^kappa)",
+      "qrom_lift_constant_log2_bound": 32,
+      "quantum_query_bound_log2": 16,
+      "rbr_schedule_label_bits": 256,
+      "rbr_term_bound": true,
+      "rbr_term_bound_bits": 130,
+      "rbr_term_lean_theorem": "selectedAccountStarkFriQromRbrTerm_le_q130_v1",
+      "rom_error_shape": "Q * epsilon_rbr + 3 * (Q^2 + 1) / 2^kappa",
+      "scope_note": "local arithmetic only; requires the selected RBR theorem, an effective kappa mapping for every relevant challenger output, and a reviewed bound on the QROM lift constant"
+    },
     "corpus_id": "Descender.Path2.AccountStarkFriQromResidual.v1",
     "corpus_version": 1,
     "digests": {
-      "account_stark_fri_qrom_residual_report_digest": "9bc78a2b1b97bf8506f439e74547395a46e70a514c89aa537880dd7ac4e23505",
-      "account_stark_fri_qrom_residual_report_recomputed_digest": "9bc78a2b1b97bf8506f439e74547395a46e70a514c89aa537880dd7ac4e23505"
+      "account_stark_fri_qrom_residual_report_digest": "35dd703f8eb9c0879d3b5716f4f52d01b183ccf33d019ecdeee34bea6a466ae5",
+      "account_stark_fri_qrom_residual_report_recomputed_digest": "35dd703f8eb9c0879d3b5716f4f52d01b183ccf33d019ecdeee34bea6a466ae5"
+    },
+    "fiat_shamir_challenger": {
+      "c9_production_migration_complete": false,
+      "c9_reference_native_fidelity_bound": true,
+      "c9_reference_native_fidelity_test": "c9_challenger::tests::mixed_plonky3_transcript_matches_native_rate7_challenger",
+      "c9_reference_source": "tools/descender-recursion/src/c9_challenger.rs",
+      "capacity": 9,
+      "capacity_bits_floor": 278,
+      "generic_collision_bits_floor": 139,
+      "rate": 7,
+      "scope_note": "the capacity floor is not the BCS random-oracle output mapping; that mapping remains an explicit open theorem input",
+      "target_capacity": 9,
+      "target_generic_collision_bits_floor": 139,
+      "target_rate": 7
     },
     "fri_schedule": {
       "challenge_extension_degree": 8,
@@ -60,6 +96,12 @@
     "open_obligations": {
       "account_stark_fri_qrom_transcript_reduction_bound": true,
       "account_stark_transcript_qrom_theorem_instantiated": false,
+      "adaptive_budget_q128_bound": true,
+      "adaptive_global_query_bound": true,
+      "bcs_account_target_multiplier": 1,
+      "bcs_challenger_output_mapping_instantiated": false,
+      "bcs_qrom_lift_constant_reviewed": false,
+      "bcs_rbr_error_theorem_instantiated": false,
       "challenge_field_pinned": true,
       "checked_core_qrom_budget_pinned": true,
       "deployment_profile_accepted": false,
@@ -67,11 +109,40 @@
       "external_fri_review_complete": false,
       "external_qrom_review_complete": false,
       "fri_schedule_pinned": true,
+      "lifetime_union_bound_q128_established": false,
+      "lifetime_union_profile_selected": false,
       "recursion_pricing_complete": false,
       "residual_pricing_complete": false
     },
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
+    "published_rbr_single_leaf_budget": {
+      "adaptive_budget_lean_theorem": "selectedAccountStarkPublishedFriAdaptiveBudget_le_q128_v1",
+      "adaptive_budget_q128_bound": true,
+      "adaptive_global_query_bound": true,
+      "adaptive_oracle_term_bound_bits": 165,
+      "adaptive_qrom_policy_adr": "ADR-0011",
+      "adaptive_qrom_policy_lean_theorem": "selectedAccountStarkFriAdaptiveQromPolicy_v1",
+      "adaptive_rbr_term_bound_bits": 154,
+      "analysis_m": 3,
+      "bcs_account_target_multiplier": 1,
+      "bound_lean_theorem": "selectedAccountStarkPublishedFriRbrBound_le_q218_v1",
+      "delta_denominator": 256,
+      "delta_numerator": 191,
+      "dimensions_lean_theorem": "selectedAccountStarkPublishedFriRbrDimensions_v1",
+      "error_shape": "max(((m + 1/2)^7 * |L0|^2) / (3 * rho^(3/2) * |F|), (1 - delta)^ell)",
+      "field_term_bound_bits": 218,
+      "fs_c9_production_migration_complete": false,
+      "fs_c9_reference_native_fidelity_bound": true,
+      "lifetime_field_budget_not_le_q128_lean_theorem": "selectedAccountStarkPublishedFriLifetimeFieldBudget_not_le_q128_v1",
+      "lifetime_union_bound_q128_established": false,
+      "lifetime_union_profile_selected": false,
+      "query_term_bound_bits": 218,
+      "scope_note": "exact arithmetic for the selected single-leaf domain; Plonky3-to-RBR mapping, challenger/QRO replacement, QROM constant review, and the lifetime-target policy remain open",
+      "single_leaf_degree_bits": 2,
+      "single_leaf_fri_domain_log2": 6,
+      "source": "Block et al., Fiat-Shamir Security of FRI and Related SNARKs, Corollary 4"
+    },
     "schema": "Descender.Path2.AccountStarkFriQromResidualManifest.v1"
   },
-  "manifest_digest": "d11d7cc6b7e45161ed7f34aa25afccec4e00820fbc3a47b9b7675d0fdcb58f84"
+  "manifest_digest": "c321ae20683ea485272673fc6c99021f91c22dee034c6372819e863a07fe3d93"
 }

@@ -29,7 +29,7 @@
 //!
 //! All constraints are degree <= 3 in the witness/trace cells.
 
-use crate::poseidon2_q12289::{fq_add, fq_mul, fq_sub, Q};
+use crate::poseidon2_q12289::{Q, fq_add, fq_mul, fq_sub};
 
 /// Base of the digit decomposition.
 pub const BASE: u32 = 128;
@@ -251,7 +251,10 @@ pub fn residuals(w: &Base128RangeWitness) -> Vec<u32> {
     // [22] d_hi recompose
     r.push(fq_sub(w.d_hi, recompose_bits(&w.hi_bits)));
     // [23] slack recompose: (96 - d_hi) - sum(slack_bits) == 0  => forces d_hi<=96
-    r.push(fq_sub(fq_sub(MAX_HI, w.d_hi), recompose_bits(&w.slack_bits)));
+    r.push(fq_sub(
+        fq_sub(MAX_HI, w.d_hi),
+        recompose_bits(&w.slack_bits),
+    ));
 
     // [24] is96 booleanity
     r.push(boolean(w.is96));
@@ -299,7 +302,9 @@ pub fn is_satisfied(w: &Base128RangeWitness) -> bool {
 
 /// Generate witnesses for a slice of canonical residues.
 pub fn generate_vec(vs: &[u32]) -> Vec<Base128RangeWitness> {
-    vs.iter().map(|&v| Base128RangeWitness::generate(v)).collect()
+    vs.iter()
+        .map(|&v| Base128RangeWitness::generate(v))
+        .collect()
 }
 
 /// Concatenated residuals over many witnesses (all zero iff all satisfied).
@@ -355,7 +360,10 @@ mod tests {
         }
         // Explicit boundary checks.
         for &v in &[0u32, 1, 127, 128, 12287, 12288] {
-            assert!(is_satisfied(&Base128RangeWitness::generate(v)), "boundary v={v}");
+            assert!(
+                is_satisfied(&Base128RangeWitness::generate(v)),
+                "boundary v={v}"
+            );
         }
         // boundaries: v=12288 is the d_hi==96,d_lo==0 edge.
         let w_edge = Base128RangeWitness::generate(12288);
@@ -398,7 +406,11 @@ mod tests {
             inv: 0,
         };
         let r1 = residuals(&w_is96_1);
-        assert_ne!(r1[ri::EDGE_HI96_LO0], 0, "is96*d_lo edge must fire (is96=1)");
+        assert_ne!(
+            r1[ri::EDGE_HI96_LO0],
+            0,
+            "is96*d_lo edge must fire (is96=1)"
+        );
 
         // The adversary's only escape would be to set is96=0. But then the
         // is96-definition constraint (d_hi-96)*inv == 1-is96 becomes
@@ -411,7 +423,8 @@ mod tests {
             };
             let r0 = residuals(&w_is96_0);
             assert_ne!(
-                r0[ri::IS96_DEFINITION], 0,
+                r0[ri::IS96_DEFINITION],
+                0,
                 "with d_hi=96 and is96=0, the is96-definition (0==1) must fire for inv={inv}"
             );
         }
@@ -450,7 +463,8 @@ mod tests {
             };
             let r = residuals(&w);
             assert_ne!(
-                r[ri::SLACK_RECOMPOSE], 0,
+                r[ri::SLACK_RECOMPOSE],
+                0,
                 "d_hi=120 slack-recompose (d_hi<=96) must fire for every 7-bit slack={s}"
             );
         }
@@ -491,7 +505,10 @@ mod tests {
                     fired = true;
                 }
             }
-            assert!(fired, "d_hi={d_hi} (>96) must be rejected by slack-recompose");
+            assert!(
+                fired,
+                "d_hi={d_hi} (>96) must be rejected by slack-recompose"
+            );
             let _ = true_slack;
         }
     }
@@ -507,7 +524,11 @@ mod tests {
         let mut bad = w.clone();
         bad.lo_bits[0] = 2;
         let r = residuals(&bad);
-        assert_ne!(r[ri::LO_BITS_BOOL + 0], 0, "non-boolean lo_bit must fire booleanity");
+        assert_ne!(
+            r[ri::LO_BITS_BOOL + 0],
+            0,
+            "non-boolean lo_bit must fire booleanity"
+        );
 
         // (b) claim a digit >= 128 (d_lo = 200). Its 7-bit recompose can only
         // represent [0,127], so d_lo-recompose fires for every bit choice.
@@ -568,7 +589,13 @@ mod tests {
     /// Carrier: honest masked = mask + account satisfies; mutation breaks it.
     #[test]
     fn base128_range_carrier_honest_and_mutation() {
-        for &(mask, acc) in &[(0u32, 0u32), (7, 11), (12000, 500), (Q - 1, Q - 1), (123, 9999)] {
+        for &(mask, acc) in &[
+            (0u32, 0u32),
+            (7, 11),
+            (12000, 500),
+            (Q - 1, Q - 1),
+            (123, 9999),
+        ] {
             let masked = carrier_eval(mask, acc);
             assert_eq!(carrier_residual(masked, mask, acc), 0, "honest carrier");
             // mutate masked

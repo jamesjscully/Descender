@@ -1121,7 +1121,7 @@ mod tests {
         type ChallengeMmcs = ExtensionMmcs<Val, Ch, ValMmcs>;
         type DftT = Radix2DitParallel<Val>;
         type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
-        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 7>;
         type OuterConfig = StarkConfig<Pcs, Ch, MyChallenger>;
 
         let perm: Perm = default_koalabear_poseidon2_16();

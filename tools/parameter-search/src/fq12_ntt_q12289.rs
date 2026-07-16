@@ -401,14 +401,22 @@ mod tests {
         let qm1 = q12_minus_1_limbs();
         assert_eq!(
             qm1,
-            vec![0x1ca0_7342_5202_4000, 0xb362_cff5_eac7_6afd, 0x0000_0008_1df8_37bb],
+            vec![
+                0x1ca0_7342_5202_4000,
+                0xb362_cff5_eac7_6afd,
+                0x0000_0008_1df8_37bb
+            ],
             "q^12 - 1 limbs mismatch"
         );
         // (q^12 - 1) / 2^14 limbs.
         let d = q12_minus_1_over_2pow14_limbs();
         assert_eq!(
             d,
-            vec![0xabf4_7281_cd09_4809, 0xdeee_cd8b_3fd7_ab1d, 0x0000_0000_0020_77e0],
+            vec![
+                0xabf4_7281_cd09_4809,
+                0xdeee_cd8b_3fd7_ab1d,
+                0x0000_0000_0020_77e0
+            ],
             "(q^12 - 1)/2^14 limbs mismatch"
         );
         // Cross-check: d * 2^14 == q^12 - 1 (exactness).
@@ -437,7 +445,11 @@ mod tests {
             let r = root_of_unity_fq12(k);
             // r^(2^k) == 1
             let top = sq_k(&r, k);
-            assert_eq!(top, Fq12::one(), "root_of_unity_fq12({k})^(2^{k}) must be 1");
+            assert_eq!(
+                top,
+                Fq12::one(),
+                "root_of_unity_fq12({k})^(2^{k}) must be 1"
+            );
             // r^(2^(k-1)) != 1  (order exactly 2^k, not a proper divisor)
             let half = sq_k(&r, k - 1);
             assert_ne!(
@@ -541,7 +553,10 @@ mod tests {
         let mut codeword = lde_from_base_coeffs(&base_coeffs, log2n);
         intt_fq12(&mut codeword, log2n);
         let embedded: Vec<Fq12> = base_coeffs.iter().map(|&c| Fq12::from_base(c)).collect();
-        assert_eq!(codeword, embedded, "intt of LDE must recover embedded base coeffs");
+        assert_eq!(
+            codeword, embedded,
+            "intt of LDE must recover embedded base coeffs"
+        );
 
         // And the base-field NTT of the same coeffs, embedded, equals the naive
         // Horner eval at the BASE roots — sanity that our embedding is faithful.
@@ -559,10 +574,8 @@ mod tests {
             };
             let mut acc = 0u32;
             for &c in base_coeffs.iter().rev() {
-                acc = crate::poseidon2_q12289::fq_add(
-                    crate::poseidon2_q12289::fq_mul(acc, point),
-                    c,
-                );
+                acc =
+                    crate::poseidon2_q12289::fq_add(crate::poseidon2_q12289::fq_mul(acc, point), c);
             }
             assert_eq!(ek, acc, "base NTT vs Horner mismatch at k={k}");
         }

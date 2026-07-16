@@ -32,7 +32,8 @@ Direct Mode A verification is a fixed public pipeline:
 decode public frame
 -> check domain/version/length/canonical encoding
 -> normalize slot_authorization_digest
--> validate account-creation evidence for admission or lookup admitted leaf
+-> validate account-creation evidence for admission or load and recheck the
+   exact canonical admission record
 -> bind checked-core frame to account, state, message, leaf, and lifecycle data
 -> verify checked-core spend
 -> check lifecycle state is live
@@ -93,7 +94,10 @@ An implementation must maintain these rules:
 
 1. A rejecting verification path leaves consensus state unchanged.
 2. An accepting admission records exactly one live slot under the account
-   namespace and state scope.
+   namespace and state scope. For the selected sovereign profile, the key is
+   `(account_id, account_state_root_before, slot_authorization_digest)` and the
+   value includes the canonical leaf bytes, leaf digest, evidence transcript
+   digest, and admission height.
 3. An accepting spend consumes exactly the live `slot_authorization_digest`
    that was checked by the spend frame.
 4. The consume-once update is atomic with the accepted spend result.
@@ -144,6 +148,34 @@ Required direct-mode KAT groups:
 The KAT corpus must be stable enough for independent consensus clients to
 compare byte-for-byte outputs and public rejection classes.
 
+The current account-creation leaf/evidence frame slice is frozen as one honest
+case plus seventeen one-surface rejection cases. The generated boundary and
+vector artifacts cover every current frame row, all fifteen duplicated
+leaf/evidence binding fields, and the corresponding public result classes.
+This closes the direct theorem's canonical/live leaf and evidence/leaf binding
+rows when composed with the verified lifecycle profile; it does not complete
+the broader byte-string parser, resource-limit, or independent-client KAT
+requirements in this section.
+
+The selected sovereign admission-state slice is also executable.
+The account-STARK verifier returns opaque verified public anchors including the
+canonical `Poseidon2(domain, pad_seed, slot)` nullifier. Only an opaque
+`Path2VerifiedSovereignCreationAdmissionV1` can enter
+`Path2SovereignDirectAdmissionStateV1`; decode-only or caller-supplied leaf
+fields are not admission authority. The state preflights tuple and raw
+nullifier keys for the entire candidate block before atomically advancing the
+head or mutating either index, loads and
+rechecks the full record on spend, rejects missing records, fails closed on
+corruption, rejects mutation at an already-finalized head, snapshots both
+indexes, binds restore to a supplied finalized checkpoint/state-digest anchor,
+and rebuilds the nullifier index under
+ADR-0010 D2 finalized-head reorg semantics.
+`Path2DirectAdmissionBoundaryReportV1` and
+`formal/kat/path2_direct_admission_boundary_v1.json` close the direct theorem's
+admission namespace/data-availability row for this state model. Production
+database binding, parser corpora, storage review, and independent-client
+integration remain outside that theorem-scoped closure.
+
 ## Required Evidence
 
 Tracker ownership: `SPEC-VERIFY-001`, `DIR-REJECT-001`, `DIR-KAT-001`,
@@ -169,20 +201,29 @@ consume-once state unchanged.
 `path2_direct_single_slot_spend_public_result_wrapper_hides_internal_diagnostics`
 checks accept, malformed, checked-core, and lifecycle outcomes through the
 public wrapper, returning fixed public result class names without exposing
-internal diagnostics and restoring consume-once state on rejection. This is
-rejection-state evidence, not a complete malformed-input corpus for every public
-object, every-reject-class no-mutation suite, or target-chain client-mapping
-package.
+internal diagnostics and restoring consume-once state on rejection.
+`PATH2_DIRECT_PUBLIC_OBJECT_MUTATION_KAT_CASES_V1` enumerates the nine typed
+public request/state objects at that wrapper, and
+`path2_direct_all_consensus_visible_public_object_mutations_are_panic_free`
+executes one semantic mutation per object through the real wrapper.
+`PATH2_SOVEREIGN_DIRECT_CLIENT_MAPPING_ROWS_V1` maps all eleven public result
+classes to unique consensus codes and state effects for the selected ADR-0009
+sovereign-rollup plus ADR-0010 D2 lifecycle profile;
+`path2_sovereign_direct_client_mapping_is_exhaustive_and_state_preserving`
+checks every reject class is transaction-invalid and state-preserving. This
+closes the typed direct-theorem rejection obligation, not the complete
+byte-parser or deployment-profile evidence below.
 
 Before the consensus verifier surface can be marked `verified`, the repo needs:
 
 - malformed-frame, mutation, replay, lifecycle, and policy negative KATs;
 - byte-for-byte positive KATs for admission and spend;
-- panic-free parse/reject tests over malformed public byte strings;
+- complete panic-free parse/reject corpora over malformed public byte strings;
 - deterministic state-no-mutation checks for every reject class;
 - resource-limit tests for oversized public inputs;
-- target-chain mapping notes for account abstraction, precompile, or
-  frame-transaction integrations that claim adoption evidence;
+- executable integration of the sovereign-client mapping into block validation,
+  plus mappings for any account-abstraction, precompile, or frame-transaction
+  profile that claims adoption evidence;
 - independent implementation guidance showing which result classes are
   consensus-visible and which diagnostics are development-only.
 

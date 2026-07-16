@@ -120,10 +120,7 @@ fn manifest_body() -> Result<Value, String> {
         return Err("lifecycle transition vector generator case count drifted".to_string());
     }
     let mut all_support_tests_present = true;
-    for (case, expected) in cases
-        .iter()
-        .zip(report.transition_vector_case_ids.iter())
-    {
+    for (case, expected) in cases.iter().zip(report.transition_vector_case_ids.iter()) {
         if case["case_id"] != *expected {
             return Err(format!(
                 "lifecycle transition vector case id drift: expected {expected}"

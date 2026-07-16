@@ -521,6 +521,35 @@ fn manifest_body() -> Result<Value, String> {
                 direct_report.accepted_composition_evidence_present,
             "composition_theorem_instantiated":
                 direct_report.composition_theorem_instantiated,
+            "composition_theorem_reduction_imported":
+                direct_report.composition_theorem_reduction_imported,
+            "composition_external_hypotheses_explicit":
+                direct_report.composition_external_hypotheses_explicit,
+            "composition_capstone_under_explicit_named_assumptions_imported":
+                direct_report
+                    .composition_capstone_under_explicit_named_assumptions_imported,
+            "direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle":
+                direct_report.direct_leaf_canonical_live_closed_by_frozen_kat_and_lifecycle,
+            "direct_evidence_leaf_binding_closed_by_frozen_kat":
+                direct_report.direct_evidence_leaf_binding_closed_by_frozen_kat,
+            "direct_admission_namespace_and_data_availability_imported":
+                direct_report.direct_admission_namespace_and_data_availability_imported,
+            "direct_admission_namespace_closed_by_sovereign_state":
+                direct_report.direct_admission_namespace_closed_by_sovereign_state,
+            "direct_public_rejection_state_preserving_imported":
+                direct_report.direct_public_rejection_state_preserving_imported,
+            "direct_public_rejection_classifier_total":
+                direct_report.direct_public_rejection_classifier_total,
+            "direct_public_rejection_all_classes_kat_covered":
+                direct_report.direct_public_rejection_all_classes_kat_covered,
+            "direct_public_rejection_panic_fail_closed_kat_covered":
+                direct_report.direct_public_rejection_panic_fail_closed_kat_covered,
+            "direct_public_rejection_all_public_objects_kat_covered":
+                direct_report.direct_public_rejection_all_public_objects_kat_covered,
+            "direct_public_rejection_target_client_mapping_complete":
+                direct_report.direct_public_rejection_target_client_mapping_complete,
+            "direct_public_rejection_consensus_kat_hypothesis_explicit":
+                direct_report.direct_public_rejection_consensus_kat_hypothesis_explicit,
             "account_creation_proof_boundary_verified":
                 direct_report.account_creation_proof_boundary_verified,
             "deployment_ready": direct_report.deployment_ready,

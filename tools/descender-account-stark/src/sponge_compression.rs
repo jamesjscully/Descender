@@ -78,7 +78,10 @@ mod tests {
         let d = c.compress([a, b]);
         assert_eq!(d, c.compress([a, b]), "compression must be deterministic");
         assert_eq!(d.len(), 13, "q128 binding requires a 13-element digest");
-        assert!(d.iter().any(|&x| x != Val::ZERO), "digest must not be all-zero");
+        assert!(
+            d.iter().any(|&x| x != Val::ZERO),
+            "digest must not be all-zero"
+        );
 
         // Binds child b: flipping one element of b changes the digest.
         let mut b2 = b;
@@ -91,7 +94,11 @@ mod tests {
         assert_ne!(c.compress([a, b]), c.compress([a2, b]), "must bind child a");
 
         // Order-sensitive (a‖b != b‖a in general): not symmetric.
-        assert_ne!(c.compress([a, b]), c.compress([b, a]), "must be order-sensitive");
+        assert_ne!(
+            c.compress([a, b]),
+            c.compress([b, a]),
+            "must be order-sensitive"
+        );
     }
 
     /// End-to-end: the q128 Merkle stack (rate-7/digest-13 leaf hash + the
@@ -126,7 +133,9 @@ mod tests {
         let width = 3usize;
         let height = 4usize; // power of two
         let mat = RowMajorMatrix::new(
-            (0..(width * height) as u32).map(Val::from_u32).collect::<Vec<_>>(),
+            (0..(width * height) as u32)
+                .map(Val::from_u32)
+                .collect::<Vec<_>>(),
             width,
         );
         let (commit, prover_data) = mmcs.commit(vec![mat]);

@@ -197,7 +197,11 @@ mod tests {
             let d = Val::from_u32(raw);
             let row = pack_index(d, QUERY_BITS);
             let expected = (d.as_canonical_u32() as usize) & ((1usize << QUERY_BITS) - 1);
-            assert_eq!(row_index(&row) as usize, expected, "bus index != sample_bits(draw)");
+            assert_eq!(
+                row_index(&row) as usize,
+                expected,
+                "bus index != sample_bits(draw)"
+            );
         }
     }
 
@@ -209,8 +213,13 @@ mod tests {
             .iter()
             .map(|&r| Val::from_u32(r))
             .collect();
-        let report = check_all_constraints(&air(QUERY_BITS), &matrix(&draws, QUERY_BITS), &[], None);
-        assert!(report.is_ok(), "honest index-bus trace rejected: {} failures", report.failures.len());
+        let report =
+            check_all_constraints(&air(QUERY_BITS), &matrix(&draws, QUERY_BITS), &[], None);
+        assert!(
+            report.is_ok(),
+            "honest index-bus trace rejected: {} failures",
+            report.failures.len()
+        );
     }
 
     /// Forgery — a FORGED query index: claim a different (favorable) index than the bits of the
@@ -231,7 +240,11 @@ mod tests {
         let d = Val::from_u32(0x12345);
         let mut m = matrix(&[d], QUERY_BITS);
         // flip a low bit column WITHOUT changing draw_out: recomposition breaks.
-        m.values[C_BITS + 3] = if m.values[C_BITS + 3] == Val::ZERO { Val::ONE } else { Val::ZERO };
+        m.values[C_BITS + 3] = if m.values[C_BITS + 3] == Val::ZERO {
+            Val::ONE
+        } else {
+            Val::ZERO
+        };
         assert!(!check_all_constraints(&air(QUERY_BITS), &m, &[], None).is_ok());
     }
 
@@ -275,9 +288,16 @@ mod tests {
     /// Multi-row honest trace accepts (one sampled query index per row).
     #[test]
     fn air_accepts_multirow_indices() {
-        let draws: Vec<Val> = (0..16u32).map(|q| Val::from_u32(0x40000 + q * 0x1111)).collect();
-        let report = check_all_constraints(&air(QUERY_BITS), &matrix(&draws, QUERY_BITS), &[], None);
-        assert!(report.is_ok(), "honest multi-row index-bus trace rejected: {} failures", report.failures.len());
+        let draws: Vec<Val> = (0..16u32)
+            .map(|q| Val::from_u32(0x40000 + q * 0x1111))
+            .collect();
+        let report =
+            check_all_constraints(&air(QUERY_BITS), &matrix(&draws, QUERY_BITS), &[], None);
+        assert!(
+            report.is_ok(),
+            "honest multi-row index-bus trace rejected: {} failures",
+            report.failures.len()
+        );
     }
 
     /// CONSUMER BINDING (bus -> gadget-3): the bus index drives the FRI fold point
@@ -295,7 +315,7 @@ mod tests {
         use p3_field::PrimeCharacteristicRing;
 
         let log_height = QUERY_BITS; // layer log-height for this query
-        // The FS-sampled draw fixes the honest index = low QUERY_BITS of its canonical form.
+                                     // The FS-sampled draw fixes the honest index = low QUERY_BITS of its canonical form.
         let draw = Val::from_u32(0xABCDE);
         let honest_index = (draw.as_canonical_u32() as usize) & ((1usize << QUERY_BITS) - 1);
 
@@ -325,7 +345,10 @@ mod tests {
         // result (computed at s_honest) but present s_forged in the fold row -> rejected.
         let forged_index = honest_index ^ 1; // flip the low bit: a different query
         let s_forged = fold_point(log_height, forged_index);
-        assert_ne!(s_honest, s_forged, "flipped index must change the fold point");
+        assert_ne!(
+            s_honest, s_forged,
+            "flipped index must change the fold point"
+        );
         // Build the fold row at s_honest (honest folded cell), then overwrite the point column
         // with s_forged: the fold identity (★) at s_forged no longer holds -> rejected.
         let mut forged_fold = fri_fold_air::build_trace(&[(e0, e1, beta, s_honest)]);

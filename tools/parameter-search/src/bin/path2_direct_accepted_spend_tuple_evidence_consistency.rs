@@ -129,7 +129,7 @@ mod enabled {
             return Err("direct accepted spend tuple manifest status mismatch".to_string());
         }
         if str_at(body, "/deterministic_tuple_mode/accepted_tuple_endpoint")?
-            != "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1"
+            != "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_from_sovereign_state_v1"
         {
             return Err("direct accepted spend tuple endpoint mismatch".to_string());
         }
@@ -276,8 +276,8 @@ mod enabled {
             )? != evidence.accepted_tuple_field_imported_closure_count as u64
             || evidence.accepted_tuple_field_evidence_count != 11
             || evidence.accepted_tuple_field_evidence_present_count != 11
-            || evidence.accepted_tuple_field_open_obligation_count != 6
-            || evidence.accepted_tuple_field_imported_closure_count != 2
+            || evidence.accepted_tuple_field_open_obligation_count != 1
+            || evidence.accepted_tuple_field_imported_closure_count != 9
             || at(body, "/evidence/accepted_tuple_field_evidence_rows")? != &expected_field_rows
         {
             return Err(

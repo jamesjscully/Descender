@@ -242,14 +242,20 @@ or no-export theorem fails.
 The current forbidden private-material field denylist is:
 
 ```text
-pad_source
-projection
-syndrome
-opening_tuple
-witness
+pad_seed
+account_projection
+opening_tuple_preimage
+authorization_witness
 mask
 private_trace_material
+commitment_nonce
 ```
+
+The decoded `AccountCreationPublic` statement is not opaque to the privacy
+model. Its 14 public fields are audited explicitly, including the checked-core
+`syndrome`, which is an allowed public authorization anchor and is also
+reversibly packed into `packed_witness_commitment`. The denylist therefore names
+private preimages and witnesses, not the public syndrome itself.
 
 The current selected-payload simulator theorem targets are:
 
@@ -268,8 +274,8 @@ native_role_root_commitment
 aggregation_context_digest
 slot_id
 masked_projection
-account_stark_bundle_bytes_or_digest
-public_replay_payload_digest
+account_stark_public_statement_bytes_or_digest
+pad_seed_nullifier
 deployed_account_id
 deployed_account_state_root
 deployed_lifecycle_anchor
@@ -277,6 +283,43 @@ deployed_verifier_version
 deployed_packed_witness_commitment
 public_rejection_code
 ```
+
+The allowlist is intentionally non-circular. The account-STARK proof bundle and
+the `public_replay_payload_digest` derived from the completed payload are
+simulator outputs, not simulator inputs. The selected verifier transport exposes
+`pack_public_statement`, `unpack_public_statement`, and
+`public_statement_bytes_from_bundle` so the public statement can be carried
+without supplying proof bytes. Lean proves that replacing the proof bundle and
+replay digest leaves the typed simulator input unchanged in
+`selectedRustSimulatorInputIndependentOfProofOutput_v1`.
+
+The selected hiding stack now uses `ZkCryptoRng(ChaCha20Rng)` with a fresh
+256-bit production master seed and separate input-MMCS, FRI-MMCS, and PCS
+substreams. `SelectedAccountStarkSimulatorHybridBounds.advantage_le_totalError`
+machine-checks the additive A1/A2/A3 hybrid, and
+`selectedRustAcceptedBundleSimulatorNoExportFromHybrid_v1` connects concrete
+hybrid certificates to accepted-bundle no-export. For A2,
+`selectedRustUniformMaskTranslationBijective_v1` proves that uniform six-lane
+masking is a perfect translation over `(ZMod 12289)^6`. The C2 AIR and standalone
+signer now absorb the explicit `MASK` domain and use six KoalaBear digits per
+mask. `selectedAccountMaskPrfDomainsSeparated_v1` pins the `MASK`/`NULL` domain
+separation, `selectedAccountMaskPrfSqueezeIndexInjective_v1` pins the six-by-six
+squeeze indexing, and `selectedAccountMaskWideReductionError_le_q128_v1` prices
+all six masks at the selected `2^32` account horizon, while
+`selectedRustAccountMaskPrfFramesFresh_of_verifiedNullifierRegistry_v1` imports
+proof-bound frame freshness. Only the bounded-query Poseidon2
+sponge/permutation PRF premise remains open at that A2 hop, so
+`poseidon_mask_prf_theorem_instantiated` remains false. Concrete reviewed
+A1, A2-PRF, and A3 bounds are still required before the simulator theorem flag
+may become true. For A3, relation v3 absorbs explicit `PADS` and `OPEN` domains
+and uses fresh 40-byte C1/C6 commitment nonces. The production prover overwrites
+caller nonce fields from the OS CSPRNG. Under two commitments per account, the
+`2^32` target horizon, and `2^54` QROM queries,
+`selectedAccountCommitmentQromSearchError_le_q128_v1` bounds nonce search by
+`2^-179`; `selectedAccountCommitmentDomainsSeparated_v1` and
+`selectedAccountCommitmentFrameDimensions_v1` pin the frames. The concrete
+Poseidon2 commitment/QROM replacement theorem remains open, so
+`poseidon_commitment_hiding_theorem_instantiated` remains false.
 
 This report is a boundary and fail-closed regression anchor, not simulator
 closure. It records that the public payload byte model exports no private

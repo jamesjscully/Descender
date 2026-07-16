@@ -72,7 +72,7 @@
 use crate::air::{Air, BoundaryConstraint};
 use crate::fq12_ntt_q12289::{lde_coset, root_of_unity_fq12};
 use crate::fq12_q12289::{Fq12, N as FQ12_N};
-use crate::fri_q12289::{self, coset_shift, fq12_to_leaf, FriProof};
+use crate::fri_q12289::{self, FriProof, coset_shift, fq12_to_leaf};
 use crate::merkle_poseidon2_q12289::{self as merkle, Digest, MerklePath, MerkleTree};
 use crate::ntt_q12289::interpolate;
 use crate::poseidon2_q12289::poseidon2_sponge;
@@ -344,7 +344,8 @@ fn compose_h_value(
     coeffs: &Coeffs,
 ) -> Option<Fq12> {
     // Transition term.
-    let c_trans = transition_numerator_at(air, x, pts, transition_rows, cur, nxt, &coeffs.trans_lane);
+    let c_trans =
+        transition_numerator_at(air, x, pts, transition_rows, cur, nxt, &coeffs.trans_lane);
     let z_trans = z_transition_at(x, pts, transition_rows);
     let inv_zt = z_trans.inv()?;
     let mut h = coeffs.alpha_trans.mul(&c_trans.mul(&inv_zt));
@@ -461,7 +462,14 @@ pub fn prove_with_queries(
             nxt[c] = col_lde_shift[c][k];
         }
         let h = compose_h_value(
-            air, &dom[k], &pts, &transition_rows, &groups, &cur, &nxt, &coeffs,
+            air,
+            &dom[k],
+            &pts,
+            &transition_rows,
+            &groups,
+            &cur,
+            &nxt,
+            &coeffs,
         )
         .expect("coset point off <g>: all vanishing polys nonzero");
         h_codeword.push(h);
@@ -472,11 +480,24 @@ pub fn prove_with_queries(
 
     // --- 3. OOD point z.
     let z = derive_ood_point(&transcript, &pts, &dom);
-    let ood_cur: Vec<Fq12> = col_coeffs.iter().map(|cc| eval_base_poly_at(cc, &z)).collect();
+    let ood_cur: Vec<Fq12> = col_coeffs
+        .iter()
+        .map(|cc| eval_base_poly_at(cc, &z))
+        .collect();
     let gz = g.mul(&z);
-    let ood_nxt: Vec<Fq12> = col_coeffs.iter().map(|cc| eval_base_poly_at(cc, &gz)).collect();
+    let ood_nxt: Vec<Fq12> = col_coeffs
+        .iter()
+        .map(|cc| eval_base_poly_at(cc, &gz))
+        .collect();
     let ood_h = compose_h_value(
-        air, &z, &pts, &transition_rows, &groups, &ood_cur, &ood_nxt, &coeffs,
+        air,
+        &z,
+        &pts,
+        &transition_rows,
+        &groups,
+        &ood_cur,
+        &ood_nxt,
+        &coeffs,
     )
     .expect("z off <g>");
 
@@ -491,7 +512,15 @@ pub fn prove_with_queries(
     // --- 4. Batched DEEP quotient codeword + FRI.
     let gammas = powers(&transcript.challenge_fq12(0x5000), 2 * n_cols + 1);
     let deep = build_deep_codeword(
-        &dom, &col_lde, &col_lde_shift, &h_codeword, &ood_cur, &ood_nxt, &ood_h, &z, &gammas,
+        &dom,
+        &col_lde,
+        &col_lde_shift,
+        &h_codeword,
+        &ood_cur,
+        &ood_nxt,
+        &ood_h,
+        &z,
+        &gammas,
     );
     let fri = fri_q12289::prove(&deep, d.log2_fri, num_queries);
 
@@ -641,7 +670,14 @@ pub fn verify(air: &dyn Air, proof: &StarkProof) -> bool {
         return false;
     }
     let expected_h = match compose_h_value(
-        air, &z, &pts, &transition_rows, &groups, &proof.ood_cur, &proof.ood_nxt, &coeffs,
+        air,
+        &z,
+        &pts,
+        &transition_rows,
+        &groups,
+        &proof.ood_cur,
+        &proof.ood_nxt,
+        &coeffs,
     ) {
         Some(v) => v,
         None => return false,
@@ -740,7 +776,7 @@ fn pack_leaf(vals: &[Fq12]) -> Vec<u16> {
 mod tests {
     use super::*;
     use crate::poseidon2_perm_air_adapter::Poseidon2PermAir;
-    use crate::poseidon2_q12289::{fq_add, permute, Poseidon2Params, Q, T};
+    use crate::poseidon2_q12289::{Poseidon2Params, Q, T, fq_add, permute};
 
     fn xorshift(s: &mut u64) -> u64 {
         *s ^= *s << 13;
@@ -801,14 +837,8 @@ mod tests {
         let air = Poseidon2PermAir::new(&params, input);
         let honest = air.generate_trace();
 
-        let tampers: &[(usize, usize)] = &[
-            (3, 7),
-            (10, 0),
-            (10, 13),
-            (67, 5),
-            (N_ROWS - 1, 0),
-            (0, 4),
-        ];
+        let tampers: &[(usize, usize)] =
+            &[(3, 7), (10, 0), (10, 13), (67, 5), (N_ROWS - 1, 0), (0, 4)];
         for &(row, lane) in tampers {
             let mut t = honest.clone();
             t[row][lane] = fq_add(t[row][lane], 1);
@@ -831,11 +861,17 @@ mod tests {
         assert!(verify(&air, &proof), "baseline honest proof must verify");
 
         proof.ood_cur[0] = proof.ood_cur[0].add(&Fq12::from_base(1));
-        assert!(!verify(&air, &proof), "a lied-about OOD eval must be REJECTED");
+        assert!(
+            !verify(&air, &proof),
+            "a lied-about OOD eval must be REJECTED"
+        );
 
         let mut proof2 = prove(&air, None);
         proof2.ood_h = proof2.ood_h.add(&Fq12::from_base(1));
-        assert!(!verify(&air, &proof2), "a lied-about OOD H(z) must be REJECTED");
+        assert!(
+            !verify(&air, &proof2),
+            "a lied-about OOD H(z) must be REJECTED"
+        );
     }
 
     /// MERKLE-BINDING.
@@ -849,7 +885,10 @@ mod tests {
         assert!(verify(&air, &proof), "baseline honest proof must verify");
         let v = proof.openings[0].cur[0];
         proof.openings[0].cur[0] = v.add(&Fq12::from_base(1));
-        assert!(!verify(&air, &proof), "tampered opened trace value must be REJECTED");
+        assert!(
+            !verify(&air, &proof),
+            "tampered opened trace value must be REJECTED"
+        );
     }
 
     /// Domain sanity for the single-permutation AIR (regression on sizing).

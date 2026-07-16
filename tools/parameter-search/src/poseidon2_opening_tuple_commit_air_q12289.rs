@@ -67,13 +67,13 @@
 //! linking/range constraints degree <= 2). MAX DEGREE = 5 (the S-box).
 
 use crate::poseidon2_air_q12289::{
-    self as perm_air, generate_trace as gen_perm_trace, Trace as PermTrace,
+    self as perm_air, Trace as PermTrace, generate_trace as gen_perm_trace,
 };
 use crate::poseidon2_q12289::{
-    fq_add, fq_from_u32, fq_mul, fq_sub, init_capacity, Poseidon2Params, CAPACITY,
-    OPENING_TUPLE_ACCOUNT_PROJECTION_LANES, OPENING_TUPLE_BLINDING_BYTES,
+    CAPACITY, OPENING_TUPLE_ACCOUNT_PROJECTION_LANES, OPENING_TUPLE_BLINDING_BYTES,
     OPENING_TUPLE_COMMITMENT_LANES, OPENING_TUPLE_LIFECYCLE_ANCHOR_BYTES,
-    POSEIDON2_OPENING_TUPLE_COMMITMENT_DOMAIN, RATE, T,
+    POSEIDON2_OPENING_TUPLE_COMMITMENT_DOMAIN, Poseidon2Params, RATE, T, fq_add, fq_from_u32,
+    fq_mul, fq_sub, init_capacity,
 };
 
 // -----------------------------------------------------------------------------
@@ -87,8 +87,7 @@ pub const LIFECYCLE_ANCHOR_LANES: usize = OPENING_TUPLE_LIFECYCLE_ANCHOR_BYTES; 
 /// Number of blinding-nonce byte-lanes.
 pub const NONCE_LANES: usize = OPENING_TUPLE_BLINDING_BYTES; // 16
 /// Total input lanes absorbed (field + byte).
-pub const N_INPUT_LANES: usize =
-    ACCOUNT_PROJECTION_LANES + LIFECYCLE_ANCHOR_LANES + NONCE_LANES; // 54
+pub const N_INPUT_LANES: usize = ACCOUNT_PROJECTION_LANES + LIFECYCLE_ANCHOR_LANES + NONCE_LANES; // 54
 /// Number of BYTE lanes (those that carry an 8-bit range decomposition). These
 /// are exactly the lifecycle_anchor + nonce lanes; the field lanes are excluded.
 pub const N_BYTE_LANES: usize = LIFECYCLE_ANCHOR_LANES + NONCE_LANES; // 48
@@ -331,15 +330,33 @@ pub struct Residual {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ResidualKind {
-    Perm { perm: usize, index: usize },
-    CapacityInit { lane: usize },
-    AbsorbLink { perm: usize, lane: usize },
-    SqueezeLink { perm: usize, lane: usize },
+    Perm {
+        perm: usize,
+        index: usize,
+    },
+    CapacityInit {
+        lane: usize,
+    },
+    AbsorbLink {
+        perm: usize,
+        lane: usize,
+    },
+    SqueezeLink {
+        perm: usize,
+        lane: usize,
+    },
     /// Booleanity of a bit of a BYTE lane (indexed by byte-lane number 0..48).
-    BitBoolean { byte_lane: usize, bit: usize },
+    BitBoolean {
+        byte_lane: usize,
+        bit: usize,
+    },
     /// 8-bit recompose of a BYTE lane (indexed by byte-lane number 0..48).
-    BitRecompose { byte_lane: usize },
-    CommitOutput { out: usize },
+    BitRecompose {
+        byte_lane: usize,
+    },
+    CommitOutput {
+        out: usize,
+    },
 }
 
 /// Evaluate EVERY constraint residual for `trace` against the committed
@@ -365,7 +382,10 @@ pub fn all_residuals(
             .enumerate()
         {
             out.push(Residual {
-                kind: ResidualKind::Perm { perm: p, index: idx },
+                kind: ResidualKind::Perm {
+                    perm: p,
+                    index: idx,
+                },
                 value: r.value,
             });
         }
@@ -510,7 +530,7 @@ pub const MAX_DEGREE: u32 = 5;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::poseidon2_q12289::{opening_tuple_commitment_poseidon2, Q};
+    use crate::poseidon2_q12289::{Q, opening_tuple_commitment_poseidon2};
 
     fn xorshift(s: &mut u64) -> u64 {
         *s ^= *s << 13;
@@ -557,7 +577,10 @@ mod tests {
         assert_eq!(plan.roles.len(), 14);
         for (p, role) in plan.roles.iter().enumerate() {
             if p < 11 {
-                assert!(matches!(role, PermRole::Absorb { .. }), "perm {p} not absorb");
+                assert!(
+                    matches!(role, PermRole::Absorb { .. }),
+                    "perm {p} not absorb"
+                );
             } else {
                 assert!(matches!(role, PermRole::Squeeze), "perm {p} not squeeze");
             }
@@ -586,7 +609,11 @@ mod tests {
         let params = Poseidon2Params::new();
         let committed = claimed_commitment(&trace);
         let residuals = all_residuals(&params, &trace, &committed);
-        assert_eq!(residuals.len(), n_constraints(), "constraint count mismatch");
+        assert_eq!(
+            residuals.len(),
+            n_constraints(),
+            "constraint count mismatch"
+        );
         assert_eq!(MAX_DEGREE, 5);
     }
 
@@ -643,8 +670,7 @@ mod tests {
         // mutate a nonce byte lane (byte-lane index 32+5 = 37, input_lanes 6+37).
         let mut t = trace.clone();
         let bl = LIFECYCLE_ANCHOR_LANES + 5; // a nonce byte lane
-        t.input_lanes[BYTE_LANES_OFFSET + bl] =
-            fq_add(t.input_lanes[BYTE_LANES_OFFSET + bl], 1);
+        t.input_lanes[BYTE_LANES_OFFSET + bl] = fq_add(t.input_lanes[BYTE_LANES_OFFSET + bl], 1);
         let res = all_residuals(&params, &t, &committed);
         assert!(
             res.iter().any(|r| r.value != 0
@@ -655,7 +681,10 @@ mod tests {
         let mut t2 = trace.clone();
         t2.subs[0].rows[0][3] = fq_add(t2.subs[0].rows[0][3], 1);
         let res2 = all_residuals(&params, &t2, &committed);
-        assert!(res2.iter().any(|r| r.value != 0), "absorb input cell mutation not caught");
+        assert!(
+            res2.iter().any(|r| r.value != 0),
+            "absorb input cell mutation not caught"
+        );
     }
 
     /// MUTATION: tampering an account_projection FIELD lane (NO byte decomposition
@@ -676,8 +705,8 @@ mod tests {
         t.input_lanes[2] = fq_add(t.input_lanes[2], 1);
         let res = all_residuals(&params, &t, &committed);
         assert!(
-            res.iter().any(|r| r.value != 0
-                && matches!(r.kind, ResidualKind::AbsorbLink { .. })),
+            res.iter()
+                .any(|r| r.value != 0 && matches!(r.kind, ResidualKind::AbsorbLink { .. })),
             "account_projection field-lane mutation not caught by absorb-link"
         );
     }
@@ -696,8 +725,8 @@ mod tests {
         t.subs[5].rows[30][9] = fq_add(t.subs[5].rows[30][9], 1);
         let res = all_residuals(&params, &t, &committed);
         assert!(
-            res.iter().any(|r| r.value != 0
-                && matches!(r.kind, ResidualKind::Perm { perm: 5, .. })),
+            res.iter()
+                .any(|r| r.value != 0 && matches!(r.kind, ResidualKind::Perm { perm: 5, .. })),
             "intermediate perm cell mutation not caught"
         );
     }
@@ -716,8 +745,8 @@ mod tests {
         c1[2] = fq_add(c1[2], 1); // first squeeze lane
         let res = all_residuals(&params, &trace, &c1);
         assert!(
-            res.iter().any(|r| r.value != 0
-                && matches!(r.kind, ResidualKind::CommitOutput { out: 2 })),
+            res.iter()
+                .any(|r| r.value != 0 && matches!(r.kind, ResidualKind::CommitOutput { out: 2 })),
             "first-squeeze commitment mutation not caught"
         );
 
@@ -725,8 +754,8 @@ mod tests {
         c2[8] = fq_add(c2[8], 1); // second squeeze lane
         let res2 = all_residuals(&params, &trace, &c2);
         assert!(
-            res2.iter().any(|r| r.value != 0
-                && matches!(r.kind, ResidualKind::CommitOutput { out: 8 })),
+            res2.iter()
+                .any(|r| r.value != 0 && matches!(r.kind, ResidualKind::CommitOutput { out: 8 })),
             "second-squeeze commitment mutation not caught"
         );
     }
@@ -762,7 +791,13 @@ mod tests {
         let res2 = all_residuals(&params, &t2, &committed);
         assert!(
             res2.iter().any(|r| r.value != 0
-                && matches!(r.kind, ResidualKind::BitBoolean { byte_lane: 0, bit: 0 })),
+                && matches!(
+                    r.kind,
+                    ResidualKind::BitBoolean {
+                        byte_lane: 0,
+                        bit: 0
+                    }
+                )),
             "non-boolean bit not rejected"
         );
     }
